@@ -14,7 +14,155 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      pets: {
+        Row: {
+          breed: string | null
+          colour: string | null
+          created_at: string
+          date_of_birth: string | null
+          desexed: boolean
+          id: string
+          insurance_policy: string | null
+          insurance_provider: string | null
+          is_lost: boolean
+          microchip_number: string | null
+          name: string
+          notes: string | null
+          photo_url: string | null
+          public_id: string
+          registry_link: string | null
+          registry_name: string | null
+          sex: string | null
+          species: string
+          updated_at: string
+          user_id: string
+          vet_clinic: string | null
+        }
+        Insert: {
+          breed?: string | null
+          colour?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          desexed?: boolean
+          id?: string
+          insurance_policy?: string | null
+          insurance_provider?: string | null
+          is_lost?: boolean
+          microchip_number?: string | null
+          name: string
+          notes?: string | null
+          photo_url?: string | null
+          public_id: string
+          registry_link?: string | null
+          registry_name?: string | null
+          sex?: string | null
+          species: string
+          updated_at?: string
+          user_id: string
+          vet_clinic?: string | null
+        }
+        Update: {
+          breed?: string | null
+          colour?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          desexed?: boolean
+          id?: string
+          insurance_policy?: string | null
+          insurance_provider?: string | null
+          is_lost?: boolean
+          microchip_number?: string | null
+          name?: string
+          notes?: string | null
+          photo_url?: string | null
+          public_id?: string
+          registry_link?: string | null
+          registry_name?: string | null
+          sex?: string | null
+          species?: string
+          updated_at?: string
+          user_id?: string
+          vet_clinic?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string | null
+          emergency_contact: string | null
+          id: string
+          phone: string | null
+          premium_tier: string
+          suburb: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          emergency_contact?: string | null
+          id?: string
+          phone?: string | null
+          premium_tier?: string
+          suburb?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          emergency_contact?: string | null
+          id?: string
+          phone?: string | null
+          premium_tier?: string
+          suburb?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vaccinations: {
+        Row: {
+          created_at: string
+          date: string
+          due_date: string | null
+          file_url: string | null
+          id: string
+          name: string
+          pet_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          due_date?: string | null
+          file_url?: string | null
+          id?: string
+          name: string
+          pet_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          due_date?: string | null
+          file_url?: string | null
+          id?: string
+          name?: string
+          pet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vaccinations_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

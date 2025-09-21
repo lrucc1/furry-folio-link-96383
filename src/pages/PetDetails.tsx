@@ -59,7 +59,7 @@ const PetDetails = () => {
     if (!user || !id) return
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('pets')
         .select('*')
         .eq('id', id)
@@ -80,7 +80,7 @@ const PetDetails = () => {
     if (!id) return
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vaccinations')
         .select('*')
         .eq('pet_id', id)
@@ -97,7 +97,7 @@ const PetDetails = () => {
     if (!pet) return
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('pets')
         .update({ is_lost: !pet.is_lost })
         .eq('id', pet.id)

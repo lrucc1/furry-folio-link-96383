@@ -43,7 +43,7 @@ const FoundPet = () => {
     if (!publicId) return
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('pets')
         .select('id, name, species, breed, colour, photo_url, is_lost')
         .eq('public_id', publicId)

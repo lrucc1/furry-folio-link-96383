@@ -36,7 +36,7 @@ const Dashboard = () => {
     if (!user) return
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('pets')
         .select('*')
         .eq('user_id', user.id)
@@ -55,7 +55,7 @@ const Dashboard = () => {
     if (!user) return
 
     try {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from('profiles')
         .select('premium_tier')
         .eq('id', user.id)
@@ -77,7 +77,7 @@ const Dashboard = () => {
       const pet = pets.find(p => p.id === petId)
       if (!pet) return
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('pets')
         .update({ is_lost: !pet.is_lost })
         .eq('id', petId)
