@@ -41,11 +41,27 @@ const AddPet = () => {
 
     setLoading(true)
     try {
-      const { data, error } = await (supabase as any)
+      // Clean up form data - convert empty strings to null for optional fields
+      const cleanedData = {
+        ...formData,
+        date_of_birth: formData.date_of_birth || null,
+        breed: formData.breed || null,
+        colour: formData.colour || null,
+        sex: formData.sex || null,
+        microchip_number: formData.microchip_number || null,
+        registry_name: formData.registry_name || null,
+        registry_link: formData.registry_link || null,
+        vet_clinic: formData.vet_clinic || null,
+        insurance_provider: formData.insurance_provider || null,
+        insurance_policy: formData.insurance_policy || null,
+        notes: formData.notes || null,
+      }
+
+      const { data, error } = await supabase
         .from('pets')
         .insert([
           {
-            ...formData,
+            ...cleanedData,
             user_id: user.id,
             public_id: Math.random().toString(36).substr(2, 9), // Generate random public ID
           }

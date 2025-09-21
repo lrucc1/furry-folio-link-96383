@@ -36,7 +36,7 @@ const Dashboard = () => {
     if (!user) return
 
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('pets')
         .select('*')
         .eq('user_id', user.id)
@@ -55,15 +55,30 @@ const Dashboard = () => {
     if (!user) return
 
     try {
-      const { data } = await (supabase as any)
+      // First ensure profile exists
+      const { data: existingProfile } = await supabase
         .from('profiles')
         .select('premium_tier')
-        .eq('id', user.id)
-        .single()
+        .eq('user_id', user.id)
+        .maybeSingle()
 
-      setIsPremium(data?.premium_tier === 'premium')
+      if (!existingProfile) {
+        // Create profile if it doesn't exist
+        await supabase
+          .from('profiles')
+          .insert({
+            user_id: user.id,
+            email: user.email,
+            display_name: user.user_metadata?.display_name || user.user_metadata?.full_name || null,
+            premium_tier: 'free'
+          })
+        setIsPremium(false)
+      } else {
+        setIsPremium(existingProfile.premium_tier === 'premium')
+      }
     } catch (error) {
       console.error('Error checking premium status:', error)
+      setIsPremium(false)
     }
   }
 
@@ -77,7 +92,7 @@ const Dashboard = () => {
       const pet = pets.find(p => p.id === petId)
       if (!pet) return
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('pets')
         .update({ is_lost: !pet.is_lost })
         .eq('id', petId)
