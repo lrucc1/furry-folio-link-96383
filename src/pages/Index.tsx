@@ -14,6 +14,7 @@ import {
   Zap,
   Users
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 // Mock data for demonstration
 const mockPets = [
@@ -122,9 +123,11 @@ const Index = () => {
             </div>
 
             <div className="text-center mt-12">
-              <Button variant="hero" size="lg" className="text-lg px-8 py-4">
-                Create Your First Pet Profile
-                <ArrowRight className="w-5 h-5 ml-2" />
+              <Button variant="hero" size="lg" className="text-lg px-8 py-4" asChild>
+                <Link to="/auth">
+                  Create Your First Pet Profile
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Link>
               </Button>
             </div>
           </div>
@@ -204,13 +207,17 @@ const Index = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button size="lg" variant="secondary" className="text-lg px-8 py-4 shadow-strong">
-                <Heart className="w-5 h-5 mr-2" />
-                Start Free Today
+              <Button size="lg" variant="secondary" className="text-lg px-8 py-4 shadow-strong" asChild>
+                <Link to="/auth">
+                  <Heart className="w-5 h-5 mr-2" />
+                  Start Free Today
+                </Link>
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8 py-4 border-white/30 text-white hover:bg-white/10">
-                <Shield className="w-5 h-5 mr-2" />
-                View Demo
+              <Button size="lg" variant="outline" className="text-lg px-8 py-4 border-white/30 text-white hover:bg-white/10" asChild>
+                <Link to="/dashboard">
+                  <Shield className="w-5 h-5 mr-2" />
+                  View Demo
+                </Link>
               </Button>
             </div>
 
