@@ -47,21 +47,21 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
             className="text-foreground hover:text-primary"
             onClick={() => user ? navigate('/dashboard') : handleAuthRequired('Please log in first to view your pets')}
           >
-            {user ? 'My Pets' : 'Please login first'}
+            My Pets
           </Button>
           <Button 
             variant="ghost" 
             className="text-foreground hover:text-primary"
             onClick={() => handleAuthRequired('Please log in first to access registry')}
           >
-            {user ? 'Registry' : 'Please login first'}
+            Registry
           </Button>
           <Button 
             variant="ghost" 
             className="text-foreground hover:text-primary"
             onClick={() => handleAuthRequired('Please log in first to view reminders')}
           >
-            {user ? 'Reminders' : 'Please login first'}
+            Reminders
           </Button>
         </nav>
 
