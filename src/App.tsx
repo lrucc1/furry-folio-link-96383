@@ -5,12 +5,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { AdminRoute } from "./components/AdminRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import AddPet from "./pages/AddPet";
 import PetDetails from "./pages/PetDetails";
 import FoundPet from "./pages/FoundPet";
+import AdminDashboard from "./pages/AdminDashboard";
 import HelpCentre from "./pages/HelpCentre";
 import Contact from "./pages/Contact";
 import LostPetGuide from "./pages/LostPetGuide";
@@ -43,6 +45,14 @@ const App = () => (
             <Route path="/privacy-australia" element={<AustralianPrivacy />} />
             <Route path="/downloads" element={<AppDownloads />} />
             <Route 
+              path="/admin" 
+              element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              } 
+            />
+            <Route
               path="/dashboard" 
               element={
                 <ProtectedRoute>

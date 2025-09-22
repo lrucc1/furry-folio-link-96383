@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, Menu, Bell, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
+import { useAdmin } from "@/hooks/useAdmin";
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -9,6 +10,7 @@ interface HeaderProps {
 
 export const Header = ({ onMenuClick }: HeaderProps) => {
   const { user } = useAuth();
+  const { isAdmin } = useAdmin();
   const navigate = useNavigate();
 
   const handleNavigation = (page: string) => {
@@ -76,6 +78,15 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
           >
             Reminders
           </Button>
+          {isAdmin && (
+            <Button 
+              variant="ghost" 
+              className="text-foreground hover:text-primary"
+              onClick={() => navigate('/admin')}
+            >
+              Admin
+            </Button>
+          )}
         </nav>
 
         <div className="flex items-center gap-2">
