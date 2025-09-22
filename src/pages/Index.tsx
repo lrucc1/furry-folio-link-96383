@@ -272,20 +272,20 @@ const Index = () => {
             <div>
               <h4 className="font-semibold mb-4">Support</h4>
               <ul className="space-y-2 text-sm text-white/70">
-                <li><a href="#help" className="hover:text-white transition-colors">Help Centre</a></li>
-                <li><a href="#contact" className="hover:text-white transition-colors">Contact Us</a></li>
-                <li><a href="#guide" className="hover:text-white transition-colors">Lost Pet Guide</a></li>
-                <li><a href="#privacy" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                <li><Link to="/help" className="hover:text-white transition-colors">Help Centre</Link></li>
+                <li><Link to="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
+                <li><Link to="/lost-pet-guide" className="hover:text-white transition-colors">Lost Pet Guide</Link></li>
+                <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
               </ul>
             </div>
             
             <div>
               <h4 className="font-semibold mb-4">Company</h4>
               <ul className="space-y-2 text-sm text-white/70">
-                <li><a href="#about" className="hover:text-white transition-colors">About Us</a></li>
-                <li><a href="#terms" className="hover:text-white transition-colors">Terms of Service</a></li>
-                <li><a href="#privacy-au" className="hover:text-white transition-colors">Australian Privacy</a></li>
-                <li><a href="#downloads" className="hover:text-white transition-colors">App Downloads</a></li>
+                <li><Link to="/about" className="hover:text-white transition-colors">About Us</Link></li>
+                <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+                <li><Link to="/privacy-australia" className="hover:text-white transition-colors">Australian Privacy</Link></li>
+                <li><Link to="/downloads" className="hover:text-white transition-colors">App Downloads</Link></li>
               </ul>
             </div>
           </div>

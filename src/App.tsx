@@ -11,6 +11,14 @@ import Dashboard from "./pages/Dashboard";
 import AddPet from "./pages/AddPet";
 import PetDetails from "./pages/PetDetails";
 import FoundPet from "./pages/FoundPet";
+import HelpCentre from "./pages/HelpCentre";
+import Contact from "./pages/Contact";
+import LostPetGuide from "./pages/LostPetGuide";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import About from "./pages/About";
+import Terms from "./pages/Terms";
+import AustralianPrivacy from "./pages/AustralianPrivacy";
+import AppDownloads from "./pages/AppDownloads";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +34,14 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/found/:publicId" element={<FoundPet />} />
+            <Route path="/help" element={<HelpCentre />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/lost-pet-guide" element={<LostPetGuide />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy-australia" element={<AustralianPrivacy />} />
+            <Route path="/downloads" element={<AppDownloads />} />
             <Route 
               path="/dashboard" 
               element={
