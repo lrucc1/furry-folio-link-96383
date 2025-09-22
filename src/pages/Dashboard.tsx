@@ -8,13 +8,14 @@ import { PetCard } from '@/components/PetCard'
 import { DashboardHeader } from '@/components/DashboardHeader'
 import { Plus, Crown, Heart } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { calculateAge } from '@/lib/age-utils'
 
 interface Pet {
   id: string
   name: string
   species: string
   breed: string | null
-  age?: string
+  date_of_birth: string | null
   photo_url: string | null
   is_lost: boolean
   microchip_number: string | null
@@ -165,7 +166,7 @@ const Dashboard = () => {
                     name: pet.name,
                     species: pet.species,
                     breed: pet.breed || '',
-                    age: '3 years', // Calculate from date_of_birth
+                    age: calculateAge(pet.date_of_birth),
                     photo: pet.photo_url || 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=300&fit=crop',
                     isLost: pet.is_lost,
                     microchipNumber: pet.microchip_number || '',

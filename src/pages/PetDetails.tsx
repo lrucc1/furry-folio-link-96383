@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
+import { calculateAge } from '@/lib/age-utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -249,7 +250,7 @@ const PetDetails = () => {
                     <div>
                       <span className="text-muted-foreground">Age:</span>
                       <p className="font-medium">
-                        {new Date().getFullYear() - new Date(pet.date_of_birth).getFullYear()} years
+                        {calculateAge(pet.date_of_birth)}
                       </p>
                     </div>
                   )}
