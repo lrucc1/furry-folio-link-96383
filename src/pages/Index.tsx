@@ -186,8 +186,11 @@ const Index = () => {
                       variant={plan.variant} 
                       size="lg"
                       className="w-full text-lg py-3"
+                      asChild
                     >
-                      {plan.cta}
+                      <Link to="/auth">
+                        {plan.cta}
+                      </Link>
                     </Button>
                   </CardContent>
                 </Card>

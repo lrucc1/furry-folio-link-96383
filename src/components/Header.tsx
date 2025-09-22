@@ -1,11 +1,22 @@
 import { Button } from "@/components/ui/button";
 import { Heart, Menu, Bell, User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
 
 interface HeaderProps {
   onMenuClick?: () => void;
 }
 
 export const Header = ({ onMenuClick }: HeaderProps) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleAuthRequired = (message: string) => {
+    if (!user) {
+      alert(message);
+      navigate('/auth');
+    }
+  };
   return (
     <header className="border-b border-border bg-white/95 backdrop-blur-sm sticky top-0 z-50 shadow-soft">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -31,14 +42,26 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
         </div>
 
         <nav className="hidden md:flex items-center gap-6">
-          <Button variant="ghost" className="text-foreground hover:text-primary">
-            My Pets
+          <Button 
+            variant="ghost" 
+            className="text-foreground hover:text-primary"
+            onClick={() => user ? navigate('/dashboard') : handleAuthRequired('Please log in first to view your pets')}
+          >
+            {user ? 'My Pets' : 'Please login first'}
           </Button>
-          <Button variant="ghost" className="text-foreground hover:text-primary">
-            Registry
+          <Button 
+            variant="ghost" 
+            className="text-foreground hover:text-primary"
+            onClick={() => handleAuthRequired('Please log in first to access registry')}
+          >
+            {user ? 'Registry' : 'Please login first'}
           </Button>
-          <Button variant="ghost" className="text-foreground hover:text-primary">
-            Reminders
+          <Button 
+            variant="ghost" 
+            className="text-foreground hover:text-primary"
+            onClick={() => handleAuthRequired('Please log in first to view reminders')}
+          >
+            {user ? 'Reminders' : 'Please login first'}
           </Button>
         </nav>
 
@@ -48,11 +71,20 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent rounded-full border-2 border-white" />
           </Button>
           
-          <Button variant="ghost" size="icon">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => user ? navigate('/dashboard') : navigate('/auth')}
+          >
             <User className="w-5 h-5" />
           </Button>
           
-          <Button variant="hero" size="sm" className="hidden sm:flex">
+          <Button 
+            variant="hero" 
+            size="sm" 
+            className="hidden sm:flex"
+            onClick={() => user ? navigate('/pets/new') : handleAuthRequired('Please log in first to add a pet')}
+          >
             Add Pet
           </Button>
         </div>
