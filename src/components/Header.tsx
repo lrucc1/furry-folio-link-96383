@@ -84,13 +84,25 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent rounded-full border-2 border-white" />
           </Button>
           
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => user ? navigate('/dashboard') : navigate('/auth')}
-          >
-            <User className="w-5 h-5" />
-          </Button>
+          {user ? (
+            <Button 
+              variant="ghost" 
+              size="icon"
+              className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary/20"
+              onClick={() => navigate('/dashboard')}
+            >
+              <span className="text-sm font-semibold text-primary">
+                {user.email?.charAt(0).toUpperCase() || 'U'}
+              </span>
+            </Button>
+          ) : (
+            <Button 
+              variant="ghost"
+              onClick={() => navigate('/auth')}
+            >
+              Login
+            </Button>
+          )}
           
           <Button 
             variant="hero" 
