@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { PetCard } from '@/components/PetCard'
 import { DashboardHeader } from '@/components/DashboardHeader'
 import { Plus, Crown, Heart } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { calculateAge } from '@/lib/age-utils'
 
 interface Pet {
@@ -24,6 +24,7 @@ interface Pet {
 
 const Dashboard = () => {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [pets, setPets] = useState<Pet[]>([])
   const [loading, setLoading] = useState(true)
   const [isPremium, setIsPremium] = useState(false)
@@ -85,7 +86,7 @@ const Dashboard = () => {
 
   const handleViewPetDetails = (pet: any) => {
     // Navigate to pet details
-    window.location.href = `/pets/${pet.id}`
+    navigate(`/pets/${pet.id}`)
   }
 
   const handleToggleLost = async (petId: string) => {
