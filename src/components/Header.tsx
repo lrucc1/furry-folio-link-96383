@@ -11,10 +11,23 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const handleAuthRequired = (message: string) => {
+  const handleNavigation = (page: string) => {
     if (!user) {
-      alert(message);
       navigate('/auth');
+    } else {
+      switch(page) {
+        case 'pets':
+          navigate('/dashboard');
+          break;
+        case 'registry':
+          // Navigate to registry page when it exists
+          navigate('/dashboard');
+          break;
+        case 'reminders':
+          // Navigate to reminders page when it exists  
+          navigate('/dashboard');
+          break;
+      }
     }
   };
   return (
@@ -45,21 +58,21 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
           <Button 
             variant="ghost" 
             className="text-foreground hover:text-primary"
-            onClick={() => user ? navigate('/dashboard') : handleAuthRequired('Please log in first to view your pets')}
+            onClick={() => handleNavigation('pets')}
           >
             My Pets
           </Button>
           <Button 
             variant="ghost" 
             className="text-foreground hover:text-primary"
-            onClick={() => handleAuthRequired('Please log in first to access registry')}
+            onClick={() => handleNavigation('registry')}
           >
             Registry
           </Button>
           <Button 
             variant="ghost" 
             className="text-foreground hover:text-primary"
-            onClick={() => handleAuthRequired('Please log in first to view reminders')}
+            onClick={() => handleNavigation('reminders')}
           >
             Reminders
           </Button>
@@ -83,7 +96,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
             variant="hero" 
             size="sm" 
             className="hidden sm:flex"
-            onClick={() => user ? navigate('/pets/new') : handleAuthRequired('Please log in first to add a pet')}
+            onClick={() => user ? navigate('/pets/new') : navigate('/auth')}
           >
             Add Pet
           </Button>
