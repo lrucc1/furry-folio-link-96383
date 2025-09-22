@@ -262,30 +262,30 @@ const Index = () => {
             <div>
               <h4 className="font-semibold mb-4">Features</h4>
               <ul className="space-y-2 text-sm text-white/70">
-                <li>Pet Profiles</li>
-                <li>QR Recovery Tags</li>
-                <li>Health Reminders</li>
-                <li>Registry Links</li>
+                <li><Link to="/dashboard" className="hover:text-white transition-colors">Pet Profiles</Link></li>
+                <li><Link to="/dashboard" className="hover:text-white transition-colors">QR Recovery Tags</Link></li>
+                <li><Link to="/dashboard" className="hover:text-white transition-colors">Health Reminders</Link></li>
+                <li><Link to="/dashboard" className="hover:text-white transition-colors">Registry Links</Link></li>
               </ul>
             </div>
             
             <div>
               <h4 className="font-semibold mb-4">Support</h4>
               <ul className="space-y-2 text-sm text-white/70">
-                <li>Help Centre</li>
-                <li>Contact Us</li>
-                <li>Lost Pet Guide</li>
-                <li>Privacy Policy</li>
+                <li><a href="#help" className="hover:text-white transition-colors">Help Centre</a></li>
+                <li><a href="#contact" className="hover:text-white transition-colors">Contact Us</a></li>
+                <li><a href="#guide" className="hover:text-white transition-colors">Lost Pet Guide</a></li>
+                <li><a href="#privacy" className="hover:text-white transition-colors">Privacy Policy</a></li>
               </ul>
             </div>
             
             <div>
               <h4 className="font-semibold mb-4">Company</h4>
               <ul className="space-y-2 text-sm text-white/70">
-                <li>About Us</li>
-                <li>Terms of Service</li>
-                <li>Australian Privacy</li>
-                <li>App Downloads</li>
+                <li><a href="#about" className="hover:text-white transition-colors">About Us</a></li>
+                <li><a href="#terms" className="hover:text-white transition-colors">Terms of Service</a></li>
+                <li><a href="#privacy-au" className="hover:text-white transition-colors">Australian Privacy</a></li>
+                <li><a href="#downloads" className="hover:text-white transition-colors">App Downloads</a></li>
               </ul>
             </div>
           </div>
