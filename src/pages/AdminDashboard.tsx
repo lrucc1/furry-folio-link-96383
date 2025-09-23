@@ -29,22 +29,52 @@ interface AdminStats {
   pets_added_this_month: number;
 }
 
+interface AdminUser {
+  user_id: string;
+  email: string;
+  display_name: string | null;
+  created_at: string;
+}
+
 const AdminDashboard = () => {
   const { signOut } = useAuth();
   const [stats, setStats] = useState<AdminStats | null>(null);
+  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
-        const { data, error } = await supabase.rpc('get_admin_stats');
+        // Fetch admin stats
+        const { data: statsData, error: statsError } = await supabase.rpc('get_admin_stats');
         
-        if (error) {
-          console.error('Error fetching admin stats:', error);
+        if (statsError) {
+          console.error('Error fetching admin stats:', statsError);
           setError('Failed to load statistics');
         } else {
-          setStats(data as unknown as AdminStats);
+          setStats(statsData as unknown as AdminStats);
+        }
+
+        // Fetch admin users
+        const { data: adminData, error: adminError } = await supabase
+          .from('user_roles')
+          .select(`
+            user_id,
+            profiles!inner(email, display_name, created_at)
+          `)
+          .eq('role', 'admin');
+        
+        if (adminError) {
+          console.error('Error fetching admin users:', adminError);
+        } else {
+          const formattedAdmins = adminData?.map(item => ({
+            user_id: item.user_id,
+            email: (item.profiles as any).email,
+            display_name: (item.profiles as any).display_name,
+            created_at: (item.profiles as any).created_at
+          })) || [];
+          setAdminUsers(formattedAdmins);
         }
       } catch (err) {
         console.error('Unexpected error:', err);
@@ -54,7 +84,7 @@ const AdminDashboard = () => {
       }
     };
 
-    fetchStats();
+    fetchData();
   }, []);
 
   const handleMakeAdmin = async () => {
@@ -287,6 +317,45 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Admin Users */}
+        <Card className="bg-gradient-card border-0 shadow-medium">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Crown className="w-5 h-5" />
+              Admin Users
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Users with administrative privileges
+            </p>
+          </CardHeader>
+          <CardContent>
+            {adminUsers.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No admin users found</p>
+            ) : (
+              <div className="space-y-3">
+                {adminUsers.map((admin) => (
+                  <div key={admin.user_id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div className="flex flex-col">
+                      <span className="font-medium text-foreground">
+                        {admin.display_name || 'No name'}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        {admin.email}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        Added: {new Date(admin.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <Badge variant="secondary" className="bg-primary/10 text-primary">
+                      Admin
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Quick Actions */}
         <Card className="bg-gradient-card border-0 shadow-medium">
