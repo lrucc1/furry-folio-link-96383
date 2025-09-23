@@ -27,12 +27,12 @@ const AuthPage = () => {
             </div>
             <span className="font-bold text-2xl text-white">Pet Passport</span>
           </div>
-          <p className="text-white/90">Welcome back! Sign in to your account.</p>
+          <p className="text-white/90">Sign in to your account or create a new one.</p>
         </div>
 
         <Card className="bg-white/95 backdrop-blur border-0 shadow-strong">
           <CardHeader>
-            <CardTitle className="text-center text-foreground">Sign In</CardTitle>
+            <CardTitle className="text-center text-foreground">Sign In or Sign Up</CardTitle>
           </CardHeader>
           <CardContent>
             <Auth
