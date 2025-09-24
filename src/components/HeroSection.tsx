@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Shield, QrCode, Smartphone, Star } from "lucide-react";
-import heroImage from "@/assets/hero-pets-three.jpg";
+import heroImage from "@/assets/hero-pets-realistic.jpg";
 import { Link } from "react-router-dom";
 
 export const HeroSection = () => {
@@ -64,7 +64,7 @@ export const HeroSection = () => {
             <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent rounded-3xl transform rotate-6 scale-105" />
             <img 
               src={heroImage} 
-              alt="Three happy pets - golden retriever and two pugs sitting together"
+              alt="Three happy pets wearing ID tags - golden retriever, tabby cat, and pug with smart collar tags"
               className="relative rounded-3xl shadow-strong w-full h-auto object-cover max-w-lg mx-auto transform hover:scale-105 transition-spring"
             />
             <div className="absolute -bottom-6 -right-6 bg-white rounded-2xl p-4 shadow-strong transform rotate-3 hover:rotate-0 transition-spring">
