@@ -106,11 +106,11 @@ export const HealthReminders = () => {
   };
 
   const getPriorityColor = (priority: string, isOverdue: boolean) => {
-    if (isOverdue) return 'bg-red-500 text-white';
+    if (isOverdue) return 'bg-destructive text-destructive-foreground';
     switch (priority) {
-      case 'high': return 'bg-orange-500 text-white';
-      case 'medium': return 'bg-yellow-500 text-white';
-      default: return 'bg-blue-500 text-white';
+      case 'high': return 'bg-warning text-warning-foreground';
+      case 'medium': return 'bg-accent text-accent-foreground';
+      default: return 'bg-primary text-primary-foreground';
     }
   };
 
