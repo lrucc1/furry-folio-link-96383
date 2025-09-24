@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { Heart, Menu, Bell, User } from "lucide-react";
+import { Heart, Menu, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { useAdmin } from "@/hooks/useAdmin";
+import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -97,10 +98,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="w-5 h-5" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent rounded-full border-2 border-white" />
-          </Button>
+          <NotificationsDropdown />
           
           {user ? (
             <Button 
