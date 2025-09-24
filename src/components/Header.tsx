@@ -115,6 +115,17 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
             </Button>
           )}
           
+          {isAdmin && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="md:hidden"
+              onClick={() => navigate('/admin')}
+            >
+              Admin
+            </Button>
+          )}
+          
           <Button 
             variant="hero" 
             size="sm" 

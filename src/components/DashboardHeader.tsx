@@ -11,11 +11,13 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Heart, User, Settings, LogOut, Bell } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useAdmin } from '@/hooks/useAdmin'
 
 export const DashboardHeader = () => {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
+  const { isAdmin } = useAdmin()
 
   const handleSignOut = async () => {
     setLoading(true)
@@ -75,6 +77,14 @@ export const DashboardHeader = () => {
                     <span>Profile</span>
                   </Link>
                 </DropdownMenuItem>
+                {isAdmin && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Admin</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem asChild>
                   <Link to="/settings">
                     <Settings className="mr-2 h-4 w-4" />
