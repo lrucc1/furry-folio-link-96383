@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { PetCard } from '@/components/PetCard'
+import { HealthReminders } from '@/components/HealthReminders'
 import { DashboardHeader } from '@/components/DashboardHeader'
 import { Plus, Crown, Heart } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -157,60 +158,68 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         ) : (
-          <>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {pets.map((pet) => (
-                <PetCard
-                  key={pet.id}
-                  pet={{
-                    id: pet.id,
-                    name: pet.name,
-                    species: pet.species,
-                    breed: pet.breed || '',
-                    age: calculateAge(pet.date_of_birth),
-                    photo: pet.photo_url || 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=300&fit=crop',
-                    isLost: pet.is_lost,
-                    microchipNumber: pet.microchip_number || '',
-                    lastVaccination: '2024-06-15' // This would come from vaccinations table
-                  }}
-                  onViewDetails={handleViewPetDetails}
-                  onToggleLost={handleToggleLost}
-                />
-              ))}
+          <div className="grid lg:grid-cols-4 gap-6">
+            {/* Health reminders sidebar */}
+            <div className="lg:col-span-1">
+              <HealthReminders />
             </div>
-
-            {canAddPet && (
-              <div className="text-center">
-                <Button asChild size="lg">
-                  <Link to="/pets/new">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Another Pet
-                  </Link>
-                </Button>
+            
+            {/* Pets grid */}
+            <div className="lg:col-span-3">
+              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+                {pets.map((pet) => (
+                  <PetCard
+                    key={pet.id}
+                    pet={{
+                      id: pet.id,
+                      name: pet.name,
+                      species: pet.species,
+                      breed: pet.breed || '',
+                      age: calculateAge(pet.date_of_birth),
+                      photo: pet.photo_url || 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=300&fit=crop',
+                      isLost: pet.is_lost,
+                      microchipNumber: pet.microchip_number || '',
+                      lastVaccination: '2024-06-15' // This would come from vaccinations table
+                    }}
+                    onViewDetails={handleViewPetDetails}
+                    onToggleLost={handleToggleLost}
+                  />
+                ))}
               </div>
-            )}
 
-            {!canAddPet && (
-              <Card className="bg-gradient-card border-primary/20">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Crown className="w-5 h-5 text-primary" />
-                    Upgrade to Premium
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground mb-4">
-                    Add unlimited pets, advanced features, and priority support with Premium.
-                  </p>
-                  <Button asChild variant="hero">
-                    <Link to="/premium">
-                      Upgrade Now - $4.99/month
+              {canAddPet && (
+                <div className="text-center">
+                  <Button asChild size="lg">
+                    <Link to="/pets/new">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Another Pet
                     </Link>
                   </Button>
-                </CardContent>
-              </Card>
-            )}
-          </>
+                </div>
+              )}
+
+              {!canAddPet && (
+                <Card className="bg-gradient-card border-primary/20">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Crown className="w-5 h-5 text-primary" />
+                      Upgrade to Premium
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground mb-4">
+                      Add unlimited pets, advanced features, and priority support with Premium.
+                    </p>
+                    <Button asChild variant="hero">
+                      <Link to="/premium">
+                        Upgrade Now - $4.99/month
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
         )}
       </main>
     </div>

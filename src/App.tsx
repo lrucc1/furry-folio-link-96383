@@ -21,6 +21,7 @@ import About from "./pages/About";
 import Terms from "./pages/Terms";
 import AustralianPrivacy from "./pages/AustralianPrivacy";
 import AppDownloads from "./pages/AppDownloads";
+import SmartRecoveryTags from "./pages/SmartRecoveryTags";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy-australia" element={<AustralianPrivacy />} />
             <Route path="/downloads" element={<AppDownloads />} />
+            <Route path="/smart-tags" element={<SmartRecoveryTags />} />
             <Route 
               path="/admin" 
               element={

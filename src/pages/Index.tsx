@@ -266,7 +266,7 @@ const Index = () => {
               <h4 className="font-semibold mb-4">Features</h4>
               <ul className="space-y-2 text-sm text-white/70">
                 <li><Link to="/dashboard" className="hover:text-white transition-colors">Pet Profiles</Link></li>
-                <li><Link to="/dashboard" className="hover:text-white transition-colors">QR Recovery Tags</Link></li>
+                <li><Link to="/smart-tags" className="hover:text-white transition-colors">Smart Recovery Tags</Link></li>
                 <li><Link to="/dashboard" className="hover:text-white transition-colors">Health Reminders</Link></li>
                 <li><Link to="/dashboard" className="hover:text-white transition-colors">Registry Links</Link></li>
               </ul>

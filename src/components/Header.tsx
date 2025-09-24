@@ -66,6 +66,13 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
           </Button>
           <Button 
             variant="ghost" 
+            className="text-foreground hover:text-primary" 
+            asChild
+          >
+            <Link to="/smart-tags">Smart Tags</Link>
+          </Button>
+          <Button 
+            variant="ghost" 
             className="text-foreground hover:text-primary"
             onClick={() => handleNavigation('registry')}
           >
