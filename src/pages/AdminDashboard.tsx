@@ -37,7 +37,7 @@ interface AdminUser {
 }
 
 const AdminDashboard = () => {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,25 +56,50 @@ const AdminDashboard = () => {
           setStats(statsData as unknown as AdminStats);
         }
 
-        // Fetch admin users
-        const { data: adminData, error: adminError } = await supabase
-          .from('user_roles')
-          .select(`
-            user_id,
-            profiles!inner(email, display_name, created_at)
-          `)
-          .eq('role', 'admin');
-        
-        if (adminError) {
-          console.error('Error fetching admin users:', adminError);
-        } else {
-          const formattedAdmins = adminData?.map(item => ({
-            user_id: item.user_id,
-            email: (item.profiles as any).email,
-            display_name: (item.profiles as any).display_name,
-            created_at: (item.profiles as any).created_at
-          })) || [];
-          setAdminUsers(formattedAdmins);
+        // Fetch admin users (fallback: show current admin profile)
+        try {
+          const { data: isAdminFlag, error: roleErr } = await supabase.rpc('has_role', {
+            _user_id: user?.id,
+            _role: 'admin',
+          });
+
+          if (roleErr) {
+            console.error('Error checking admin role:', roleErr);
+          }
+
+          if (isAdminFlag && user?.id) {
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('user_id, email, display_name, created_at')
+              .eq('user_id', user.id)
+              .maybeSingle();
+
+            if (profileError) {
+              console.error('Error fetching profile for admin list:', profileError);
+              setAdminUsers([
+                {
+                  user_id: user.id,
+                  email: user.email || 'Admin',
+                  display_name: null,
+                  created_at: new Date().toISOString(),
+                },
+              ]);
+            } else if (profile) {
+              setAdminUsers([
+                {
+                  user_id: profile.user_id,
+                  email: profile.email || (user.email || ''),
+                  display_name: profile.display_name,
+                  created_at: profile.created_at,
+                },
+              ]);
+            }
+          } else {
+            setAdminUsers([]);
+          }
+        } catch (e) {
+          console.error('Error determining admin users:', e);
+          setAdminUsers([]);
         }
       } catch (err) {
         console.error('Unexpected error:', err);
