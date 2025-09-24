@@ -33,7 +33,7 @@ export const HeroSection = () => {
                   Create Pet Profile
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8 py-4 border-white/30 text-white hover:bg-white/10 hover:text-foreground" asChild>
+              <Button size="lg" variant="hero" className="text-lg px-8 py-4" asChild>
                 <Link to="/lost-pet-guide">
                   <QrCode className="w-5 h-5 mr-2" />
                   Lost Pet Recovery
