@@ -16,16 +16,30 @@ export const useAdmin = () => {
       }
 
       try {
-        const { data, error } = await supabase.rpc('has_role', {
+        // Try RPC first (bypasses RLS via SECURITY DEFINER)
+        const { data: rpcData, error: rpcError } = await supabase.rpc('has_role', {
           _user_id: user.id,
           _role: 'admin',
         });
 
-        if (error) {
-          console.error('Error checking admin status via RPC:', error);
-          setIsAdmin(false);
+        if (rpcError) {
+          console.warn('RPC has_role failed, falling back to direct query:', rpcError);
+          // Fall back to direct table query (RLS allows users to view their own roles)
+          const { data: roleRow, error: roleError } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', user.id)
+            .eq('role', 'admin')
+            .maybeSingle();
+
+          if (roleError) {
+            console.error('Error checking admin status via table:', roleError);
+            setIsAdmin(false);
+          } else {
+            setIsAdmin(!!roleRow);
+          }
         } else {
-          setIsAdmin(Boolean(data));
+          setIsAdmin(Boolean(rpcData));
         }
       } catch (error) {
         console.error('Error in admin check:', error);
