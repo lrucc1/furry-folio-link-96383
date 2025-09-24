@@ -10,10 +10,13 @@ export const useAdmin = () => {
   useEffect(() => {
     const checkAdminStatus = async () => {
       if (!user) {
+        console.debug('[useAdmin] No user, skipping admin check');
         setIsAdmin(false);
         setLoading(false);
         return;
       }
+
+      console.debug('[useAdmin] Checking admin for user', { id: user.id, email: user.email });
 
       try {
         // Try RPC first (bypasses RLS via SECURITY DEFINER)
@@ -21,6 +24,7 @@ export const useAdmin = () => {
           _user_id: user.id,
           _role: 'admin',
         });
+        console.debug('[useAdmin] RPC has_role result', { rpcData, rpcError });
 
         if (rpcError) {
           console.warn('RPC has_role failed, falling back to direct query:', rpcError);
@@ -31,6 +35,8 @@ export const useAdmin = () => {
             .eq('user_id', user.id)
             .eq('role', 'admin')
             .maybeSingle();
+
+          console.debug('[useAdmin] Fallback table query result', { roleRow, roleError });
 
           if (roleError) {
             console.error('Error checking admin status via table:', roleError);
