@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      family_members: {
+        Row: {
+          accepted_at: string | null
+          id: string
+          invited_at: string | null
+          member_email: string
+          member_user_id: string | null
+          owner_id: string
+          status: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          id?: string
+          invited_at?: string | null
+          member_email: string
+          member_user_id?: string | null
+          owner_id: string
+          status?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          id?: string
+          invited_at?: string | null
+          member_email?: string
+          member_user_id?: string | null
+          owner_id?: string
+          status?: string | null
+        }
+        Relationships: []
+      }
       health_reminders: {
         Row: {
           completed: boolean | null
@@ -90,6 +120,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      pet_documents: {
+        Row: {
+          created_at: string | null
+          file_name: string
+          file_size: number | null
+          file_type: string | null
+          file_url: string
+          id: string
+          pet_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          file_name: string
+          file_size?: number | null
+          file_type?: string | null
+          file_url: string
+          id?: string
+          pet_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          file_name?: string
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string
+          id?: string
+          pet_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pet_documents_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pets: {
         Row: {
@@ -217,6 +291,39 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_tiers: {
+        Row: {
+          created_at: string | null
+          features: Json | null
+          id: string
+          max_pets: number | null
+          name: string
+          price_monthly: number
+          price_yearly: number | null
+          stripe_price_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          features?: Json | null
+          id?: string
+          max_pets?: number | null
+          name: string
+          price_monthly: number
+          price_yearly?: number | null
+          stripe_price_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          features?: Json | null
+          id?: string
+          max_pets?: number | null
+          name?: string
+          price_monthly?: number
+          price_yearly?: number | null
+          stripe_price_id?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -234,6 +341,42 @@ export type Database = {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_subscriptions: {
+        Row: {
+          created_at: string | null
+          current_period_end: string | null
+          id: string
+          status: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          tier_name: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_period_end?: string | null
+          id?: string
+          status?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tier_name: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_period_end?: string | null
+          id?: string
+          status?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tier_name?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
