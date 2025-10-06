@@ -217,7 +217,7 @@ const Index = () => {
                 </Link>
               </Button>
               <Button size="lg" variant="secondary" className="text-lg px-8 py-4 bg-foreground text-background hover:bg-foreground/90" asChild>
-                <Link to="/dashboard">
+                <Link to="/app-downloads">
                   <Shield className="w-5 h-5 mr-2" />
                   View Demo
                 </Link>
