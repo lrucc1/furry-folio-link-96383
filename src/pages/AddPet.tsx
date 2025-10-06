@@ -148,30 +148,32 @@ const AddPet = () => {
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="breed">Breed</Label>
+                    <Label htmlFor="breed">Breed *</Label>
                     <Input
                       id="breed"
                       value={formData.breed}
                       onChange={(e) => handleInputChange('breed', e.target.value)}
                       placeholder="e.g., Golden Retriever"
+                      required
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="color">Color/Markings</Label>
+                    <Label htmlFor="color">Color/Markings *</Label>
                     <Input
                       id="color"
                       value={formData.color}
                       onChange={(e) => handleInputChange('color', e.target.value)}
                       placeholder="e.g., Golden, white chest"
+                      required
                     />
                   </div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="sex">Sex</Label>
-                    <Select onValueChange={(value) => handleInputChange('sex', value)}>
+                    <Label htmlFor="sex">Sex *</Label>
+                    <Select onValueChange={(value) => handleInputChange('sex', value)} required>
                       <SelectTrigger>
                         <SelectValue placeholder="Select sex" />
                       </SelectTrigger>
@@ -183,12 +185,13 @@ const AddPet = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="date_of_birth">Date of Birth</Label>
+                    <Label htmlFor="date_of_birth">Date of Birth *</Label>
                     <Input
                       id="date_of_birth"
                       type="date"
                       value={formData.date_of_birth}
                       onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
+                      required
                     />
                   </div>
                 </div>
