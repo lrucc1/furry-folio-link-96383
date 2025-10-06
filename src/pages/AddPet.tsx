@@ -57,14 +57,17 @@ const AddPet = () => {
         notes: formData.notes || null,
       }
 
+      // Omit fields not present in backend schema to prevent insert errors
+      const { desexed: _omitDesexed, ...insertData } = cleanedData
+
       const { data, error } = await supabase
         .from('pets')
         .insert([
-          {
-            ...cleanedData,
-            user_id: user.id,
-            public_id: Math.random().toString(36).substr(2, 9), // Generate random public ID
-          }
+            {
+              ...insertData,
+              user_id: user.id,
+              public_id: Math.random().toString(36).substr(2, 9), // Generate random public ID
+            }
         ])
         .select()
         .single()
