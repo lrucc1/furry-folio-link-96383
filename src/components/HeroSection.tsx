@@ -33,7 +33,7 @@ export const HeroSection = () => {
                   Choose Your Plan
                 </Link>
               </Button>
-              <Button size="lg" variant="hero" className="text-lg px-8 py-4" asChild>
+              <Button size="lg" variant="outline-light" className="text-lg px-8 py-4" asChild>
                 <Link to="/lost-pet-guide">
                   <QrCode className="w-5 h-5 mr-2" />
                   Lost Pet Recovery
