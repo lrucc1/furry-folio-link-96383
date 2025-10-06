@@ -41,24 +41,18 @@ const AddPet = () => {
 
     setLoading(true)
     try {
-      // Clean up form data - convert empty strings to null for optional fields
-      const cleanedData = {
-        ...formData,
-        date_of_birth: formData.date_of_birth || null,
+      // Build insert payload to match backend schema columns only
+      const insertData = {
+        name: formData.name.trim(),
+        species: formData.species,
         breed: formData.breed || null,
         color: formData.color || null,
-        sex: formData.sex || null,
+        gender: (formData.sex as string) || null,
+        date_of_birth: formData.date_of_birth || null,
         microchip_number: formData.microchip_number || null,
-        registry_name: formData.registry_name || null,
-        registry_link: formData.registry_link || null,
-        vet_clinic: formData.vet_clinic || null,
-        insurance_provider: formData.insurance_provider || null,
-        insurance_policy: formData.insurance_policy || null,
+        vet_name: formData.vet_clinic || null,
         notes: formData.notes || null,
       }
-
-      // Omit fields not present in backend schema to prevent insert errors
-      const { desexed: _omitDesexed, ...insertData } = cleanedData
 
       const { data, error } = await supabase
         .from('pets')
