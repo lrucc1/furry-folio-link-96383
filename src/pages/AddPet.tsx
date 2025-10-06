@@ -22,7 +22,7 @@ const AddPet = () => {
     name: '',
     species: '',
     breed: '',
-    colour: '',
+    color: '',
     sex: '',
     date_of_birth: '',
     desexed: false,
@@ -46,7 +46,7 @@ const AddPet = () => {
         ...formData,
         date_of_birth: formData.date_of_birth || null,
         breed: formData.breed || null,
-        colour: formData.colour || null,
+        color: formData.color || null,
         sex: formData.sex || null,
         microchip_number: formData.microchip_number || null,
         registry_name: formData.registry_name || null,
@@ -161,11 +161,11 @@ const AddPet = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="colour">Colour/Markings</Label>
+                    <Label htmlFor="color">Color/Markings</Label>
                     <Input
-                      id="colour"
-                      value={formData.colour}
-                      onChange={(e) => handleInputChange('colour', e.target.value)}
+                      id="color"
+                      value={formData.color}
+                      onChange={(e) => handleInputChange('color', e.target.value)}
                       placeholder="e.g., Golden, white chest"
                     />
                   </div>
