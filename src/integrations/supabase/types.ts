@@ -14,16 +14,233 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      health_reminders: {
+        Row: {
+          completed: boolean | null
+          created_at: string
+          description: string | null
+          id: string
+          pet_id: string
+          reminder_date: string
+          reminder_type: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          pet_id: string
+          reminder_date: string
+          reminder_type?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          pet_id?: string
+          reminder_date?: string
+          reminder_type?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_reminders_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          read: boolean | null
+          title: string
+          type: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean | null
+          title: string
+          type?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean | null
+          title?: string
+          type?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      pets: {
+        Row: {
+          age_months: number | null
+          age_years: number | null
+          allergies: string | null
+          breed: string | null
+          color: string | null
+          created_at: string
+          date_of_birth: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          gender: string | null
+          id: string
+          medical_conditions: string | null
+          medications: string | null
+          microchip_number: string | null
+          name: string
+          notes: string | null
+          photo_url: string | null
+          public_id: string
+          species: string
+          status: string | null
+          updated_at: string
+          user_id: string
+          vet_email: string | null
+          vet_name: string | null
+          vet_phone: string | null
+          weight_kg: number | null
+        }
+        Insert: {
+          age_months?: number | null
+          age_years?: number | null
+          allergies?: string | null
+          breed?: string | null
+          color?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          gender?: string | null
+          id?: string
+          medical_conditions?: string | null
+          medications?: string | null
+          microchip_number?: string | null
+          name: string
+          notes?: string | null
+          photo_url?: string | null
+          public_id?: string
+          species: string
+          status?: string | null
+          updated_at?: string
+          user_id: string
+          vet_email?: string | null
+          vet_name?: string | null
+          vet_phone?: string | null
+          weight_kg?: number | null
+        }
+        Update: {
+          age_months?: number | null
+          age_years?: number | null
+          allergies?: string | null
+          breed?: string | null
+          color?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          gender?: string | null
+          id?: string
+          medical_conditions?: string | null
+          medications?: string | null
+          microchip_number?: string | null
+          name?: string
+          notes?: string | null
+          photo_url?: string | null
+          public_id?: string
+          species?: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+          vet_email?: string | null
+          vet_name?: string | null
+          vet_phone?: string | null
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +367,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
