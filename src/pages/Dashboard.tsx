@@ -66,15 +66,7 @@ const Dashboard = () => {
         .maybeSingle()
 
       if (!existingProfile) {
-        // Create profile if it doesn't exist
-        await supabase
-          .from('profiles')
-          .insert({
-            user_id: user.id,
-            email: user.email,
-            display_name: user.user_metadata?.display_name || user.user_metadata?.full_name || null,
-            premium_tier: 'free'
-          })
+        // Profile doesn't exist, set to free tier
         setIsPremium(false)
       } else {
         setIsPremium(existingProfile.premium_tier === 'premium')
