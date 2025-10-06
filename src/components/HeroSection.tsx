@@ -28,9 +28,9 @@ export const HeroSection = () => {
 
             <div className="flex flex-col sm:flex-row gap-4 mb-12">
               <Button size="lg" variant="secondary" className="text-lg px-8 py-4 shadow-strong" asChild>
-                <Link to="/auth">
+                <Link to="/pricing">
                   <Heart className="w-5 h-5 mr-2" />
-                  Create Pet Profile
+                  Choose Your Plan
                 </Link>
               </Button>
               <Button size="lg" variant="hero" className="text-lg px-8 py-4" asChild>

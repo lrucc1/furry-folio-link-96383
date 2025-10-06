@@ -24,6 +24,8 @@ import AppDownloads from "./pages/AppDownloads";
 import SmartRecoveryTags from "./pages/SmartRecoveryTags";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import Pricing from "./pages/Pricing";
+import Account from "./pages/Account";
 
 const queryClient = new QueryClient();
 
@@ -84,6 +86,15 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Profile />
+                </ProtectedRoute>
+              } 
+            />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route 
+              path="/account" 
+              element={
+                <ProtectedRoute>
+                  <Account />
                 </ProtectedRoute>
               } 
             />
