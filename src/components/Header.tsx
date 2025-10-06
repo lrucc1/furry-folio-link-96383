@@ -24,7 +24,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
             <Menu className="w-5 h-5" />
           </Button>
           
-          <div className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center shadow-soft">
               <Heart className="w-5 h-5 text-white" />
             </div>
@@ -32,7 +32,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
               <h1 className="font-bold text-lg text-foreground">Pet Passport</h1>
               <p className="text-xs text-muted-foreground hidden sm:block">Your pet's digital companion</p>
             </div>
-          </div>
+          </Link>
         </div>
 
         <nav className="hidden md:flex items-center gap-6">
