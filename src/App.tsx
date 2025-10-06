@@ -22,6 +22,7 @@ import Terms from "./pages/Terms";
 import AustralianPrivacy from "./pages/AustralianPrivacy";
 import AppDownloads from "./pages/AppDownloads";
 import SmartRecoveryTags from "./pages/SmartRecoveryTags";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -75,6 +76,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <PetDetails />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <Profile />
                 </ProtectedRoute>
               } 
             />
