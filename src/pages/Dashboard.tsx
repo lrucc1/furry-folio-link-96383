@@ -203,8 +203,8 @@ const Dashboard = () => {
                       Add unlimited pets, advanced features, and priority support with Premium.
                     </p>
                     <Button asChild variant="hero">
-                      <Link to="/premium">
-                        Upgrade Now - $4.99/month
+                      <Link to="/pricing">
+                        Upgrade Now
                       </Link>
                     </Button>
                   </CardContent>
