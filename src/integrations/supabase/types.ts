@@ -185,27 +185,33 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          display_name: string | null
           email: string | null
           full_name: string | null
           id: string
+          premium_tier: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          display_name?: string | null
           email?: string | null
           full_name?: string | null
           id: string
+          premium_tier?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
+          display_name?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
+          premium_tier?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -231,6 +237,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      vaccinations: {
+        Row: {
+          created_at: string | null
+          id: string
+          next_due_date: string | null
+          notes: string | null
+          pet_id: string
+          updated_at: string | null
+          user_id: string
+          vaccine_date: string
+          vaccine_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          next_due_date?: string | null
+          notes?: string | null
+          pet_id: string
+          updated_at?: string | null
+          user_id: string
+          vaccine_date: string
+          vaccine_name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          next_due_date?: string | null
+          notes?: string | null
+          pet_id?: string
+          updated_at?: string | null
+          user_id?: string
+          vaccine_date?: string
+          vaccine_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vaccinations_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
