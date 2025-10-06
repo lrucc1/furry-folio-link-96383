@@ -60,7 +60,7 @@ const AddPet = () => {
             {
               ...insertData,
               user_id: user.id,
-              public_id: Math.random().toString(36).substr(2, 9), // Generate random public ID
+              public_id: Math.random().toString(36).substr(2, 9),
             }
         ])
         .select()
