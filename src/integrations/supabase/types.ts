@@ -14,195 +14,16 @@ export type Database = {
   }
   public: {
     Tables: {
-      pets: {
-        Row: {
-          breed: string | null
-          colour: string | null
-          created_at: string
-          date_of_birth: string | null
-          desexed: boolean
-          id: string
-          insurance_policy: string | null
-          insurance_provider: string | null
-          is_lost: boolean
-          microchip_number: string | null
-          name: string
-          notes: string | null
-          photo_url: string | null
-          public_id: string
-          registry_link: string | null
-          registry_name: string | null
-          sex: string | null
-          species: string
-          updated_at: string
-          user_id: string
-          vet_clinic: string | null
-        }
-        Insert: {
-          breed?: string | null
-          colour?: string | null
-          created_at?: string
-          date_of_birth?: string | null
-          desexed?: boolean
-          id?: string
-          insurance_policy?: string | null
-          insurance_provider?: string | null
-          is_lost?: boolean
-          microchip_number?: string | null
-          name: string
-          notes?: string | null
-          photo_url?: string | null
-          public_id: string
-          registry_link?: string | null
-          registry_name?: string | null
-          sex?: string | null
-          species: string
-          updated_at?: string
-          user_id: string
-          vet_clinic?: string | null
-        }
-        Update: {
-          breed?: string | null
-          colour?: string | null
-          created_at?: string
-          date_of_birth?: string | null
-          desexed?: boolean
-          id?: string
-          insurance_policy?: string | null
-          insurance_provider?: string | null
-          is_lost?: boolean
-          microchip_number?: string | null
-          name?: string
-          notes?: string | null
-          photo_url?: string | null
-          public_id?: string
-          registry_link?: string | null
-          registry_name?: string | null
-          sex?: string | null
-          species?: string
-          updated_at?: string
-          user_id?: string
-          vet_clinic?: string | null
-        }
-        Relationships: []
-      }
-      profiles: {
-        Row: {
-          created_at: string
-          display_name: string | null
-          email: string | null
-          emergency_contact: string | null
-          id: string
-          phone: string | null
-          premium_tier: string
-          suburb: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          display_name?: string | null
-          email?: string | null
-          emergency_contact?: string | null
-          id?: string
-          phone?: string | null
-          premium_tier?: string
-          suburb?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          display_name?: string | null
-          email?: string | null
-          emergency_contact?: string | null
-          id?: string
-          phone?: string | null
-          premium_tier?: string
-          suburb?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_roles: {
-        Row: {
-          created_at: string
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
-      vaccinations: {
-        Row: {
-          created_at: string
-          date: string
-          due_date: string | null
-          file_url: string | null
-          id: string
-          name: string
-          pet_id: string
-        }
-        Insert: {
-          created_at?: string
-          date: string
-          due_date?: string | null
-          file_url?: string | null
-          id?: string
-          name: string
-          pet_id: string
-        }
-        Update: {
-          created_at?: string
-          date?: string
-          due_date?: string | null
-          file_url?: string | null
-          id?: string
-          name?: string
-          pet_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "vaccinations_pet_id_fkey"
-            columns: ["pet_id"]
-            isOneToOne: false
-            referencedRelation: "pets"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      get_admin_stats: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
-      app_role: "admin" | "user"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -329,8 +150,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      app_role: ["admin", "user"],
-    },
+    Enums: {},
   },
 } as const
