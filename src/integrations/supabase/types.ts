@@ -104,6 +104,7 @@ export type Database = {
           emergency_contact_phone: string | null
           gender: string | null
           id: string
+          is_lost: boolean | null
           medical_conditions: string | null
           medications: string | null
           microchip_number: string | null
@@ -132,6 +133,7 @@ export type Database = {
           emergency_contact_phone?: string | null
           gender?: string | null
           id?: string
+          is_lost?: boolean | null
           medical_conditions?: string | null
           medications?: string | null
           microchip_number?: string | null
@@ -160,6 +162,7 @@ export type Database = {
           emergency_contact_phone?: string | null
           gender?: string | null
           id?: string
+          is_lost?: boolean | null
           medical_conditions?: string | null
           medications?: string | null
           microchip_number?: string | null
@@ -186,6 +189,7 @@ export type Database = {
           full_name: string | null
           id: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -194,6 +198,7 @@ export type Database = {
           full_name?: string | null
           id: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -202,6 +207,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -231,6 +237,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_admin_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
