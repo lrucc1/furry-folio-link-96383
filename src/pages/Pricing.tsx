@@ -16,12 +16,12 @@ const SUBSCRIPTION_TIERS = {
     productId: null,
     interval: 'forever',
     features: [
-      'Up to 3 pets',
+      'Up to 1 pet',
       'Basic pet profiles',
       'Lost pet alerts',
       'Health reminders',
     ],
-    maxPets: 3,
+    maxPets: 1,
     popular: false,
   },
   premium: {
