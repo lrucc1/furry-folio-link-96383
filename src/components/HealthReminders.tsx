@@ -54,15 +54,15 @@ export const HealthReminders = () => {
         .from('vaccinations')
         .select(`
           id,
-          name,
-          date,
-          due_date,
+          vaccine_name,
+          vaccine_date,
+          next_due_date,
           pet_id,
           pets!inner(name, photo_url, user_id)
         `)
         .eq('pets.user_id', user?.id)
-        .not('due_date', 'is', null)
-        .order('due_date', { ascending: true });
+        .not('next_due_date', 'is', null)
+        .order('next_due_date', { ascending: true });
 
       if (error) {
         console.error('Error fetching vaccinations:', error);
@@ -71,7 +71,7 @@ export const HealthReminders = () => {
 
       // Convert vaccinations to health reminders
       const healthReminders: HealthReminder[] = (vaccinations || []).map((vaccination: any) => {
-        const dueDate = new Date(vaccination.due_date);
+        const dueDate = new Date(vaccination.next_due_date);
         const today = new Date();
         const daysUntil = differenceInDays(dueDate, today);
         const isOverdue = isBefore(dueDate, today);
@@ -86,7 +86,7 @@ export const HealthReminders = () => {
         return {
           id: vaccination.id,
           type: 'vaccination' as const,
-          title: `${vaccination.name} Vaccination`,
+          title: `${vaccination.vaccine_name} Vaccination`,
           petName: vaccination.pets.name,
           petId: vaccination.pet_id,
           dueDate,

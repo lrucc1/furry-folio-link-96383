@@ -283,7 +283,7 @@ const AdminDashboard = () => {
         if (insertError) throw insertError;
       }
 
-      toast.success('Tier updated successfully in both profiles and subscriptions');
+      toast.success('Tier updated successfully! User will see changes within 60 seconds or on page refresh.');
       setShowConfirmDialog(false);
       setEditingUser(null);
       setNewTier('');

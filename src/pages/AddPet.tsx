@@ -34,6 +34,11 @@ const AddPet = () => {
     
     setPetCount(count || 0)
   }
+
+  const canAddPet = subscriptionInfo.maxPets === -1 || petCount < subscriptionInfo.maxPets
+  const remainingPets = subscriptionInfo.maxPets === -1 
+    ? 'Unlimited' 
+    : Math.max(0, subscriptionInfo.maxPets - petCount)
   const [formData, setFormData] = useState({
     name: '',
     species: '',
@@ -130,6 +135,31 @@ const AddPet = () => {
             </Link>
           </Button>
         </div>
+
+        {/* Subscription Status Card */}
+        <Card className="mb-6 bg-gradient-card border-primary/20">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Current Plan</p>
+                <p className="text-xl font-semibold capitalize">{subscriptionInfo.tier}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-muted-foreground">Pets Available</p>
+                <p className="text-xl font-semibold">
+                  {remainingPets} {subscriptionInfo.maxPets !== -1 && `of ${subscriptionInfo.maxPets}`}
+                </p>
+              </div>
+            </div>
+            {!canAddPet && (
+              <div className="mt-4 p-3 bg-warning/10 border border-warning/20 rounded-md">
+                <p className="text-sm text-warning-foreground">
+                  You've reached your pet limit. <Link to="/pricing" className="underline font-medium">Upgrade your plan</Link> to add more pets.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
