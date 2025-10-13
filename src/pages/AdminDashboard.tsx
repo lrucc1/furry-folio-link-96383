@@ -244,14 +244,46 @@ const AdminDashboard = () => {
     if (!editingUser || !newTier) return;
 
     try {
-      const { error } = await supabase
+      // Update the profiles table
+      const { error: profileError } = await supabase
         .from('profiles')
         .update({ premium_tier: newTier })
         .eq('id', editingUser.user_id);
 
-      if (error) throw error;
+      if (profileError) throw profileError;
 
-      toast.success('Tier updated successfully');
+      // Also update or create user_subscriptions record for consistency
+      const { data: existingSub } = await supabase
+        .from('user_subscriptions')
+        .select('*')
+        .eq('user_id', editingUser.user_id)
+        .maybeSingle();
+
+      if (existingSub) {
+        // Update existing subscription
+        const { error: subError } = await supabase
+          .from('user_subscriptions')
+          .update({ 
+            tier_name: newTier,
+            status: 'active'
+          })
+          .eq('user_id', editingUser.user_id);
+
+        if (subError) throw subError;
+      } else {
+        // Create new subscription record
+        const { error: insertError } = await supabase
+          .from('user_subscriptions')
+          .insert({
+            user_id: editingUser.user_id,
+            tier_name: newTier,
+            status: 'active'
+          });
+
+        if (insertError) throw insertError;
+      }
+
+      toast.success('Tier updated successfully in both profiles and subscriptions');
       setShowConfirmDialog(false);
       setEditingUser(null);
       setNewTier('');
