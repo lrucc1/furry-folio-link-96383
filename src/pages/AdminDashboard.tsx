@@ -28,12 +28,29 @@ import {
   Shield,
   RefreshCw,
   Search,
-  Download
+  Download,
+  Edit
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Header } from '@/components/Header';
 import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { toast } from 'sonner';
 
 interface AdminStats {
   total_users: number;
@@ -97,6 +114,9 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [editingUser, setEditingUser] = useState<UserDetails | null>(null);
+  const [newTier, setNewTier] = useState<string>('');
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   useEffect(() => {
     fetchAllData();
@@ -194,6 +214,43 @@ const AdminDashboard = () => {
     a.href = url;
     a.download = `users_${new Date().toISOString()}.csv`;
     a.click();
+  };
+
+  const handleEditTier = (user: UserDetails) => {
+    setEditingUser(user);
+    setNewTier(user.premium_tier);
+  };
+
+  const handleTierChange = (value: string) => {
+    setNewTier(value);
+    setShowConfirmDialog(true);
+  };
+
+  const confirmTierChange = async () => {
+    if (!editingUser || !newTier) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ premium_tier: newTier })
+        .eq('id', editingUser.user_id);
+
+      if (error) throw error;
+
+      toast.success('Tier updated successfully');
+      setShowConfirmDialog(false);
+      setEditingUser(null);
+      setNewTier('');
+      fetchAllData(); // Refresh the data
+    } catch (error) {
+      console.error('Error updating tier:', error);
+      toast.error('Failed to update tier');
+    }
+  };
+
+  const cancelTierChange = () => {
+    setShowConfirmDialog(false);
+    setNewTier(editingUser?.premium_tier || '');
   };
 
   if (loading) {
@@ -476,6 +533,7 @@ const AdminDashboard = () => {
                         <TableHead>Pets</TableHead>
                         <TableHead>Roles</TableHead>
                         <TableHead>Created</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -509,6 +567,15 @@ const AdminDashboard = () => {
                             </TableCell>
                             <TableCell className="text-sm text-muted-foreground">
                               {new Date(user.created_at).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditTier(user)}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
                             </TableCell>
                           </TableRow>
                         ))
@@ -640,6 +707,65 @@ const AdminDashboard = () => {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Edit Tier Dialog */}
+      <Dialog open={!!editingUser && !showConfirmDialog} onOpenChange={(open) => !open && setEditingUser(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit User Tier</DialogTitle>
+            <DialogDescription>
+              Change the subscription tier for {editingUser?.email}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Current Tier</label>
+              <p className="text-sm text-muted-foreground">{editingUser?.premium_tier}</p>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">New Tier</label>
+              <Select value={newTier} onValueChange={handleTierChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select tier" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="free">Free</SelectItem>
+                  <SelectItem value="basic">Basic</SelectItem>
+                  <SelectItem value="premium">Premium</SelectItem>
+                  <SelectItem value="enterprise">Enterprise</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingUser(null)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Tier Change</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to change {editingUser?.email}'s tier from{' '}
+              <span className="font-semibold">{editingUser?.premium_tier}</span> to{' '}
+              <span className="font-semibold">{newTier}</span>?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={cancelTierChange}>
+              Cancel
+            </Button>
+            <Button onClick={confirmTierChange}>
+              Confirm Change
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
