@@ -25,16 +25,13 @@ interface Pet {
 }
 
 const Dashboard = () => {
-  const { user } = useAuth()
+  const { user, subscriptionInfo } = useAuth()
   const navigate = useNavigate()
   const [pets, setPets] = useState<Pet[]>([])
   const [loading, setLoading] = useState(true)
-  const [userTier, setUserTier] = useState<string>('free')
-  const [maxPets, setMaxPets] = useState<number>(1)
 
   useEffect(() => {
     fetchPets()
-    checkPremiumStatus()
   }, [user])
 
   const fetchPets = async () => {
@@ -53,40 +50,6 @@ const Dashboard = () => {
       console.error('Error fetching pets:', error)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const checkPremiumStatus = async () => {
-    if (!user) return
-
-    try {
-      // Get user's profile to find their tier
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('premium_tier')
-        .eq('id', user.id)
-        .maybeSingle()
-
-      const tierName = existingProfile?.premium_tier || 'free'
-      setUserTier(tierName)
-
-      // Get the tier details from subscription_tiers
-      const { data: tierData } = await supabase
-        .from('subscription_tiers')
-        .select('max_pets')
-        .eq('name', tierName.charAt(0).toUpperCase() + tierName.slice(1))
-        .single()
-
-      if (tierData) {
-        setMaxPets(tierData.max_pets || 1)
-      } else {
-        // Fallback to 1 pet for free tier
-        setMaxPets(1)
-      }
-    } catch (error) {
-      console.error('Error checking premium status:', error)
-      setUserTier('free')
-      setMaxPets(1)
     }
   }
 
@@ -115,7 +78,9 @@ const Dashboard = () => {
     }
   }
 
-  const canAddPet = maxPets === -1 || pets.length < maxPets
+  const canAddPet = subscriptionInfo.maxPets === -1 || pets.length < subscriptionInfo.maxPets
+  const userTier = subscriptionInfo.tier
+  const maxPets = subscriptionInfo.maxPets
 
   if (loading) {
     return (

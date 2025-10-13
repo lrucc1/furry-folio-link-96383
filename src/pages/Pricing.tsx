@@ -68,9 +68,17 @@ const SUBSCRIPTION_TIERS = {
 };
 
 export default function Pricing() {
-  const { user } = useAuth();
+  const { user, subscriptionInfo, refreshSubscription } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefreshSubscription = async () => {
+    setRefreshing(true);
+    await refreshSubscription();
+    toast.success('Subscription status updated!');
+    setRefreshing(false);
+  };
 
   const handleSubscribe = async (tierKey: string) => {
     if (!user) {
@@ -110,6 +118,21 @@ export default function Pricing() {
           <p className="text-xl text-muted-foreground">
             Start free and upgrade as your pet family grows
           </p>
+          {user && subscriptionInfo.subscribed && (
+            <div className="mt-4 flex items-center justify-center gap-2">
+              <p className="text-sm text-muted-foreground">
+                Current plan: <span className="font-semibold capitalize">{subscriptionInfo.tier}</span>
+              </p>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={handleRefreshSubscription}
+                disabled={refreshing}
+              >
+                {refreshing ? 'Refreshing...' : 'Refresh Status'}
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -156,12 +179,14 @@ export default function Pricing() {
                 className="w-full"
                 variant={tier.popular ? 'default' : 'outline'}
                 onClick={() => handleSubscribe(key)}
-                disabled={loading === key || key === 'free'}
+                disabled={loading === key || (key === 'free' || (subscriptionInfo.tier === key))}
               >
                 {loading === key
                   ? 'Loading...'
-                  : key === 'free'
+                  : subscriptionInfo.tier === key
                   ? 'Current Plan'
+                  : key === 'free'
+                  ? 'Free Forever'
                   : 'Subscribe Now'}
               </Button>
             </Card>

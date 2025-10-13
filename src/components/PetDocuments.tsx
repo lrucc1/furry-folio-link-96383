@@ -33,14 +33,21 @@ interface PetDocumentsProps {
   petId: string;
 }
 
+const STORAGE_LIMITS = {
+  free: 0, // No document storage on free
+  premium: 50 * 1024 * 1024, // 50MB
+  family: 200 * 1024 * 1024, // 200MB
+};
+
 export const PetDocuments = ({ petId }: PetDocumentsProps) => {
-  const { user } = useAuth();
+  const { user, subscriptionInfo } = useAuth();
   const [documents, setDocuments] = useState<PetDocument[]>([]);
   const [uploading, setUploading] = useState(false);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<PetDocument | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [docToDelete, setDocToDelete] = useState<PetDocument | null>(null);
+  const [totalStorage, setTotalStorage] = useState(0);
 
   useEffect(() => {
     fetchDocuments();
@@ -59,6 +66,10 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
 
       if (error) throw error;
       setDocuments(data || []);
+      
+      // Calculate total storage used
+      const total = (data || []).reduce((sum, doc) => sum + (doc.file_size || 0), 0);
+      setTotalStorage(total);
     } catch (error) {
       console.error('Error fetching documents:', error);
       toast.error('Failed to load documents');
@@ -69,7 +80,22 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
 
-    // Check file size (50MB limit)
+    // Check if user has document storage access
+    const storageLimit = STORAGE_LIMITS[subscriptionInfo.tier];
+    if (storageLimit === 0) {
+      toast.error('Document storage is not available on the Free plan. Please upgrade to Premium or Family.');
+      return;
+    }
+
+    // Check if adding this file would exceed storage limit
+    if (totalStorage + file.size > storageLimit) {
+      const limitMB = storageLimit / (1024 * 1024);
+      const usedMB = (totalStorage / (1024 * 1024)).toFixed(2);
+      toast.error(`Storage limit exceeded. You're using ${usedMB}MB of ${limitMB}MB on the ${subscriptionInfo.tier} plan.`);
+      return;
+    }
+
+    // Check individual file size (50MB max per file)
     if (file.size > 52428800) {
       toast.error('File size must be less than 50MB');
       return;
@@ -194,34 +220,65 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
     return <FileText className="w-8 h-8" />;
   };
 
+  const storageLimit = STORAGE_LIMITS[subscriptionInfo.tier];
+  const storageUsedPercent = storageLimit > 0 ? (totalStorage / storageLimit) * 100 : 0;
+  const canUpload = subscriptionInfo.tier !== 'free';
+
   return (
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Documents & Files</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            <span>Documents & Files</span>
+            {canUpload && storageLimit > 0 && (
+              <span className="text-sm font-normal text-muted-foreground">
+                {formatFileSize(totalStorage)} / {formatFileSize(storageLimit)}
+              </span>
+            )}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="document-upload" className="cursor-pointer">
-              <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary transition-colors">
-                <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground mb-1">
-                  {uploading ? 'Uploading...' : 'Click to upload or drag and drop'}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  PDF, DOC, DOCX, Images (Max 50MB)
-                </p>
-              </div>
-              <Input
-                id="document-upload"
-                type="file"
-                className="hidden"
-                onChange={handleFileUpload}
-                disabled={uploading}
-                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
-              />
-            </Label>
-          </div>
+          {!canUpload && (
+            <div className="border-2 border-dashed rounded-lg p-6 text-center bg-muted/30">
+              <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+              <p className="text-sm font-medium mb-1">Document Storage Locked</p>
+              <p className="text-xs text-muted-foreground mb-3">
+                Upgrade to Premium or Family to store vaccination records, vet documents, and more
+              </p>
+              <Button size="sm" variant="default" asChild>
+                <a href="/pricing">Upgrade Now</a>
+              </Button>
+            </div>
+          )}
+
+          {canUpload && (
+            <div>
+              <Label htmlFor="document-upload" className="cursor-pointer">
+                <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary transition-colors">
+                  <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground mb-1">
+                    {uploading ? 'Uploading...' : 'Click to upload or drag and drop'}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    PDF, DOC, DOCX, Images (Max 50MB per file)
+                  </p>
+                  {storageUsedPercent > 80 && (
+                    <p className="text-xs text-warning mt-2">
+                      {storageUsedPercent >= 100 ? 'Storage limit reached' : `${storageUsedPercent.toFixed(0)}% of storage used`}
+                    </p>
+                  )}
+                </div>
+                <Input
+                  id="document-upload"
+                  type="file"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                  disabled={uploading || storageUsedPercent >= 100}
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
+                />
+              </Label>
+            </div>
+          )}
 
           {documents.length > 0 ? (
             <div className="space-y-2">

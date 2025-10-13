@@ -9,16 +9,30 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
 import { Logo } from '@/components/Logo'
-import { User, Settings, LogOut, Bell } from 'lucide-react'
+import { User, Settings, LogOut, Bell, Crown, Star } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAdmin } from '@/hooks/useAdmin'
 
 export const DashboardHeader = () => {
-  const { user, signOut } = useAuth()
+  const { user, signOut, subscriptionInfo } = useAuth()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const { isAdmin } = useAdmin()
+
+  const getTierDisplay = () => {
+    switch (subscriptionInfo.tier) {
+      case 'premium':
+        return { label: 'Premium', icon: Star, className: 'bg-primary text-primary-foreground' }
+      case 'family':
+        return { label: 'Family', icon: Crown, className: 'bg-gradient-accent text-accent-foreground' }
+      default:
+        return { label: 'Free', icon: null, className: 'bg-muted text-muted-foreground' }
+    }
+  }
+
+  const tierDisplay = getTierDisplay()
 
   const handleSignOut = async () => {
     setLoading(true)
@@ -45,6 +59,11 @@ export const DashboardHeader = () => {
           </Link>
 
           <div className="flex items-center gap-4">
+            <Badge className={tierDisplay.className}>
+              {tierDisplay.icon && <tierDisplay.icon className="w-3 h-3 mr-1" />}
+              {tierDisplay.label}
+            </Badge>
+
             <Button variant="ghost" size="sm" asChild>
               <Link to="/notifications">
                 <Bell className="w-4 h-4" />

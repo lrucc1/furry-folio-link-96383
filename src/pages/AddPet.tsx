@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
@@ -15,9 +15,25 @@ import { Link } from 'react-router-dom'
 import { toast } from '@/hooks/use-toast'
 
 const AddPet = () => {
-  const { user } = useAuth()
+  const { user, subscriptionInfo } = useAuth()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
+  const [petCount, setPetCount] = useState(0)
+
+  useEffect(() => {
+    checkPetCount()
+  }, [user])
+
+  const checkPetCount = async () => {
+    if (!user) return
+    
+    const { count } = await supabase
+      .from('pets')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+    
+    setPetCount(count || 0)
+  }
   const [formData, setFormData] = useState({
     name: '',
     species: '',
@@ -38,6 +54,17 @@ const AddPet = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user) return
+
+    // Check pet limit
+    if (subscriptionInfo.maxPets !== -1 && petCount >= subscriptionInfo.maxPets) {
+      toast({
+        title: "Pet limit reached",
+        description: `You've reached the limit of ${subscriptionInfo.maxPets} pet(s) on the ${subscriptionInfo.tier} plan. Please upgrade to add more pets.`,
+        variant: "destructive",
+      })
+      navigate('/pricing')
+      return
+    }
 
     setLoading(true)
     try {
