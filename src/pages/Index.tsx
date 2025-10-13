@@ -156,7 +156,7 @@ const Index = () => {
         {/* Pricing Section */}
         <section className="py-20 bg-muted/30">
           <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
+            <div className="text-center mb-12">
               <Badge className="bg-accent/10 text-accent border-accent/20 mb-4">
                 <Crown className="w-3 h-3 mr-1" />
                 Simple Pricing
@@ -169,50 +169,56 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
               {pricingPlans.map((plan, index) => (
-                <Card key={index} className={`relative ${plan.popular ? 'bg-gradient-card border-primary/20 shadow-glow' : 'bg-gradient-card'} border-0 shadow-medium hover:shadow-strong transition-spring`}>
+                <Card 
+                  key={index} 
+                  className={`p-8 relative ${
+                    plan.popular
+                      ? 'border-primary shadow-lg scale-105'
+                      : 'border-border'
+                  }`}
+                >
                   {plan.popular && (
-                    <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-accent text-accent-foreground shadow-medium">
-                      <Crown className="w-3 h-3 mr-1" />
-                      Most Popular
-                    </Badge>
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                      <div className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
+                        <Crown className="w-4 h-4" />
+                        Most Popular
+                      </div>
+                    </div>
                   )}
                   
-                  <CardHeader className="text-center pb-6">
-                    <CardTitle className="text-2xl font-bold text-foreground mb-2">
-                      {plan.name}
-                    </CardTitle>
+                  <div className="text-center mb-6">
+                    <h2 className="text-2xl font-bold mb-2">{plan.name}</h2>
                     <div className="mb-4">
-                      <span className="text-4xl font-bold text-foreground">${plan.price}</span>
-                      <span className="text-muted-foreground">/{plan.period}</span>
+                      <span className="text-4xl font-bold">${plan.price}</span>
+                      <span className="text-muted-foreground">
+                        {plan.price === '0' ? '' : `/${plan.period}`}
+                      </span>
                     </div>
-                    <p className="text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       {plan.description}
                     </p>
-                  </CardHeader>
+                  </div>
 
-                  <CardContent className="space-y-6">
-                    <ul className="space-y-3">
-                      {plan.features.map((feature, featureIndex) => (
-                        <li key={featureIndex} className="flex items-center gap-3">
-                          <Check className="w-5 h-5 text-success flex-shrink-0" />
-                          <span className="text-foreground">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
+                  <ul className="space-y-3 mb-8">
+                    {plan.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-start gap-2">
+                        <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                        <span className="text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
 
-                    <Button 
-                      variant={plan.variant} 
-                      size="lg"
-                      className="w-full text-lg py-3"
-                      asChild
-                    >
-                      <Link to="/auth">
-                        {plan.cta}
-                      </Link>
-                    </Button>
-                  </CardContent>
+                  <Button 
+                    variant={plan.popular ? 'default' : 'outline'} 
+                    className="w-full"
+                    asChild
+                  >
+                    <Link to="/auth">
+                      {plan.cta}
+                    </Link>
+                  </Button>
                 </Card>
               ))}
             </div>
