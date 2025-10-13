@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Heart, Mail, Shield, FileText, HelpCircle, Download } from 'lucide-react';
+import { Heart } from 'lucide-react';
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -35,7 +35,6 @@ export const Footer = () => {
               </li>
               <li>
                 <Link to="/app-downloads" className="text-muted-foreground hover:text-foreground transition-colors">
-                  <Download className="w-3 h-3 inline mr-1" />
                   App Downloads
                 </Link>
               </li>
@@ -53,13 +52,11 @@ export const Footer = () => {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/help" className="text-muted-foreground hover:text-foreground transition-colors">
-                  <HelpCircle className="w-3 h-3 inline mr-1" />
                   Help Centre
                 </Link>
               </li>
               <li>
                 <Link to="/contact" className="text-muted-foreground hover:text-foreground transition-colors">
-                  <Mail className="w-3 h-3 inline mr-1" />
                   Contact Us
                 </Link>
               </li>
@@ -77,13 +74,11 @@ export const Footer = () => {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
-                  <Shield className="w-3 h-3 inline mr-1" />
                   Privacy Policy
                 </Link>
               </li>
               <li>
                 <Link to="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
-                  <FileText className="w-3 h-3 inline mr-1" />
                   Terms of Service
                 </Link>
               </li>
