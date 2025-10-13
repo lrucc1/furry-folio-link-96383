@@ -61,21 +61,40 @@ const pricingPlans = [
   },
   {
     name: "Premium",
-    price: "4.99",
+    price: "7.99",
     period: "month",
-    description: "Complete protection for all your pets",
+    description: "For growing pet families",
+    features: [
+      "Up to 5 Pet Profiles",
+      "Advanced QR & NFC Tags",
+      "Priority Recovery Alerts",
+      "Family Sharing (up to 5 members)",
+      "Unlimited Custom Lost Pet Posters",
+      "VetShare - Share with vets via QR",
+      "Document Storage (50MB)",
+      "Priority Support"
+    ],
+    cta: "Upgrade to Premium",
+    variant: "hero" as const,
+    popular: true
+  },
+  {
+    name: "Family",
+    price: "12.99",
+    period: "month",
+    description: "Complete protection for multi-pet households",
     features: [
       "Unlimited Pet Profiles",
       "Advanced QR & NFC Tags",
       "Priority Recovery Alerts",
-      "Family Sharing & Access",
-      "Custom Lost Pet Posters",
-      "Premium Support",
-      "File Storage & Documents"
+      "Family Sharing (up to 10 members)",
+      "Multi-household Sharing",
+      "VetShare - Share with vets via QR",
+      "Document Storage (200MB)",
+      "Priority Support"
     ],
-    cta: "Start Premium Trial",
-    variant: "hero" as const,
-    popular: true
+    cta: "Upgrade to Family",
+    variant: "outline" as const
   }
 ];
 

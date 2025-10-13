@@ -34,7 +34,7 @@ const SUBSCRIPTION_TIERS = {
     productId: 'prod_TBUW3WogN0dEtQ',
     interval: 'month',
     features: [
-      'Unlimited pets',
+      'Up to 5 pets',
       'Family sharing (up to 5 members)',
       'Unlimited custom lost pet posters',
       'VetShare - Share medical records with vets via QR code',
@@ -42,7 +42,7 @@ const SUBSCRIPTION_TIERS = {
       'Priority support',
       'Advanced health tracking',
     ],
-    maxPets: -1,
+    maxPets: 5,
     popular: true,
     conversionPurpose: 'Capture early upgrades',
   },
