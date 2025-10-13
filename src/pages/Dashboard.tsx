@@ -29,7 +29,8 @@ const Dashboard = () => {
   const navigate = useNavigate()
   const [pets, setPets] = useState<Pet[]>([])
   const [loading, setLoading] = useState(true)
-  const [isPremium, setIsPremium] = useState(false)
+  const [userTier, setUserTier] = useState<string>('free')
+  const [maxPets, setMaxPets] = useState<number>(1)
 
   useEffect(() => {
     fetchPets()
@@ -59,22 +60,33 @@ const Dashboard = () => {
     if (!user) return
 
     try {
-      // First ensure profile exists
+      // Get user's profile to find their tier
       const { data: existingProfile } = await supabase
         .from('profiles')
         .select('premium_tier')
-        .eq('user_id', user.id)
+        .eq('id', user.id)
         .maybeSingle()
 
-      if (!existingProfile) {
-        // Profile doesn't exist, set to free tier
-        setIsPremium(false)
+      const tierName = existingProfile?.premium_tier || 'free'
+      setUserTier(tierName)
+
+      // Get the tier details from subscription_tiers
+      const { data: tierData } = await supabase
+        .from('subscription_tiers')
+        .select('max_pets')
+        .eq('name', tierName.charAt(0).toUpperCase() + tierName.slice(1))
+        .single()
+
+      if (tierData) {
+        setMaxPets(tierData.max_pets || 1)
       } else {
-        setIsPremium(existingProfile.premium_tier === 'premium')
+        // Fallback to 1 pet for free tier
+        setMaxPets(1)
       }
     } catch (error) {
       console.error('Error checking premium status:', error)
-      setIsPremium(false)
+      setUserTier('free')
+      setMaxPets(1)
     }
   }
 
@@ -103,7 +115,7 @@ const Dashboard = () => {
     }
   }
 
-  const canAddPet = isPremium || pets.length < 1
+  const canAddPet = maxPets === -1 || pets.length < maxPets
 
   if (loading) {
     return (
@@ -126,10 +138,11 @@ const Dashboard = () => {
             </p>
           </div>
           
-          {!isPremium && pets.length >= 1 && (
+          {!canAddPet && (
             <Badge className="bg-gradient-accent text-accent-foreground">
               <Crown className="w-3 h-3 mr-1" />
-              Upgrade for unlimited pets
+              {userTier === 'free' && 'Upgrade for more pets'}
+              {userTier === 'premium' && 'Upgrade to Family for unlimited pets'}
             </Badge>
           )}
         </div>
@@ -196,12 +209,14 @@ const Dashboard = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Crown className="w-5 h-5 text-primary" />
-                      Upgrade to Premium
+                      {userTier === 'free' && 'Upgrade to Add More Pets'}
+                      {userTier === 'premium' && 'Upgrade to Family'}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground mb-4">
-                      Add unlimited pets, advanced features, and priority support with Premium.
+                      {userTier === 'free' && `You've reached the limit of ${maxPets} pet on the Free plan. Upgrade to Premium for up to 5 pets, or Family for unlimited pets.`}
+                      {userTier === 'premium' && `You've reached the limit of ${maxPets} pets on the Premium plan. Upgrade to Family for unlimited pets and advanced features.`}
                     </p>
                     <Button asChild variant="hero">
                       <Link to="/pricing">
