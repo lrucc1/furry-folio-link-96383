@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { PetCard } from '@/components/PetCard'
 import { HealthReminders } from '@/components/HealthReminders'
 import { DashboardHeader } from '@/components/DashboardHeader'
+import { Footer } from '@/components/Footer'
 import { Plus, Crown, Heart } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { calculateAge } from '@/lib/age-utils'
@@ -214,6 +215,8 @@ const Dashboard = () => {
           </div>
         )}
       </main>
+      
+      <Footer />
     </div>
   )
 }

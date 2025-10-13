@@ -1,4 +1,5 @@
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { HeroSection } from "@/components/HeroSection";
 import { FeatureGrid } from "@/components/FeatureGrid";
 import { Button } from "@/components/ui/button";
@@ -246,60 +247,8 @@ const Index = () => {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-foreground text-white py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-                  <Heart className="w-5 h-5 text-white" />
-                </div>
-                <span className="font-bold text-lg">Pet Passport</span>
-              </div>
-              <p className="text-white/70 text-sm">
-                Your pet's digital companion for a safer, healthier, happier life.
-              </p>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-4">Features</h4>
-              <ul className="space-y-2 text-sm text-white/70">
-                <li><Link to="/dashboard" className="hover:text-white transition-colors">Pet Profiles</Link></li>
-                <li><Link to="/smart-tags" className="hover:text-white transition-colors">Smart Recovery Tags</Link></li>
-                <li><Link to="/dashboard" className="hover:text-white transition-colors">Health Reminders</Link></li>
-                <li><Link to="/dashboard" className="hover:text-white transition-colors">Registry Links</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-4">Support</h4>
-              <ul className="space-y-2 text-sm text-white/70">
-                <li><Link to="/help" className="hover:text-white transition-colors">Help Centre</Link></li>
-                <li><Link to="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
-                <li><Link to="/lost-pet-guide" className="hover:text-white transition-colors">Lost Pet Guide</Link></li>
-                <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-sm text-white/70">
-                <li><Link to="/about" className="hover:text-white transition-colors">About Us</Link></li>
-                <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
-                <li><Link to="/privacy-australia" className="hover:text-white transition-colors">Australian Privacy</Link></li>
-                <li><Link to="/downloads" className="hover:text-white transition-colors">App Downloads</Link></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t border-white/20 mt-8 pt-8 text-center">
-            <p className="text-white/70 text-sm">
-              © 2024 Pet Passport. Made with ❤️ in Australia. Protecting pets nationwide.
-            </p>
-          </div>
-        </div>
-      </footer>
+      
+      <Footer />
     </div>
   );
 };

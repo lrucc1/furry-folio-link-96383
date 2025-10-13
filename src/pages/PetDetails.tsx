@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DashboardHeader } from '@/components/DashboardHeader'
+import { Footer } from '@/components/Footer'
 import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from '@/hooks/use-toast'
@@ -464,6 +465,8 @@ const PetDetails = () => {
           </TabsContent>
         </Tabs>
       </main>
+      
+      <Footer />
     </div>
   )
 }
