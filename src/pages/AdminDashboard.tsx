@@ -102,6 +102,13 @@ interface DatabaseStats {
   };
 }
 
+interface SubscriptionTier {
+  id: string;
+  name: string;
+  price_monthly: number;
+  stripe_price_id: string | null;
+}
+
 const AdminDashboard = () => {
   const { signOut, user } = useAuth();
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -117,6 +124,7 @@ const AdminDashboard = () => {
   const [editingUser, setEditingUser] = useState<UserDetails | null>(null);
   const [newTier, setNewTier] = useState<string>('');
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [availableTiers, setAvailableTiers] = useState<SubscriptionTier[]>([]);
 
   useEffect(() => {
     fetchAllData();
@@ -148,13 +156,15 @@ const AdminDashboard = () => {
         growthRes,
         activityRes,
         dbStatsRes,
-        usersRes
+        usersRes,
+        tiersRes
       ] = await Promise.all([
         supabase.rpc('get_admin_stats'),
         supabase.rpc('get_user_growth_stats'),
         supabase.rpc('get_system_activity_stats'),
         supabase.rpc('get_database_stats'),
-        supabase.rpc('get_all_users_admin')
+        supabase.rpc('get_all_users_admin'),
+        supabase.from('subscription_tiers').select('*').order('price_monthly', { ascending: true })
       ]);
 
       if (statsRes.error) {
@@ -179,6 +189,10 @@ const AdminDashboard = () => {
       if (!usersRes.error && usersRes.data) {
         setAllUsers(usersRes.data as UserDetails[]);
         setFilteredUsers(usersRes.data as UserDetails[]);
+      }
+
+      if (!tiersRes.error && tiersRes.data) {
+        setAvailableTiers(tiersRes.data as SubscriptionTier[]);
       }
 
     } catch (err) {
@@ -728,11 +742,12 @@ const AdminDashboard = () => {
                 <SelectTrigger>
                   <SelectValue placeholder="Select tier" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="free">Free</SelectItem>
-                  <SelectItem value="basic">Basic</SelectItem>
-                  <SelectItem value="premium">Premium</SelectItem>
-                  <SelectItem value="enterprise">Enterprise</SelectItem>
+                <SelectContent className="bg-background border border-border z-50">
+                  {availableTiers.map((tier) => (
+                    <SelectItem key={tier.id} value={tier.name.toLowerCase()}>
+                      {tier.name} - ${tier.price_monthly}/month
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
