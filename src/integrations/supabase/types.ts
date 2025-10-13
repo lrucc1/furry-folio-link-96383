@@ -434,6 +434,30 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      get_all_users_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          display_name: string
+          email: string
+          pet_count: number
+          premium_tier: string
+          roles: string[]
+          user_id: string
+        }[]
+      }
+      get_database_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      get_system_activity_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      get_user_growth_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

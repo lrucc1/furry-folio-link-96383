@@ -2,6 +2,15 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { 
   Users, 
   Heart, 
@@ -12,11 +21,19 @@ import {
   Calendar,
   PawPrint,
   BarChart3,
-  Settings
+  Settings,
+  Database,
+  Activity,
+  UserCog,
+  Shield,
+  RefreshCw,
+  Search,
+  Download
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Header } from '@/components/Header';
+import { Input } from '@/components/ui/input';
 
 interface AdminStats {
   total_users: number;
@@ -29,125 +46,154 @@ interface AdminStats {
   pets_added_this_month: number;
 }
 
-interface AdminUser {
+interface UserDetails {
   user_id: string;
   email: string;
-  display_name: string | null;
   created_at: string;
+  display_name: string | null;
+  premium_tier: string;
+  pet_count: number;
+  roles: string[];
+}
+
+interface GrowthStats {
+  daily_signups: Array<{ date: string; count: number }>;
+  total_users: number;
+  active_this_week: number;
+  active_this_month: number;
+}
+
+interface SystemActivity {
+  pets_activity: {
+    added_today: number;
+    added_this_week: number;
+    updated_today: number;
+  };
+  health_activity: {
+    reminders_created_today: number;
+    reminders_completed_today: number;
+    vaccinations_added_today: number;
+  };
+  lost_pets_trend: Array<{ date: string; lost_count: number }>;
+}
+
+interface DatabaseStats {
+  tables: Record<string, number>;
+  storage_stats: {
+    total_documents: number;
+    total_size_mb: number;
+  };
 }
 
 const AdminDashboard = () => {
   const { signOut, user } = useAuth();
   const [stats, setStats] = useState<AdminStats | null>(null);
-  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
+  const [growthStats, setGrowthStats] = useState<GrowthStats | null>(null);
+  const [systemActivity, setSystemActivity] = useState<SystemActivity | null>(null);
+  const [dbStats, setDbStats] = useState<DatabaseStats | null>(null);
+  const [allUsers, setAllUsers] = useState<UserDetails[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<UserDetails[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch admin stats
-        const { data: statsData, error: statsError } = await supabase.rpc('get_admin_stats');
-        
-        if (statsError) {
-          console.error('Error fetching admin stats:', statsError);
-          setError('Failed to load statistics');
-        } else {
-          setStats(statsData as unknown as AdminStats);
-        }
-
-        // Fetch admin users (fallback: show current admin profile)
-        try {
-          const { data: isAdminFlag, error: roleErr } = await supabase.rpc('has_role', {
-            _user_id: user?.id,
-            _role: 'admin',
-          });
-
-          if (roleErr) {
-            console.error('Error checking admin role:', roleErr);
-          }
-
-          if (isAdminFlag && user?.id) {
-            const { data: profile, error: profileError } = await supabase
-              .from('profiles')
-              .select('user_id, email, display_name, created_at')
-              .eq('user_id', user.id)
-              .maybeSingle();
-
-            if (profileError) {
-              console.error('Error fetching profile for admin list:', profileError);
-              setAdminUsers([
-                {
-                  user_id: user.id,
-                  email: user.email || 'Admin',
-                  display_name: null,
-                  created_at: new Date().toISOString(),
-                },
-              ]);
-            } else if (profile) {
-              setAdminUsers([
-                {
-                  user_id: profile.user_id,
-                  email: profile.email || (user.email || ''),
-                  display_name: profile.display_name,
-                  created_at: profile.created_at,
-                },
-              ]);
-            }
-          } else {
-            setAdminUsers([]);
-          }
-        } catch (e) {
-          console.error('Error determining admin users:', e);
-          setAdminUsers([]);
-        }
-      } catch (err) {
-        console.error('Unexpected error:', err);
-        setError('An unexpected error occurred');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+    fetchAllData();
   }, []);
 
-  const handleMakeAdmin = async () => {
-    const userEmail = prompt('Enter your email to confirm admin access:');
-    if (!userEmail) return;
-
-    try {
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError || !userData.user) {
-        alert('Not authenticated');
-        return;
-      }
-
-      if (userData.user.email !== userEmail) {
-        alert('Email does not match your account');
-        return;
-      }
-
-      const { error } = await supabase
-        .from('user_roles')
-        .insert([
-          {
-            user_id: userData.user.id,
-            role: 'admin'
-          }
-        ]);
-
-      if (error && !error.message.includes('duplicate')) {
-        console.error('Error making admin:', error);
-        alert('Failed to grant admin access');
-      } else {
-        alert('Admin access granted! Please refresh the page.');
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error('Error in admin creation:', error);
-      alert('Failed to grant admin access');
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setFilteredUsers(allUsers);
+    } else {
+      const query = searchQuery.toLowerCase();
+      setFilteredUsers(
+        allUsers.filter(
+          (u) =>
+            u.email?.toLowerCase().includes(query) ||
+            u.display_name?.toLowerCase().includes(query) ||
+            u.user_id?.toLowerCase().includes(query)
+        )
+      );
     }
+  }, [searchQuery, allUsers]);
+
+  const fetchAllData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch all stats in parallel
+      const [
+        statsRes,
+        growthRes,
+        activityRes,
+        dbStatsRes,
+        usersRes
+      ] = await Promise.all([
+        supabase.rpc('get_admin_stats'),
+        supabase.rpc('get_user_growth_stats'),
+        supabase.rpc('get_system_activity_stats'),
+        supabase.rpc('get_database_stats'),
+        supabase.rpc('get_all_users_admin')
+      ]);
+
+      if (statsRes.error) {
+        console.error('Error fetching admin stats:', statsRes.error);
+        setError('Failed to load statistics');
+      } else {
+        setStats(statsRes.data as unknown as AdminStats);
+      }
+
+      if (!growthRes.error && growthRes.data) {
+        setGrowthStats(growthRes.data as unknown as GrowthStats);
+      }
+
+      if (!activityRes.error && activityRes.data) {
+        setSystemActivity(activityRes.data as unknown as SystemActivity);
+      }
+
+      if (!dbStatsRes.error && dbStatsRes.data) {
+        setDbStats(dbStatsRes.data as unknown as DatabaseStats);
+      }
+
+      if (!usersRes.error && usersRes.data) {
+        setAllUsers(usersRes.data as UserDetails[]);
+        setFilteredUsers(usersRes.data as UserDetails[]);
+      }
+
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      setError('An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRefresh = () => {
+    fetchAllData();
+  };
+
+  const exportUsers = () => {
+    const csv = [
+      ['Email', 'Name', 'Tier', 'Pets', 'Roles', 'Created'],
+      ...filteredUsers.map((u) => [
+        u.email,
+        u.display_name || 'N/A',
+        u.premium_tier,
+        u.pet_count,
+        u.roles.join(', '),
+        new Date(u.created_at).toLocaleDateString(),
+      ]),
+    ]
+      .map((row) => row.join(','))
+      .join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `users_${new Date().toISOString()}.csv`;
+    a.click();
   };
 
   if (loading) {
@@ -171,12 +217,12 @@ const AdminDashboard = () => {
           <Card className="max-w-md mx-auto">
             <CardContent className="p-6 text-center">
               <AlertTriangle className="w-12 h-12 text-destructive mx-auto mb-4" />
-              <h2 className="text-xl font-semibold mb-2">Access Required</h2>
+              <h2 className="text-xl font-semibold mb-2">Access Error</h2>
               <p className="text-muted-foreground mb-4">
-                {error || 'You need admin access to view this dashboard.'}
+                {error || 'Failed to load admin dashboard.'}
               </p>
-              <Button onClick={handleMakeAdmin} variant="outline">
-                Grant Admin Access
+              <Button onClick={() => window.location.reload()} variant="outline">
+                Retry
               </Button>
             </CardContent>
           </Card>
@@ -245,162 +291,354 @@ const AdminDashboard = () => {
       <Header />
       
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
+        <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
-              <p className="text-muted-foreground">
-                Platform analytics and management
+              <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+                <Shield className="w-8 h-8 text-primary" />
+                System Admin Control Center
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                Complete platform analytics and management
               </p>
             </div>
-            <Badge className="bg-primary/10 text-primary border-primary/20">
-              <Settings className="w-3 h-3 mr-1" />
-              Super Admin
-            </Badge>
+            <div className="flex gap-2">
+              <Button onClick={handleRefresh} variant="outline" size="sm">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Refresh
+              </Button>
+              <Badge className="bg-primary/10 text-primary border-primary/20 px-3 py-2">
+                <Crown className="w-3 h-3 mr-1" />
+                Super Admin
+              </Badge>
+            </div>
           </div>
         </div>
 
-        {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {statCards.map((stat, index) => (
-            <Card key={index} className="bg-gradient-card border-0 shadow-medium hover:shadow-strong transition-spring">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    {stat.title}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsTrigger value="overview">
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="users">
+              <UserCog className="w-4 h-4 mr-2" />
+              Users
+            </TabsTrigger>
+            <TabsTrigger value="database">
+              <Database className="w-4 h-4 mr-2" />
+              Database
+            </TabsTrigger>
+            <TabsTrigger value="activity">
+              <Activity className="w-4 h-4 mr-2" />
+              Activity
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6">
+            {/* Key Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {statCards.map((stat, index) => (
+                <Card key={index} className="bg-gradient-card border-0 shadow-medium hover:shadow-strong transition-spring">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        {stat.title}
+                      </CardTitle>
+                      <stat.icon className={`w-5 h-5 ${stat.color}`} />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="text-2xl font-bold text-foreground">
+                      {stat.value.toLocaleString()}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {stat.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Platform Health & Species */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card className="bg-gradient-card border-0 shadow-medium">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5" />
+                    Platform Metrics
                   </CardTitle>
-                  <stat.icon className={`w-5 h-5 ${stat.color}`} />
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="text-2xl font-bold text-foreground">
-                  {stat.value.toLocaleString()}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {stat.description}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Platform Health */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
-          <Card className="bg-gradient-card border-0 shadow-medium">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="w-5 h-5" />
-                Platform Metrics
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Conversion Rate</span>
-                <Badge variant="secondary">{conversionRate}%</Badge>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Avg Pets per User</span>
-                <Badge variant="secondary">{averagePetsPerUser}</Badge>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Lost Pet Rate</span>
-                <Badge variant="secondary">
-                  {stats.total_pets > 0 ? ((stats.lost_pets / stats.total_pets) * 100).toFixed(1) : '0'}%
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-card border-0 shadow-medium">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <PawPrint className="w-5 h-5" />
-                Pet Species Breakdown
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {stats.pets_by_species && Object.entries(stats.pets_by_species).map(([species, count]) => (
-                  <div key={species} className="flex justify-between items-center">
-                    <span className="text-sm capitalize text-foreground">{species}</span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-20 bg-muted rounded-full h-2">
-                        <div 
-                          className="bg-primary rounded-full h-2 transition-all duration-300"
-                          style={{ 
-                            width: `${(count / stats.total_pets) * 100}%` 
-                          }}
-                        />
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        {count}
-                      </Badge>
-                    </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Conversion Rate</span>
+                    <Badge variant="secondary">{conversionRate}%</Badge>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Admin Users */}
-        <Card className="bg-gradient-card border-0 shadow-medium">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Crown className="w-5 h-5" />
-              Admin Users
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Users with administrative privileges
-            </p>
-          </CardHeader>
-          <CardContent>
-            {adminUsers.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No admin users found</p>
-            ) : (
-              <div className="space-y-3">
-                {adminUsers.map((admin) => (
-                  <div key={admin.user_id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                    <div className="flex flex-col">
-                      <span className="font-medium text-foreground">
-                        {admin.display_name || 'No name'}
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        {admin.email}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        Added: {new Date(admin.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <Badge variant="secondary" className="bg-primary/10 text-primary">
-                      Admin
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Avg Pets per User</span>
+                    <Badge variant="secondary">{averagePetsPerUser}</Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Lost Pet Rate</span>
+                    <Badge variant="secondary">
+                      {stats.total_pets > 0 ? ((stats.lost_pets / stats.total_pets) * 100).toFixed(1) : '0'}%
                     </Badge>
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  {growthStats && (
+                    <>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Active This Week</span>
+                        <Badge variant="secondary">{growthStats.active_this_week}</Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Active This Month</span>
+                        <Badge variant="secondary">{growthStats.active_this_month}</Badge>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
 
-        {/* Quick Actions */}
-        <Card className="bg-gradient-card border-0 shadow-medium">
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Common administrative tasks
-            </p>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-3">
-              <Button variant="outline" onClick={() => window.location.reload()}>
-                Refresh Stats
-              </Button>
-              <Button variant="outline" onClick={signOut}>
-                Sign Out
-              </Button>
+              <Card className="bg-gradient-card border-0 shadow-medium">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <PawPrint className="w-5 h-5" />
+                    Pet Species Breakdown
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {stats.pets_by_species && Object.entries(stats.pets_by_species).map(([species, count]) => (
+                      <div key={species} className="flex justify-between items-center">
+                        <span className="text-sm capitalize text-foreground">{species}</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-20 bg-muted rounded-full h-2">
+                            <div 
+                              className="bg-primary rounded-full h-2 transition-all duration-300"
+                              style={{ 
+                                width: `${(count / stats.total_pets) * 100}%` 
+                              }}
+                            />
+                          </div>
+                          <Badge variant="outline" className="text-xs">
+                            {count}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
+          </TabsContent>
+
+          {/* Users Tab */}
+          <TabsContent value="users" className="space-y-6">
+            <Card className="bg-gradient-card border-0 shadow-medium">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="w-5 h-5" />
+                      User Management ({filteredUsers.length} users)
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      View and manage all registered users
+                    </p>
+                  </div>
+                  <Button onClick={exportUsers} variant="outline" size="sm">
+                    <Download className="w-4 h-4 mr-2" />
+                    Export CSV
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search users by email, name, or ID..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Tier</TableHead>
+                        <TableHead>Pets</TableHead>
+                        <TableHead>Roles</TableHead>
+                        <TableHead>Created</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredUsers.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center text-muted-foreground">
+                            No users found
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        filteredUsers.map((user) => (
+                          <TableRow key={user.user_id}>
+                            <TableCell className="font-medium">{user.email}</TableCell>
+                            <TableCell>{user.display_name || '-'}</TableCell>
+                            <TableCell>
+                              <Badge variant={user.premium_tier === 'free' ? 'outline' : 'secondary'}>
+                                {user.premium_tier}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{user.pet_count}</TableCell>
+                            <TableCell>
+                              {user.roles.length > 0 ? (
+                                user.roles.map((role) => (
+                                  <Badge key={role} variant="secondary" className="mr-1">
+                                    {role}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <span className="text-muted-foreground text-sm">-</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {new Date(user.created_at).toLocaleDateString()}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Database Tab */}
+          <TabsContent value="database" className="space-y-6">
+            {dbStats && (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {Object.entries(dbStats.tables).map(([table, count]) => (
+                    <Card key={table} className="bg-gradient-card border-0 shadow-medium">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium text-muted-foreground capitalize">
+                          {table.replace(/_/g, ' ')}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="text-2xl font-bold text-foreground">{count}</div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                <Card className="bg-gradient-card border-0 shadow-medium">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Database className="w-5 h-5" />
+                      Storage Statistics
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Total Documents</span>
+                      <Badge variant="secondary">{dbStats.storage_stats.total_documents}</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Total Storage Used</span>
+                      <Badge variant="secondary">{dbStats.storage_stats.total_size_mb.toFixed(2)} MB</Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </TabsContent>
+
+          {/* Activity Tab */}
+          <TabsContent value="activity" className="space-y-6">
+            {systemActivity && (
+              <>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card className="bg-gradient-card border-0 shadow-medium">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <PawPrint className="w-5 h-5" />
+                        Pet Activity
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Added Today</span>
+                        <Badge variant="secondary">{systemActivity.pets_activity.added_today}</Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Added This Week</span>
+                        <Badge variant="secondary">{systemActivity.pets_activity.added_this_week}</Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Updated Today</span>
+                        <Badge variant="secondary">{systemActivity.pets_activity.updated_today}</Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-gradient-card border-0 shadow-medium">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Heart className="w-5 h-5" />
+                        Health Activity
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Reminders Created Today</span>
+                        <Badge variant="secondary">{systemActivity.health_activity.reminders_created_today}</Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Reminders Completed Today</span>
+                        <Badge variant="secondary">{systemActivity.health_activity.reminders_completed_today}</Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Vaccinations Added Today</span>
+                        <Badge variant="secondary">{systemActivity.health_activity.vaccinations_added_today}</Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {growthStats?.daily_signups && (
+                  <Card className="bg-gradient-card border-0 shadow-medium">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <TrendingUp className="w-5 h-5" />
+                        User Growth (Last 30 Days)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {growthStats.daily_signups.slice(0, 7).map((day) => (
+                          <div key={day.date} className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">
+                              {new Date(day.date).toLocaleDateString()}
+                            </span>
+                            <Badge variant="outline">{day.count} signups</Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
+            )}
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
