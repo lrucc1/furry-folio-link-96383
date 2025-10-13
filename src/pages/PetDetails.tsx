@@ -11,6 +11,7 @@ import { DashboardHeader } from '@/components/DashboardHeader'
 import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from '@/hooks/use-toast'
+import { PetDocuments } from '@/components/PetDocuments'
 
 interface Pet {
   id: string
@@ -344,8 +345,10 @@ const PetDetails = () => {
             )}
           </TabsContent>
 
-          {/* Health Tab */}
+          {/* Health & Documents Tab */}
           <TabsContent value="health" className="space-y-6">
+            <PetDocuments petId={id!} />
+            
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
