@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Heart } from 'lucide-react';
+import { Logo } from './Logo';
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -10,10 +10,7 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Section */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Heart className="w-6 h-6 text-primary" />
-              <span className="font-bold text-lg">PetGuard</span>
-            </div>
+            <Logo />
             <p className="text-sm text-muted-foreground">
               Protecting your pets with smart recovery technology and comprehensive health tracking.
             </p>
@@ -93,7 +90,7 @@ export const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t text-center text-sm text-muted-foreground">
-          <p>© {currentYear} PetGuard. All rights reserved.</p>
+          <p>© {currentYear} PetLinkID. All rights reserved.</p>
           <p className="mt-2">Made with ❤️ for pets and their families</p>
         </div>
       </div>

@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Logo } from '@/components/Logo'
 import { Heart, MapPin, Phone, Mail } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 
@@ -133,11 +134,8 @@ const FoundPet = () => {
     <div className="min-h-screen bg-gradient-hero">
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
-              <Heart className="w-6 h-6 text-primary" />
-            </div>
-            <span className="font-bold text-2xl text-white">Pet Passport</span>
+          <div className="flex items-center justify-center mb-4">
+            <Logo iconClassName="w-12 h-12" textClassName="font-bold text-2xl text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">I've Found This Pet!</h1>
           <p className="text-white/90">Help reunite this lost pet with their family</p>

@@ -39,7 +39,7 @@ const Contact = () => {
               Get in Touch
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Have questions about Pet Passport? We're here to help you and your furry friends.
+              Have questions about PetLinkID? We're here to help you and your furry friends.
             </p>
           </div>
         </div>

@@ -58,10 +58,10 @@ const AppDownloads = () => {
               App Downloads
             </Badge>
             <h1 className="text-4xl font-bold text-foreground mb-4">
-              Download Pet Passport
+              Download PetLinkID
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Get the Pet Passport mobile app for the fastest access to your pet's information, QR scanning, and instant lost pet alerts.
+              Get the PetLinkID mobile app for the fastest access to your pet's information, QR scanning, and instant lost pet alerts.
             </p>
           </div>
         </div>
@@ -75,7 +75,7 @@ const AppDownloads = () => {
                 Available on All Devices
               </h3>
               <p className="text-muted-foreground mb-8">
-                Download Pet Passport for free on iOS, Android, or access via web browser.
+                Download PetLinkID for free on iOS, Android, or access via web browser.
               </p>
               
               <div className="grid md:grid-cols-3 gap-4">
@@ -145,7 +145,7 @@ const AppDownloads = () => {
         <section className="mb-16">
           <Card className="bg-gradient-card border-0 shadow-medium">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl">See Pet Passport in Action</CardTitle>
+              <CardTitle className="text-2xl">See PetLinkID in Action</CardTitle>
               <p className="text-muted-foreground">
                 Beautiful, intuitive design that makes managing your pet's life simple and secure.
               </p>
@@ -272,10 +272,10 @@ const AppDownloads = () => {
           <CardContent className="text-center py-12">
             <Download className="w-12 h-12 mx-auto mb-4" />
             <h3 className="text-2xl font-bold mb-4">
-              Download Pet Passport Today
+              Download PetLinkID Today
             </h3>
             <p className="text-white/90 mb-6 max-w-2xl mx-auto">
-              Join thousands of Australian pet owners who trust Pet Passport to keep their furry family members safe and healthy.
+              Join thousands of Australian pet owners who trust PetLinkID to keep their furry family members safe and healthy.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button variant="secondary" size="lg">

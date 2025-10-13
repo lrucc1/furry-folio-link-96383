@@ -84,7 +84,7 @@ export const FeatureGrid = () => {
             Everything Your Pet Needs
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            From daily care tracking to emergency recovery, Pet Passport has all the tools to keep your furry family members safe and healthy.
+            From daily care tracking to emergency recovery, PetLinkID has all the tools to keep your furry family members safe and healthy.
           </p>
         </div>
 

@@ -226,7 +226,7 @@ const Index = () => {
               Ready to Protect Your Pets?
             </h2>
             <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-              Join thousands of Australian pet owners who trust Pet Passport to keep their furry family members safe and healthy.
+              Join thousands of Australian pet owners who trust PetLinkID to keep their furry family members safe and healthy.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

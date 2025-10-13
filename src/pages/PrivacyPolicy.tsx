@@ -129,7 +129,7 @@ const PrivacyPolicy = () => {
               <ul className="text-muted-foreground space-y-1 mb-6">
                 <li>Email: privacy@petpassport.com.au</li>
                 <li>Phone: 1800 PET HELP</li>
-                <li>Mail: Privacy Officer, Pet Passport, 123 Pet Street, Sydney, NSW 2000</li>
+                <li>Mail: Privacy Officer, PetLinkID, 123 Pet Street, Sydney, NSW 2000</li>
               </ul>
 
               <h2 className="text-2xl font-bold text-foreground mb-4">7. Changes to This Policy</h2>

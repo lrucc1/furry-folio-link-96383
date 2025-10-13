@@ -70,7 +70,7 @@ const AddPet = () => {
 
       toast({
         title: "Pet added successfully!",
-        description: `${formData.name} has been added to your Pet Passport.`,
+        description: `${formData.name} has been added to your PetLinkID.`,
       })
 
       navigate('/dashboard')

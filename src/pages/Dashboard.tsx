@@ -153,7 +153,7 @@ const Dashboard = () => {
               <Heart className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
               <CardTitle className="text-xl mb-2">No pets yet</CardTitle>
               <p className="text-muted-foreground mb-6">
-                Add your first pet to get started with Pet Passport
+                Add your first pet to get started with PetLinkID
               </p>
               <Button asChild size="lg">
                 <Link to="/pets/new">

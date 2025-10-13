@@ -56,7 +56,7 @@ const AustralianPrivacy = () => {
               Australian Privacy Compliance
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Pet Passport is committed to protecting your privacy in accordance with Australian Privacy Principles (APPs) under the Privacy Act 1988.
+              PetLinkID is committed to protecting your privacy in accordance with Australian Privacy Principles (APPs) under the Privacy Act 1988.
             </p>
             <p className="text-sm text-muted-foreground mt-2">
               Last updated: September 22, 2024
@@ -75,7 +75,7 @@ const AustralianPrivacy = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                As an Australian company, Pet Passport is bound by the Privacy Act 1988 and the Australian Privacy Principles (APPs). We take our obligations seriously and have implemented comprehensive privacy protections that go above and beyond legal requirements.
+                As an Australian company, PetLinkID is bound by the Privacy Act 1988 and the Australian Privacy Principles (APPs). We take our obligations seriously and have implemented comprehensive privacy protections that go above and beyond legal requirements.
               </p>
               
               <div className="grid md:grid-cols-3 gap-4">
@@ -224,7 +224,7 @@ const AustralianPrivacy = () => {
                   <h4 className="font-semibold text-foreground mb-2">Privacy Officer</h4>
                   <div className="space-y-1 text-muted-foreground text-sm">
                     <p>Sarah Chen, Chief Privacy Officer</p>
-                    <p>Pet Passport Pty Ltd</p>
+                    <p>PetLinkID Pty Ltd</p>
                     <p>123 Pet Street</p>
                     <p>Sydney, NSW 2000</p>
                     <p>Australia</p>

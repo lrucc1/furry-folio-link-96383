@@ -5,7 +5,7 @@ import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Heart } from 'lucide-react'
+import { Logo } from '@/components/Logo'
 
 const AuthPage = () => {
   const { user } = useAuth()
@@ -21,11 +21,8 @@ const AuthPage = () => {
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
-              <Heart className="w-6 h-6 text-primary" />
-            </div>
-            <span className="font-bold text-2xl text-white">Pet Passport</span>
+          <div className="flex items-center justify-center mb-4">
+            <Logo iconClassName="w-12 h-12" textClassName="font-bold text-2xl text-white" />
           </div>
           <p className="text-white/90">Sign in to your account or create a new one.</p>
         </div>

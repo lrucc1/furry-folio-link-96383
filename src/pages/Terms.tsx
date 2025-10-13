@@ -28,7 +28,7 @@ const Terms = () => {
               Terms of Service
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Please read these terms carefully before using Pet Passport. By using our services, you agree to these terms.
+              Please read these terms carefully before using PetLinkID. By using our services, you agree to these terms.
             </p>
             <p className="text-sm text-muted-foreground mt-2">
               Last updated: September 22, 2024
@@ -71,12 +71,12 @@ const Terms = () => {
             <CardContent className="prose prose-gray max-w-none p-8">
               <h2 className="text-2xl font-bold text-foreground mb-4">1. Acceptance of Terms</h2>
               <p className="text-muted-foreground mb-6">
-                By accessing or using Pet Passport ("we", "our", "us"), you agree to be bound by these Terms of Service. If you disagree with any part of these terms, you may not access our service. These terms apply to all visitors, users, and others who access or use our service.
+                By accessing or using PetLinkID ("we", "our", "us"), you agree to be bound by these Terms of Service. If you disagree with any part of these terms, you may not access our service. These terms apply to all visitors, users, and others who access or use our service.
               </p>
 
               <h2 className="text-2xl font-bold text-foreground mb-4">2. Description of Service</h2>
               <p className="text-muted-foreground mb-4">
-                Pet Passport is a comprehensive pet management platform that provides:
+                PetLinkID is a comprehensive pet management platform that provides:
               </p>
               <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-6">
                 <li>Digital pet profiles and identification services</li>
@@ -92,7 +92,7 @@ const Terms = () => {
               </p>
 
               <h2 className="text-2xl font-bold text-foreground mb-4">4. Acceptable Use</h2>
-              <p className="text-muted-foreground mb-2">You agree not to use Pet Passport for any unlawful purpose or any purpose prohibited under this clause. You agree not to:</p>
+              <p className="text-muted-foreground mb-2">You agree not to use PetLinkID for any unlawful purpose or any purpose prohibited under this clause. You agree not to:</p>
               <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-6">
                 <li>Use our service for any illegal activities</li>
                 <li>Impersonate another person or provide false information</li>
@@ -116,17 +116,17 @@ const Terms = () => {
 
               <h2 className="text-2xl font-bold text-foreground mb-4">7. Limitation of Liability</h2>
               <p className="text-muted-foreground mb-6">
-                While we strive to provide accurate and reliable services, Pet Passport is provided "as is" without warranties of any kind. We cannot guarantee that our service will help recover lost pets or prevent pet-related incidents. Our liability is limited to the extent permitted by Australian Consumer Law.
+                While we strive to provide accurate and reliable services, PetLinkID is provided "as is" without warranties of any kind. We cannot guarantee that our service will help recover lost pets or prevent pet-related incidents. Our liability is limited to the extent permitted by Australian Consumer Law.
               </p>
 
               <h2 className="text-2xl font-bold text-foreground mb-4">8. Emergency Services</h2>
               <p className="text-muted-foreground mb-6">
-                Pet Passport is not an emergency service. In case of pet emergencies, contact your veterinarian, local emergency services, or animal control authorities immediately. Do not rely solely on our platform for emergency situations.
+                PetLinkID is not an emergency service. In case of pet emergencies, contact your veterinarian, local emergency services, or animal control authorities immediately. Do not rely solely on our platform for emergency situations.
               </p>
 
               <h2 className="text-2xl font-bold text-foreground mb-4">9. Intellectual Property</h2>
               <p className="text-muted-foreground mb-6">
-                The Pet Passport service and its original content, features, and functionality are owned by Pet Passport Pty Ltd and are protected by international copyright, trademark, patent, trade secret, and other intellectual property or proprietary rights laws.
+                The PetLinkID service and its original content, features, and functionality are owned by PetLinkID Pty Ltd and are protected by international copyright, trademark, patent, trade secret, and other intellectual property or proprietary rights laws.
               </p>
 
               <h2 className="text-2xl font-bold text-foreground mb-4">10. Termination</h2>
@@ -151,7 +151,7 @@ const Terms = () => {
               <ul className="text-muted-foreground space-y-1">
                 <li>Email: legal@petpassport.com.au</li>
                 <li>Phone: 1800 PET HELP</li>
-                <li>Mail: Legal Department, Pet Passport Pty Ltd, 123 Pet Street, Sydney, NSW 2000</li>
+                <li>Mail: Legal Department, PetLinkID Pty Ltd, 123 Pet Street, Sydney, NSW 2000</li>
               </ul>
             </CardContent>
           </Card>

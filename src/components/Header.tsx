@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Heart, Menu, Plus } from "lucide-react";
+import { Logo } from "./Logo";
+import { Menu, Plus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
@@ -25,13 +26,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
           </Button>
           
           <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center shadow-soft">
-              <Heart className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="font-bold text-lg text-foreground">Pet Passport</h1>
-              <p className="text-xs text-muted-foreground hidden sm:block">Your pet's digital companion</p>
-            </div>
+            <Logo />
           </Link>
         </div>
 

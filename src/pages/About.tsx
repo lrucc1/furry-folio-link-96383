@@ -95,13 +95,13 @@ const About = () => {
             <CardContent className="max-w-3xl mx-auto">
               <div className="space-y-6 text-muted-foreground">
                 <p>
-                  Pet Passport was born from a personal experience that every pet owner dreads. When our founder Sarah's beloved rescue dog Max went missing for three terrifying days in 2022, she realized how fragmented and ineffective existing pet recovery systems were.
+                  PetLinkID was born from a personal experience that every pet owner dreads. When our founder Sarah's beloved rescue dog Max went missing for three terrifying days in 2022, she realized how fragmented and ineffective existing pet recovery systems were.
                 </p>
                 <p>
                   After Max was safely returned home (thanks to a kind stranger and a barely readable ID tag), Sarah knew there had to be a better way. She assembled a team of veterinarians, technologists, and pet industry experts to create a comprehensive solution that would give every pet the best chance of coming home safe.
                 </p>
                 <p>
-                  Today, Pet Passport serves thousands of Australian families, providing peace of mind through innovative QR technology, comprehensive health tracking, and a community committed to keeping pets safe and healthy.
+                  Today, PetLinkID serves thousands of Australian families, providing peace of mind through innovative QR technology, comprehensive health tracking, and a community committed to keeping pets safe and healthy.
                 </p>
               </div>
             </CardContent>
@@ -154,7 +154,7 @@ const About = () => {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-foreground mb-4">Meet Our Team</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              The passionate people behind Pet Passport, dedicated to keeping your furry family members safe.
+              The passionate people behind PetLinkID, dedicated to keeping your furry family members safe.
             </p>
           </div>
 
@@ -230,7 +230,7 @@ const About = () => {
               Join Our Mission
             </h3>
             <p className="text-white/90 mb-6 max-w-2xl mx-auto">
-              Ready to give your pet the protection they deserve? Join thousands of Australian families who trust Pet Passport.
+              Ready to give your pet the protection they deserve? Join thousands of Australian families who trust PetLinkID.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button variant="secondary" size="lg" asChild>
