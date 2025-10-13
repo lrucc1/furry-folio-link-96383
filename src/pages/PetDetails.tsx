@@ -38,9 +38,9 @@ interface Pet {
 
 interface Vaccination {
   id: string
-  name: string
-  date: string
-  due_date: string | null
+  vaccine_name: string
+  vaccine_date: string
+  next_due_date: string | null
 }
 
 const PetDetails = () => {
@@ -85,9 +85,9 @@ const PetDetails = () => {
     try {
       const { data, error } = await (supabase as any)
         .from('vaccinations')
-        .select('*')
+        .select('id, vaccine_name, vaccine_date, next_due_date')
         .eq('pet_id', id)
-        .order('date', { ascending: false })
+        .order('vaccine_date', { ascending: false })
 
       if (error) throw error
       setVaccinations(data || [])
@@ -363,14 +363,14 @@ const PetDetails = () => {
                     {vaccinations.map((vaccination) => (
                       <div key={vaccination.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
-                          <h4 className="font-medium">{vaccination.name}</h4>
+                          <h4 className="font-medium">{vaccination.vaccine_name}</h4>
                           <p className="text-sm text-muted-foreground">
-                            Given: {new Date(vaccination.date).toLocaleDateString()}
+                            Given: {new Date(vaccination.vaccine_date).toLocaleDateString()}
                           </p>
                         </div>
-                        {vaccination.due_date && (
-                          <Badge variant={new Date(vaccination.due_date) < new Date() ? "destructive" : "secondary"}>
-                            Due: {new Date(vaccination.due_date).toLocaleDateString()}
+                        {vaccination.next_due_date && (
+                          <Badge variant={new Date(vaccination.next_due_date) < new Date() ? "destructive" : "secondary"}>
+                            Due: {new Date(vaccination.next_due_date).toLocaleDateString()}
                           </Badge>
                         )}
                       </div>
