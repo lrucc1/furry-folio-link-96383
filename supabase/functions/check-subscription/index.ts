@@ -2,25 +2,11 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
-const ALLOWED_ORIGINS = new Set([
-  'https://petlinkid.com',
-  'https://www.petlinkid.com',
-  'https://petlinkid.lovable.app',
-  'http://localhost:5173',
-  'http://localhost:8080'
-]);
-
-function cors(origin: string) {
-  const allowed = ALLOWED_ORIGINS.has(origin);
-  return {
-    allowed,
-    headers: {
-      'Access-Control-Allow-Origin': allowed ? origin : 'https://petlinkid.com',
-      'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-      'Access-Control-Allow-Methods': 'GET,POST,OPTIONS'
-    }
-  };
-}
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS'
+};
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -28,15 +14,8 @@ const logStep = (step: string, details?: any) => {
 };
 
 serve(async (req) => {
-  const origin = req.headers.get('origin') ?? '';
-  const c = cors(origin);
-  
   if (req.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: c.headers });
-  }
-  
-  if (!c.allowed) {
-    return new Response('Forbidden', { status: 403, headers: c.headers });
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   const supabaseClient = createClient(
@@ -90,32 +69,33 @@ serve(async (req) => {
         subscription_end: null,
         manual: true
       }), {
-        headers: { ...c.headers, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
     }
 
-    // Fallback: check profile premium_tier if set by admin
+    // Fallback: check profile plan_tier/premium_tier if set by admin
     const { data: profileTier } = await supabaseClient
       .from('profiles')
-      .select('premium_tier')
+      .select('plan_tier, premium_tier')
       .eq('id', user.id)
       .maybeSingle();
 
-    if (profileTier?.premium_tier && profileTier.premium_tier !== 'free') {
-      logStep("Found premium_tier on profile", { tier: profileTier.premium_tier });
+    const assignedTier = profileTier?.plan_tier || profileTier?.premium_tier;
+    if (assignedTier && assignedTier !== 'free') {
+      logStep("Found assigned tier on profile", { tier: assignedTier });
       const tierToProductMap: Record<string, string> = {
         'premium': 'prod_TBUW3WogN0dEtQ',
         'family': 'prod_TBUX7Ubgxwr3co',
       };
-      const productId = tierToProductMap[profileTier.premium_tier] || null;
+      const productId = tierToProductMap[assignedTier] || null;
       return new Response(JSON.stringify({
         subscribed: true,
         product_id: productId,
         subscription_end: null,
         manual: true
       }), {
-        headers: { ...c.headers, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
     }
@@ -127,7 +107,7 @@ serve(async (req) => {
     if (customers.data.length === 0) {
       logStep("No customer found, returning unsubscribed state");
       return new Response(JSON.stringify({ subscribed: false }), {
-        headers: { ...c.headers, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
     }
@@ -158,16 +138,16 @@ serve(async (req) => {
       subscribed: hasActiveSub,
       product_id: productId,
       subscription_end: subscriptionEnd
-    }), {
-      headers: { ...c.headers, "Content-Type": "application/json" },
-      status: 200,
-    });
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR in check-subscription", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      headers: { ...c.headers, "Content-Type": "application/json" },
-      status: 500,
-    });
-  }
+  }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    status: 200,
+  });
+} catch (error) {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  logStep("ERROR in check-subscription", { message: errorMessage });
+  return new Response(JSON.stringify({ error: errorMessage }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    status: 500,
+  });
+}
 });
