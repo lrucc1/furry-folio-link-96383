@@ -230,44 +230,43 @@ const EditPet = () => {
               {/* Profile Photo */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Profile Photo</h3>
-                <div className="flex items-center gap-4">
-                  <div className="w-32 h-32 rounded-xl overflow-hidden bg-muted flex-shrink-0 relative group">
+                <Label htmlFor="photo" className="cursor-pointer block">
+                  <div className="w-48 h-48 rounded-xl overflow-hidden bg-muted relative group border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 transition-colors">
                     {photoPreview ? (
                       <>
                         <img src={photoPreview} alt="Pet preview" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Upload className="w-12 h-12 text-white" />
+                        </div>
                         <button
                           type="button"
-                          onClick={removePhoto}
-                          className="absolute top-2 right-2 bg-destructive text-destructive-foreground p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            removePhoto();
+                          }}
+                          className="absolute top-2 right-2 bg-destructive text-destructive-foreground p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
                         >
                           <X className="w-4 h-4" />
                         </button>
                       </>
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Upload className="w-12 h-12 text-muted-foreground" />
+                      <div className="w-full h-full flex flex-col items-center justify-center">
+                        <Upload className="w-12 h-12 text-muted-foreground mb-2" />
+                        <p className="text-sm text-muted-foreground">
+                          {uploading ? 'Uploading...' : 'Click to upload photo'}
+                        </p>
                       </div>
                     )}
                   </div>
-                  <div className="flex-1">
-                    <Label htmlFor="photo" className="cursor-pointer">
-                      <div className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-4 hover:border-primary/50 transition-colors text-center">
-                        <Upload className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground">
-                          {uploading ? 'Uploading...' : 'Click to upload & crop photo'}
-                        </p>
-                      </div>
-                      <Input
-                        id="photo"
-                        type="file"
-                        accept="image/*"
-                        onChange={handlePhotoSelect}
-                        className="hidden"
-                        disabled={uploading}
-                      />
-                    </Label>
-                  </div>
-                </div>
+                  <Input
+                    id="photo"
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoSelect}
+                    className="hidden"
+                    disabled={uploading}
+                  />
+                </Label>
               </div>
 
               {/* Basic Information */}
