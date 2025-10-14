@@ -319,24 +319,30 @@ const PetDetails = () => {
                     </div>
                   )}
                   
-                  {pet.registry_name && (
-                    <div className="p-4 border rounded-lg">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <span className="text-sm text-muted-foreground">Registry:</span>
-                          <p className="font-semibold text-lg mt-1">{pet.registry_name}</p>
-                        </div>
+                  <div className="p-4 border rounded-lg">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <span className="text-sm text-muted-foreground">Registry:</span>
+                        <p className="font-semibold text-lg mt-1">{pet.registry_name || '—'}</p>
                         {pet.registry_link && (
-                          <Button variant="outline" size="sm" asChild>
-                            <a href={pet.registry_link} target="_blank" rel="noopener noreferrer">
-                              <ExternalLink className="w-4 h-4 mr-2" />
-                              Update
-                            </a>
-                          </Button>
+                          <a
+                            className="inline-flex items-center text-primary hover:underline mt-2 text-sm"
+                            href={pet.registry_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <ExternalLink className="w-4 h-4 mr-1" />
+                            Open Registry
+                          </a>
                         )}
                       </div>
+                      {!pet.registry_link && (
+                        <Button variant="outline" size="sm" asChild>
+                          <Link to={`/pets/${pet.id}/edit`}>Add Registry Website</Link>
+                        </Button>
+                      )}
                     </div>
-                  )}
+                  </div>
                   
                   {!pet.microchip_number && !pet.registry_name && (
                     <Button variant="outline" className="w-full" asChild>
