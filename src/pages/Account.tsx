@@ -155,8 +155,8 @@ export default function Account() {
                     <p className="text-muted-foreground mb-4">
                       Share access to your pets with family members
                     </p>
-                    <Button variant="outline" onClick={() => navigate('/family')}>
-                      Manage Family Members
+                    <Button variant="outline" onClick={() => navigate('/dashboard')}>
+                      View My Pets
                     </Button>
                   </Card>
 

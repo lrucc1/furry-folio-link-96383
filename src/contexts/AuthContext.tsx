@@ -118,13 +118,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe()
   }, [])
 
+  // Auto-refresh subscription when profiles table changes
+  useEffect(() => {
+    if (!user) return
+
+    const channel = supabase
+      .channel('profile-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${user.id}`
+        },
+        () => {
+          console.log('[AuthContext] Profile updated, refreshing subscription')
+          setTimeout(() => checkSubscription(), 100)
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [user])
+
   // Periodic subscription check every minute
   useEffect(() => {
     if (!user) return
 
     const interval = setInterval(() => {
       checkSubscription()
-    }, 60000) // Check every minute
+    }, 60000)
 
     return () => clearInterval(interval)
   }, [user, session])

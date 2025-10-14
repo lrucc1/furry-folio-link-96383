@@ -90,7 +90,7 @@ export const DashboardHeader = () => {
             </Badge>
 
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/notifications">
+              <Link to="/dashboard">
                 <Bell className="w-4 h-4" />
               </Link>
             </Button>
