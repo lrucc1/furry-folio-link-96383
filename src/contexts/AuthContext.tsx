@@ -61,13 +61,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log('[AuthContext] Subscription response:', data)
 
       if (data) {
+        // Check if this is a manual subscription (from database)
+        const isManualSub = data.manual === true
         const tierInfo = data.product_id && SUBSCRIPTION_TIERS[data.product_id as keyof typeof SUBSCRIPTION_TIERS]
+        
+        // For manual subscriptions, use the tier directly
+        let tier: 'free' | 'premium' | 'family' = 'free'
+        let maxPets = 1
+        
+        if (isManualSub && tierInfo) {
+          tier = tierInfo.tier
+          maxPets = tierInfo.maxPets
+        } else if (data.subscribed && tierInfo) {
+          tier = tierInfo.tier
+          maxPets = tierInfo.maxPets
+        }
         
         const newSubInfo: SubscriptionInfo = {
           subscribed: data.subscribed || false,
           product_id: data.product_id,
-          tier: (tierInfo?.tier || 'free') as 'free' | 'premium' | 'family',
-          maxPets: tierInfo?.maxPets || 1,
+          tier,
+          maxPets,
           subscription_end: data.subscription_end,
         }
 
@@ -76,10 +90,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSubscriptionInfo(newSubInfo)
 
         // Update profile with tier
-        if (user && tierInfo) {
+        if (user && tier !== 'free') {
           await supabase
             .from('profiles')
-            .update({ premium_tier: tierInfo.tier })
+            .update({ premium_tier: tier })
             .eq('id', user.id)
         }
       }
