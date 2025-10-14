@@ -50,34 +50,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!session) return
 
     try {
+      console.log('[AuthContext] Checking subscription for user:', user?.email)
       const { data, error } = await supabase.functions.invoke('check-subscription')
       
       if (error) {
-        console.error('Error checking subscription:', error)
+        console.error('[AuthContext] Error checking subscription:', error)
         return
       }
+
+      console.log('[AuthContext] Subscription response:', data)
 
       if (data) {
         const tierInfo = data.product_id && SUBSCRIPTION_TIERS[data.product_id as keyof typeof SUBSCRIPTION_TIERS]
         
-        setSubscriptionInfo({
+        const newSubInfo: SubscriptionInfo = {
           subscribed: data.subscribed || false,
           product_id: data.product_id,
-          tier: tierInfo?.tier || 'free',
+          tier: (tierInfo?.tier || 'free') as 'free' | 'premium' | 'family',
           maxPets: tierInfo?.maxPets || 1,
           subscription_end: data.subscription_end,
-        })
+        }
+
+        console.log('[AuthContext] Setting subscription info:', newSubInfo)
+        
+        setSubscriptionInfo(newSubInfo)
 
         // Update profile with tier
-        if (user) {
+        if (user && tierInfo) {
           await supabase
             .from('profiles')
-            .update({ premium_tier: tierInfo?.tier || 'free' })
+            .update({ premium_tier: tierInfo.tier })
             .eq('id', user.id)
         }
       }
     } catch (error) {
-      console.error('Subscription check failed:', error)
+      console.error('[AuthContext] Subscription check failed:', error)
     }
   }
 

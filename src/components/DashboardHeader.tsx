@@ -11,6 +11,7 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Logo } from '@/components/Logo'
+import { RefreshSubscriptionButton } from '@/components/RefreshSubscriptionButton'
 import { User, Settings, LogOut, Bell, Crown, Star } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAdmin } from '@/hooks/useAdmin'
@@ -83,6 +84,8 @@ export const DashboardHeader = () => {
           </nav>
 
           <div className="flex items-center gap-4">
+            <RefreshSubscriptionButton />
+            
             <Badge className={tierDisplay.className}>
               {tierDisplay.icon && <tierDisplay.icon className="w-3 h-3 mr-1" />}
               {tierDisplay.label}
