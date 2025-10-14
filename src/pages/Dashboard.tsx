@@ -174,7 +174,7 @@ const Dashboard = () => {
                     </CardHeader>
                     <CardContent>
                       <p className="text-muted-foreground mb-4">
-                        {au(`You've reached the limit of ${maxPets} pet on the Free plan. Upgrade to Premium for up to 50 pets.`)}
+                        {au(`You've reached the limit of ${maxPets} pet on the Free plan. Upgrade to Premium for up to 5 pets.`)}
                       </p>
                       <Button asChild variant="hero">
                         <Link to="/pricing">
