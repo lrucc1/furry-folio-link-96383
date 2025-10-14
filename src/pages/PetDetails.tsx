@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DashboardHeader } from '@/components/DashboardHeader'
 import { Footer } from '@/components/Footer'
-import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download, Upload } from 'lucide-react'
+import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download, Upload, Scan, ExternalLink } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from '@/hooks/use-toast'
 import { PetDocuments } from '@/components/PetDocuments'
@@ -296,32 +296,55 @@ const PetDetails = () => {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Shield className="w-5 h-5" />
+                    <Scan className="w-5 h-5" />
                     Microchip & Registry
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {pet.microchip_number && (
-                    <div>
-                      <span className="text-sm text-muted-foreground">Microchip Number:</span>
-                      <p className="font-mono text-sm">
-                        {pet.microchip_number.replace(/(.{3})/g, '$1 ')}
-                      </p>
+                  {pet.microchip_number ? (
+                    <div className="p-4 bg-muted/50 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <Shield className="w-5 h-5 text-primary mt-0.5" />
+                        <div className="flex-1">
+                          <span className="text-sm font-medium text-muted-foreground">Microchip Number:</span>
+                          <p className="font-mono text-lg font-semibold mt-1">
+                            {pet.microchip_number.replace(/(.{3})/g, '$1 ')}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 text-muted-foreground text-sm">
+                      No microchip number registered
                     </div>
                   )}
                   
                   {pet.registry_name && (
-                    <div>
-                      <span className="text-sm text-muted-foreground">Registry:</span>
-                      <p className="font-medium">{pet.registry_name}</p>
-                      {pet.registry_link && (
-                        <Button variant="link" className="p-0 h-auto" asChild>
-                          <a href={pet.registry_link} target="_blank" rel="noopener noreferrer">
-                            Update Registry Details
-                          </a>
-                        </Button>
-                      )}
+                    <div className="p-4 border rounded-lg">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <span className="text-sm text-muted-foreground">Registry:</span>
+                          <p className="font-semibold text-lg mt-1">{pet.registry_name}</p>
+                        </div>
+                        {pet.registry_link && (
+                          <Button variant="outline" size="sm" asChild>
+                            <a href={pet.registry_link} target="_blank" rel="noopener noreferrer">
+                              <ExternalLink className="w-4 h-4 mr-2" />
+                              Update
+                            </a>
+                          </Button>
+                        )}
+                      </div>
                     </div>
+                  )}
+                  
+                  {!pet.microchip_number && !pet.registry_name && (
+                    <Button variant="outline" className="w-full" asChild>
+                      <Link to={`/pets/${pet.id}/edit`}>
+                        <Scan className="w-4 h-4 mr-2" />
+                        Add Microchip Details
+                      </Link>
+                    </Button>
                   )}
                 </CardContent>
               </Card>
