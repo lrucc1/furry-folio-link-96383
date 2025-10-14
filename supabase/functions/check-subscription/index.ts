@@ -2,10 +2,25 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const ALLOWED_ORIGINS = new Set([
+  'https://petlinkid.com',
+  'https://www.petlinkid.com',
+  'https://lovable.dev',
+  'http://localhost:5173',
+  'http://localhost:8080'
+]);
+
+function cors(origin: string) {
+  const allowed = ALLOWED_ORIGINS.has(origin);
+  return {
+    allowed,
+    headers: {
+      'Access-Control-Allow-Origin': allowed ? origin : 'https://petlinkid.com',
+      'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+      'Access-Control-Allow-Methods': 'GET,POST,OPTIONS'
+    }
+  };
+}
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -13,8 +28,15 @@ const logStep = (step: string, details?: any) => {
 };
 
 serve(async (req) => {
+  const origin = req.headers.get('origin') ?? '';
+  const c = cors(origin);
+  
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { status: 204, headers: c.headers });
+  }
+  
+  if (!c.allowed) {
+    return new Response('Forbidden', { status: 403, headers: c.headers });
   }
 
   const supabaseClient = createClient(
@@ -68,7 +90,7 @@ serve(async (req) => {
         subscription_end: null,
         manual: true
       }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...c.headers, "Content-Type": "application/json" },
         status: 200,
       });
     }
@@ -93,19 +115,19 @@ serve(async (req) => {
         subscription_end: null,
         manual: true
       }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...c.headers, "Content-Type": "application/json" },
         status: 200,
       });
     }
 
     // If no manual subscription or profile tier, check Stripe
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+    const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     
     if (customers.data.length === 0) {
       logStep("No customer found, returning unsubscribed state");
       return new Response(JSON.stringify({ subscribed: false }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...c.headers, "Content-Type": "application/json" },
         status: 200,
       });
     }
@@ -137,14 +159,14 @@ serve(async (req) => {
       product_id: productId,
       subscription_end: subscriptionEnd
     }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...c.headers, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR in check-subscription", { message: errorMessage });
     return new Response(JSON.stringify({ error: errorMessage }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...c.headers, "Content-Type": "application/json" },
       status: 500,
     });
   }

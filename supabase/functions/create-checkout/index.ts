@@ -2,14 +2,36 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const ALLOWED_ORIGINS = new Set([
+  'https://petlinkid.com',
+  'https://www.petlinkid.com',
+  'https://lovable.dev',
+  'http://localhost:5173',
+  'http://localhost:8080'
+]);
+
+function cors(origin: string) {
+  const allowed = ALLOWED_ORIGINS.has(origin);
+  return {
+    allowed,
+    headers: {
+      'Access-Control-Allow-Origin': allowed ? origin : 'https://petlinkid.com',
+      'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+      'Access-Control-Allow-Methods': 'GET,POST,OPTIONS'
+    }
+  };
+}
 
 serve(async (req) => {
+  const origin = req.headers.get('origin') ?? '';
+  const c = cors(origin);
+  
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { status: 204, headers: c.headers });
+  }
+  
+  if (!c.allowed) {
+    return new Response('Forbidden', { status: 403, headers: c.headers });
   }
 
   const supabaseClient = createClient(
@@ -28,7 +50,7 @@ serve(async (req) => {
     if (!priceId) throw new Error("Price ID is required");
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
-      apiVersion: "2025-08-27.basil" 
+      apiVersion: "2024-06-20" 
     });
 
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
@@ -47,17 +69,17 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      success_url: `${req.headers.get("origin")}/account?success=true`,
-      cancel_url: `${req.headers.get("origin")}/pricing?canceled=true`,
+      success_url: `${origin}/account?success=true`,
+      cancel_url: `${origin}/pricing?canceled=true`,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...c.headers, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...c.headers, "Content-Type": "application/json" },
       status: 500,
     });
   }
