@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Upload, FileText, Image as ImageIcon, Trash2, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { DocumentViewer } from './DocumentViewer';
+import { ImageCropDialog } from './ImageCropDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,6 +49,9 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [docToDelete, setDocToDelete] = useState<PetDocument | null>(null);
   const [totalStorage, setTotalStorage] = useState(0);
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+  const [pendingFileName, setPendingFileName] = useState<string>('');
 
   useEffect(() => {
     fetchDocuments();
@@ -101,23 +105,48 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
       return;
     }
 
+    // If it's an image, open crop dialog
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImageToCrop(reader.result as string);
+        setPendingFileName(file.name);
+        setCropDialogOpen(true);
+      };
+      reader.readAsDataURL(file);
+      event.target.value = '';
+      return;
+    }
+
+    // For non-image files, upload directly
+    await uploadFile(file, file.name);
+    event.target.value = '';
+  };
+
+  const handleCroppedImage = async (croppedBlob: Blob) => {
+    await uploadFile(croppedBlob, pendingFileName);
+  };
+
+  const uploadFile = async (file: Blob, fileName: string) => {
+    if (!user) return;
+
     setUploading(true);
 
     try {
       // Upload to storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/${petId}/${Date.now()}.${fileExt}`;
+      const fileExt = fileName.split('.').pop();
+      const storagePath = `${user.id}/${petId}/${Date.now()}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from('pet-documents')
-        .upload(fileName, file);
+        .upload(storagePath, file);
 
       if (uploadError) throw uploadError;
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('pet-documents')
-        .getPublicUrl(fileName);
+        .getPublicUrl(storagePath);
 
       // Save document record
       const { error: dbError } = await supabase
@@ -125,7 +154,7 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
         .insert({
           pet_id: petId,
           user_id: user.id,
-          file_name: file.name,
+          file_name: fileName,
           file_url: publicUrl,
           file_type: file.type,
           file_size: file.size,
@@ -135,9 +164,6 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
 
       toast.success('Document uploaded successfully');
       fetchDocuments();
-      
-      // Reset input
-      event.target.value = '';
     } catch (error) {
       console.error('Error uploading document:', error);
       toast.error('Failed to upload document');
@@ -260,7 +286,7 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
                     {uploading ? 'Uploading...' : 'Click to upload or drag and drop'}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    PDF, DOC, DOCX, Images (Max 50MB per file)
+                    PDF, DOC, DOCX, Images (Max 50MB) • Images will be cropped
                   </p>
                   {storageUsedPercent > 80 && (
                     <p className="text-xs text-warning mt-2">
@@ -355,6 +381,14 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ImageCropDialog
+        image={imageToCrop}
+        open={cropDialogOpen}
+        onClose={() => setCropDialogOpen(false)}
+        onCropComplete={handleCroppedImage}
+        aspectRatio={4 / 3}
+      />
     </>
   );
 };

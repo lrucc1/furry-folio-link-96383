@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { DashboardHeader } from '@/components/DashboardHeader'
+import { ImageCropDialog } from '@/components/ImageCropDialog'
 import { ArrowLeft, Upload, X } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 
@@ -21,6 +22,8 @@ const EditPet = () => {
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [cropDialogOpen, setCropDialogOpen] = useState(false)
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null)
   
   const [formData, setFormData] = useState({
     name: '',
@@ -91,18 +94,28 @@ const EditPet = () => {
     }
   }
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file || !user || !id) return
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      setImageToCrop(reader.result as string)
+      setCropDialogOpen(true)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleCroppedImage = async (croppedBlob: Blob) => {
+    if (!user || !id) return
 
     setUploading(true)
     try {
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${user.id}/${id}-${Math.random()}.${fileExt}`
+      const fileName = `${user.id}/${id}-${Math.random()}.jpg`
 
       const { error: uploadError } = await supabase.storage
         .from('pet-documents')
-        .upload(fileName, file, { upsert: true })
+        .upload(fileName, croppedBlob, { upsert: true })
 
       if (uploadError) throw uploadError
 
@@ -241,14 +254,14 @@ const EditPet = () => {
                       <div className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-4 hover:border-primary/50 transition-colors text-center">
                         <Upload className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
                         <p className="text-sm text-muted-foreground">
-                          {uploading ? 'Uploading...' : 'Click to upload photo'}
+                          {uploading ? 'Uploading...' : 'Click to upload & crop photo'}
                         </p>
                       </div>
                       <Input
                         id="photo"
                         type="file"
                         accept="image/*"
-                        onChange={handlePhotoUpload}
+                        onChange={handlePhotoSelect}
                         className="hidden"
                         disabled={uploading}
                       />
@@ -449,6 +462,14 @@ const EditPet = () => {
             </form>
           </CardContent>
         </Card>
+
+        <ImageCropDialog
+          image={imageToCrop}
+          open={cropDialogOpen}
+          onClose={() => setCropDialogOpen(false)}
+          onCropComplete={handleCroppedImage}
+          aspectRatio={1}
+        />
       </main>
     </div>
   )
