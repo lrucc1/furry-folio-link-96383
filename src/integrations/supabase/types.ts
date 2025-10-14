@@ -186,6 +186,8 @@ export type Database = {
           notes: string | null
           photo_url: string | null
           public_id: string
+          registry_link: string | null
+          registry_name: string | null
           species: string
           status: string | null
           updated_at: string
@@ -215,6 +217,8 @@ export type Database = {
           notes?: string | null
           photo_url?: string | null
           public_id?: string
+          registry_link?: string | null
+          registry_name?: string | null
           species: string
           status?: string | null
           updated_at?: string
@@ -244,6 +248,8 @@ export type Database = {
           notes?: string | null
           photo_url?: string | null
           public_id?: string
+          registry_link?: string | null
+          registry_name?: string | null
           species?: string
           status?: string | null
           updated_at?: string

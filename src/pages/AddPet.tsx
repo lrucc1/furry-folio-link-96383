@@ -89,6 +89,8 @@ const AddPet = () => {
         gender: (formData.sex as string) || null,
         date_of_birth: formData.date_of_birth || null,
         microchip_number: formData.microchip_number || null,
+        registry_name: formData.registry_name || null,
+        registry_link: formData.registry_link || null,
         vet_name: formData.vet_clinic || null,
         notes: formData.notes || null,
       }
