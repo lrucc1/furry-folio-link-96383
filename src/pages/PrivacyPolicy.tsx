@@ -31,7 +31,7 @@ const PrivacyPolicy = () => {
               Your privacy matters to us. Learn how we collect, use, and protect your personal information.
             </p>
             <p className="text-sm text-muted-foreground mt-2">
-              Last updated: September 22, 2024
+              Last updated: 14 October 2025
             </p>
           </div>
         </div>
@@ -95,6 +95,21 @@ const PrivacyPolicy = () => {
                 <li>To improve our app and develop new features</li>
                 <li>To comply with legal obligations</li>
               </ul>
+
+              <h2 className="text-2xl font-bold text-foreground mb-4">Overseas disclosures & data location</h2>
+              <p className="text-muted-foreground mb-4">
+                Some of our technology providers (for example, cloud hosting, analytics or payments) may store or process information outside Australia. Where this occurs, we take reasonable steps to ensure those providers handle your information in a way that is consistent with the Australian Privacy Principles (APPs). Our current core providers include our application hosting/database platform and our payments provider. We will update this page if our providers materially change.
+              </p>
+
+              <h2 className="text-2xl font-bold text-foreground mb-4">Access, correction and deletion</h2>
+              <p className="text-muted-foreground mb-4">
+                You can request access to the personal information we hold about you, ask us to correct it if it is inaccurate, or request deletion of your account. To do so, please contact us using the details below. For security, we may need to verify your identity before actioning your request.
+              </p>
+
+              <h2 className="text-2xl font-bold text-foreground mb-4">Contact & complaints</h2>
+              <p className="text-muted-foreground mb-4">
+                If you have questions or concerns about privacy, contact us at <a href="mailto:privacy@petlinkid.com" className="underline">privacy@petlinkid.com</a>. If you are not satisfied with our response, you may lodge a complaint with the Office of the Australian Information Commissioner (OAIC).
+              </p>
 
               <h2 className="text-2xl font-bold text-foreground mb-4">3. Information Sharing</h2>
               <p className="text-muted-foreground mb-4">

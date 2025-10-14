@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { supabase } from '@/integrations/supabase/client'
@@ -53,7 +53,7 @@ const AuthPage = () => {
 
         <div className="text-center mt-6">
           <p className="text-white/70 text-sm">
-            By signing in, you agree to our Terms of Service and Privacy Policy
+            By signing in, you agree to our <Link to="/terms" className="underline">Terms of Service</Link> and <Link to="/privacy" className="underline">Privacy Policy</Link>.
           </p>
         </div>
       </div>
