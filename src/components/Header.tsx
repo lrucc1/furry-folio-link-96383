@@ -5,6 +5,7 @@ import { Menu, Plus, Crown, Star } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
+import { UserMenu } from "@/components/UserMenu";
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -75,17 +76,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
                 {tierDisplay.label}
               </Badge>
               <NotificationsDropdown />
-              
-              <Button 
-                variant="ghost" 
-                size="icon"
-                className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary/20"
-                onClick={() => navigate('/profile')}
-              >
-                <span className="text-sm font-semibold text-primary">
-                  {user.email?.charAt(0).toUpperCase() || 'U'}
-                </span>
-              </Button>
+              <UserMenu />
               
               <Button 
                 variant="hero" 

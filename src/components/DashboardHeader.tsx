@@ -11,10 +11,10 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Logo } from '@/components/Logo'
-import { RefreshSubscriptionButton } from '@/components/RefreshSubscriptionButton'
 import { User, Settings, LogOut, Bell, Crown, Star } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAdmin } from '@/hooks/useAdmin'
+import { UserMenu } from '@/components/UserMenu'
 
 export const DashboardHeader = () => {
   const { user, signOut, subscriptionInfo } = useAuth()
@@ -84,8 +84,6 @@ export const DashboardHeader = () => {
           </nav>
 
           <div className="flex items-center gap-4">
-            <RefreshSubscriptionButton />
-            
             <Badge className={tierDisplay.className}>
               {tierDisplay.icon && <tierDisplay.icon className="w-3 h-3 mr-1" />}
               {tierDisplay.label}
@@ -97,55 +95,7 @@ export const DashboardHeader = () => {
               </Link>
             </Button>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary text-primary-foreground">
-                      {user?.email ? getInitials(user.email) : <User className="w-4 h-4" />}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <div className="flex flex-col space-y-1 p-2">
-                  <p className="text-sm font-medium leading-none">{user?.email}</p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    Manage your pets and account
-                  </p>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/profile">
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
-                  </Link>
-                </DropdownMenuItem>
-                {isAdmin && (
-                  <DropdownMenuItem asChild>
-                    <Link to="/admin">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Admin</span>
-                    </Link>
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem asChild>
-                  <Link to="/settings">
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleSignOut}
-                  disabled={loading}
-                  className="text-red-600 focus:text-red-600"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Sign out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <UserMenu />
           </div>
         </div>
       </div>
