@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Logo } from "./Logo";
-import { Menu, Plus } from "lucide-react";
+import { Menu, Plus, Crown, Star } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
@@ -10,8 +11,20 @@ interface HeaderProps {
 }
 
 export const Header = ({ onMenuClick }: HeaderProps) => {
-  const { user } = useAuth();
+  const { user, subscriptionInfo } = useAuth();
   const navigate = useNavigate();
+
+  const getTierDisplay = () => {
+    switch (subscriptionInfo.tier) {
+      case 'premium':
+        return { label: 'Premium', icon: Star, className: 'bg-primary text-primary-foreground' };
+      case 'family':
+        return { label: 'Family', icon: Crown, className: 'bg-gradient-accent text-accent-foreground' };
+      default:
+        return { label: 'Free', icon: null as any, className: 'bg-muted text-muted-foreground' };
+    }
+  };
+  const tierDisplay = getTierDisplay();
   return (
     <header className="border-b border-border bg-white/95 backdrop-blur-sm sticky top-0 z-50 shadow-soft">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -57,6 +70,10 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
         <div className="flex items-center gap-2">
           {user ? (
             <>
+              <Badge className={tierDisplay.className}>
+                {tierDisplay.icon && <tierDisplay.icon className="w-3 h-3 mr-1" />}
+                {tierDisplay.label}
+              </Badge>
               <NotificationsDropdown />
               
               <Button 

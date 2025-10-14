@@ -72,7 +72,32 @@ serve(async (req) => {
       });
     }
 
-    // If no manual subscription, check Stripe
+    // Fallback: check profile premium_tier if set by admin
+    const { data: profileTier } = await supabaseClient
+      .from('profiles')
+      .select('premium_tier')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileTier?.premium_tier && profileTier.premium_tier !== 'free') {
+      logStep("Found premium_tier on profile", { tier: profileTier.premium_tier });
+      const tierToProductMap: Record<string, string> = {
+        'premium': 'prod_TBUW3WogN0dEtQ',
+        'family': 'prod_TBUX7Ubgxwr3co',
+      };
+      const productId = tierToProductMap[profileTier.premium_tier] || null;
+      return new Response(JSON.stringify({
+        subscribed: true,
+        product_id: productId,
+        subscription_end: null,
+        manual: true
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    // If no manual subscription or profile tier, check Stripe
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     
