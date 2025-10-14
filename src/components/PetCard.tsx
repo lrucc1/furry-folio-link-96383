@@ -24,15 +24,15 @@ interface PetCardProps {
 export const PetCard = ({ pet, onViewDetails, onToggleLost }: PetCardProps) => {
   return (
     <Card className="bg-gradient-card border-0 shadow-medium hover:shadow-strong transition-spring overflow-hidden group">
-      <div className="relative bg-muted">
+      <div className="relative overflow-hidden">
         {pet.photo ? (
           <img 
             src={pet.photo} 
             alt={`${pet.name} photo`}
-            className="w-full h-48 object-contain group-hover:scale-105 transition-spring"
+            className="w-full h-56 object-cover object-center group-hover:scale-105 transition-spring"
           />
         ) : (
-          <div className="w-full h-48 flex items-center justify-center group-hover:scale-105 transition-spring">
+          <div className="w-full h-56 bg-muted flex items-center justify-center group-hover:scale-105 transition-spring">
             <Heart className="w-12 h-12 text-muted-foreground" />
           </div>
         )}
