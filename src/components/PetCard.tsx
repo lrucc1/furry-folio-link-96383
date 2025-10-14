@@ -2,6 +2,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, MapPin, QrCode, Calendar, AlertTriangle } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useState } from "react";
 
 interface Pet {
   id: string;
@@ -13,6 +15,7 @@ interface Pet {
   isLost: boolean;
   microchipNumber?: string;
   lastVaccination?: string;
+  publicId?: string;
 }
 
 interface PetCardProps {
@@ -22,6 +25,9 @@ interface PetCardProps {
 }
 
 export const PetCard = ({ pet, onViewDetails, onToggleLost }: PetCardProps) => {
+  const [qrDialogOpen, setQrDialogOpen] = useState(false);
+  const publicUrl = `${window.location.origin}/pet/${pet.publicId}`;
+
   return (
     <Card className="bg-gradient-card border-0 shadow-medium hover:shadow-strong transition-spring overflow-hidden group">
       <div className="relative overflow-hidden">
@@ -44,14 +50,37 @@ export const PetCard = ({ pet, onViewDetails, onToggleLost }: PetCardProps) => {
           </Badge>
         )}
         
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute top-3 right-3 bg-white/90 hover:bg-white shadow-soft"
-          onClick={() => onToggleLost(pet.id)}
-        >
-          <QrCode className="w-4 h-4" />
-        </Button>
+        <Dialog open={qrDialogOpen} onOpenChange={setQrDialogOpen}>
+          <DialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-3 right-3 bg-background/90 hover:bg-background shadow-soft"
+            >
+              <QrCode className="w-4 h-4" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Public Profile QR Code</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col items-center gap-4 py-4">
+              <div className="bg-white p-4 rounded-lg">
+                <img 
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(publicUrl)}`}
+                  alt="QR Code"
+                  className="w-48 h-48"
+                />
+              </div>
+              <p className="text-sm text-muted-foreground text-center">
+                Scan this code to view {pet.name}'s public profile
+              </p>
+              <code className="text-xs bg-muted px-3 py-2 rounded font-mono">
+                {publicUrl}
+              </code>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <CardHeader className="pb-3">

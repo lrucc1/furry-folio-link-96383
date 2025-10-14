@@ -23,6 +23,7 @@ interface Pet {
   is_lost: boolean
   microchip_number: string | null
   created_at: string
+  public_id: string
 }
 
 const Dashboard = () => {
@@ -150,7 +151,8 @@ const Dashboard = () => {
                         photo: pet.photo_url || 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=300&fit=crop',
                         isLost: pet.is_lost,
                         microchipNumber: pet.microchip_number || '',
-                        lastVaccination: '2024-06-15'
+                        lastVaccination: '2024-06-15',
+                        publicId: pet.public_id
                       }}
                       onViewDetails={handleViewPetDetails}
                       onToggleLost={handleToggleLost}

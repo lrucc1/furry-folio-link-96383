@@ -13,6 +13,7 @@ import AddPet from "./pages/AddPet";
 import EditPet from "./pages/EditPet";
 import PetDetails from "./pages/PetDetails";
 import FoundPet from "./pages/FoundPet";
+import PublicPetProfile from "./pages/PublicPetProfile";
 import AdminDashboard from "./pages/AdminDashboard";
 import HelpCentre from "./pages/HelpCentre";
 import Contact from "./pages/Contact";
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/found/:publicId" element={<FoundPet />} />
+            <Route path="/pet/:publicId" element={<PublicPetProfile />} />
             <Route path="/help" element={<HelpCentre />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/lost-pet-guide" element={<LostPetGuide />} />
