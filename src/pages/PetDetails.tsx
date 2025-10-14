@@ -223,23 +223,24 @@ const PetDetails = () => {
               <div className="flex-1">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <div className="flex items-center gap-3 mb-2">
-                      <h1 className="text-3xl font-bold text-foreground">{pet.name}</h1>
-                      <Badge variant="outline" className="text-xs font-mono">
-                        {pet.public_id}
-                      </Badge>
-                    </div>
+                    <h1 className="text-3xl font-bold text-foreground mb-2">{pet.name}</h1>
                     <p className="text-lg text-muted-foreground">
                       {pet.breed ? `${pet.breed} ${pet.species}` : pet.species}
                     </p>
                   </div>
                   
-                  {pet.is_lost && (
-                    <Badge variant="destructive" className="text-sm">
-                      <MapPin className="w-3 h-3 mr-1" />
-                      Lost
+                  <div className="flex flex-col gap-2 items-end">
+                    <Badge variant="secondary" className="font-mono text-xs px-3 py-1">
+                      <Shield className="w-3 h-3 mr-1.5" />
+                      {pet.public_id}
                     </Badge>
-                  )}
+                    {pet.is_lost && (
+                      <Badge variant="destructive" className="text-sm">
+                        <MapPin className="w-3 h-3 mr-1" />
+                        Lost
+                      </Badge>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
