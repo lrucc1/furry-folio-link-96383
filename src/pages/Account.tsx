@@ -65,11 +65,15 @@ export default function Account() {
     try {
       const { data, error } = await supabase.functions.invoke('check-subscription');
       if (error) throw error;
+      console.log('Subscription data:', data);
       setSubscription(data);
       
       // Fetch invoices if user has a subscription
       if (data?.subscribed) {
+        console.log('Fetching invoices...');
         await fetchInvoices();
+      } else {
+        console.log('No active subscription, skipping invoice fetch');
       }
     } catch (error) {
       console.error('Error checking subscription:', error);
@@ -82,9 +86,12 @@ export default function Account() {
   const fetchInvoices = async () => {
     setLoadingInvoices(true);
     try {
+      console.log('Calling get-invoices function...');
       const { data, error } = await supabase.functions.invoke('get-invoices');
+      console.log('Invoice response:', { data, error });
       if (error) throw error;
       setInvoices(data?.invoices || []);
+      console.log('Invoices set:', data?.invoices);
     } catch (error) {
       console.error('Error fetching invoices:', error);
       toast.error('Failed to load invoice history');
