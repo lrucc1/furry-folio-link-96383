@@ -90,25 +90,6 @@ export const PetCard = ({ pet, onViewDetails, onToggleLost }: PetCardProps) => {
           >
             View Details
           </Button>
-          {pet.isLost ? (
-            <Button 
-              variant="success" 
-              size="sm"
-              onClick={() => onToggleLost(pet.id)}
-              className="px-4"
-            >
-              Found
-            </Button>
-          ) : (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => onToggleLost(pet.id)}
-              className="px-4"
-            >
-              <MapPin className="w-3 h-3" />
-            </Button>
-          )}
         </div>
       </CardContent>
     </Card>
