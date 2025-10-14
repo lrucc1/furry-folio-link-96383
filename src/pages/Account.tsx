@@ -421,27 +421,13 @@ export default function Account() {
                       <FileText className="w-5 h-5" />
                       {au('Document Storage')}
                     </h2>
-                    <div className="space-y-2">
-                      <p className="text-muted-foreground">
-                        {au('Storage used')}: {loadingStorage ? (
-                          <Loader2 className="w-4 h-4 inline animate-spin ml-2" />
-                        ) : (
-                          `${storageUsedMB} MB / ${tier === 'family' ? '200' : '50'} MB`
-                        )}
-                      </p>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={calculateStorageUsage}
-                        disabled={loadingStorage}
-                      >
-                        {loadingStorage ? (
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        ) : (
-                          au('Refresh Storage')
-                        )}
-                      </Button>
-                    </div>
+                    <p className="text-muted-foreground">
+                      {au('Storage used')}: {loadingStorage ? (
+                        <Loader2 className="w-4 h-4 inline animate-spin ml-2" />
+                      ) : (
+                        `${storageUsedMB} MB / ${tier === 'family' ? '200' : '50'} MB`
+                      )}
+                    </p>
                   </Card>
                 </>
               )}
