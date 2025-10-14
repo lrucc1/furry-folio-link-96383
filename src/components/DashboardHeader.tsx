@@ -54,9 +54,35 @@ export const DashboardHeader = () => {
     <header className="bg-white border-b border-border">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <Link to="/dashboard" className="flex items-center gap-2">
-            <Logo />
-          </Link>
+          <div className="flex items-center gap-8">
+            <Link to="/dashboard" className="flex items-center gap-2">
+              <Logo />
+            </Link>
+
+            <nav className="hidden md:flex items-center gap-6">
+              <Button 
+                variant="ghost" 
+                className="text-foreground hover:text-primary"
+                asChild
+              >
+                <Link to="/dashboard">My Pets</Link>
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="text-foreground hover:text-primary"
+                asChild
+              >
+                <Link to="/smart-tags">Smart Tags</Link>
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="text-foreground hover:text-primary"
+                asChild
+              >
+                <Link to="/dashboard">Reminders</Link>
+              </Button>
+            </nav>
+          </div>
 
           <div className="flex items-center gap-4">
             <Badge className={tierDisplay.className}>
