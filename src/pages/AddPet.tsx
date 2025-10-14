@@ -1,21 +1,26 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { usePlan } from '@/lib/plan/PlanContext'
+import { TierFeatures } from '@/config/tierFeatures'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { DashboardHeader } from '@/components/DashboardHeader'
 import { ArrowLeft, Upload } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from '@/hooks/use-toast'
+import { au } from '@/lib/auEnglish'
 
 const AddPet = () => {
-  const { user, subscriptionInfo } = useAuth()
+  const { user } = useAuth()
+  const { tier } = usePlan()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [petCount, setPetCount] = useState(0)
@@ -35,10 +40,12 @@ const AddPet = () => {
     setPetCount(count || 0)
   }
 
-  const canAddPet = subscriptionInfo.maxPets === -1 || petCount < subscriptionInfo.maxPets
-  const remainingPets = subscriptionInfo.maxPets === -1 
+  const maxPets = TierFeatures[tier].maxPets as number
+  const canAddPet = maxPets === -1 || petCount < maxPets
+  const remainingPets = maxPets === -1 
     ? 'Unlimited' 
-    : Math.max(0, subscriptionInfo.maxPets - petCount)
+    : Math.max(0, maxPets - petCount)
+  const progressPercentage = maxPets === -1 ? 0 : (petCount / maxPets) * 100
   const [formData, setFormData] = useState({
     name: '',
     species: '',
@@ -61,10 +68,10 @@ const AddPet = () => {
     if (!user) return
 
     // Check pet limit
-    if (subscriptionInfo.maxPets !== -1 && petCount >= subscriptionInfo.maxPets) {
+    if (maxPets !== -1 && petCount >= maxPets) {
       toast({
-        title: "Pet limit reached",
-        description: `You've reached the limit of ${subscriptionInfo.maxPets} pet(s) on the ${subscriptionInfo.tier} plan. Please upgrade to add more pets.`,
+        title: au("Pet limit reached"),
+        description: au(`You've reached the limit of ${maxPets} pet(s) on the ${tier} plan. Please upgrade to add more pets.`),
         variant: "destructive",
       })
       navigate('/pricing')
@@ -101,16 +108,16 @@ const AddPet = () => {
       if (error) throw error
 
       toast({
-        title: "Pet added successfully!",
-        description: `${formData.name} has been added to your PetLinkID.`,
+        title: au("Pet added successfully!"),
+        description: au(`${formData.name} has been added to your PetLinkID.`),
       })
 
       navigate('/dashboard')
     } catch (error) {
       console.error('Error adding pet:', error)
       toast({
-        title: "Error",
-        description: "Failed to add pet. Please try again.",
+        title: au("Error"),
+        description: au("Failed to add pet. Please try again."),
         variant: "destructive",
       })
     } finally {
@@ -131,7 +138,7 @@ const AddPet = () => {
           <Button variant="ghost" size="sm" asChild>
             <Link to="/dashboard">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
+              {au('Back to Dashboard')}
             </Link>
           </Button>
         </div>
@@ -139,22 +146,37 @@ const AddPet = () => {
         {/* Subscription Status Card */}
         <Card className="mb-6 bg-gradient-card border-primary/20">
           <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-sm text-muted-foreground">Current Plan</p>
-                <p className="text-xl font-semibold capitalize">{subscriptionInfo.tier}</p>
+                <p className="text-sm text-muted-foreground">{au('Current Plan')}</p>
+                <p className="text-xl font-semibold capitalize">{tier === 'premium' ? au('Premium') : au('Free')}</p>
               </div>
               <div className="text-right">
-                <p className="text-sm text-muted-foreground">Pets Available</p>
+                <p className="text-sm text-muted-foreground">{au('Pets Available')}</p>
                 <p className="text-xl font-semibold">
-                  {remainingPets} {subscriptionInfo.maxPets !== -1 && `of ${subscriptionInfo.maxPets}`}
+                  {petCount} {au('of')} {maxPets === -1 ? au('Unlimited') : maxPets}
                 </p>
               </div>
             </div>
+            
+            {maxPets !== -1 && (
+              <div className="space-y-2">
+                <Progress value={progressPercentage} className="h-2" />
+                <p className="text-sm text-muted-foreground text-center">
+                  {remainingPets === 'Unlimited' 
+                    ? au('Unlimited pets remaining') 
+                    : remainingPets === 0
+                    ? au('No pets remaining')
+                    : au(`${remainingPets} ${remainingPets === 1 ? 'pet' : 'pets'} remaining`)
+                  }
+                </p>
+              </div>
+            )}
+            
             {!canAddPet && (
               <div className="mt-4 p-3 bg-warning/10 border border-warning/20 rounded-md">
                 <p className="text-sm text-warning-foreground">
-                  You've reached your pet limit. <Link to="/pricing" className="underline font-medium">Upgrade your plan</Link> to add more pets.
+                  {au("You've reached your pet limit.")} <Link to="/pricing" className="underline font-medium">{au('Upgrade your plan')}</Link> {au('to add more pets')}.
                 </p>
               </div>
             )}
@@ -163,9 +185,9 @@ const AddPet = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Add New Pet</CardTitle>
+            <CardTitle className="text-2xl">{au('Add New Pet')}</CardTitle>
             <p className="text-muted-foreground">
-              Create a comprehensive profile for your furry family member
+              {au('Create a comprehensive profile for your furry family member')}
             </p>
           </CardHeader>
           <CardContent>
@@ -355,11 +377,11 @@ const AddPet = () => {
               </div>
 
               <div className="flex gap-4 pt-6">
-                <Button type="submit" disabled={loading} className="flex-1">
-                  {loading ? 'Adding Pet...' : 'Add Pet'}
+                <Button type="submit" disabled={loading || !canAddPet} className="flex-1">
+                  {loading ? au('Adding Pet...') : au('Add Pet')}
                 </Button>
                 <Button type="button" variant="outline" asChild>
-                  <Link to="/dashboard">Cancel</Link>
+                  <Link to="/dashboard">{au('Cancel')}</Link>
                 </Button>
               </div>
             </form>
