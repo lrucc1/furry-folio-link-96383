@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { PlanProvider } from "./lib/plan/PlanContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/AdminRoute";
 import Index from "./pages/Index";
@@ -15,6 +16,7 @@ import PetDetails from "./pages/PetDetails";
 import FoundPet from "./pages/FoundPet";
 import PublicPetProfile from "./pages/PublicPetProfile";
 import AdminDashboard from "./pages/AdminDashboard";
+import PlanDebug from "./pages/admin/PlanDebug";
 import HelpCentre from "./pages/HelpCentre";
 import Contact from "./pages/Contact";
 import LostPetGuide from "./pages/LostPetGuide";
@@ -34,10 +36,11 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+      <PlanProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
@@ -57,6 +60,14 @@ const App = () => (
               element={
                 <AdminRoute>
                   <AdminDashboard />
+                </AdminRoute>
+              } 
+            />
+            <Route 
+              path="/admin/plan-debug" 
+              element={
+                <AdminRoute>
+                  <PlanDebug />
                 </AdminRoute>
               } 
             />
@@ -114,6 +125,7 @@ const App = () => (
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
+      </PlanProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

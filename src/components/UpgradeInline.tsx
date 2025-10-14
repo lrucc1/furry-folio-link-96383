@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Crown } from 'lucide-react';
+import { au } from '@/lib/auEnglish';
 
 interface UpgradeInlineProps {
   feature: string;
@@ -23,9 +24,9 @@ export function UpgradeInline({ feature }: UpgradeInlineProps) {
           <Crown className="w-6 h-6 text-primary" />
         </div>
         <div className="flex-1">
-          <h3 className="font-semibold text-foreground mb-1">Premium Feature</h3>
+          <h3 className="font-semibold text-foreground mb-1">{au('Premium Feature')}</h3>
           <p className="text-muted-foreground text-sm mb-4">
-            This feature is available on <strong>Premium</strong> plans.
+            {au('This feature is available on')} <strong>{au('Premium')}</strong> {au('plans')}.
           </p>
           <Button 
             onClick={handleUpgrade} 
@@ -34,7 +35,7 @@ export function UpgradeInline({ feature }: UpgradeInlineProps) {
             className="gap-2"
           >
             <Crown className="w-4 h-4" />
-            Upgrade to Premium
+            {au('Upgrade to Premium')}
           </Button>
         </div>
       </div>

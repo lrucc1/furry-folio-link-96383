@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdmin } from '@/hooks/useAdmin';
-import { useEffectivePlan } from '@/hooks/useEffectivePlan';
+import { usePlan } from '@/lib/plan/PlanContext';
+import { au } from '@/lib/auEnglish';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
   DropdownMenu,
@@ -18,7 +19,7 @@ import { User, Settings, LogOut, Crown } from 'lucide-react';
 export const UserMenu = () => {
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdmin();
-  const { tier, loading: planLoading } = useEffectivePlan();
+  const { tier, loading: planLoading } = usePlan();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
@@ -67,27 +68,27 @@ export const UserMenu = () => {
         <DropdownMenuItem asChild>
           <Link to="/profile">
             <User className="mr-2 h-4 w-4" />
-            <span>Profile</span>
+            <span>{au('Profile')}</span>
           </Link>
         </DropdownMenuItem>
         {isAdmin && (
           <DropdownMenuItem asChild>
             <Link to="/admin">
               <Settings className="mr-2 h-4 w-4" />
-              <span>Admin</span>
+              <span>{au('Admin')}</span>
             </Link>
           </DropdownMenuItem>
         )}
         <DropdownMenuItem asChild>
           <Link to="/account">
             <Settings className="mr-2 h-4 w-4" />
-            <span>Account</span>
+            <span>{au('Account')}</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut} disabled={loading} className="text-red-600 focus:text-red-600">
           <LogOut className="mr-2 h-4 w-4" />
-          <span>Sign out</span>
+          <span>{au('Sign out')}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

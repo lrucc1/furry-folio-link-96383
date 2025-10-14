@@ -1,31 +1,23 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Logo } from "./Logo";
-import { Menu, Plus, Crown, Star } from "lucide-react";
+import { Menu, Plus, Star } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 import { UserMenu } from "@/components/UserMenu";
+import { usePlan } from "@/lib/plan/PlanContext";
+import { au } from "@/lib/auEnglish";
 
 interface HeaderProps {
   onMenuClick?: () => void;
 }
 
 export const Header = ({ onMenuClick }: HeaderProps) => {
-  const { user, subscriptionInfo } = useAuth();
+  const { user } = useAuth();
+  const { tier, loading } = usePlan();
   const navigate = useNavigate();
-
-  const getTierDisplay = () => {
-    switch (subscriptionInfo.tier) {
-      case 'premium':
-        return { label: 'Premium', icon: Star, className: 'bg-primary text-primary-foreground' };
-      case 'family':
-        return { label: 'Family', icon: Crown, className: 'bg-gradient-accent text-accent-foreground' };
-      default:
-        return { label: 'Free', icon: null as any, className: 'bg-muted text-muted-foreground' };
-    }
-  };
-  const tierDisplay = getTierDisplay();
   return (
     <header className="border-b border-border bg-white/95 backdrop-blur-sm sticky top-0 z-50 shadow-soft">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -71,10 +63,14 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
         <div className="flex items-center gap-2">
           {user ? (
             <>
-              <Badge className={tierDisplay.className}>
-                {tierDisplay.icon && <tierDisplay.icon className="w-3 h-3 mr-1" />}
-                {tierDisplay.label}
-              </Badge>
+              {loading ? (
+                <Skeleton className="h-6 w-20" />
+              ) : (
+                <Badge className={tier === 'premium' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}>
+                  {tier === 'premium' && <Star className="w-3 h-3 mr-1" />}
+                  {tier === 'premium' ? au('Premium') : au('Free')}
+                </Badge>
+              )}
               <NotificationsDropdown />
               <UserMenu />
               
@@ -84,7 +80,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
                 onClick={() => navigate('/pets/new')}
               >
                 <Plus className="w-4 h-4 mr-1" />
-                Add Pet
+                {au('Add Pet')}
               </Button>
             </>
           ) : (
@@ -93,7 +89,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
                 variant="ghost"
                 onClick={() => navigate('/auth')}
               >
-                Login
+                {au('Login')}
               </Button>
               
               <Button 
@@ -103,7 +99,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
                 onClick={() => navigate('/auth')}
               >
                 <Plus className="w-4 h-4 mr-1" />
-                Add Pet
+                {au('Add Pet')}
               </Button>
             </>
           )}

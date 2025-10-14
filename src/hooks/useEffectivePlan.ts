@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { computeEffectiveTier, Tier, PlanSource } from '@/lib/plan/effectivePlan';
+import { computeEffectiveTier, Tier, PlanSource, ProfilePlanData } from '@/lib/plan/effectivePlan';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function useEffectivePlan() {
@@ -25,7 +25,13 @@ export function useEffectivePlan() {
         .single();
 
       if (profile) {
-        setTier(computeEffectiveTier(profile));
+        const profileData: ProfilePlanData = {
+          plan_tier: profile.plan_tier as Tier | undefined,
+          manual_override: profile.manual_override,
+          premium_tier: profile.premium_tier as 'free' | 'premium' | 'family' | undefined,
+          plan_source: profile.plan_source as PlanSource | undefined,
+        };
+        setTier(computeEffectiveTier(profileData));
         setSource((profile.plan_source as PlanSource) || 'stripe');
       }
       setLoading(false);

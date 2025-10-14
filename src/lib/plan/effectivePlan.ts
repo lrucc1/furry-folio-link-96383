@@ -7,6 +7,7 @@ export interface ProfilePlanData {
   stripe_tier?: Tier | null;
   stripe_status?: string | null;
   premium_tier?: 'free' | 'premium' | 'family';
+  plan_source?: PlanSource;
 }
 
 export function computeEffectiveTier(profile: ProfilePlanData | null): Tier {
