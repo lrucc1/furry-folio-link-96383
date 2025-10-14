@@ -26,7 +26,7 @@ interface PetCardProps {
 
 export const PetCard = ({ pet, onViewDetails, onToggleLost }: PetCardProps) => {
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
-  const publicUrl = `${window.location.origin}/pet/${pet.publicId}`;
+  const publicUrl = `${window.location.origin}/pet/${pet.publicId || pet.id}`;
 
   return (
     <Card className="bg-gradient-card border-0 shadow-medium hover:shadow-strong transition-spring overflow-hidden group">
