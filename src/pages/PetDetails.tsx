@@ -223,7 +223,12 @@ const PetDetails = () => {
               <div className="flex-1">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h1 className="text-3xl font-bold text-foreground mb-2">{pet.name}</h1>
+                    <div className="flex items-center gap-3 mb-2">
+                      <h1 className="text-3xl font-bold text-foreground">{pet.name}</h1>
+                      <Badge variant="outline" className="text-xs font-mono">
+                        {pet.public_id}
+                      </Badge>
+                    </div>
                     <p className="text-lg text-muted-foreground">
                       {pet.breed ? `${pet.breed} ${pet.species}` : pet.species}
                     </p>
