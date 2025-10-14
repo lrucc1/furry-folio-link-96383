@@ -11,8 +11,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, Crown, Users, FileText, Settings, Download, Trash2, Star, Calendar, CreditCard } from 'lucide-react';
+import { Loader2, Crown, Users, FileText, Settings, Download, Trash2, Star, Calendar, CreditCard, Receipt, ExternalLink } from 'lucide-react';
 import { au } from '@/lib/auEnglish';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const SUBSCRIPTION_TIERS = {
   free: { name: 'Free', productId: null },
@@ -26,12 +27,28 @@ interface SubscriptionStatus {
   subscription_end: string | null;
 }
 
+interface Invoice {
+  id: string;
+  number: string | null;
+  amount_paid: number;
+  amount_due: number;
+  currency: string;
+  status: string;
+  created: number;
+  period_start: number;
+  period_end: number;
+  hosted_invoice_url: string | null;
+  invoice_pdf: string | null;
+}
+
 export default function Account() {
   const { user, signOut } = useAuth();
   const { tier, loading: planLoading } = usePlan();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [loadingInvoices, setLoadingInvoices] = useState(false);
   const [managingSubscription, setManagingSubscription] = useState(false);
   const [exportingData, setExportingData] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
@@ -49,11 +66,30 @@ export default function Account() {
       const { data, error } = await supabase.functions.invoke('check-subscription');
       if (error) throw error;
       setSubscription(data);
+      
+      // Fetch invoices if user has a subscription
+      if (data?.subscribed) {
+        await fetchInvoices();
+      }
     } catch (error) {
       console.error('Error checking subscription:', error);
       toast.error('Failed to load subscription status');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchInvoices = async () => {
+    setLoadingInvoices(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('get-invoices');
+      if (error) throw error;
+      setInvoices(data?.invoices || []);
+    } catch (error) {
+      console.error('Error fetching invoices:', error);
+      toast.error('Failed to load invoice history');
+    } finally {
+      setLoadingInvoices(false);
     }
   };
 
@@ -245,6 +281,93 @@ export default function Account() {
                   )}
                 </div>
               </Card>
+
+              {/* Invoice History */}
+              {subscription?.subscribed && (
+                <Card className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                      <Receipt className="w-5 h-5" />
+                      {au('Invoice History')}
+                    </h2>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={fetchInvoices}
+                      disabled={loadingInvoices}
+                    >
+                      {loadingInvoices ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        au('Refresh')
+                      )}
+                    </Button>
+                  </div>
+                  
+                  {loadingInvoices ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                    </div>
+                  ) : invoices.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>{au('Date')}</TableHead>
+                            <TableHead>{au('Invoice #')}</TableHead>
+                            <TableHead>{au('Amount')}</TableHead>
+                            <TableHead>{au('Status')}</TableHead>
+                            <TableHead className="text-right">{au('Actions')}</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {invoices.map((invoice) => (
+                            <TableRow key={invoice.id}>
+                              <TableCell>
+                                {new Date(invoice.created * 1000).toLocaleDateString('en-AU', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                                })}
+                              </TableCell>
+                              <TableCell className="font-medium">
+                                {invoice.number || invoice.id.slice(0, 8)}
+                              </TableCell>
+                              <TableCell>
+                                ${(invoice.amount_paid / 100).toFixed(2)} {invoice.currency.toUpperCase()}
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant={invoice.status === 'paid' ? 'default' : 'secondary'}
+                                  className={invoice.status === 'paid' ? 'bg-green-500' : ''}
+                                >
+                                  {invoice.status}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {invoice.hosted_invoice_url && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => window.open(invoice.hosted_invoice_url!, '_blank')}
+                                  >
+                                    <ExternalLink className="w-4 h-4 mr-1" />
+                                    {au('View')}
+                                  </Button>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-center py-8">
+                      {au('No invoices found')}
+                    </p>
+                  )}
+                </Card>
+              )}
 
               {(tier === 'premium' || tier === 'family') && (
                 <>
