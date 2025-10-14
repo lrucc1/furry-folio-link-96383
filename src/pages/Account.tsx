@@ -49,6 +49,8 @@ export default function Account() {
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loadingInvoices, setLoadingInvoices] = useState(false);
+  const [storageUsedMB, setStorageUsedMB] = useState<number>(0);
+  const [loadingStorage, setLoadingStorage] = useState(false);
   const [managingSubscription, setManagingSubscription] = useState(false);
   const [exportingData, setExportingData] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
@@ -59,6 +61,7 @@ export default function Account() {
       return;
     }
     checkSubscription();
+    calculateStorageUsage();
   }, [user, navigate]);
 
   const checkSubscription = async () => {
@@ -97,6 +100,28 @@ export default function Account() {
       toast.error('Failed to load invoice history');
     } finally {
       setLoadingInvoices(false);
+    }
+  };
+
+  const calculateStorageUsage = async () => {
+    setLoadingStorage(true);
+    try {
+      // Get total file size from pet_documents
+      const { data: documents, error } = await supabase
+        .from('pet_documents')
+        .select('file_size')
+        .eq('user_id', user?.id);
+      
+      if (error) throw error;
+      
+      const totalBytes = documents?.reduce((sum, doc) => sum + (doc.file_size || 0), 0) || 0;
+      const totalMB = totalBytes / (1024 * 1024);
+      
+      setStorageUsedMB(parseFloat(totalMB.toFixed(2)));
+    } catch (error) {
+      console.error('Error calculating storage:', error);
+    } finally {
+      setLoadingStorage(false);
     }
   };
 
@@ -396,9 +421,27 @@ export default function Account() {
                       <FileText className="w-5 h-5" />
                       {au('Document Storage')}
                     </h2>
-                    <p className="text-muted-foreground">
-                      {au('Storage used')}: 0 MB / {tier === 'family' ? '200' : '50'} MB
-                    </p>
+                    <div className="space-y-2">
+                      <p className="text-muted-foreground">
+                        {au('Storage used')}: {loadingStorage ? (
+                          <Loader2 className="w-4 h-4 inline animate-spin ml-2" />
+                        ) : (
+                          `${storageUsedMB} MB / ${tier === 'family' ? '200' : '50'} MB`
+                        )}
+                      </p>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={calculateStorageUsage}
+                        disabled={loadingStorage}
+                      >
+                        {loadingStorage ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          au('Refresh Storage')
+                        )}
+                      </Button>
+                    </div>
                   </Card>
                 </>
               )}
