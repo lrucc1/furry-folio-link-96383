@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DashboardHeader } from '@/components/DashboardHeader'
 import { Footer } from '@/components/Footer'
-import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download } from 'lucide-react'
+import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download, Upload } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from '@/hooks/use-toast'
 import { PetDocuments } from '@/components/PetDocuments'
@@ -204,7 +204,7 @@ const PetDetails = () => {
         <Card className="mb-8">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row gap-6">
-              <div className="w-32 h-32 rounded-xl overflow-hidden bg-muted flex-shrink-0">
+              <div className="w-32 h-32 rounded-xl overflow-hidden bg-muted flex-shrink-0 relative group">
                 {pet.photo_url ? (
                   <img src={pet.photo_url} alt={pet.name} className="w-full h-full object-cover" />
                 ) : (
@@ -212,6 +212,12 @@ const PetDetails = () => {
                     <Heart className="w-12 h-12 text-muted-foreground" />
                   </div>
                 )}
+                <Link 
+                  to={`/pets/${pet.id}/edit`}
+                  className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Upload className="w-8 h-8 text-white" />
+                </Link>
               </div>
               
               <div className="flex-1">
@@ -249,12 +255,20 @@ const PetDetails = () => {
                     <p className="font-medium">{pet.desexed ? 'Yes' : 'No'}</p>
                   </div>
                   {pet.date_of_birth && (
-                    <div>
-                      <span className="text-muted-foreground">Age:</span>
-                      <p className="font-medium">
-                        {calculateAge(pet.date_of_birth)}
-                      </p>
-                    </div>
+                    <>
+                      <div>
+                        <span className="text-muted-foreground">DOB:</span>
+                        <p className="font-medium">
+                          {new Date(pet.date_of_birth).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Age:</span>
+                        <p className="font-medium">
+                          {calculateAge(pet.date_of_birth)}
+                        </p>
+                      </div>
+                    </>
                   )}
                 </div>
               </div>

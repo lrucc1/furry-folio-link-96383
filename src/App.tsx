@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import AddPet from "./pages/AddPet";
+import EditPet from "./pages/EditPet";
 import PetDetails from "./pages/PetDetails";
 import FoundPet from "./pages/FoundPet";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -78,6 +79,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <PetDetails />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/pets/:id/edit" 
+              element={
+                <ProtectedRoute>
+                  <EditPet />
                 </ProtectedRoute>
               } 
             />
