@@ -111,6 +111,23 @@ const EditPet = () => {
 
     setUploading(true)
     try {
+      // Delete old photo from storage if it exists
+      if (formData.photo_url) {
+        try {
+          const oldPhotoPath = formData.photo_url.split('/').pop()
+          if (oldPhotoPath && oldPhotoPath.includes(user.id)) {
+            const fullPath = `${user.id}/${oldPhotoPath.split(`${user.id}/`)[1]}`
+            await supabase.storage
+              .from('pet-documents')
+              .remove([fullPath])
+            console.log('Old photo deleted:', fullPath)
+          }
+        } catch (deleteError) {
+          console.error('Error deleting old photo:', deleteError)
+          // Continue with upload even if delete fails
+        }
+      }
+
       const fileName = `${user.id}/${id}-${Math.random()}.jpg`
 
       const { error: uploadError } = await supabase.storage
@@ -142,7 +159,26 @@ const EditPet = () => {
     }
   }
 
-  const removePhoto = () => {
+  const removePhoto = async () => {
+    if (!user || !formData.photo_url) {
+      setPhotoPreview(null)
+      setFormData(prev => ({ ...prev, photo_url: '' }))
+      return
+    }
+
+    try {
+      const oldPhotoPath = formData.photo_url.split('/').pop()
+      if (oldPhotoPath && oldPhotoPath.includes(user.id)) {
+        const fullPath = `${user.id}/${oldPhotoPath.split(`${user.id}/`)[1]}`
+        await supabase.storage
+          .from('pet-documents')
+          .remove([fullPath])
+        console.log('Photo removed from storage:', fullPath)
+      }
+    } catch (error) {
+      console.error('Error removing photo:', error)
+    }
+
     setPhotoPreview(null)
     setFormData(prev => ({ ...prev, photo_url: '' }))
   }
