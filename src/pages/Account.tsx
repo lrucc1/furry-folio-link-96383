@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePlan } from '@/lib/plan/PlanContext';
+import { TierFeatures } from '@/config/tierFeatures';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, Crown, Users, FileText, Settings, Download, Trash2 } from 'lucide-react';
+import { Loader2, Crown, Users, FileText, Settings, Download, Trash2, Star, Calendar, CreditCard } from 'lucide-react';
+import { au } from '@/lib/auEnglish';
 
 const SUBSCRIPTION_TIERS = {
   free: { name: 'Free', productId: null },
@@ -24,6 +28,7 @@ interface SubscriptionStatus {
 
 export default function Account() {
   const { user, signOut } = useAuth();
+  const { tier, loading: planLoading } = usePlan();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
@@ -68,12 +73,15 @@ export default function Account() {
     }
   };
 
-  const getCurrentTier = () => {
-    if (!subscription?.subscribed) return 'free';
-    const tier = Object.entries(SUBSCRIPTION_TIERS).find(
-      ([, value]) => value.productId === subscription.product_id
-    );
-    return tier ? tier[0] : 'free';
+  const getTierName = (tierKey: string) => {
+    return tierKey === 'family' ? au('Family') : tierKey === 'premium' ? au('Premium') : au('Free');
+  };
+
+  const getTierPrice = (tierKey: string) => {
+    if (tierKey === 'free') return '$0';
+    if (tierKey === 'premium') return '$7.99';
+    if (tierKey === 'family') return '$12.99';
+    return '$0';
   };
 
   const handleSignOut = async () => {
@@ -123,7 +131,7 @@ export default function Account() {
     }
   };
 
-  if (loading) {
+  if (loading || planLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin" />
@@ -131,7 +139,7 @@ export default function Account() {
     );
   }
 
-  const currentTier = getCurrentTier();
+  const maxPets = TierFeatures[tier].maxPets as number;
 
   return (
     <div className="min-h-screen bg-background">
@@ -139,79 +147,127 @@ export default function Account() {
       
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8">Account Settings</h1>
+          <h1 className="text-3xl font-bold mb-8">{au('Account Settings')}</h1>
 
           <Tabs defaultValue="subscription" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="subscription">
                 <Crown className="w-4 h-4 mr-2" />
-                Subscription
+                {au('Subscription')}
               </TabsTrigger>
               <TabsTrigger value="profile">
                 <Settings className="w-4 h-4 mr-2" />
-                Profile
+                {au('Profile')}
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="subscription" className="space-y-6">
-              <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Current Plan</h2>
-                <div className="flex items-center justify-between mb-6">
+              {/* Current Plan Card */}
+              <Card className={`p-6 ${
+                tier === 'family' 
+                  ? 'bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 border-amber-200 dark:border-amber-800' 
+                  : tier === 'premium' 
+                  ? 'bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-950/20 dark:to-amber-950/20 border-yellow-200 dark:border-yellow-800' 
+                  : ''
+              }`}>
+                <div className="flex items-start justify-between mb-6">
                   <div>
-                    <p className="text-2xl font-bold">
-                      {SUBSCRIPTION_TIERS[currentTier as keyof typeof SUBSCRIPTION_TIERS].name}
+                    <div className="flex items-center gap-3 mb-2">
+                      <h2 className="text-2xl font-bold">{getTierName(tier)}</h2>
+                      <Badge className={
+                        tier === 'family' 
+                          ? 'bg-gradient-to-r from-amber-500 to-yellow-600 text-white border-0' 
+                          : tier === 'premium' 
+                          ? 'bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0' 
+                          : 'bg-muted text-muted-foreground'
+                      }>
+                        {tier === 'family' && <Crown className="w-3 h-3 mr-1" />}
+                        {tier === 'premium' && <Star className="w-3 h-3 mr-1" />}
+                        {au('Current Plan')}
+                      </Badge>
+                    </div>
+                    <p className="text-muted-foreground">
+                      {maxPets === -1 ? au('Unlimited pets') : au(`Up to ${maxPets} ${maxPets === 1 ? 'pet' : 'pets'}`)}
                     </p>
-                    {subscription?.subscription_end && (
-                      <p className="text-sm text-muted-foreground">
-                        Renews on {new Date(subscription.subscription_end).toLocaleDateString()}
-                      </p>
-                    )}
                   </div>
-                  {subscription?.subscribed && (
+                </div>
+
+                {/* Subscription Details */}
+                {subscription?.subscribed && subscription?.subscription_end && (
+                  <div className="grid md:grid-cols-2 gap-4 p-4 bg-background/50 rounded-lg mb-4">
+                    <div className="flex items-start gap-3">
+                      <Calendar className="w-5 h-5 text-muted-foreground mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium">{au('Next Payment')}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(subscription.subscription_end).toLocaleDateString('en-AU', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CreditCard className="w-5 h-5 text-muted-foreground mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium">{au('Amount')}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {getTierPrice(tier)} AUD / {au('month')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  {subscription?.subscribed ? (
                     <Button
                       onClick={handleManageSubscription}
                       disabled={managingSubscription}
+                      variant="outline"
+                      className="flex-1"
                     >
                       {managingSubscription ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Loading...
+                          {au('Loading...')}
                         </>
                       ) : (
-                        'Manage Subscription'
+                        au('Manage Subscription')
                       )}
+                    </Button>
+                  ) : (
+                    <Button onClick={() => navigate('/pricing')} className="flex-1">
+                      <Crown className="w-4 h-4 mr-2" />
+                      {au('Upgrade to Premium')}
                     </Button>
                   )}
                 </div>
-                {!subscription?.subscribed && (
-                  <Button onClick={() => navigate('/pricing')} className="w-full">
-                    Upgrade to Premium
-                  </Button>
-                )}
               </Card>
 
-              {(currentTier === 'premium' || currentTier === 'family') && (
+              {(tier === 'premium' || tier === 'family') && (
                 <>
                   <Card className="p-6">
                     <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                       <Users className="w-5 h-5" />
-                      Family Sharing
+                      {au('Family Sharing')}
                     </h2>
                     <p className="text-muted-foreground mb-4">
-                      Share access to your pets with family members
+                      {au('Share access to your pets with family members')}
                     </p>
                     <Button variant="outline" onClick={() => navigate('/dashboard')}>
-                      View My Pets
+                      {au('View My Pets')}
                     </Button>
                   </Card>
 
                   <Card className="p-6">
                     <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                       <FileText className="w-5 h-5" />
-                      Document Storage
+                      {au('Document Storage')}
                     </h2>
                     <p className="text-muted-foreground">
-                      Storage used: 0 MB / {currentTier === 'family' ? '200' : '50'} MB
+                      {au('Storage used')}: 0 MB / {tier === 'family' ? '200' : '50'} MB
                     </p>
                   </Card>
                 </>
@@ -220,25 +276,25 @@ export default function Account() {
 
             <TabsContent value="profile" className="space-y-6">
               <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Profile Information</h2>
+                <h2 className="text-xl font-semibold mb-4">{au('Profile Information')}</h2>
                 <div className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium">Email</label>
+                    <label className="text-sm font-medium">{au('Email')}</label>
                     <p className="text-muted-foreground">{user?.email}</p>
                   </div>
                   <Button variant="destructive" onClick={handleSignOut}>
-                    Sign Out
+                    {au('Sign Out')}
                   </Button>
                 </div>
               </Card>
 
               <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Data & Privacy</h2>
+                <h2 className="text-xl font-semibold mb-4">{au('Data & Privacy')}</h2>
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-sm font-medium mb-2">Export Your Data</h3>
+                    <h3 className="text-sm font-medium mb-2">{au('Export Your Data')}</h3>
                     <p className="text-sm text-muted-foreground mb-3">
-                      Download a copy of all your data in JSON format
+                      {au('Download a copy of all your data in JSON format')}
                     </p>
                     <Button
                       variant="outline"
@@ -248,21 +304,21 @@ export default function Account() {
                       {exportingData ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Exporting...
+                          {au('Exporting...')}
                         </>
                       ) : (
                         <>
                           <Download className="w-4 h-4 mr-2" />
-                          Download My Data
+                          {au('Download My Data')}
                         </>
                       )}
                     </Button>
                   </div>
 
                   <div className="pt-4 border-t">
-                    <h3 className="text-sm font-medium mb-2 text-destructive">Delete Account</h3>
+                    <h3 className="text-sm font-medium mb-2 text-destructive">{au('Delete Account')}</h3>
                     <p className="text-sm text-muted-foreground mb-3">
-                      Permanently delete your account and all associated data. This action cannot be undone.
+                      {au('Permanently delete your account and all associated data. This action cannot be undone.')}
                     </p>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
@@ -270,32 +326,30 @@ export default function Account() {
                           {deletingAccount ? (
                             <>
                               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Deleting...
+                              {au('Deleting...')}
                             </>
                           ) : (
                             <>
                               <Trash2 className="w-4 h-4 mr-2" />
-                              Delete My Account
+                              {au('Delete My Account')}
                             </>
                           )}
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                          <AlertDialogTitle>{au('Are you absolutely sure?')}</AlertDialogTitle>
                           <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete your account
-                            and remove all your data from our servers, including all pet profiles,
-                            health records, and documents.
+                            {au('This action cannot be undone. This will permanently delete your account and remove all your data from our servers, including all pet profiles, health records, and documents.')}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogCancel>{au('Cancel')}</AlertDialogCancel>
                           <AlertDialogAction
                             onClick={handleDeleteAccount}
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                           >
-                            Yes, delete my account
+                            {au('Yes, delete my account')}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
