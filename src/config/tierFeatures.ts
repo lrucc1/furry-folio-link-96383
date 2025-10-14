@@ -18,7 +18,7 @@ export const TierFeatures: Record<Tier, Record<FeatureKey, boolean | number>> = 
     prioritySupport: false
   },
   premium: {
-    maxPets: 50,
+    maxPets: 5,
     smartTags: true,
     reminders: true,
     lostMode: true,
