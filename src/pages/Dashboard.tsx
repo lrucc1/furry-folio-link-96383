@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { PetCard } from '@/components/PetCard'
+import { AddPetCard } from '@/components/AddPetCard'
 import { HealthReminders } from '@/components/HealthReminders'
 import { DashboardHeader } from '@/components/DashboardHeader'
 import { Footer } from '@/components/Footer'
@@ -155,18 +156,9 @@ const Dashboard = () => {
                       onToggleLost={handleToggleLost}
                     />
                   ))}
+                  
+                  {canAddPet && <AddPetCard />}
                 </div>
-
-                {canAddPet && (
-                  <div className="text-center">
-                    <Button asChild size="lg">
-                      <Link to="/pets/new">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Another Pet
-                      </Link>
-                    </Button>
-                  </div>
-                )}
 
                 {!canAddPet && (
                   <Card className="bg-gradient-card border-primary/20">
