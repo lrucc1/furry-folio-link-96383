@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, Crown, Users, FileText, Settings, Download, Trash2, Star, Calendar, CreditCard, Receipt, ExternalLink } from 'lucide-react';
+import { Loader2, Crown, Users, FileText, Settings, Download, Trash2, Star, Calendar, CreditCard, Receipt, ExternalLink, Scan, Hash } from 'lucide-react';
 import { au } from '@/lib/auEnglish';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
@@ -51,6 +51,8 @@ export default function Account() {
   const [loadingInvoices, setLoadingInvoices] = useState(false);
   const [storageUsedMB, setStorageUsedMB] = useState<number>(0);
   const [loadingStorage, setLoadingStorage] = useState(false);
+  const [petStats, setPetStats] = useState({ total: 0, microchipped: 0 });
+  const [loadingPets, setLoadingPets] = useState(false);
   const [managingSubscription, setManagingSubscription] = useState(false);
   const [exportingData, setExportingData] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
@@ -62,6 +64,7 @@ export default function Account() {
     }
     checkSubscription();
     calculateStorageUsage();
+    fetchPetStats();
   }, [user, navigate]);
 
   const checkSubscription = async () => {
@@ -122,6 +125,27 @@ export default function Account() {
       console.error('Error calculating storage:', error);
     } finally {
       setLoadingStorage(false);
+    }
+  };
+
+  const fetchPetStats = async () => {
+    setLoadingPets(true);
+    try {
+      const { data: pets, error } = await supabase
+        .from('pets')
+        .select('microchip_number')
+        .eq('user_id', user?.id);
+      
+      if (error) throw error;
+      
+      const total = pets?.length || 0;
+      const microchipped = pets?.filter(pet => pet.microchip_number).length || 0;
+      
+      setPetStats({ total, microchipped });
+    } catch (error) {
+      console.error('Error fetching pet stats:', error);
+    } finally {
+      setLoadingPets(false);
     }
   };
 
@@ -403,6 +427,33 @@ export default function Account() {
 
               {(tier === 'premium' || tier === 'family') && (
                 <>
+                  <Card className="p-6">
+                    <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                      <Scan className="w-5 h-5" />
+                      {au('Pet Registry & Microchip')}
+                    </h2>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="flex items-start gap-3">
+                        <Hash className="w-5 h-5 text-muted-foreground mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium">{au('Total Pets Registered')}</p>
+                          <p className="text-2xl font-bold">
+                            {loadingPets ? <Loader2 className="w-5 h-5 animate-spin inline" /> : petStats.total}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <Scan className="w-5 h-5 text-muted-foreground mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium">{au('Microchipped Pets')}</p>
+                          <p className="text-2xl font-bold">
+                            {loadingPets ? <Loader2 className="w-5 h-5 animate-spin inline" /> : petStats.microchipped}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+
                   <Card className="p-6">
                     <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                       <Users className="w-5 h-5" />
