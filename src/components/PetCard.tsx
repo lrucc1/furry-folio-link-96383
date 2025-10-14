@@ -26,7 +26,8 @@ interface PetCardProps {
 
 export const PetCard = ({ pet, onViewDetails, onToggleLost }: PetCardProps) => {
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
-  const publicUrl = `${window.location.origin}/pet/${pet.publicId || pet.id}`;
+  const hasPublicId = !!pet.publicId;
+  const publicUrl = hasPublicId ? `${window.location.origin}/pet/${pet.publicId}` : "";
 
   return (
     <Card className="bg-gradient-card border-0 shadow-medium hover:shadow-strong transition-spring overflow-hidden group">
@@ -50,37 +51,41 @@ export const PetCard = ({ pet, onViewDetails, onToggleLost }: PetCardProps) => {
           </Badge>
         )}
         
-        <Dialog open={qrDialogOpen} onOpenChange={setQrDialogOpen}>
-          <DialogTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-3 right-3 bg-background/90 hover:bg-background shadow-soft"
-            >
-              <QrCode className="w-4 h-4" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Public Profile QR Code</DialogTitle>
-            </DialogHeader>
-            <div className="flex flex-col items-center gap-4 py-4">
-              <div className="bg-white p-4 rounded-lg">
-                <img 
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(publicUrl)}`}
-                  alt="QR Code"
-                  className="w-48 h-48"
-                />
+        {hasPublicId && (
+          <Dialog open={qrDialogOpen} onOpenChange={setQrDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-3 right-3 bg-background/90 hover:bg-background shadow-soft"
+                aria-label={`Show QR code for ${pet.name}'s public profile`}
+              >
+                <QrCode className="w-4 h-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Public Profile QR Code</DialogTitle>
+              </DialogHeader>
+              <div className="flex flex-col items-center gap-4 py-4">
+                <div className="bg-white p-4 rounded-lg">
+                  <img 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(publicUrl)}`}
+                    alt={`${pet.name} public profile QR code`}
+                    className="w-48 h-48"
+                    loading="lazy"
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground text-center">
+                  Scan this code to view {pet.name}'s public profile
+                </p>
+                <code className="text-xs bg-muted px-3 py-2 rounded font-mono">
+                  {publicUrl}
+                </code>
               </div>
-              <p className="text-sm text-muted-foreground text-center">
-                Scan this code to view {pet.name}'s public profile
-              </p>
-              <code className="text-xs bg-muted px-3 py-2 rounded font-mono">
-                {publicUrl}
-              </code>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       <CardHeader className="pb-3">

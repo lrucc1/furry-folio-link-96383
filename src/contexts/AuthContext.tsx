@@ -158,16 +158,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [user])
 
-  // Periodic subscription check every minute
-  useEffect(() => {
-    if (!user) return
+// Periodic subscription check every minute
+useEffect(() => {
+  if (!user) return
 
-    const interval = setInterval(() => {
+  const interval = setInterval(() => {
+    checkSubscription()
+  }, 60000)
+
+  return () => clearInterval(interval)
+}, [user, session])
+
+// Refresh on window focus or when tab becomes visible for instant updates
+useEffect(() => {
+  if (!user) return
+
+  const onFocus = () => checkSubscription()
+  const onVisibilityChange = () => {
+    if (document.visibilityState === 'visible') {
       checkSubscription()
-    }, 60000)
+    }
+  }
 
-    return () => clearInterval(interval)
-  }, [user, session])
+  window.addEventListener('focus', onFocus)
+  document.addEventListener('visibilitychange', onVisibilityChange)
+
+  return () => {
+    window.removeEventListener('focus', onFocus)
+    document.removeEventListener('visibilitychange', onVisibilityChange)
+  }
+}, [user, session])
 
   const signOut = async () => {
     await supabase.auth.signOut()
