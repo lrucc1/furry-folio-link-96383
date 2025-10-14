@@ -255,6 +255,36 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_audit: {
+        Row: {
+          action: string
+          actor_id: string
+          created_at: string | null
+          id: number
+          new_tier: string
+          note: string | null
+          target_id: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          created_at?: string | null
+          id?: number
+          new_tier: string
+          note?: string | null
+          target_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          created_at?: string | null
+          id?: number
+          new_tier?: string
+          note?: string | null
+          target_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -263,7 +293,14 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          manual_override: boolean | null
+          plan_expires_at: string | null
+          plan_notes: string | null
+          plan_source: string | null
+          plan_tier: string | null
+          plan_updated_at: string | null
           premium_tier: string | null
+          role: string | null
           updated_at: string
           user_id: string | null
         }
@@ -274,7 +311,14 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
+          manual_override?: boolean | null
+          plan_expires_at?: string | null
+          plan_notes?: string | null
+          plan_source?: string | null
+          plan_tier?: string | null
+          plan_updated_at?: string | null
           premium_tier?: string | null
+          role?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -285,7 +329,14 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          manual_override?: boolean | null
+          plan_expires_at?: string | null
+          plan_notes?: string | null
+          plan_source?: string | null
+          plan_tier?: string | null
+          plan_updated_at?: string | null
           premium_tier?: string | null
+          role?: string | null
           updated_at?: string
           user_id?: string | null
         }
