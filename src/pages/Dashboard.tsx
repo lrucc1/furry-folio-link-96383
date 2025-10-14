@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
+import { usePlan } from '@/lib/plan/PlanContext'
+import { TierFeatures } from '@/config/tierFeatures'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,6 +14,7 @@ import { Footer } from '@/components/Footer'
 import { Plus, Crown, Heart } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { calculateAge } from '@/lib/age-utils'
+import { au } from '@/lib/auEnglish'
 
 interface Pet {
   id: string
@@ -27,7 +30,8 @@ interface Pet {
 }
 
 const Dashboard = () => {
-  const { user, subscriptionInfo } = useAuth()
+  const { user } = useAuth()
+  const { tier } = usePlan()
   const navigate = useNavigate()
   const [pets, setPets] = useState<Pet[]>([])
   const [loading, setLoading] = useState(true)
@@ -80,9 +84,8 @@ const Dashboard = () => {
     }
   }
 
-  const canAddPet = subscriptionInfo.maxPets === -1 || pets.length < subscriptionInfo.maxPets
-  const userTier = subscriptionInfo.tier
-  const maxPets = subscriptionInfo.maxPets
+  const maxPets = TierFeatures[tier].maxPets as number
+  const canAddPet = maxPets === -1 || pets.length < maxPets
 
   if (loading) {
     return (
@@ -99,17 +102,16 @@ const Dashboard = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">My Pets</h1>
+            <h1 className="text-3xl font-bold text-foreground">{au('My Pets')}</h1>
             <p className="text-muted-foreground mt-1">
-              Manage your furry family members
+              {au('Manage your furry family members')}
             </p>
           </div>
           
-          {!canAddPet && (
+          {!canAddPet && tier === 'free' && (
             <Badge className="bg-gradient-accent text-accent-foreground">
               <Crown className="w-3 h-3 mr-1" />
-              {userTier === 'free' && 'Upgrade for more pets'}
-              {userTier === 'premium' && 'Upgrade to Family for unlimited pets'}
+              {au('Upgrade for more pets')}
             </Badge>
           )}
         </div>
@@ -118,14 +120,14 @@ const Dashboard = () => {
           <Card className="text-center py-12">
             <CardContent>
               <Heart className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-              <CardTitle className="text-xl mb-2">No pets yet</CardTitle>
+              <CardTitle className="text-xl mb-2">{au('No pets yet')}</CardTitle>
               <p className="text-muted-foreground mb-6">
-                Add your first pet to get started with PetLinkID
+                {au('Add your first pet to get started with PetLinkID')}
               </p>
               <Button asChild size="lg">
                 <Link to="/pets/new">
                   <Plus className="w-4 h-4 mr-2" />
-                  Add Your First Pet
+                  {au('Add Your First Pet')}
                 </Link>
               </Button>
             </CardContent>
@@ -162,23 +164,21 @@ const Dashboard = () => {
                   {canAddPet && <AddPetCard />}
                 </div>
 
-                {!canAddPet && (
+                {!canAddPet && tier === 'free' && (
                   <Card className="bg-gradient-card border-primary/20">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Crown className="w-5 h-5 text-primary" />
-                        {userTier === 'free' && 'Upgrade to Add More Pets'}
-                        {userTier === 'premium' && 'Upgrade to Family'}
+                        {au('Upgrade to Add More Pets')}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className="text-muted-foreground mb-4">
-                        {userTier === 'free' && `You've reached the limit of ${maxPets} pet on the Free plan. Upgrade to Premium for up to 5 pets, or Family for unlimited pets.`}
-                        {userTier === 'premium' && `You've reached the limit of ${maxPets} pets on the Premium plan. Upgrade to Family for unlimited pets and advanced features.`}
+                        {au(`You've reached the limit of ${maxPets} pet on the Free plan. Upgrade to Premium for up to 50 pets.`)}
                       </p>
                       <Button asChild variant="hero">
                         <Link to="/pricing">
-                          Upgrade Now
+                          {au('Upgrade Now')}
                         </Link>
                       </Button>
                     </CardContent>
