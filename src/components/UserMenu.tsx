@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdmin } from '@/hooks/useAdmin';
+import { useEffectivePlan } from '@/hooks/useEffectivePlan';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
   DropdownMenu,
@@ -10,12 +11,14 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { User, Settings, LogOut } from 'lucide-react';
+import { User, Settings, LogOut, Crown } from 'lucide-react';
 
 export const UserMenu = () => {
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdmin();
+  const { tier, loading: planLoading } = useEffectivePlan();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
@@ -46,7 +49,18 @@ export const UserMenu = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <div className="flex flex-col space-y-1 p-2">
-          <p className="text-sm font-medium leading-none">{user?.email}</p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium leading-none">{user?.email}</p>
+            {!planLoading && (
+              <Badge variant={tier === 'premium' ? 'default' : 'secondary'} className="text-xs">
+                {tier === 'premium' ? (
+                  <><Crown className="w-3 h-3 mr-1" />Premium</>
+                ) : (
+                  'Free'
+                )}
+              </Badge>
+            )}
+          </div>
           <p className="text-xs leading-none text-muted-foreground">Manage your account</p>
         </div>
         <DropdownMenuSeparator />
