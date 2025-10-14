@@ -174,10 +174,13 @@ export type Database = {
           color: string | null
           created_at: string
           date_of_birth: string | null
+          desexed: boolean | null
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
           gender: string | null
           id: string
+          insurance_policy: string | null
+          insurance_provider: string | null
           is_lost: boolean | null
           medical_conditions: string | null
           medications: string | null
@@ -205,10 +208,13 @@ export type Database = {
           color?: string | null
           created_at?: string
           date_of_birth?: string | null
+          desexed?: boolean | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           gender?: string | null
           id?: string
+          insurance_policy?: string | null
+          insurance_provider?: string | null
           is_lost?: boolean | null
           medical_conditions?: string | null
           medications?: string | null
@@ -236,10 +242,13 @@ export type Database = {
           color?: string | null
           created_at?: string
           date_of_birth?: string | null
+          desexed?: boolean | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           gender?: string | null
           id?: string
+          insurance_policy?: string | null
+          insurance_provider?: string | null
           is_lost?: boolean | null
           medical_conditions?: string | null
           medications?: string | null
