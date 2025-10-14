@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Logo } from '@/components/Logo'
-import { Bell, Star } from 'lucide-react'
+import { Bell, Star, Crown } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAdmin } from '@/hooks/useAdmin'
 import { UserMenu } from '@/components/UserMenu'
@@ -70,9 +70,16 @@ export const DashboardHeader = () => {
             {planLoading ? (
               <Skeleton className="h-6 w-20" />
             ) : (
-              <Badge className={tier === 'premium' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}>
+              <Badge className={
+                tier === 'family' 
+                  ? 'bg-gradient-to-r from-amber-500 to-yellow-600 text-white border-0' 
+                  : tier === 'premium' 
+                  ? 'bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0' 
+                  : 'bg-muted text-muted-foreground'
+              }>
+                {tier === 'family' && <Crown className="w-3 h-3 mr-1" />}
                 {tier === 'premium' && <Star className="w-3 h-3 mr-1" />}
-                {tier === 'premium' ? au('Premium') : au('Free')}
+                {tier === 'family' ? au('Family') : tier === 'premium' ? au('Premium') : au('Free')}
               </Badge>
             )}
 

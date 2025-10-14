@@ -24,6 +24,14 @@ export const TierFeatures: Record<Tier, Record<FeatureKey, boolean | number>> = 
     lostMode: true,
     dataExport: true,
     prioritySupport: true
+  },
+  family: {
+    maxPets: -1,
+    smartTags: true,
+    reminders: true,
+    lostMode: true,
+    dataExport: true,
+    prioritySupport: true
   }
 };
 

@@ -1,4 +1,4 @@
-export type Tier = 'free' | 'premium';
+export type Tier = 'free' | 'premium' | 'family';
 export type PlanSource = 'manual' | 'stripe' | 'system';
 
 export interface ProfilePlanData {
@@ -22,8 +22,9 @@ export function computeEffectiveTier(profile: ProfilePlanData | null): Tier {
   }
 
   // Check legacy premium_tier field
-  if (profile?.premium_tier && profile.premium_tier !== 'free') {
-    return 'premium';
+  if (profile?.premium_tier) {
+    if (profile.premium_tier === 'family') return 'family';
+    if (profile.premium_tier === 'premium') return 'premium';
   }
 
   // Default to free

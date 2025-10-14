@@ -149,7 +149,9 @@ const AddPet = () => {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm text-muted-foreground">{au('Current Plan')}</p>
-                <p className="text-xl font-semibold capitalize">{tier === 'premium' ? au('Premium') : au('Free')}</p>
+                <p className="text-xl font-semibold capitalize">
+                  {tier === 'family' ? au('Family') : tier === 'premium' ? au('Premium') : au('Free')}
+                </p>
               </div>
               <div className="text-right">
                 <p className="text-sm text-muted-foreground">{au('Pets Available')}</p>
