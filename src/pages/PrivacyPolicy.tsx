@@ -98,7 +98,19 @@ const PrivacyPolicy = () => {
 
               <h2 className="text-2xl font-bold text-foreground mb-4">Overseas disclosures & data location</h2>
               <p className="text-muted-foreground mb-4">
-                Some of our technology providers (for example, cloud hosting, analytics or payments) may store or process information outside Australia. Where this occurs, we take reasonable steps to ensure those providers handle your information in a way that is consistent with the Australian Privacy Principles (APPs). Our current core providers include our application hosting/database platform and our payments provider. We will update this page if our providers materially change.
+                Some of our technology providers (for example, cloud hosting, analytics or payments) may store or process information outside Australia. Where this occurs, we take reasonable steps to ensure those providers handle your information in a way that is consistent with the Australian Privacy Principles (APPs). Our current core providers include:
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground mb-4 ml-4">
+                <li>Application hosting & database: Supabase (region: Australia/Asia-Pacific)</li>
+                <li>Payments: Stripe (global processing with data centres outside Australia)</li>
+              </ul>
+              <p className="text-muted-foreground mb-4">
+                We will update this page if our providers materially change.
+              </p>
+
+              <h2 className="text-2xl font-bold text-foreground mb-4">Retention & deletion</h2>
+              <p className="text-muted-foreground mb-4">
+                We retain your account data while your account is active and for a reasonable period thereafter to comply with legal obligations or resolve disputes. Upon account deletion (which you can initiate at any time from your account settings), we remove your personal data within 30 days and purge it from backups within 90 days. Anonymized or aggregated data that cannot identify you may be retained for analytics purposes.
               </p>
 
               <h2 className="text-2xl font-bold text-foreground mb-4">Access, correction and deletion</h2>

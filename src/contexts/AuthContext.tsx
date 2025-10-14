@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!session) return
 
     try {
-      console.log('[AuthContext] Checking subscription for user:', user?.email)
+      console.log('[AuthContext] Checking subscription for user')
       const { data, error } = await supabase.functions.invoke('check-subscription')
       
       if (error) {
