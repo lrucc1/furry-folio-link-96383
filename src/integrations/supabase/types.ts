@@ -231,6 +231,13 @@ export type Database = {
           age_years: number | null
           allergies: string | null
           breed: string | null
+          clinic_address: string | null
+          clinic_lat: number | null
+          clinic_lng: number | null
+          clinic_name: string | null
+          clinic_postcode: string | null
+          clinic_state: string | null
+          clinic_suburb: string | null
           color: string | null
           created_at: string
           date_of_birth: string | null
@@ -265,6 +272,13 @@ export type Database = {
           age_years?: number | null
           allergies?: string | null
           breed?: string | null
+          clinic_address?: string | null
+          clinic_lat?: number | null
+          clinic_lng?: number | null
+          clinic_name?: string | null
+          clinic_postcode?: string | null
+          clinic_state?: string | null
+          clinic_suburb?: string | null
           color?: string | null
           created_at?: string
           date_of_birth?: string | null
@@ -299,6 +313,13 @@ export type Database = {
           age_years?: number | null
           allergies?: string | null
           breed?: string | null
+          clinic_address?: string | null
+          clinic_lat?: number | null
+          clinic_lng?: number | null
+          clinic_name?: string | null
+          clinic_postcode?: string | null
+          clinic_state?: string | null
+          clinic_suburb?: string | null
           color?: string | null
           created_at?: string
           date_of_birth?: string | null
