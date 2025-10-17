@@ -6,7 +6,9 @@ export type FeatureKey =
   | 'reminders'
   | 'lostMode'
   | 'dataExport'
-  | 'prioritySupport';
+  | 'prioritySupport'
+  | 'documents'
+  | 'familyShare';
 
 export const TierFeatures: Record<Tier, Record<FeatureKey, boolean | number>> = {
   free: {
@@ -15,7 +17,9 @@ export const TierFeatures: Record<Tier, Record<FeatureKey, boolean | number>> = 
     reminders: true,
     lostMode: false,
     dataExport: false,
-    prioritySupport: false
+    prioritySupport: false,
+    documents: false,
+    familyShare: false
   },
   premium: {
     maxPets: 5,
@@ -23,7 +27,9 @@ export const TierFeatures: Record<Tier, Record<FeatureKey, boolean | number>> = 
     reminders: true,
     lostMode: true,
     dataExport: true,
-    prioritySupport: true
+    prioritySupport: true,
+    documents: true,
+    familyShare: true
   },
   family: {
     maxPets: -1,
@@ -31,7 +37,9 @@ export const TierFeatures: Record<Tier, Record<FeatureKey, boolean | number>> = 
     reminders: true,
     lostMode: true,
     dataExport: true,
-    prioritySupport: true
+    prioritySupport: true,
+    documents: true,
+    familyShare: true
   }
 };
 

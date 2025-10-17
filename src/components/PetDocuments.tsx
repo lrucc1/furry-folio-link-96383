@@ -9,6 +9,7 @@ import { Upload, FileText, Image as ImageIcon, Trash2, Eye } from 'lucide-react'
 import { toast } from 'sonner';
 import { DocumentViewer } from './DocumentViewer';
 import { ImageCropDialog } from './ImageCropDialog';
+import { FeatureGuard } from '@/components/FeatureGuard';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -248,36 +249,22 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
 
   const storageLimit = STORAGE_LIMITS[subscriptionInfo.tier];
   const storageUsedPercent = storageLimit > 0 ? (totalStorage / storageLimit) * 100 : 0;
-  const canUpload = subscriptionInfo.tier !== 'free';
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Documents & Files</span>
-            {canUpload && storageLimit > 0 && (
-              <span className="text-sm font-normal text-muted-foreground">
-                {formatFileSize(totalStorage)} / {formatFileSize(storageLimit)}
-              </span>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {!canUpload && (
-            <div className="border-2 border-dashed rounded-lg p-6 text-center bg-muted/30">
-              <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-              <p className="text-sm font-medium mb-1">Document Storage Locked</p>
-              <p className="text-xs text-muted-foreground mb-3">
-                Upgrade to Premium or Family to store vaccination records, vet documents, and more
-              </p>
-              <Button size="sm" variant="default" asChild>
-                <a href="/pricing">Upgrade Now</a>
-              </Button>
-            </div>
-          )}
-
-          {canUpload && (
+      <FeatureGuard feature="documents">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Documents & Files</span>
+              {storageLimit > 0 && (
+                <span className="text-sm font-normal text-muted-foreground">
+                  {formatFileSize(totalStorage)} / {formatFileSize(storageLimit)}
+                </span>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div>
               <Label htmlFor="document-upload" className="cursor-pointer">
                 <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary transition-colors">
@@ -304,9 +291,8 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
                 />
               </Label>
             </div>
-          )}
 
-          {documents.length > 0 ? (
+            {documents.length > 0 ? (
             <div className="space-y-2">
               {documents.map((doc) => (
                 <div
@@ -349,8 +335,9 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
               <p>No documents uploaded yet</p>
             </div>
           )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </FeatureGuard>
 
       {selectedDoc && (
         <DocumentViewer

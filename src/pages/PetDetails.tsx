@@ -13,6 +13,9 @@ import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Downlo
 import { Link } from 'react-router-dom'
 import { toast } from '@/hooks/use-toast'
 import { PetDocuments } from '@/components/PetDocuments'
+import { VaccinationModal } from '@/components/VaccinationModal'
+import { SharingTab } from '@/components/SharingTab'
+import { au } from '@/lib/auEnglish'
 
 interface Pet {
   id: string
@@ -50,6 +53,7 @@ const PetDetails = () => {
   const [pet, setPet] = useState<Pet | null>(null)
   const [vaccinations, setVaccinations] = useState<Vaccination[]>([])
   const [loading, setLoading] = useState(true)
+  const [vaccinationModalOpen, setVaccinationModalOpen] = useState(false)
 
   useEffect(() => {
     if (id) {
@@ -401,25 +405,30 @@ const PetDetails = () => {
             
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  Vaccinations
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5" />
+                    {au('Vaccinations')}
+                  </CardTitle>
+                  <Button onClick={() => setVaccinationModalOpen(true)} size="sm">
+                    {au('Add vaccination')}
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {vaccinations.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {vaccinations.map((vaccination) => (
                       <div key={vaccination.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
                           <h4 className="font-medium">{vaccination.vaccine_name}</h4>
                           <p className="text-sm text-muted-foreground">
-                            Given: {new Date(vaccination.vaccine_date).toLocaleDateString()}
+                            {au('Given')}: {new Date(vaccination.vaccine_date).toLocaleDateString()}
                           </p>
                         </div>
                         {vaccination.next_due_date && (
                           <Badge variant={new Date(vaccination.next_due_date) < new Date() ? "destructive" : "secondary"}>
-                            Due: {new Date(vaccination.next_due_date).toLocaleDateString()}
+                            {au('Due')}: {new Date(vaccination.next_due_date).toLocaleDateString()}
                           </Badge>
                         )}
                       </div>
@@ -427,9 +436,11 @@ const PetDetails = () => {
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">No vaccinations recorded yet</p>
-                    <Button className="mt-4">Add Vaccination</Button>
+                    <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                    <p className="text-muted-foreground mb-4">{au('No vaccinations recorded yet')}</p>
+                    <Button onClick={() => setVaccinationModalOpen(true)}>
+                      {au('Add vaccination')}
+                    </Button>
                   </div>
                 )}
               </CardContent>
@@ -496,24 +507,17 @@ const PetDetails = () => {
 
           {/* Sharing Tab */}
           <TabsContent value="sharing" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  Family & Caregiver Access
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground mb-4">No family members or caregivers have access yet</p>
-                  <Button>Invite Family Member</Button>
-                </div>
-              </CardContent>
-            </Card>
+            <SharingTab petId={id!} />
           </TabsContent>
         </Tabs>
       </main>
+      
+      <VaccinationModal
+        open={vaccinationModalOpen}
+        onClose={() => setVaccinationModalOpen(false)}
+        petId={id!}
+        onSuccess={fetchVaccinations}
+      />
       
       <Footer />
     </div>

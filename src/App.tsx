@@ -30,6 +30,7 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import Account from "./pages/Account";
+import AcceptInvite from "./pages/invite/AcceptInvite";
 
 const queryClient = new QueryClient();
 
@@ -120,6 +121,7 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
+            <Route path="/invite/accept" element={<AcceptInvite />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
