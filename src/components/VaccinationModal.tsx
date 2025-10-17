@@ -19,7 +19,7 @@ export function VaccinationModal({ open, onClose, petId, onSuccess }: Vaccinatio
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     vaccine_name: '',
-    date_given: '',
+    vaccine_date: '',
     clinic: '',
     notes: ''
   });
@@ -27,23 +27,18 @@ export function VaccinationModal({ open, onClose, petId, onSuccess }: Vaccinatio
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.vaccine_name || !formData.date_given) {
+    if (!formData.vaccine_name || !formData.vaccine_date) {
       toast.error(au('Please fill in all required fields'));
       return;
     }
 
-    // Check if date is in the future
-    const selectedDate = new Date(formData.date_given);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    if (selectedDate > today) {
-      toast.error(au('Date given cannot be in the future'));
+    // Validate date is not in the future
+    if (new Date(formData.vaccine_date) > new Date()) {
+      toast.error(au('Vaccination date cannot be in the future'));
       return;
     }
 
     setSaving(true);
-
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
@@ -52,19 +47,23 @@ export function VaccinationModal({ open, onClose, petId, onSuccess }: Vaccinatio
         .from('vaccinations')
         .insert({
           pet_id: petId,
+          user_id: user.id,
           vaccine_name: formData.vaccine_name,
-          date_given: formData.date_given,
-          clinic: formData.clinic || null,
-          notes: formData.notes || null,
-          created_by: user.id
+          vaccine_date: formData.vaccine_date,
+          notes: formData.notes || null
         });
 
       if (error) throw error;
 
-      toast.success(au('Vaccination added'));
-      setFormData({ vaccine_name: '', date_given: '', clinic: '', notes: '' });
-      onClose();
+      toast.success(au('Vaccination added successfully'));
+      setFormData({
+        vaccine_name: '',
+        vaccine_date: '',
+        clinic: '',
+        notes: ''
+      });
       onSuccess();
+      onClose();
     } catch (error) {
       console.error('Error adding vaccination:', error);
       toast.error(au('Failed to add vaccination'));
@@ -80,50 +79,42 @@ export function VaccinationModal({ open, onClose, petId, onSuccess }: Vaccinatio
           <DialogTitle>{au('Add vaccination')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="vaccine_name">
-              {au('Vaccine name')} <span className="text-destructive">*</span>
-            </Label>
+          <div className="space-y-2">
+            <Label htmlFor="vaccine_name">{au('Vaccine name')} *</Label>
             <Input
               id="vaccine_name"
               value={formData.vaccine_name}
               onChange={(e) => setFormData({ ...formData, vaccine_name: e.target.value })}
-              placeholder={au('e.g., C5, F3, Rabies')}
               required
             />
           </div>
 
-          <div>
-            <Label htmlFor="date_given">
-              {au('Date given')} <span className="text-destructive">*</span>
-            </Label>
+          <div className="space-y-2">
+            <Label htmlFor="vaccine_date">{au('Date given')} *</Label>
             <Input
-              id="date_given"
+              id="vaccine_date"
               type="date"
-              value={formData.date_given}
-              onChange={(e) => setFormData({ ...formData, date_given: e.target.value })}
-              max={new Date().toISOString().split('T')[0]}
+              value={formData.vaccine_date}
+              onChange={(e) => setFormData({ ...formData, vaccine_date: e.target.value })}
               required
             />
           </div>
 
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="clinic">{au('Clinic')}</Label>
             <Input
               id="clinic"
               value={formData.clinic}
               onChange={(e) => setFormData({ ...formData, clinic: e.target.value })}
-              placeholder={au('e.g., City Vet Clinic')}
             />
           </div>
 
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="notes">{au('Notes')}</Label>
             <Textarea
               id="notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder={au('Any additional information...')}
               rows={3}
             />
           </div>

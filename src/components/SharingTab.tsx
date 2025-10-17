@@ -26,10 +26,6 @@ interface Member {
   user_id: string;
   role: string;
   created_at: string;
-  profiles?: {
-    email: string;
-    display_name: string;
-  };
 }
 
 export function SharingTab({ petId }: SharingTabProps) {
@@ -57,7 +53,7 @@ export function SharingTab({ petId }: SharingTabProps) {
       // Fetch current members
       const { data: memberData, error: memberError } = await supabase
         .from('pet_memberships')
-        .select('*, profiles(email, display_name)')
+        .select('*')
         .eq('pet_id', petId);
 
       if (memberError) throw memberError;
@@ -139,10 +135,7 @@ export function SharingTab({ petId }: SharingTabProps) {
               {members.map((member) => (
                 <div key={member.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div>
-                    <p className="font-medium">
-                      {member.profiles?.display_name || member.profiles?.email || 'Unknown'}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{member.profiles?.email}</p>
+                    <p className="font-medium">{member.user_id}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant={member.role === 'owner' ? 'default' : 'secondary'}>
