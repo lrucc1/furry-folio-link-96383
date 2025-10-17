@@ -33,9 +33,13 @@ export const VetClinicAutocomplete = ({
   
   const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
   const placesServiceRef = useRef<google.maps.places.PlacesService | null>(null);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [scriptError, setScriptError] = useState(false);
 
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   const hasApiKey = !!apiKey;
+
+  console.log('VetClinicAutocomplete - API Key present:', hasApiKey);
 
   // Update input value when prop changes
   useEffect(() => {
@@ -44,7 +48,10 @@ export const VetClinicAutocomplete = ({
 
   // Initialize Google Places API
   useEffect(() => {
-    if (!hasApiKey) return;
+    if (!hasApiKey) {
+      console.log('VetClinicAutocomplete - No API key, falling back to basic input');
+      return;
+    }
 
     const initGoogle = () => {
       if (window.google?.maps?.places) {
@@ -52,17 +59,36 @@ export const VetClinicAutocomplete = ({
         // Create a dummy div for PlacesService
         const dummyDiv = document.createElement('div');
         placesServiceRef.current = new google.maps.places.PlacesService(dummyDiv);
+        setScriptLoaded(true);
+        console.log('VetClinicAutocomplete - Google Maps Places API initialized');
       }
     };
 
     if (window.google?.maps?.places) {
+      console.log('VetClinicAutocomplete - Google Maps already loaded');
       initGoogle();
     } else {
+      // Check if script is already loading
+      const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+      if (existingScript) {
+        console.log('VetClinicAutocomplete - Script already loading, waiting...');
+        existingScript.addEventListener('load', initGoogle);
+        return;
+      }
+
+      console.log('VetClinicAutocomplete - Loading Google Maps script');
       const script = document.createElement('script');
       script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
       script.async = true;
       script.defer = true;
-      script.onload = initGoogle;
+      script.onload = () => {
+        console.log('VetClinicAutocomplete - Script loaded successfully');
+        initGoogle();
+      };
+      script.onerror = () => {
+        console.error('VetClinicAutocomplete - Failed to load Google Maps script');
+        setScriptError(true);
+      };
       document.head.appendChild(script);
     }
   }, [hasApiKey, apiKey]);
@@ -73,6 +99,7 @@ export const VetClinicAutocomplete = ({
       return;
     }
 
+    console.log('VetClinicAutocomplete - Searching for:', query);
     setIsLoading(true);
 
     autocompleteServiceRef.current.getPlacePredictions(
@@ -83,6 +110,7 @@ export const VetClinicAutocomplete = ({
       },
       (predictions, status) => {
         setIsLoading(false);
+        console.log('VetClinicAutocomplete - Search status:', status, 'Results:', predictions?.length);
         
         if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
           // Filter for vet-related places
@@ -93,9 +121,11 @@ export const VetClinicAutocomplete = ({
                    text.includes('animal') ||
                    text.includes('pet');
           });
+          console.log('VetClinicAutocomplete - Filtered vet results:', vetPredictions.length);
           setSuggestions(vetPredictions);
           setShowSuggestions(true);
         } else {
+          console.log('VetClinicAutocomplete - No results or error');
           setSuggestions([]);
         }
       }
@@ -199,26 +229,38 @@ export const VetClinicAutocomplete = ({
     }, 200);
   };
 
-  // If no API key, render basic input
-  if (!hasApiKey) {
+  // If no API key or script error, render basic input
+  if (!hasApiKey || scriptError) {
     return (
-      <Input
-        ref={inputRef}
-        type="text"
-        value={inputValue}
-        onChange={(e) => {
-          setInputValue(e.target.value);
-        }}
-        onBlur={() => {
-          if (inputValue !== value) {
-            onChange({
-              name: inputValue,
-              address: clinicAddress,
-            });
-          }
-        }}
-        placeholder={placeholder}
-      />
+      <div className="space-y-2">
+        <Input
+          ref={inputRef}
+          type="text"
+          value={inputValue}
+          onChange={(e) => {
+            setInputValue(e.target.value);
+          }}
+          onBlur={() => {
+            if (inputValue !== value) {
+              onChange({
+                name: inputValue,
+                address: clinicAddress,
+              });
+            }
+          }}
+          placeholder={placeholder}
+        />
+        {scriptError && (
+          <p className="text-xs text-destructive">
+            Unable to load address suggestions. Please enter the clinic name manually.
+          </p>
+        )}
+        {!hasApiKey && (
+          <p className="text-xs text-muted-foreground">
+            Enter the vet clinic name manually (address autocomplete not configured).
+          </p>
+        )}
+      </div>
     );
   }
 
