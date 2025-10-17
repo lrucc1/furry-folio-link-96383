@@ -36,9 +36,9 @@ export const VetClinicAutocomplete = ({
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const [scriptError, setScriptError] = useState(false);
 
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyAL_w63IAuk6Il-RGZASEJGjq0goAHsUk8";
   const hasApiKey = !!apiKey;
-
+ 
   console.log('VetClinicAutocomplete - API Key present:', hasApiKey);
 
   // Update input value when prop changes
