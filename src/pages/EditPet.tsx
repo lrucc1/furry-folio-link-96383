@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { DashboardHeader } from '@/components/DashboardHeader'
 import { ImageCropDialog } from '@/components/ImageCropDialog'
+import { AddressAutocomplete, AddressData } from '@/components/AddressAutocomplete'
 import { ArrowLeft, Upload, X } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 
@@ -36,7 +37,8 @@ const EditPet = () => {
     microchip_number: '',
     registry_name: '',
     registry_link: '',
-    vet_clinic: '',
+    clinic_name: '',
+    clinic_address: '',
     insurance_provider: '',
     insurance_policy: '',
     notes: '',
@@ -73,7 +75,8 @@ const EditPet = () => {
         microchip_number: data.microchip_number || '',
         registry_name: data.registry_name || '',
         registry_link: data.registry_link || '',
-        vet_clinic: data.vet_name || '',
+        clinic_name: (data as any).clinic_name || data.vet_name || '',
+        clinic_address: (data as any).clinic_address || '',
         insurance_provider: data.insurance_provider || '',
         insurance_policy: data.insurance_policy || '',
         notes: data.notes || '',
@@ -189,7 +192,7 @@ const EditPet = () => {
 
     setSaving(true)
     try {
-      const updateData = {
+      const updateData: any = {
         name: formData.name.trim(),
         species: formData.species,
         breed: formData.breed || null,
@@ -200,7 +203,9 @@ const EditPet = () => {
         microchip_number: formData.microchip_number || null,
         registry_name: formData.registry_name || null,
         registry_link: formData.registry_link || null,
-        vet_name: formData.vet_clinic || null,
+        clinic_name: formData.clinic_name || null,
+        clinic_address: formData.clinic_address || null,
+        vet_name: formData.clinic_name || null, // Keep legacy field for compatibility
         insurance_provider: formData.insurance_provider || null,
         insurance_policy: formData.insurance_policy || null,
         notes: formData.notes || null,
@@ -355,7 +360,7 @@ const EditPet = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="color">Color/Markings</Label>
+                    <Label htmlFor="color">Colour/Markings</Label>
                     <Input
                       id="color"
                       value={formData.color}
@@ -447,12 +452,23 @@ const EditPet = () => {
                 <h3 className="text-lg font-semibold">Health & Care</h3>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="vet_clinic">Vet Clinic</Label>
+                  <Label htmlFor="clinic_name">Vet clinic name</Label>
                   <Input
-                    id="vet_clinic"
-                    value={formData.vet_clinic}
-                    onChange={(e) => handleInputChange('vet_clinic', e.target.value)}
-                    placeholder="Clinic name and contact"
+                    id="clinic_name"
+                    value={formData.clinic_name}
+                    onChange={(e) => handleInputChange('clinic_name', e.target.value)}
+                    placeholder="e.g., Brunswick Vet Clinic"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="clinic_address">Vet clinic address</Label>
+                  <AddressAutocomplete
+                    value={formData.clinic_address}
+                    onChange={(data: AddressData) => {
+                      handleInputChange('clinic_address', data.formatted);
+                    }}
+                    placeholder="Start typing an address…"
                   />
                 </div>
 
@@ -480,23 +496,34 @@ const EditPet = () => {
               </div>
 
               {/* Additional Notes */}
-              <div className="space-y-2">
-                <Label htmlFor="notes">Additional Notes</Label>
-                <Textarea
-                  id="notes"
-                  value={formData.notes}
-                  onChange={(e) => handleInputChange('notes', e.target.value)}
-                  placeholder="Any special notes about your pet..."
-                  rows={3}
-                />
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Additional Notes</h3>
+                <div className="space-y-2">
+                  <Label htmlFor="notes">Notes</Label>
+                  <Textarea
+                    id="notes"
+                    value={formData.notes}
+                    onChange={(e) => handleInputChange('notes', e.target.value)}
+                    placeholder="Any additional information about your pet..."
+                    rows={4}
+                  />
+                </div>
               </div>
 
-              <div className="flex gap-4 pt-6">
-                <Button type="submit" disabled={saving} className="flex-1">
-                  {saving ? 'Saving...' : 'Save Changes'}
+              {/* Form Actions */}
+              <div className="flex gap-4">
+                <Button type="submit" className="flex-1" disabled={saving}>
+                  {saving ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                      Saving...
+                    </>
+                  ) : (
+                    'Save Changes'
+                  )}
                 </Button>
-                <Button type="button" variant="outline" asChild>
-                  <Link to={`/pets/${id}`}>Cancel</Link>
+                <Button type="button" variant="outline" onClick={() => navigate(`/pets/${id}`)}>
+                  Cancel
                 </Button>
               </div>
             </form>
@@ -504,9 +531,12 @@ const EditPet = () => {
         </Card>
 
         <ImageCropDialog
-          image={imageToCrop}
           open={cropDialogOpen}
-          onClose={() => setCropDialogOpen(false)}
+          onClose={() => {
+            setCropDialogOpen(false)
+            setImageToCrop(null)
+          }}
+          image={imageToCrop}
           onCropComplete={handleCroppedImage}
           aspectRatio={1}
         />
