@@ -165,6 +165,66 @@ export type Database = {
           },
         ]
       }
+      pet_invites: {
+        Row: {
+          created_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          pet_id: string
+          role: string
+          status: string
+          token: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          pet_id: string
+          role: string
+          status?: string
+          token: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          pet_id?: string
+          role?: string
+          status?: string
+          token?: string
+        }
+        Relationships: []
+      }
+      pet_memberships: {
+        Row: {
+          created_at: string | null
+          id: string
+          pet_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          pet_id: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          pet_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       pets: {
         Row: {
           age_months: number | null
