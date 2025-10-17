@@ -405,15 +405,10 @@ const PetDetails = () => {
             
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5" />
-                    {au('Vaccinations')}
-                  </CardTitle>
-                  <Button onClick={() => setVaccinationModalOpen(true)} size="sm">
-                    {au('Add vaccination')}
-                  </Button>
-                </div>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  {au('Vaccinations')}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 {vaccinations.length > 0 ? (
@@ -437,7 +432,10 @@ const PetDetails = () => {
                 ) : (
                   <div className="text-center py-8">
                     <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                    <p className="text-muted-foreground">{au('No vaccinations recorded yet')}</p>
+                    <p className="text-muted-foreground mb-4">{au('No vaccinations recorded yet')}</p>
+                    <Button onClick={() => setVaccinationModalOpen(true)}>
+                      {au('Add vaccination')}
+                    </Button>
                   </div>
                 )}
               </CardContent>
