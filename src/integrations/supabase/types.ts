@@ -438,6 +438,36 @@ export type Database = {
         }
         Relationships: []
       }
+      smart_tag_interest: {
+        Row: {
+          comments: string | null
+          created_at: string | null
+          email: string
+          features: string[] | null
+          id: number
+          likelihood: number
+          name: string | null
+        }
+        Insert: {
+          comments?: string | null
+          created_at?: string | null
+          email: string
+          features?: string[] | null
+          id?: number
+          likelihood: number
+          name?: string | null
+        }
+        Update: {
+          comments?: string | null
+          created_at?: string | null
+          email?: string
+          features?: string[] | null
+          id?: number
+          likelihood?: number
+          name?: string | null
+        }
+        Relationships: []
+      }
       subscription_tiers: {
         Row: {
           created_at: string | null
