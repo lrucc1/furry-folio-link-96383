@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { DashboardHeader } from '@/components/DashboardHeader'
 import { ImageCropDialog } from '@/components/ImageCropDialog'
-import { AddressAutocomplete, AddressData } from '@/components/AddressAutocomplete'
+import { VetClinicAutocomplete, VetClinicData } from '@/components/VetClinicAutocomplete'
 import { ArrowLeft, Upload, X } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 
@@ -71,7 +71,7 @@ const EditPet = () => {
         color: data.color || '',
         sex: data.gender || '',
         date_of_birth: data.date_of_birth || '',
-        desexed: data.desexed || false,
+        desexed: !!data.desexed,
         microchip_number: data.microchip_number || '',
         registry_name: data.registry_name || '',
         registry_link: data.registry_link || '',
@@ -452,35 +452,57 @@ const EditPet = () => {
                 <h3 className="text-lg font-semibold">Health & Care</h3>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="clinic_name">Vet clinic name</Label>
-                  <Input
-                    id="clinic_name"
+                  <Label htmlFor="clinic_name">Vet clinic</Label>
+                  <VetClinicAutocomplete
                     value={formData.clinic_name}
-                    onChange={(e) => handleInputChange('clinic_name', e.target.value)}
-                    placeholder="e.g., Brunswick Vet Clinic"
+                    clinicAddress={formData.clinic_address}
+                    onChange={(data: VetClinicData) => {
+                      handleInputChange('clinic_name', data.name);
+                      handleInputChange('clinic_address', data.address);
+                    }}
+                    placeholder="Start typing vet clinic name…"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Type the vet clinic name and select from suggestions
+                  </p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="clinic_address">Vet clinic address</Label>
-                  <AddressAutocomplete
-                    value={formData.clinic_address}
-                    onChange={(data: AddressData) => {
-                      handleInputChange('clinic_address', data.formatted);
-                    }}
-                    placeholder="Start typing an address…"
-                  />
-                </div>
+                {formData.clinic_address && (
+                  <div className="space-y-2">
+                    <Label className="text-sm text-muted-foreground">Selected Address</Label>
+                    <p className="text-sm bg-muted px-3 py-2 rounded-md">{formData.clinic_address}</p>
+                  </div>
+                )}
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="insurance_provider">Insurance Provider</Label>
-                    <Input
-                      id="insurance_provider"
-                      value={formData.insurance_provider}
-                      onChange={(e) => handleInputChange('insurance_provider', e.target.value)}
-                      placeholder="e.g., Petplan"
-                    />
+                    <Select 
+                      value={formData.insurance_provider} 
+                      onValueChange={(value) => handleInputChange('insurance_provider', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select provider" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="AAMI Pet Insurance">AAMI Pet Insurance</SelectItem>
+                        <SelectItem value="Australian Seniors Pet Insurance">Australian Seniors Pet Insurance</SelectItem>
+                        <SelectItem value="Bow Wow Meow">Bow Wow Meow</SelectItem>
+                        <SelectItem value="Budget Direct Pet Insurance">Budget Direct Pet Insurance</SelectItem>
+                        <SelectItem value="Choosi Pet Insurance">Choosi Pet Insurance</SelectItem>
+                        <SelectItem value="GMHBA Pet Insurance">GMHBA Pet Insurance</SelectItem>
+                        <SelectItem value="Guide Dogs Pet Insurance">Guide Dogs Pet Insurance</SelectItem>
+                        <SelectItem value="Knose Pet Insurance">Knose Pet Insurance</SelectItem>
+                        <SelectItem value="Medibank Pet Insurance">Medibank Pet Insurance</SelectItem>
+                        <SelectItem value="Pet Insurance Australia">Pet Insurance Australia</SelectItem>
+                        <SelectItem value="Petplan">Petplan</SelectItem>
+                        <SelectItem value="Petsy Pet Insurance">Petsy Pet Insurance</SelectItem>
+                        <SelectItem value="PIA Pet Insurance">PIA Pet Insurance</SelectItem>
+                        <SelectItem value="RSPCA Pet Insurance">RSPCA Pet Insurance</SelectItem>
+                        <SelectItem value="Woolworths Pet Insurance">Woolworths Pet Insurance</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   
                   <div className="space-y-2">
