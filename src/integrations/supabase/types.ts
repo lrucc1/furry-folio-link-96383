@@ -610,6 +610,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_edit_pet: {
+        Args: { _pet_id: string; _user_id: string }
+        Returns: boolean
+      }
       get_admin_stats: {
         Args: Record<PropertyKey, never>
         Returns: Json
@@ -637,6 +641,10 @@ export type Database = {
       get_user_growth_stats: {
         Args: Record<PropertyKey, never>
         Returns: Json
+      }
+      has_pet_access: {
+        Args: { _pet_id: string; _user_id: string }
+        Returns: boolean
       }
       has_role: {
         Args: {
