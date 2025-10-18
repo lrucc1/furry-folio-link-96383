@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, UserPlus, Copy, Trash2 } from 'lucide-react';
+import { Users, UserPlus, Copy, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { InviteFamilyModal } from './InviteFamilyModal';
 import { au } from '@/lib/auEnglish';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 interface SharingTabProps {
   petId: string;
 }
@@ -38,6 +39,7 @@ interface PetInfo {
 
 export function SharingTab({ petId }: SharingTabProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [invites, setInvites] = useState<Invite[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -200,53 +202,84 @@ useEffect(() => {
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                 {au('Pending Invites')}
               </h3>
-              {invites.map((invite) => (
-                <div key={invite.id} className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium">{invite.email}</p>
-                      <Badge variant="outline" className="text-xs">
-                        {au('Pending')}
-                      </Badge>
+              {invites.map((invite) => {
+                const isSentByMe = invite.invited_by === user?.id;
+                const isForMe = invite.email.toLowerCase() === user?.email?.toLowerCase();
+                
+                return (
+                  <div key={invite.id} className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{invite.email}</p>
+                        <Badge variant="outline" className="text-xs">
+                          {isSentByMe && !isForMe && au('Sent by you')}
+                          {!isSentByMe && isForMe && au('Sent to you')}
+                          {isSentByMe && isForMe && au('Self-invite')}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {invite.role === 'vet' && au('Veterinarian - Read-only medical access')}
+                        {invite.role === 'family' && au('Family - Can view and edit')}
+                        {invite.role === 'caregiver' && au('Caregiver - Read-only access')}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {au('For')}: {petsById[invite.pet_id]?.name || au('Unknown pet')}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {au('Expires')} {new Date(invite.expires_at).toLocaleDateString()}
+                      </p>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {invite.role === 'vet' && au('Veterinarian - Read-only medical access')}
-                      {invite.role === 'family' && au('Family - Can view and edit')}
-                      {invite.role === 'caregiver' && au('Caregiver - Read-only access')}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {au('For')}: {petsById[invite.pet_id]?.name || au('Unknown pet')}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {au('Expires')} {new Date(invite.expires_at).toLocaleDateString()}
-                    </p>
+                    
+                    {/* Show different actions based on whether user sent or received the invite */}
+                    {isSentByMe && !isForMe ? (
+                      // Sent by current user to someone else - show copy/revoke
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copyInviteLink(invite.token)}
+                        >
+                          <Copy className="w-4 h-4 mr-2" />
+                          {au('Copy Link')}
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => revokeInvite(invite.id)}
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          {au('Revoke')}
+                        </Button>
+                      </div>
+                    ) : isForMe ? (
+                      // Sent to current user - show accept/decline
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            const acceptUrl = `/invite/accept?token=${invite.token}`;
+                            navigate(acceptUrl);
+                          }}
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          {au('Accept')}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => revokeInvite(invite.id)}
+                        >
+                          <XCircle className="w-4 h-4 mr-2" />
+                          {au('Decline')}
+                        </Button>
+                      </div>
+                    ) : (
+                      // Fallback - just show status
+                      <Badge variant="secondary">{au('Pending')}</Badge>
+                    )}
                   </div>
-                  {invite.invited_by === user?.id ? (
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => copyInviteLink(invite.token)}
-                      >
-                        <Copy className="w-4 h-4 mr-2" />
-                        {au('Copy Link')}
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => revokeInvite(invite.id)}
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        {au('Revoke')}
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary">{au('Incoming')}</Badge>
-                    </div>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
