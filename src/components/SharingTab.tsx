@@ -45,7 +45,8 @@ export function SharingTab({ petId }: SharingTabProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [petsById, setPetsById] = useState<Record<string, PetInfo>>({});
-useEffect(() => {
+  useEffect(() => {
+    console.log('[SharingTab] useEffect triggered with:', { user: !!user, petId });
     if (user) {
       fetchSharingData();
     }
@@ -58,41 +59,58 @@ useEffect(() => {
       return;
     }
 
-    console.log('[SharingTab] Fetching sharing data for user:', user.id, 'email:', user.email, 'petId:', petId);
+    console.log('[SharingTab] Starting fetch with user:', {
+      id: user.id,
+      email: user.email,
+      petId: petId
+    });
     setLoading(true);
 
     // Fetch ALL invites (both sent by user and sent to user)
     try {
-      console.log('[SharingTab] Querying with user.id:', user.id, 'user.email:', user.email?.toLowerCase());
-      
-      const { data: inviteData, error: inviteError } = await supabase
+      console.log('[SharingTab] Building query...');
+      const query = supabase
         .from('pet_invites')
         .select('*')
         .or(`invited_by.eq.${user.id},email.eq.${user.email?.toLowerCase()}`)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
-      console.log('[SharingTab] Invite query result:', { data: inviteData, error: inviteError });
+      console.log('[SharingTab] Executing query...');
+      const { data: inviteData, error: inviteError } = await query;
+
+      console.log('[SharingTab] Query completed:', {
+        data: inviteData,
+        error: inviteError,
+        dataLength: inviteData?.length || 0
+      });
 
       if (inviteError) {
         console.error('[SharingTab] Error fetching invites:', inviteError);
         setInvites([]);
       } else {
+        console.log('[SharingTab] Setting invites:', inviteData?.length || 0, 'items');
         setInvites(inviteData || []);
 
         // Fetch pet names for these invites
         const petIds = Array.from(new Set((inviteData || []).map((i) => i.pet_id)));
+        console.log('[SharingTab] Fetching pet info for IDs:', petIds);
+        
         if (petIds.length > 0) {
           const { data: petsData, error: petsError } = await supabase
             .from('pets')
             .select('id, name, species')
             .in('id', petIds);
+            
+          console.log('[SharingTab] Pet info query result:', { data: petsData, error: petsError });
+          
           if (petsError) {
             console.error('[SharingTab] Error fetching pet info:', petsError);
             setPetsById({});
           } else {
             const map: Record<string, PetInfo> = {};
             (petsData || []).forEach((p: any) => { map[p.id] = p as PetInfo; });
+            console.log('[SharingTab] Setting pets map:', map);
             setPetsById(map);
           }
         } else {
@@ -177,8 +195,16 @@ useEffect(() => {
   };
 
   if (loading) {
+    console.log('[SharingTab] Still loading...');
     return <div className="text-center py-8">{au('Loading...')}</div>;
   }
+
+  console.log('[SharingTab] Rendering component with state:', {
+    invites: invites.length,
+    members: members.length,
+    user: !!user,
+    petId
+  });
 
   return (
     <div className="space-y-6">
@@ -196,6 +222,7 @@ useEffect(() => {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Debug: invites={invites.length}, members={members.length}, loading={loading} */}
           {/* Pending Invites Section */}
           {invites.length > 0 && (
             <div className="space-y-3">
