@@ -29,6 +29,8 @@ interface Member {
   user_id: string;
   role: string;
   created_at: string;
+  email?: string;
+  display_name?: string;
 }
 
 interface PetInfo {
@@ -66,14 +68,14 @@ export function SharingTab({ petId }: SharingTabProps) {
     });
     setLoading(true);
 
-    // Fetch ALL invites (both sent by user and sent to user)
+    // Fetch ALL invites (both sent by user and sent to user) - including pending and revoked
     try {
       console.log('[SharingTab] Building query...');
       const query = supabase
         .from('pet_invites')
         .select('*')
         .or(`invited_by.eq.${user.id},email.eq.${user.email?.toLowerCase()}`)
-        .eq('status', 'pending')
+        .in('status', ['pending', 'revoked'])
         .order('created_at', { ascending: false });
 
       console.log('[SharingTab] Executing query...');
@@ -123,11 +125,17 @@ export function SharingTab({ petId }: SharingTabProps) {
       setPetsById({});
     }
 
-    // Fetch members for this specific pet
+    // Fetch members for this specific pet with their profile info
     try {
       const { data: memberData, error: memberError } = await supabase
         .from('pet_memberships')
-        .select('*')
+        .select(`
+          *,
+          profiles:user_id (
+            email,
+            display_name
+          )
+        `)
         .eq('pet_id', petId);
 
       console.log('[SharingTab] Members query for petId', petId, ':', { data: memberData, error: memberError });
@@ -136,7 +144,13 @@ export function SharingTab({ petId }: SharingTabProps) {
         console.error('[SharingTab] Error fetching members:', memberError);
         setMembers([]);
       } else {
-        setMembers(memberData || []);
+        // Flatten the profile data into the member object
+        const membersWithProfiles = (memberData || []).map((m: any) => ({
+          ...m,
+          email: m.profiles?.email,
+          display_name: m.profiles?.display_name
+        }));
+        setMembers(membersWithProfiles);
       }
     } catch (e) {
       console.error('[SharingTab] Unexpected error fetching members:', e);
@@ -232,17 +246,25 @@ export function SharingTab({ petId }: SharingTabProps) {
               {invites.map((invite) => {
                 const isSentByMe = invite.invited_by === user?.id;
                 const isForMe = invite.email.toLowerCase() === user?.email?.toLowerCase();
+                const isRevoked = invite.status === 'revoked';
                 
                 return (
                   <div key={invite.id} className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
                     <div className="flex-1 space-y-1">
                       <div className="flex items-center gap-2">
                         <p className="font-medium">{invite.email}</p>
-                        <Badge variant="outline" className="text-xs">
-                          {isSentByMe && !isForMe && au('Sent by you')}
-                          {!isSentByMe && isForMe && au('Sent to you')}
-                          {isSentByMe && isForMe && au('Self-invite')}
-                        </Badge>
+                        {isRevoked && (
+                          <Badge variant="destructive" className="text-xs">
+                            {au('revoked')}
+                          </Badge>
+                        )}
+                        {!isRevoked && (
+                          <Badge variant="outline" className="text-xs">
+                            {isSentByMe && !isForMe && au('Sent by you')}
+                            {!isSentByMe && isForMe && au('Sent to you')}
+                            {isSentByMe && isForMe && au('Self-invite')}
+                          </Badge>
+                        )}
                       </div>
                       <p className="text-sm text-muted-foreground">
                         {invite.role === 'vet' && au('Veterinarian - Read-only medical access')}
@@ -258,7 +280,31 @@ export function SharingTab({ petId }: SharingTabProps) {
                     </div>
                     
                     {/* Show different actions based on whether user sent or received the invite */}
-                    {isSentByMe && !isForMe ? (
+                    {isRevoked ? (
+                      // Revoked invites - show remove button
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={async () => {
+                          try {
+                            const { error } = await supabase
+                              .from('pet_invites')
+                              .delete()
+                              .eq('id', invite.id);
+                            
+                            if (error) throw error;
+                            toast.success(au('Invite removed'));
+                            fetchSharingData();
+                          } catch (error) {
+                            console.error('Error removing invite:', error);
+                            toast.error(au('Failed to remove invite'));
+                          }
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        {au('Remove')}
+                      </Button>
+                    ) : isSentByMe && !isForMe ? (
                       // Sent by current user to someone else - show copy/revoke
                       <div className="flex items-center gap-2">
                         <Button
@@ -319,7 +365,7 @@ export function SharingTab({ petId }: SharingTabProps) {
               {members.map((member) => (
                 <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex-1 space-y-1">
-                    <p className="font-medium">{member.user_id}</p>
+                    <p className="font-medium">{member.display_name || member.email || member.user_id}</p>
                     <p className="text-sm text-muted-foreground">
                       {member.role === 'vet' && au('Veterinarian - Read-only medical access')}
                       {member.role === 'family' && au('Family - Can view and edit')}

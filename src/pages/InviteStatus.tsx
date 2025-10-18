@@ -232,9 +232,12 @@ export default function InviteStatus() {
                       </div>
                     )}
 
-                    {invite.status === 'accepted' && (
+                    {invite.status === 'accepted' && invite.pet_id && (
                       <Button
-                        onClick={() => navigate(`/pets/${invite.pet_id}`)}
+                        onClick={() => {
+                          console.log('Navigating to pet:', invite.pet_id);
+                          navigate(`/pets/${invite.pet_id}`);
+                        }}
                         className="w-full mt-4"
                       >
                         {au('View Pet Profile')}
