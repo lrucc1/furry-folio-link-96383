@@ -122,7 +122,9 @@ const PublicPetProfile = () => {
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <Logo iconClassName="w-12 h-12" textClassName="font-bold text-2xl text-white" />
+            <a href="/" aria-label="Go to home">
+              <Logo iconClassName="w-12 h-12" textClassName="font-bold text-2xl text-white" />
+            </a>
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Pet Profile</h1>
           {pet.is_lost && (
