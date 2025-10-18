@@ -17,6 +17,7 @@ import { Loader2, Crown, Users, FileText, Settings, Download, Trash2, Star, Cale
 import { au } from '@/lib/auEnglish';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { z } from 'zod';
+import log from '@/lib/log';
 
 const SUBSCRIPTION_TIERS = {
   free: { name: 'Free', productId: null },
@@ -210,14 +211,14 @@ export default function Account() {
   const handleDeleteAccount = async () => {
     setDeletingAccount(true);
     try {
-      console.log('[Delete Account] Starting account deletion...');
+      log.debug('[Delete Account] Starting account deletion...');
       
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         throw new Error('No active session');
       }
       
-      console.log('[Delete Account] Session found, calling delete-account function...');
+      log.debug('[Delete Account] Session found, calling delete-account function...');
       
       const { data, error } = await supabase.functions.invoke('delete-account', {
         headers: {
@@ -225,7 +226,7 @@ export default function Account() {
         },
       });
       
-      console.log('[Delete Account] Function response:', { data, error });
+      log.debug('[Delete Account] Function response:', { data, error });
       
       if (error) throw error;
       
@@ -233,7 +234,7 @@ export default function Account() {
       await signOut();
       navigate('/');
     } catch (error) {
-      console.error('[Delete Account] Error deleting account:', error);
+      log.error('[Delete Account] Error deleting account:', error);
       toast.error('Failed to delete account');
       setDeletingAccount(false);
     }
@@ -255,7 +256,7 @@ export default function Account() {
         });
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      log.error('Error fetching profile:', error);
     }
   };
 

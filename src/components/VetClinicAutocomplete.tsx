@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { MapPin } from 'lucide-react';
+import log from '@/lib/log';
 
 export interface VetClinicData {
   name: string;
@@ -36,10 +37,10 @@ export const VetClinicAutocomplete = ({
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const [scriptError, setScriptError] = useState(false);
 
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyAL_w63IAuk6Il-RGZASEJGjq0goAHsUk8";
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   const hasApiKey = !!apiKey;
- 
-  console.log('VetClinicAutocomplete - API Key present:', hasApiKey);
+  
+  log.debug('VetClinicAutocomplete - API Key present:', hasApiKey);
 
   // Update input value when prop changes
   useEffect(() => {
@@ -49,7 +50,7 @@ export const VetClinicAutocomplete = ({
   // Initialize Google Places API
   useEffect(() => {
     if (!hasApiKey) {
-      console.log('VetClinicAutocomplete - No API key, falling back to basic input');
+      log.info('VetClinicAutocomplete - No API key, falling back to basic input');
       return;
     }
 
@@ -60,33 +61,33 @@ export const VetClinicAutocomplete = ({
         const dummyDiv = document.createElement('div');
         placesServiceRef.current = new google.maps.places.PlacesService(dummyDiv);
         setScriptLoaded(true);
-        console.log('VetClinicAutocomplete - Google Maps Places API initialized');
+        log.debug('VetClinicAutocomplete - Google Maps Places API initialized');
       }
     };
 
     if (window.google?.maps?.places) {
-      console.log('VetClinicAutocomplete - Google Maps already loaded');
+      log.debug('VetClinicAutocomplete - Google Maps already loaded');
       initGoogle();
     } else {
       // Check if script is already loading
       const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
       if (existingScript) {
-        console.log('VetClinicAutocomplete - Script already loading, waiting...');
+        log.debug('VetClinicAutocomplete - Script already loading, waiting...');
         existingScript.addEventListener('load', initGoogle);
         return;
       }
 
-      console.log('VetClinicAutocomplete - Loading Google Maps script');
+      log.debug('VetClinicAutocomplete - Loading Google Maps script');
       const script = document.createElement('script');
       script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
       script.async = true;
       script.defer = true;
       script.onload = () => {
-        console.log('VetClinicAutocomplete - Script loaded successfully');
+        log.debug('VetClinicAutocomplete - Script loaded successfully');
         initGoogle();
       };
       script.onerror = () => {
-        console.error('VetClinicAutocomplete - Failed to load Google Maps script');
+        log.error('VetClinicAutocomplete - Failed to load Google Maps script');
         setScriptError(true);
       };
       document.head.appendChild(script);
@@ -99,7 +100,7 @@ export const VetClinicAutocomplete = ({
       return;
     }
 
-    console.log('VetClinicAutocomplete - Searching for:', query);
+    log.debug('VetClinicAutocomplete - Searching for:', query);
     setIsLoading(true);
 
     autocompleteServiceRef.current.getPlacePredictions(
@@ -110,7 +111,7 @@ export const VetClinicAutocomplete = ({
       },
       (predictions, status) => {
         setIsLoading(false);
-        console.log('VetClinicAutocomplete - Search status:', status, 'Results:', predictions?.length);
+        log.debug('VetClinicAutocomplete - Search status:', status, 'Results:', predictions?.length);
         
         if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
           // Filter for vet-related places
@@ -121,11 +122,11 @@ export const VetClinicAutocomplete = ({
                    text.includes('animal') ||
                    text.includes('pet');
           });
-          console.log('VetClinicAutocomplete - Filtered vet results:', vetPredictions.length);
+          log.debug('VetClinicAutocomplete - Filtered vet results:', vetPredictions.length);
           setSuggestions(vetPredictions);
           setShowSuggestions(true);
         } else {
-          console.log('VetClinicAutocomplete - No results or error');
+          log.debug('VetClinicAutocomplete - No results or error');
           setSuggestions([]);
         }
       }
@@ -257,7 +258,7 @@ export const VetClinicAutocomplete = ({
         )}
         {!hasApiKey && (
           <p className="text-xs text-muted-foreground">
-            Enter the vet clinic name manually (address autocomplete not configured).
+            Address autocomplete is not configured. Please contact support to enable this feature.
           </p>
         )}
       </div>

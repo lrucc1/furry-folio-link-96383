@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import log from '@/lib/log';
 
 export interface AddressData {
   formatted: string;
@@ -80,7 +81,7 @@ export function AddressAutocomplete({
       setHasGoogleMaps(true);
     };
     script.onerror = () => {
-      console.error('Failed to load Google Maps script');
+      log.error('Failed to load Google Maps script');
       setHasGoogleMaps(false);
     };
     document.head.appendChild(script);
