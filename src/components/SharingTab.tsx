@@ -42,13 +42,12 @@ export function SharingTab({ petId }: SharingTabProps) {
 
   const fetchSharingData = async () => {
     if (!petId) {
+      console.log('[SharingTab] No petId provided');
       setLoading(false);
       return;
     }
 
-    let hadError = false;
-    let invitesRes: Invite[] | null = null;
-    let membersRes: Member[] | null = null;
+    console.log('[SharingTab] Fetching sharing data for petId:', petId);
 
     // Fetch invites
     try {
@@ -58,17 +57,16 @@ export function SharingTab({ petId }: SharingTabProps) {
         .eq('pet_id', petId)
         .eq('status', 'pending');
 
+      console.log('[SharingTab] Invites result:', { data: inviteData, error: inviteError });
+
       if (inviteError) {
-        console.error('Error fetching invites:', inviteError);
-        hadError = true;
+        console.error('[SharingTab] Error fetching invites:', inviteError);
         setInvites([]);
       } else {
-        invitesRes = inviteData || [];
-        setInvites(invitesRes);
+        setInvites(inviteData || []);
       }
     } catch (e) {
-      console.error('Unexpected error fetching invites:', e);
-      hadError = true;
+      console.error('[SharingTab] Unexpected error fetching invites:', e);
       setInvites([]);
     }
 
@@ -79,22 +77,17 @@ export function SharingTab({ petId }: SharingTabProps) {
         .select('*')
         .eq('pet_id', petId);
 
+      console.log('[SharingTab] Members result:', { data: memberData, error: memberError });
+
       if (memberError) {
-        console.error('Error fetching members:', memberError);
-        hadError = true;
+        console.error('[SharingTab] Error fetching members:', memberError);
         setMembers([]);
       } else {
-        membersRes = memberData || [];
-        setMembers(membersRes);
+        setMembers(memberData || []);
       }
     } catch (e) {
-      console.error('Unexpected error fetching members:', e);
-      hadError = true;
+      console.error('[SharingTab] Unexpected error fetching members:', e);
       setMembers([]);
-    }
-
-    if (hadError && (!invitesRes?.length && !membersRes?.length)) {
-      toast.warning(au('Some sharing data may be unavailable right now'));
     }
 
     setLoading(false);
