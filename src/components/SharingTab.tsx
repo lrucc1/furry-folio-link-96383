@@ -126,36 +126,53 @@ export function SharingTab({ petId }: SharingTabProps) {
     }
 
     // Fetch members for this specific pet with their profile info
-    try {
-      const { data: memberData, error: memberError } = await supabase
-        .from('pet_memberships')
-        .select(`
-          *,
-          profiles:user_id (
-            email,
-            display_name
-          )
-        `)
-        .eq('pet_id', petId);
+  try {
+    // 1) Fetch memberships for this pet (no FK joins to avoid REST relationship errors)
+    const { data: memberData, error: memberError } = await supabase
+      .from('pet_memberships')
+      .select('*')
+      .eq('pet_id', petId);
 
-      console.log('[SharingTab] Members query for petId', petId, ':', { data: memberData, error: memberError });
+    console.log('[SharingTab] Members raw for petId', petId, ':', { data: memberData, error: memberError });
 
-      if (memberError) {
-        console.error('[SharingTab] Error fetching members:', memberError);
-        setMembers([]);
-      } else {
-        // Flatten the profile data into the member object
-        const membersWithProfiles = (memberData || []).map((m: any) => ({
-          ...m,
-          email: m.profiles?.email,
-          display_name: m.profiles?.display_name
-        }));
-        setMembers(membersWithProfiles);
-      }
-    } catch (e) {
-      console.error('[SharingTab] Unexpected error fetching members:', e);
+    if (memberError) {
+      console.error('[SharingTab] Error fetching members:', memberError);
       setMembers([]);
+    } else {
+      // 2) Fetch profiles for those users in a separate query (no FK required)
+      const userIds = Array.from(new Set((memberData || []).map((m: any) => m.user_id)));
+      let profilesById: Record<string, { email?: string; display_name?: string }> = {};
+
+      if (userIds.length > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, email, display_name')
+          .in('id', userIds);
+
+        console.log('[SharingTab] Profiles query result:', { data: profilesData, error: profilesError });
+
+        if (!profilesError && profilesData) {
+          profilesData.forEach((p: any) => {
+            profilesById[p.id] = { email: p.email, display_name: p.display_name };
+          });
+        } else if (profilesError) {
+          console.error('[SharingTab] Error fetching profiles for members:', profilesError);
+        }
+      }
+
+      // 3) Merge profiles into memberships for display
+      const membersWithProfiles = (memberData || []).map((m: any) => ({
+        ...m,
+        email: profilesById[m.user_id]?.email,
+        display_name: profilesById[m.user_id]?.display_name,
+      }));
+
+      setMembers(membersWithProfiles);
     }
+  } catch (e) {
+    console.error('[SharingTab] Unexpected error fetching members:', e);
+    setMembers([]);
+  }
 
     setLoading(false);
   };
