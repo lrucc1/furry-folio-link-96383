@@ -550,7 +550,19 @@ export default function Account() {
                         au('Save Profile')
                       )}
                     </Button>
-                    <Button variant="destructive" onClick={handleSignOut}>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-6">
+                <h2 className="text-xl font-semibold mb-4">{au('Account Actions')}</h2>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium mb-2">{au('Sign Out')}</h3>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {au('Sign out of your account on this device')}
+                    </p>
+                    <Button variant="outline" onClick={handleSignOut}>
                       {au('Sign Out')}
                     </Button>
                   </div>
