@@ -23,6 +23,7 @@ interface Pet {
   profiles?: {
     email: string | null
     full_name: string | null
+    phone: string | null
   }
 }
 
@@ -68,7 +69,7 @@ const PublicPetProfile = () => {
       if (petData.is_lost && petData.user_id) {
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('email, full_name')
+          .select('email, full_name, phone')
           .eq('id', petData.user_id)
           .single()
         
@@ -205,7 +206,7 @@ const PublicPetProfile = () => {
                       <div className="flex items-center gap-3 text-sm">
                         <Phone className="w-4 h-4 text-primary" />
                         <div className="flex-1">
-                          <p className="text-xs text-muted-foreground">Phone</p>
+                          <p className="text-xs text-muted-foreground">Emergency Contact Phone</p>
                           <a 
                             href={`tel:${pet.emergency_contact_phone}`}
                             className="font-medium text-primary hover:underline"
@@ -216,6 +217,27 @@ const PublicPetProfile = () => {
                         <Button 
                           size="sm" 
                           onClick={() => window.location.href = `tel:${pet.emergency_contact_phone}`}
+                        >
+                          Call Now
+                        </Button>
+                      </div>
+                    )}
+
+                    {pet.profiles?.phone && (
+                      <div className="flex items-center gap-3 text-sm">
+                        <Phone className="w-4 h-4 text-primary" />
+                        <div className="flex-1">
+                          <p className="text-xs text-muted-foreground">Owner's Phone</p>
+                          <a 
+                            href={`tel:${pet.profiles.phone}`}
+                            className="font-medium text-primary hover:underline"
+                          >
+                            {pet.profiles.phone}
+                          </a>
+                        </div>
+                        <Button 
+                          size="sm" 
+                          onClick={() => window.location.href = `tel:${pet.profiles.phone}`}
                         >
                           Call Now
                         </Button>

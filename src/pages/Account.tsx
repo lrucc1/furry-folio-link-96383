@@ -7,13 +7,16 @@ import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, Crown, Users, FileText, Settings, Download, Trash2, Star, Calendar, CreditCard, Receipt, ExternalLink } from 'lucide-react';
+import { Loader2, Crown, Users, FileText, Settings, Download, Trash2, Star, Calendar, CreditCard, Receipt, ExternalLink, Phone } from 'lucide-react';
 import { au } from '@/lib/auEnglish';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { z } from 'zod';
 
 const SUBSCRIPTION_TIERS = {
   free: { name: 'Free', productId: null },
@@ -41,6 +44,8 @@ interface Invoice {
   invoice_pdf: string | null;
 }
 
+const phoneSchema = z.string().trim().regex(/^[\d\s\-\+\(\)]+$/, 'Please enter a valid phone number').min(8, 'Phone number too short').max(20, 'Phone number too long').optional().or(z.literal(''));
+
 export default function Account() {
   const { user, signOut } = useAuth();
   const { tier, loading: planLoading } = usePlan();
@@ -54,6 +59,8 @@ export default function Account() {
   const [managingSubscription, setManagingSubscription] = useState(false);
   const [exportingData, setExportingData] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [profileData, setProfileData] = useState({ full_name: '', phone: '' });
+  const [savingProfile, setSavingProfile] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -62,6 +69,7 @@ export default function Account() {
     }
     checkSubscription();
     calculateStorageUsage();
+    fetchProfile();
   }, [user, navigate]);
 
   const checkSubscription = async () => {
@@ -196,6 +204,57 @@ export default function Account() {
       console.error('Error deleting account:', error);
       toast.error('Failed to delete account');
       setDeletingAccount(false);
+    }
+  };
+
+  const fetchProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('full_name, phone')
+        .eq('id', user?.id)
+        .single();
+      
+      if (error) throw error;
+      if (data) {
+        setProfileData({
+          full_name: data.full_name || '',
+          phone: data.phone || ''
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    // Validate phone number
+    try {
+      phoneSchema.parse(profileData.phone);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+        return;
+      }
+    }
+
+    setSavingProfile(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: profileData.full_name.trim(),
+          phone: profileData.phone.trim()
+        })
+        .eq('id', user?.id);
+      
+      if (error) throw error;
+      toast.success('Profile updated successfully');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error('Failed to update profile');
+    } finally {
+      setSavingProfile(false);
     }
   };
 
@@ -438,12 +497,63 @@ export default function Account() {
                 <h2 className="text-xl font-semibold mb-4">{au('Profile Information')}</h2>
                 <div className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium">{au('Email')}</label>
-                    <p className="text-muted-foreground">{user?.email}</p>
+                    <Label htmlFor="email">{au('Email')}</Label>
+                    <p className="text-sm text-muted-foreground mt-1">{user?.email}</p>
                   </div>
-                  <Button variant="destructive" onClick={handleSignOut}>
-                    {au('Sign Out')}
-                  </Button>
+                  
+                  <div>
+                    <Label htmlFor="full_name">{au('Full Name')}</Label>
+                    <Input
+                      id="full_name"
+                      type="text"
+                      value={profileData.full_name}
+                      onChange={(e) => setProfileData({ ...profileData, full_name: e.target.value })}
+                      placeholder="Enter your full name"
+                      maxLength={100}
+                      className="mt-1"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      This will be shown to people who find your lost pet
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="phone" className="flex items-center gap-2">
+                      <Phone className="w-4 h-4" />
+                      {au('Phone Number')}
+                    </Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={profileData.phone}
+                      onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                      placeholder="+61 4XX XXX XXX"
+                      maxLength={20}
+                      className="mt-1"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      This will be displayed when your pet is marked as lost
+                    </p>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button 
+                      onClick={handleSaveProfile} 
+                      disabled={savingProfile}
+                    >
+                      {savingProfile ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          {au('Saving...')}
+                        </>
+                      ) : (
+                        au('Save Profile')
+                      )}
+                    </Button>
+                    <Button variant="destructive" onClick={handleSignOut}>
+                      {au('Sign Out')}
+                    </Button>
+                  </div>
                 </div>
               </Card>
 

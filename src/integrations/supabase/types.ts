@@ -390,6 +390,7 @@ export type Database = {
           full_name: string | null
           id: string
           manual_override: boolean | null
+          phone: string | null
           plan_expires_at: string | null
           plan_notes: string | null
           plan_source: string | null
@@ -408,6 +409,7 @@ export type Database = {
           full_name?: string | null
           id: string
           manual_override?: boolean | null
+          phone?: string | null
           plan_expires_at?: string | null
           plan_notes?: string | null
           plan_source?: string | null
@@ -426,6 +428,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           manual_override?: boolean | null
+          phone?: string | null
           plan_expires_at?: string | null
           plan_notes?: string | null
           plan_source?: string | null
