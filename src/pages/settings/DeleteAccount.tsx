@@ -80,6 +80,9 @@ export function DeleteAccount() {
                 <li>{au('All invitations will be cancelled')}</li>
                 <li>{au('This action is immediate and cannot be undone')}</li>
               </ul>
+              <p className="text-sm mt-3 pt-3 border-t border-destructive/20 text-muted-foreground">
+                {au('Your account will be marked for deletion and permanently removed from our systems after 30 days.')}
+              </p>
             </div>
 
             <Button
