@@ -32,6 +32,7 @@ import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import Account from "./pages/Account";
 import AcceptInvite from "./pages/invite/AcceptInvite";
+import InviteStatus from "./pages/InviteStatus";
 
 const queryClient = new QueryClient();
 
@@ -116,6 +117,14 @@ const App = () => (
               } 
             />
             <Route path="/invite/accept" element={<AcceptInvite />} />
+            <Route 
+              path="/invite/status" 
+              element={
+                <ProtectedRoute>
+                  <InviteStatus />
+                </ProtectedRoute>
+              } 
+            />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

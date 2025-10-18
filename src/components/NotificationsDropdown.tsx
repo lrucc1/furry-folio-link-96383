@@ -49,7 +49,7 @@ export const NotificationsDropdown = () => {
     const { count } = await supabase
       .from('pet_invites')
       .select('id', { count: 'exact', head: true })
-      .eq('email', user.email)
+      .eq('email', user.email.toLowerCase())
       .eq('status', 'pending');
     const c = count || 0;
     setInvitesCount(c);
@@ -201,7 +201,7 @@ export const NotificationsDropdown = () => {
           created_at,
           pets!inner(name)
         `)
-        .eq('email', user?.email)
+        .eq('email', user?.email.toLowerCase())
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
         .limit(5);

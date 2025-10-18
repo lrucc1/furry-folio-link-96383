@@ -64,7 +64,7 @@ serve(async (req) => {
       throw new Error('Invite has expired');
     }
 
-    // Check if user email matches invite email (optional strict check)
+    // Check if user email matches invite email (case-insensitive)
     if (user.email?.toLowerCase() !== invite.email.toLowerCase()) {
       throw new Error('This invite was sent to a different email address');
     }

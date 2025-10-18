@@ -89,7 +89,7 @@ export const DashboardHeader = () => {
               <Button 
                 variant="ghost" 
                 size="icon"
-                onClick={() => setShowInvitesModal(true)}
+                onClick={() => navigate('/invite/status')}
                 title={au('View invitations')}
               >
                 <Mail className="w-5 h-5" />

@@ -65,7 +65,7 @@ serve(async (req) => {
       .from('pet_invites')
       .insert({
         pet_id,
-        email,
+        email: email.toLowerCase(),
         role,
         token: token_value,
         invited_by: user.id,

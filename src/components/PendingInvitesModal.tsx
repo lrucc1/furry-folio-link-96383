@@ -50,7 +50,7 @@ export function PendingInvitesModal({ open, onClose }: PendingInvitesModalProps)
       const { data, error } = await supabase
         .from('pet_invites')
         .select('*')
-        .eq('email', user.email)
+        .eq('email', user.email.toLowerCase())
         .eq('status', 'pending')
         .gt('expires_at', new Date().toISOString());
 
