@@ -11,8 +11,22 @@ const ALLOWED_ORIGINS = new Set([
   'http://localhost:8080'
 ]);
 
+function isAllowedOrigin(origin: string) {
+  if (!origin) return false;
+  try {
+    const url = new URL(origin);
+    const host = url.hostname;
+    if (ALLOWED_ORIGINS.has(origin)) return true;
+    if (host.endsWith('.lovable.app')) return true;
+    if (host.endsWith('.lovableproject.com')) return true;
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 function cors(origin: string) {
-  const allowed = ALLOWED_ORIGINS.has(origin);
+  const allowed = isAllowedOrigin(origin);
   return {
     allowed,
     headers: {
