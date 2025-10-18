@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, Calendar, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Bell, Calendar, AlertTriangle, CheckCircle, Syringe, Heart, AlertCircle, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -19,11 +19,12 @@ interface Notification {
   id: string;
   title: string;
   message: string;
-  type: 'vaccination' | 'checkup' | 'reminder';
+  type: 'vaccination' | 'health_reminder' | 'lost_pet' | 'general' | 'pet_invite';
   dueDate: Date;
-  petName: string;
+  petName?: string;
   isOverdue: boolean;
   priority: 'high' | 'medium' | 'low';
+  read?: boolean;
 }
 
 export const NotificationsDropdown = () => {
@@ -42,56 +43,165 @@ export const NotificationsDropdown = () => {
   const fetchNotifications = async () => {
     try {
       setLoading(true);
+      const today = new Date();
+      const allNotifications: Notification[] = [];
       
-      // Fetch upcoming vaccinations as notifications
-      const { data: vaccinations, error } = await supabase
+      // 1. Fetch upcoming vaccinations
+      const { data: vaccinations } = await supabase
         .from('vaccinations')
         .select(`
           id,
-          name,
-          due_date,
+          vaccine_name,
+          next_due_date,
           pets!inner(name, user_id)
         `)
         .eq('pets.user_id', user?.id)
-        .not('due_date', 'is', null)
-        .order('due_date', { ascending: true })
+        .not('next_due_date', 'is', null)
+        .order('next_due_date', { ascending: true })
         .limit(10);
 
-      if (error) {
-        console.error('Error fetching notifications:', error);
-        return;
-      }
-
-      const today = new Date();
-      const notificationList: Notification[] = (vaccinations || []).map((vaccination: any) => {
-        const dueDate = new Date(vaccination.due_date);
+      (vaccinations || []).forEach((vaccination: any) => {
+        const dueDate = new Date(vaccination.next_due_date);
         const daysUntil = differenceInDays(dueDate, today);
         const isOverdue = isBefore(dueDate, today);
         
         let priority: 'high' | 'medium' | 'low' = 'low';
-        if (isOverdue || daysUntil <= 7) {
-          priority = 'high';
-        } else if (daysUntil <= 30) {
-          priority = 'medium';
-        }
+        if (isOverdue || daysUntil <= 7) priority = 'high';
+        else if (daysUntil <= 30) priority = 'medium';
 
-        return {
-          id: vaccination.id,
-          title: `${vaccination.name} Due`,
+        allNotifications.push({
+          id: `vac-${vaccination.id}`,
+          title: `${vaccination.vaccine_name} Due`,
           message: isOverdue 
             ? `Overdue by ${Math.abs(daysUntil)} day${Math.abs(daysUntil) === 1 ? '' : 's'}`
-            : daysUntil === 0 
-              ? 'Due today'
-              : `Due in ${daysUntil} day${daysUntil === 1 ? '' : 's'}`,
-          type: 'vaccination' as const,
+            : daysUntil === 0 ? 'Due today' : `Due in ${daysUntil} day${daysUntil === 1 ? '' : 's'}`,
+          type: 'vaccination',
           dueDate,
           petName: vaccination.pets.name,
           isOverdue,
           priority
-        };
+        });
       });
 
-      setNotifications(notificationList);
+      // 2. Fetch health reminders
+      const { data: reminders } = await supabase
+        .from('health_reminders')
+        .select(`
+          id,
+          title,
+          reminder_date,
+          reminder_type,
+          completed,
+          pets!inner(name, user_id)
+        `)
+        .eq('pets.user_id', user?.id)
+        .eq('completed', false)
+        .order('reminder_date', { ascending: true })
+        .limit(10);
+
+      (reminders || []).forEach((reminder: any) => {
+        const dueDate = new Date(reminder.reminder_date);
+        const daysUntil = differenceInDays(dueDate, today);
+        const isOverdue = isBefore(dueDate, today);
+        
+        let priority: 'high' | 'medium' | 'low' = 'low';
+        if (isOverdue || daysUntil <= 3) priority = 'high';
+        else if (daysUntil <= 14) priority = 'medium';
+
+        allNotifications.push({
+          id: `rem-${reminder.id}`,
+          title: reminder.title,
+          message: isOverdue 
+            ? `Overdue by ${Math.abs(daysUntil)} day${Math.abs(daysUntil) === 1 ? '' : 's'}`
+            : daysUntil === 0 ? 'Due today' : `Due in ${daysUntil} day${daysUntil === 1 ? '' : 's'}`,
+          type: 'health_reminder',
+          dueDate,
+          petName: reminder.pets.name,
+          isOverdue,
+          priority
+        });
+      });
+
+      // 3. Fetch lost pets
+      const { data: lostPets } = await supabase
+        .from('pets')
+        .select('id, name, updated_at')
+        .eq('user_id', user?.id)
+        .eq('is_lost', true);
+
+      (lostPets || []).forEach((pet: any) => {
+        allNotifications.push({
+          id: `lost-${pet.id}`,
+          title: `${pet.name} is Marked as Lost`,
+          message: 'Tap to view recovery options',
+          type: 'lost_pet',
+          dueDate: new Date(pet.updated_at),
+          petName: pet.name,
+          isOverdue: true,
+          priority: 'high'
+        });
+      });
+
+      // 4. Fetch general notifications
+      const { data: generalNotifs } = await supabase
+        .from('notifications')
+        .select('id, title, message, type, read, created_at')
+        .eq('user_id', user?.id)
+        .eq('read', false)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      (generalNotifs || []).forEach((notif: any) => {
+        allNotifications.push({
+          id: `gen-${notif.id}`,
+          title: notif.title,
+          message: notif.message,
+          type: 'general',
+          dueDate: new Date(notif.created_at),
+          isOverdue: false,
+          priority: notif.type === 'error' ? 'high' : 'medium',
+          read: notif.read
+        });
+      });
+
+      // 5. Fetch pending pet invites
+      const { data: invites } = await supabase
+        .from('pet_invites')
+        .select(`
+          id,
+          role,
+          status,
+          created_at,
+          pets!inner(name)
+        `)
+        .eq('email', user?.email)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      (invites || []).forEach((invite: any) => {
+        allNotifications.push({
+          id: `inv-${invite.id}`,
+          title: 'Pet Invitation',
+          message: `You've been invited as ${invite.role} for ${invite.pets.name}`,
+          type: 'pet_invite',
+          dueDate: new Date(invite.created_at),
+          petName: invite.pets.name,
+          isOverdue: false,
+          priority: 'medium'
+        });
+      });
+
+      // Sort by priority and date
+      allNotifications.sort((a, b) => {
+        const priorityOrder = { high: 0, medium: 1, low: 2 };
+        if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
+          return priorityOrder[a.priority] - priorityOrder[b.priority];
+        }
+        return a.dueDate.getTime() - b.dueDate.getTime();
+      });
+
+      setNotifications(allNotifications);
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {
@@ -100,8 +210,18 @@ export const NotificationsDropdown = () => {
   };
 
   const getNotificationIcon = (type: string, isOverdue: boolean) => {
+    if (type === 'lost_pet') return AlertCircle;
+    if (type === 'pet_invite') return UserPlus;
+    if (type === 'health_reminder') return Heart;
+    if (type === 'vaccination') return Syringe;
     if (isOverdue) return AlertTriangle;
     return Calendar;
+  };
+  
+  const getNotificationColor = (type: string, isOverdue: boolean) => {
+    if (type === 'lost_pet') return 'text-destructive';
+    if (isOverdue) return 'text-destructive';
+    return 'text-primary';
   };
 
   const urgentCount = notifications.filter(n => n.isOverdue || n.priority === 'high').length;
@@ -157,12 +277,12 @@ export const NotificationsDropdown = () => {
                   className="flex items-start gap-3 p-3 cursor-pointer"
                   onClick={handleNotificationClick}
                 >
-                  <div className={`p-2 rounded-full ${notification.isOverdue ? 'bg-destructive/10' : 'bg-primary/10'}`}>
-                    <Icon className={`w-4 h-4 ${notification.isOverdue ? 'text-destructive' : 'text-primary'}`} />
+                  <div className={`p-2 rounded-full ${notification.type === 'lost_pet' || notification.isOverdue ? 'bg-destructive/10' : 'bg-primary/10'}`}>
+                    <Icon className={`w-4 h-4 ${getNotificationColor(notification.type, notification.isOverdue)}`} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">
-                      {notification.petName} - {notification.title}
+                      {notification.petName ? `${notification.petName} - ` : ''}{notification.title}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {notification.message}
