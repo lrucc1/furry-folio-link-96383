@@ -223,11 +223,11 @@ function formatProfileSection(profile: any): string {
             <div class="profile-value">${escapeHtml(profile.phone)}</div>
           </div>
         ` : ''}
-        ${(profile.premium_tier || profile.plan_tier) ? `
+        ${profile.plan_tier ? `
           <div class="profile-item">
             <div class="profile-label">Plan</div>
             <div class="profile-value">
-              <span class="badge badge-info">${escapeHtml((profile.premium_tier || profile.plan_tier || 'free').toUpperCase())}</span>
+              <span class="badge badge-info">${escapeHtml((profile.plan_tier || 'free').toUpperCase())}</span>
             </div>
           </div>
         ` : ''}

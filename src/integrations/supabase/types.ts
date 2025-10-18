@@ -396,7 +396,6 @@ export type Database = {
           plan_source: string | null
           plan_tier: string | null
           plan_updated_at: string | null
-          premium_tier: string | null
           role: string | null
           updated_at: string
           user_id: string | null
@@ -415,7 +414,6 @@ export type Database = {
           plan_source?: string | null
           plan_tier?: string | null
           plan_updated_at?: string | null
-          premium_tier?: string | null
           role?: string | null
           updated_at?: string
           user_id?: string | null
@@ -434,7 +432,6 @@ export type Database = {
           plan_source?: string | null
           plan_tier?: string | null
           plan_updated_at?: string | null
-          premium_tier?: string | null
           role?: string | null
           updated_at?: string
           user_id?: string | null

@@ -20,7 +20,7 @@ export function useEffectivePlan() {
     const fetchProfile = async () => {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('plan_tier, manual_override, plan_source, premium_tier')
+        .select('plan_tier, manual_override, plan_source')
         .eq('id', user.id)
         .single();
 
@@ -28,7 +28,6 @@ export function useEffectivePlan() {
         const profileData: ProfilePlanData = {
           plan_tier: profile.plan_tier as Tier | undefined,
           manual_override: profile.manual_override,
-          premium_tier: profile.premium_tier as 'free' | 'premium' | 'family' | undefined,
           plan_source: profile.plan_source as PlanSource | undefined,
         };
         setTier(computeEffectiveTier(profileData));

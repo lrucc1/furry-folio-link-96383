@@ -93,7 +93,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (user && tier !== 'free') {
           await supabase
             .from('profiles')
-            .update({ premium_tier: tier })
+            .update({ plan_tier: tier })
             .eq('id', user.id)
         }
       }

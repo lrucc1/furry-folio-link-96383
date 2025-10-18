@@ -68,7 +68,7 @@ interface UserDetails {
   email: string;
   created_at: string;
   display_name: string | null;
-  premium_tier: string;
+  plan_tier: string;
   pet_count: number;
   roles: string[];
 }
@@ -213,7 +213,7 @@ const AdminDashboard = () => {
       ...filteredUsers.map((u) => [
         u.email,
         u.display_name || 'N/A',
-        u.premium_tier,
+        u.plan_tier,
         u.pet_count,
         u.roles.join(', '),
         new Date(u.created_at).toLocaleDateString(),
@@ -232,7 +232,7 @@ const AdminDashboard = () => {
 
   const handleEditTier = (user: UserDetails) => {
     setEditingUser(user);
-    setNewTier(user.premium_tier);
+    setNewTier(user.plan_tier);
   };
 
   const handleTierChange = (value: string) => {
@@ -247,7 +247,7 @@ const AdminDashboard = () => {
       // Update the profiles table
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({ premium_tier: newTier })
+        .update({ plan_tier: newTier })
         .eq('id', editingUser.user_id);
 
       if (profileError) throw profileError;
@@ -296,7 +296,7 @@ const AdminDashboard = () => {
 
   const cancelTierChange = () => {
     setShowConfirmDialog(false);
-    setNewTier(editingUser?.premium_tier || '');
+    setNewTier(editingUser?.plan_tier || '');
   };
 
   if (loading) {
@@ -595,8 +595,8 @@ const AdminDashboard = () => {
                             <TableCell className="font-medium">{user.email}</TableCell>
                             <TableCell>{user.display_name || '-'}</TableCell>
                             <TableCell>
-                              <Badge variant={user.premium_tier === 'free' ? 'outline' : 'secondary'}>
-                                {user.premium_tier}
+                              <Badge variant={user.plan_tier === 'free' ? 'outline' : 'secondary'}>
+                                {user.plan_tier}
                               </Badge>
                             </TableCell>
                             <TableCell>{user.pet_count}</TableCell>
@@ -766,7 +766,7 @@ const AdminDashboard = () => {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Current Tier</label>
-              <p className="text-sm text-muted-foreground">{editingUser?.premium_tier}</p>
+              <p className="text-sm text-muted-foreground">{editingUser?.plan_tier}</p>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">New Tier</label>
@@ -799,7 +799,7 @@ const AdminDashboard = () => {
             <DialogTitle>Confirm Tier Change</DialogTitle>
             <DialogDescription>
               Are you sure you want to change {editingUser?.email}'s tier from{' '}
-              <span className="font-semibold">{editingUser?.premium_tier}</span> to{' '}
+              <span className="font-semibold">{editingUser?.plan_tier}</span> to{' '}
               <span className="font-semibold">{newTier}</span>?
             </DialogDescription>
           </DialogHeader>

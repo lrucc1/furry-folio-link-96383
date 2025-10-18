@@ -6,7 +6,6 @@ export interface ProfilePlanData {
   manual_override?: boolean;
   stripe_tier?: Tier | null;
   stripe_status?: string | null;
-  premium_tier?: 'free' | 'premium' | 'family';
   plan_source?: PlanSource;
 }
 
@@ -21,10 +20,10 @@ export function computeEffectiveTier(profile: ProfilePlanData | null): Tier {
     return profile.stripe_tier;
   }
 
-  // Check legacy premium_tier field
-  if (profile?.premium_tier) {
-    if (profile.premium_tier === 'family') return 'family';
-    if (profile.premium_tier === 'premium') return 'premium';
+  // Database plan_tier
+  if (profile?.plan_tier) {
+    if (profile.plan_tier === 'family') return 'family';
+    if (profile.plan_tier === 'premium') return 'premium';
   }
 
   // Default to free

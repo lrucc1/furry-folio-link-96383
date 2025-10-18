@@ -31,7 +31,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
 
     const { data } = await supabase
       .from('profiles')
-      .select('plan_tier, manual_override, plan_source, premium_tier')
+      .select('plan_tier, manual_override, plan_source')
       .eq('id', user.id)
       .single();
 
@@ -39,7 +39,6 @@ export function PlanProvider({ children }: { children: ReactNode }) {
       const profileData: ProfilePlanData = {
         plan_tier: data.plan_tier as Tier | undefined,
         manual_override: data.manual_override,
-        premium_tier: data.premium_tier as 'free' | 'premium' | 'family' | undefined,
         plan_source: data.plan_source as PlanSource | undefined,
       };
       setProfile(profileData);
