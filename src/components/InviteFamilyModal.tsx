@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -31,7 +32,7 @@ export function InviteFamilyModal({ open, onClose, petId, onSuccess }: InviteFam
   const [formData, setFormData] = useState({
     email: '',
     role: 'family' as 'family' | 'caregiver' | 'vet',
-    selectedPetId: petId || ''
+    selectedPetIds: petId ? [petId] : [] as string[]
   });
 
   useEffect(() => {
@@ -42,7 +43,7 @@ export function InviteFamilyModal({ open, onClose, petId, onSuccess }: InviteFam
 
   useEffect(() => {
     if (petId) {
-      setFormData(prev => ({ ...prev, selectedPetId: petId }));
+      setFormData(prev => ({ ...prev, selectedPetIds: [petId] }));
     }
   }, [petId]);
 
@@ -58,11 +59,6 @@ export function InviteFamilyModal({ open, onClose, petId, onSuccess }: InviteFam
 
       if (error) throw error;
       setPets(data || []);
-      
-      // If no petId was provided and we have pets, select the first one
-      if (!petId && data && data.length > 0) {
-        setFormData(prev => ({ ...prev, selectedPetId: data[0].id }));
-      }
     } catch (error) {
       console.error('Error fetching pets:', error);
     }
@@ -76,8 +72,8 @@ export function InviteFamilyModal({ open, onClose, petId, onSuccess }: InviteFam
       return;
     }
 
-    if (!formData.selectedPetId) {
-      toast.error(au('Please select a pet'));
+    if (formData.selectedPetIds.length === 0) {
+      toast.error(au('Please select at least one pet'));
       return;
     }
 
@@ -94,25 +90,44 @@ export function InviteFamilyModal({ open, onClose, petId, onSuccess }: InviteFam
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase.functions.invoke('invite-family', {
-        body: {
-          pet_id: formData.selectedPetId,
-          email: formData.email,
-          role: formData.role
-        }
-      });
+      // Create invites for each selected pet
+      const invitePromises = formData.selectedPetIds.map(petId =>
+        supabase.functions.invoke('invite-family', {
+          body: {
+            pet_id: petId,
+            email: formData.email,
+            role: formData.role
+          }
+        })
+      );
 
-      if (error) throw error;
+      const results = await Promise.all(invitePromises);
+      
+      // Check if any failed
+      const failed = results.filter(r => r.error);
+      if (failed.length > 0) {
+        throw new Error('Some invites failed to create');
+      }
 
-      setInviteUrl(data.inviteUrl);
-      toast.success(au('Invite created'));
-      onSuccess(data.inviteUrl);
+      // Use the first invite URL for display
+      setInviteUrl(results[0].data.inviteUrl);
+      toast.success(au(`${formData.selectedPetIds.length} invite${formData.selectedPetIds.length > 1 ? 's' : ''} created`));
+      onSuccess(results[0].data.inviteUrl);
     } catch (error) {
       console.error('Error creating invite:', error);
       toast.error(au('Failed to create invite'));
     } finally {
       setSaving(false);
     }
+  };
+
+  const togglePetSelection = (petId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      selectedPetIds: prev.selectedPetIds.includes(petId)
+        ? prev.selectedPetIds.filter(id => id !== petId)
+        : [...prev.selectedPetIds, petId]
+    }));
   };
 
   const copyLink = () => {
@@ -123,7 +138,7 @@ export function InviteFamilyModal({ open, onClose, petId, onSuccess }: InviteFam
   };
 
   const handleClose = () => {
-    setFormData({ email: '', role: 'family', selectedPetId: petId || '' });
+    setFormData({ email: '', role: 'family', selectedPetIds: petId ? [petId] : [] });
     setInviteUrl(null);
     onClose();
   };
@@ -138,24 +153,30 @@ export function InviteFamilyModal({ open, onClose, petId, onSuccess }: InviteFam
         {!inviteUrl ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="pet">
-                {au('Select Pet')} <span className="text-destructive">*</span>
+              <Label>
+                {au('Select Pets')} <span className="text-destructive">*</span>
               </Label>
-              <Select
-                value={formData.selectedPetId}
-                onValueChange={(value) => setFormData({ ...formData, selectedPetId: value })}
-              >
-                <SelectTrigger className="bg-background">
-                  <SelectValue placeholder={au('Choose a pet...')} />
-                </SelectTrigger>
-                <SelectContent className="bg-background z-50">
-                  {pets.map((pet) => (
-                    <SelectItem key={pet.id} value={pet.id}>
-                      {pet.name} ({pet.species})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="mt-2 space-y-2 max-h-48 overflow-y-auto border rounded-md p-3 bg-background">
+                {pets.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">{au('No pets found')}</p>
+                ) : (
+                  pets.map((pet) => (
+                    <div key={pet.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`pet-${pet.id}`}
+                        checked={formData.selectedPetIds.includes(pet.id)}
+                        onCheckedChange={() => togglePetSelection(pet.id)}
+                      />
+                      <label
+                        htmlFor={`pet-${pet.id}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      >
+                        {pet.name} ({pet.species})
+                      </label>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
 
             <div>
