@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ZoomIn, ZoomOut, Download, RotateCw } from 'lucide-react';
 
@@ -39,7 +39,7 @@ export const DocumentViewer = ({ url, filename, mimeType, isOpen, onClose }: Doc
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl h-[80vh] p-0 flex flex-col gap-0">
+      <DialogContent className="max-w-4xl h-[80vh] p-0 flex flex-col gap-0" closeClassName="top-3 right-3">
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-sm font-medium truncate pr-4">
             {filename}
@@ -86,15 +86,11 @@ export const DocumentViewer = ({ url, filename, mimeType, isOpen, onClose }: Doc
                 title={filename}
               />
             ) : isOfficeDoc ? (
-              <div className="text-center">
-                <p className="text-muted-foreground mb-4">
-                  Office document preview requires public URL access.
-                </p>
-                <Button onClick={handleDownload}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Download to view
-                </Button>
-              </div>
+              <iframe
+                src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`}
+                className="w-full h-full min-h-[600px] bg-white rounded"
+                title={filename}
+              />
             ) : (
               <div className="text-center">
                 <p className="text-muted-foreground mb-4">
