@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ZoomIn, ZoomOut, Download, X, RotateCw } from 'lucide-react';
+import { ZoomIn, ZoomOut, Download, RotateCw } from 'lucide-react';
 
 interface DocumentViewerProps {
   url: string;
@@ -28,6 +28,14 @@ export const DocumentViewer = ({ url, filename, mimeType, isOpen, onClose }: Doc
 
   const isImage = mimeType.startsWith('image/');
   const isPDF = mimeType === 'application/pdf';
+  const isOfficeDoc = [
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/msword',
+    'application/vnd.ms-excel',
+    'application/vnd.ms-powerpoint'
+  ].includes(mimeType);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -57,9 +65,6 @@ export const DocumentViewer = ({ url, filename, mimeType, isOpen, onClose }: Doc
               <Button variant="ghost" size="icon" onClick={handleDownload}>
                 <Download className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="icon" onClick={onClose}>
-                <X className="w-4 h-4" />
-              </Button>
             </div>
           </div>
         </DialogHeader>
@@ -79,6 +84,12 @@ export const DocumentViewer = ({ url, filename, mimeType, isOpen, onClose }: Doc
             ) : isPDF ? (
               <iframe
                 src={url}
+                className="w-full h-full min-h-[600px] bg-white rounded"
+                title={filename}
+              />
+            ) : isOfficeDoc ? (
+              <iframe
+                src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`}
                 className="w-full h-full min-h-[600px] bg-white rounded"
                 title={filename}
               />
