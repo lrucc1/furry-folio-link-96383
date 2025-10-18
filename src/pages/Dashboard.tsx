@@ -11,6 +11,7 @@ import { AddPetCard } from '@/components/AddPetCard'
 import { HealthReminders } from '@/components/HealthReminders'
 import { DashboardHeader } from '@/components/DashboardHeader'
 import { Footer } from '@/components/Footer'
+import { PendingInvitesModal } from '@/components/PendingInvitesModal'
 import { Plus, Crown, Heart } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { calculateAge } from '@/lib/age-utils'
@@ -35,10 +36,40 @@ const Dashboard = () => {
   const navigate = useNavigate()
   const [pets, setPets] = useState<Pet[]>([])
   const [loading, setLoading] = useState(true)
+  const [showInvitesModal, setShowInvitesModal] = useState(false)
+  const [hasCheckedInvites, setHasCheckedInvites] = useState(false)
 
   useEffect(() => {
     fetchPets()
+    checkPendingInvites()
   }, [user])
+
+  const checkPendingInvites = async () => {
+    if (!user || hasCheckedInvites) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('pet_invites')
+        .select('id')
+        .eq('email', user.email)
+        .eq('status', 'pending')
+        .gt('expires_at', new Date().toISOString())
+        .limit(1);
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        // Small delay so user sees the dashboard first
+        setTimeout(() => {
+          setShowInvitesModal(true);
+        }, 500);
+      }
+      
+      setHasCheckedInvites(true);
+    } catch (error) {
+      console.error('Error checking pending invites:', error);
+    }
+  };
 
   const fetchPets = async () => {
     if (!user) return
@@ -189,6 +220,11 @@ const Dashboard = () => {
           </>
         )}
       </main>
+      
+      <PendingInvitesModal 
+        open={showInvitesModal} 
+        onClose={() => setShowInvitesModal(false)} 
+      />
       
       <Footer />
     </div>
