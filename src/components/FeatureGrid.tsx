@@ -22,17 +22,17 @@ const features = [
   },
   {
     icon: QrCode,
-    title: "Smart Recovery Tags",
+    title: "Smart Tags",
     description: "Generate QR codes for instant pet identification and safe return when lost.",
-    badge: "Free",
+    badge: "Coming Soon",
     color: "text-accent"
   },
   {
     icon: Shield,
-    title: "Privacy Protected",
-    description: "Your contact details stay private with our secure relay messaging system.",
-    badge: "Secure",
-    color: "text-success"
+    title: "VetShare",
+    description: "Share medical records with vets via QR code for seamless healthcare coordination.",
+    badge: "Premium",
+    color: "text-green-500"
   },
   {
     icon: Calendar,

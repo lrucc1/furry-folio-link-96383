@@ -54,7 +54,7 @@ const NotFound = () => {
                   My Pets Dashboard
                 </Button>
                 <Button variant="link" onClick={() => navigate('/smart-tags')}>
-                  Smart Recovery Tags
+                  Smart Tags
                 </Button>
                 <Button variant="link" onClick={() => navigate('/help')}>
                   Help Centre

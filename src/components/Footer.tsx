@@ -27,7 +27,7 @@ export const Footer = () => {
               </li>
               <li>
                 <Link to="/smart-tags" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Smart Recovery Tags
+                  Smart Tags
                 </Link>
               </li>
               <li>

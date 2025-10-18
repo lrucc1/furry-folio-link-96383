@@ -78,8 +78,8 @@ export default function SmartRecoveryTags() {
 
       setSubmitted(true);
       toast({
-        title: 'Thanks for your interest!',
-        description: "We'll be in touch soon with updates about Smart Recovery Tags."
+        title: "Thanks for your interest!",
+        description: "We'll be in touch soon with updates about Smart Tags."
       });
     } catch (error) {
       log.error('Error submitting interest:', error);
@@ -141,7 +141,7 @@ export default function SmartRecoveryTags() {
             </Badge>
             
             <h1 className="text-4xl lg:text-5xl font-bold mb-6 leading-tight">
-              Smart Recovery Tags
+              Smart Tags
               <span className="block text-xl lg:text-2xl font-normal text-white/80 mt-2">
                 Revolutionary pet ID technology — launching soon
               </span>
