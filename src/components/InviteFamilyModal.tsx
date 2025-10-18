@@ -137,28 +137,26 @@ export function InviteFamilyModal({ open, onClose, petId, onSuccess }: InviteFam
         
         {!inviteUrl ? (
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!petId && (
-              <div>
-                <Label htmlFor="pet">
-                  {au('Select Pet')} <span className="text-destructive">*</span>
-                </Label>
-                <Select
-                  value={formData.selectedPetId}
-                  onValueChange={(value) => setFormData({ ...formData, selectedPetId: value })}
-                >
-                  <SelectTrigger className="bg-background">
-                    <SelectValue placeholder={au('Choose a pet...')} />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background z-50">
-                    {pets.map((pet) => (
-                      <SelectItem key={pet.id} value={pet.id}>
-                        {pet.name} ({pet.species})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+            <div>
+              <Label htmlFor="pet">
+                {au('Select Pet')} <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                value={formData.selectedPetId}
+                onValueChange={(value) => setFormData({ ...formData, selectedPetId: value })}
+              >
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder={au('Choose a pet...')} />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  {pets.map((pet) => (
+                    <SelectItem key={pet.id} value={pet.id}>
+                      {pet.name} ({pet.species})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
             <div>
               <Label htmlFor="email">

@@ -48,6 +48,7 @@ export function SharingTab({ petId }: SharingTabProps) {
     }
 
     console.log('[SharingTab] Fetching sharing data for petId:', petId);
+    setLoading(true);
 
     // Fetch invites
     try {
@@ -96,7 +97,11 @@ export function SharingTab({ petId }: SharingTabProps) {
   const handleInviteSuccess = (inviteUrl: string) => {
     navigator.clipboard.writeText(inviteUrl);
     toast.success(au('Invite link copied to clipboard'));
-    fetchSharingData();
+    setModalOpen(false);
+    // Force refetch after a short delay to ensure the invite is saved
+    setTimeout(() => {
+      fetchSharingData();
+    }, 500);
   };
 
   const copyInviteLink = (token: string) => {
