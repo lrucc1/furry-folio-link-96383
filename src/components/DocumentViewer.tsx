@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ZoomIn, ZoomOut, Download, RotateCw } from 'lucide-react';
+import { ZoomIn, ZoomOut, Download, RotateCw, X } from 'lucide-react';
 
 interface DocumentViewerProps {
   url: string;
@@ -39,7 +39,9 @@ export const DocumentViewer = ({ url, filename, mimeType, isOpen, onClose }: Doc
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl h-[80vh] p-0 flex flex-col gap-0" closeClassName="top-3 right-3">
+      <DialogContent className="max-w-4xl h-[80vh] p-0 flex flex-col gap-0" hideClose>
+        <DialogTitle className="sr-only">{filename}</DialogTitle>
+        <DialogDescription className="sr-only">Document preview</DialogDescription>
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-sm font-medium truncate pr-4">
             {filename}
@@ -64,6 +66,11 @@ export const DocumentViewer = ({ url, filename, mimeType, isOpen, onClose }: Doc
             <Button variant="ghost" size="icon" onClick={handleDownload}>
               <Download className="w-4 h-4" />
             </Button>
+            <DialogClose asChild>
+              <Button variant="ghost" size="icon" aria-label="Close">
+                <X className="w-4 h-4" />
+              </Button>
+            </DialogClose>
           </div>
         </div>
 
