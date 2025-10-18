@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { InviteFamilyModal } from './InviteFamilyModal';
 import { au } from '@/lib/auEnglish';
-
+import { useAuth } from '@/contexts/AuthContext';
 interface SharingTabProps {
   petId: string;
 }
@@ -19,6 +19,7 @@ interface Invite {
   status: string;
   expires_at: string;
   token: string;
+  pet_id: string;
 }
 
 interface Member {
@@ -28,47 +29,73 @@ interface Member {
   created_at: string;
 }
 
+interface PetInfo {
+  id: string;
+  name: string;
+  species: string;
+}
+
 export function SharingTab({ petId }: SharingTabProps) {
+  const { user } = useAuth();
   const [invites, setInvites] = useState<Invite[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (petId) {
+  const [petsById, setPetsById] = useState<Record<string, PetInfo>>({});
+useEffect(() => {
+    if (user) {
       fetchSharingData();
     }
-  }, [petId]);
+  }, [user, petId]);
 
   const fetchSharingData = async () => {
-    if (!petId) {
-      console.log('[SharingTab] No petId provided');
+    if (!user) {
+      console.log('[SharingTab] No user');
       setLoading(false);
       return;
     }
 
-    console.log('[SharingTab] Fetching sharing data for petId:', petId);
+    console.log('[SharingTab] Fetching sharing data (global invites) for user:', user.id);
     setLoading(true);
 
-    // Fetch invites
+    // Fetch invites created by current user (across all pets)
     try {
       const { data: inviteData, error: inviteError } = await supabase
         .from('pet_invites')
         .select('*')
-        .eq('pet_id', petId)
-        .eq('status', 'pending');
-
-      console.log('[SharingTab] Invites result:', { data: inviteData, error: inviteError });
+        .eq('invited_by', user.id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
 
       if (inviteError) {
         console.error('[SharingTab] Error fetching invites:', inviteError);
         setInvites([]);
       } else {
         setInvites(inviteData || []);
+
+        // Fetch pet names for these invites
+        const petIds = Array.from(new Set((inviteData || []).map((i) => i.pet_id)));
+        if (petIds.length > 0) {
+          const { data: petsData, error: petsError } = await supabase
+            .from('pets')
+            .select('id, name, species')
+            .in('id', petIds);
+          if (petsError) {
+            console.error('[SharingTab] Error fetching pet info:', petsError);
+            setPetsById({});
+          } else {
+            const map: Record<string, PetInfo> = {};
+            (petsData || []).forEach((p: any) => { map[p.id] = p as PetInfo; });
+            setPetsById(map);
+          }
+        } else {
+          setPetsById({});
+        }
       }
     } catch (e) {
       console.error('[SharingTab] Unexpected error fetching invites:', e);
       setInvites([]);
+      setPetsById({});
     }
 
     // Fetch members
@@ -181,6 +208,9 @@ export function SharingTab({ petId }: SharingTabProps) {
                       {invite.role === 'vet' && au('Veterinarian - Read-only medical access')}
                       {invite.role === 'family' && au('Family - Can view and edit')}
                       {invite.role === 'caregiver' && au('Caregiver - Read-only access')}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {au('For')}: {petsById[invite.pet_id]?.name || au('Unknown pet')}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {au('Expires')} {new Date(invite.expires_at).toLocaleDateString()}
