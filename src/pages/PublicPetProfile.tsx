@@ -294,7 +294,7 @@ const PublicPetProfile = () => {
 
         <div className="mt-6 text-center">
           <p className="text-white/80 text-sm">
-            Powered by PetTrack - Keep your pets safe
+            Powered by PetLinkID - Keep your pets safe
           </p>
         </div>
       </div>
