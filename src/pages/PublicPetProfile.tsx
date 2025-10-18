@@ -67,15 +67,26 @@ const PublicPetProfile = () => {
       // If pet is lost, fetch owner profile data
       let ownerProfile = null
       if (petData.is_lost && petData.user_id) {
-        const { data: profileData } = await supabase
+        console.log('Fetching owner profile for user_id:', petData.user_id);
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('email, full_name, phone')
           .eq('id', petData.user_id)
           .single()
         
+        if (profileError) {
+          console.error('Error fetching profile:', profileError);
+        } else {
+          console.log('Owner profile data:', profileData);
+        }
+        
         ownerProfile = profileData
+      } else {
+        console.log('Pet not lost or no user_id', { is_lost: petData.is_lost, user_id: petData.user_id });
       }
 
+      console.log('Final pet data with profile:', { ...petData, profiles: ownerProfile });
+      
       setPet({
         ...petData,
         profiles: ownerProfile
