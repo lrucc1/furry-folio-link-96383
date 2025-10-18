@@ -41,6 +41,8 @@ export const NotificationsDropdown = () => {
   }, [user, isOpen]);
 
   const fetchNotifications = async () => {
+    if (!user) return;
+    
     try {
       setLoading(true);
       const today = new Date();
