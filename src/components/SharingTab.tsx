@@ -26,6 +26,11 @@ interface Member {
   user_id: string;
   role: string;
   created_at: string;
+  profiles?: {
+    email: string;
+    full_name: string | null;
+    display_name: string | null;
+  };
 }
 
 export function SharingTab({ petId }: SharingTabProps) {
@@ -35,10 +40,17 @@ export function SharingTab({ petId }: SharingTabProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchSharingData();
+    if (petId) {
+      fetchSharingData();
+    }
   }, [petId]);
 
   const fetchSharingData = async () => {
+    if (!petId) {
+      setLoading(false);
+      return;
+    }
+
     try {
       // Fetch pending invites
       const { data: inviteData, error: inviteError } = await supabase
@@ -47,7 +59,10 @@ export function SharingTab({ petId }: SharingTabProps) {
         .eq('pet_id', petId)
         .eq('status', 'pending');
 
-      if (inviteError) throw inviteError;
+      if (inviteError) {
+        console.error('Error fetching invites:', inviteError);
+        throw inviteError;
+      }
       setInvites(inviteData || []);
 
       // Fetch current members
@@ -56,8 +71,33 @@ export function SharingTab({ petId }: SharingTabProps) {
         .select('*')
         .eq('pet_id', petId);
 
-      if (memberError) throw memberError;
-      setMembers(memberData || []);
+      if (memberError) {
+        console.error('Error fetching members:', memberError);
+        throw memberError;
+      }
+
+      // Fetch profiles for all members
+      if (memberData && memberData.length > 0) {
+        const userIds = memberData.map(m => m.user_id);
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, email, full_name, display_name')
+          .in('id', userIds);
+
+        if (profilesError) {
+          console.error('Error fetching profiles:', profilesError);
+        }
+
+        // Merge profile data with member data
+        const membersWithProfiles = memberData.map(member => ({
+          ...member,
+          profiles: profilesData?.find(p => p.id === member.user_id)
+        }));
+
+        setMembers(membersWithProfiles);
+      } else {
+        setMembers([]);
+      }
     } catch (error) {
       console.error('Error fetching sharing data:', error);
       toast.error(au('Failed to load sharing information'));
@@ -135,7 +175,12 @@ export function SharingTab({ petId }: SharingTabProps) {
               {members.map((member) => (
                 <div key={member.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div>
-                    <p className="font-medium">{member.user_id}</p>
+                    <p className="font-medium">
+                      {member.profiles?.display_name || member.profiles?.full_name || member.profiles?.email || 'Unknown User'}
+                    </p>
+                    {member.profiles?.email && (
+                      <p className="text-sm text-muted-foreground">{member.profiles.email}</p>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant={member.role === 'owner' ? 'default' : 'secondary'}>
