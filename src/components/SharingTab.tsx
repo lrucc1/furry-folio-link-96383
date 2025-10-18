@@ -217,7 +217,9 @@ export function SharingTab({ petId }: SharingTabProps) {
     invites: invites.length,
     members: members.length,
     user: !!user,
-    petId
+    petId,
+    invitesData: invites,
+    membersData: members
   });
 
   return (
