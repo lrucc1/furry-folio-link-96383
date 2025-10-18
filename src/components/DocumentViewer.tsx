@@ -39,35 +39,33 @@ export const DocumentViewer = ({ url, filename, mimeType, isOpen, onClose }: Doc
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl h-[80vh] p-0 flex flex-col">
-        <DialogHeader className="p-4 border-b">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-sm font-medium truncate pr-4">
-              {filename}
-            </DialogTitle>
-            <div className="flex items-center gap-2">
-              {isImage && (
-                <>
-                  <Button variant="ghost" size="icon" onClick={handleZoomOut}>
-                    <ZoomOut className="w-4 h-4" />
-                  </Button>
-                  <span className="text-sm text-muted-foreground min-w-[50px] text-center">
-                    {zoom}%
-                  </span>
-                  <Button variant="ghost" size="icon" onClick={handleZoomIn}>
-                    <ZoomIn className="w-4 h-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={handleRotate}>
-                    <RotateCw className="w-4 h-4" />
-                  </Button>
-                </>
-              )}
-              <Button variant="ghost" size="icon" onClick={handleDownload}>
-                <Download className="w-4 h-4" />
-              </Button>
-            </div>
+      <DialogContent className="max-w-4xl h-[80vh] p-0 flex flex-col gap-0">
+        <div className="flex items-center justify-between p-4 border-b">
+          <h2 className="text-sm font-medium truncate pr-4">
+            {filename}
+          </h2>
+          <div className="flex items-center gap-2">
+            {isImage && (
+              <>
+                <Button variant="ghost" size="icon" onClick={handleZoomOut}>
+                  <ZoomOut className="w-4 h-4" />
+                </Button>
+                <span className="text-sm text-muted-foreground min-w-[50px] text-center">
+                  {zoom}%
+                </span>
+                <Button variant="ghost" size="icon" onClick={handleZoomIn}>
+                  <ZoomIn className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={handleRotate}>
+                  <RotateCw className="w-4 h-4" />
+                </Button>
+              </>
+            )}
+            <Button variant="ghost" size="icon" onClick={handleDownload}>
+              <Download className="w-4 h-4" />
+            </Button>
           </div>
-        </DialogHeader>
+        </div>
 
         <div className="flex-1 overflow-auto bg-muted p-4">
           <div className="flex items-center justify-center min-h-full">
@@ -88,11 +86,15 @@ export const DocumentViewer = ({ url, filename, mimeType, isOpen, onClose }: Doc
                 title={filename}
               />
             ) : isOfficeDoc ? (
-              <iframe
-                src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`}
-                className="w-full h-full min-h-[600px] bg-white rounded"
-                title={filename}
-              />
+              <div className="text-center">
+                <p className="text-muted-foreground mb-4">
+                  Office document preview requires public URL access.
+                </p>
+                <Button onClick={handleDownload}>
+                  <Download className="w-4 h-4 mr-2" />
+                  Download to view
+                </Button>
+              </div>
             ) : (
               <div className="text-center">
                 <p className="text-muted-foreground mb-4">
