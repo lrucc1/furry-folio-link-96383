@@ -52,9 +52,9 @@ export const UserMenu = () => {
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link to="/profile">
-            <User className="mr-2 h-4 w-4" />
-            <span>{au('Profile')}</span>
+          <Link to="/account">
+            <Settings className="mr-2 h-4 w-4" />
+            <span>{au('Account')}</span>
           </Link>
         </DropdownMenuItem>
         {isAdmin && (
@@ -65,12 +65,6 @@ export const UserMenu = () => {
             </Link>
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem asChild>
-          <Link to="/account">
-            <Settings className="mr-2 h-4 w-4" />
-            <span>{au('Account')}</span>
-          </Link>
-        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut} disabled={loading} className="text-red-600 focus:text-red-600">
           <LogOut className="mr-2 h-4 w-4" />

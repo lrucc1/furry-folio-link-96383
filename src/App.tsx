@@ -27,7 +27,7 @@ import AustralianPrivacy from "./pages/AustralianPrivacy";
 import DataHandling from "./pages/DataHandling";
 import AppDownloads from "./pages/AppDownloads";
 import SmartRecoveryTags from "./pages/SmartRecoveryTags";
-import Profile from "./pages/Profile";
+
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import Account from "./pages/Account";
@@ -103,14 +103,6 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <EditPet />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/profile" 
-              element={
-                <ProtectedRoute>
-                  <Profile />
                 </ProtectedRoute>
               } 
             />
