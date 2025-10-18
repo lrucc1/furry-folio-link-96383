@@ -1,16 +1,51 @@
+import JSZip from 'jszip';
 import { ExportData } from './exporter';
 import { generateHTMLExport } from './formatters';
 import { log } from '@/lib/log';
 
 /**
- * Download export data as HTML file
+ * Download export data as ZIP with HTML report and all documents
  */
-export function downloadExport(data: ExportData): void {
+export async function downloadExport(data: ExportData): Promise<void> {
   try {
-    const filename = `petlinkid-export-${new Date().toISOString().split('T')[0]}.html`;
+    const zip = new JSZip();
+    const filename = `petlinkid-export-${new Date().toISOString().split('T')[0]}.zip`;
+    
+    // Add HTML report
     const html = generateHTMLExport(data);
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
+    zip.file('PetLinkID-Export.html', html);
+    
+    // Add all documents if any exist
+    if (data.pet_documents && data.pet_documents.length > 0) {
+      const documentsFolder = zip.folder('documents');
+      
+      if (documentsFolder) {
+        log.info('[Download] Downloading', data.pet_documents.length, 'documents...');
+        
+        // Download each document
+        const downloadPromises = data.pet_documents.map(async (doc: any) => {
+          try {
+            const response = await fetch(doc.file_url);
+            if (!response.ok) {
+              log.warn('[Download] Failed to fetch document:', doc.file_name);
+              return;
+            }
+            
+            const blob = await response.blob();
+            documentsFolder.file(doc.file_name, blob);
+            log.debug('[Download] Added document:', doc.file_name);
+          } catch (error) {
+            log.warn('[Download] Error downloading document:', doc.file_name, error);
+          }
+        });
+        
+        await Promise.all(downloadPromises);
+      }
+    }
+    
+    // Generate ZIP and trigger download
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(zipBlob);
     
     const link = document.createElement('a');
     link.href = url;
@@ -22,7 +57,7 @@ export function downloadExport(data: ExportData): void {
 
     log.info('[Download] Export downloaded:', filename);
   } catch (error) {
-    log.error('[Download] Error downloading export:', error);
+    log.error('[Download] Error creating export:', error);
     throw new Error('Failed to download export');
   }
 }

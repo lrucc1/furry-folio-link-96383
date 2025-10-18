@@ -256,6 +256,7 @@ function formatPetsSection(pets: any[]): string {
       <table>
         <thead>
           <tr>
+            <th>Photo</th>
             <th>Name</th>
             <th>Species</th>
             <th>Breed</th>
@@ -268,6 +269,12 @@ function formatPetsSection(pets: any[]): string {
         <tbody>
           ${pets.map(pet => `
             <tr>
+              <td>
+                ${pet.photo_url 
+                  ? `<img src="${escapeHtml(pet.photo_url)}" alt="${escapeHtml(pet.name)}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">` 
+                  : '<div style="width: 60px; height: 60px; background: #e5e7eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px;">🐾</div>'
+                }
+              </td>
               <td><strong>${escapeHtml(pet.name)}</strong></td>
               <td>${escapeHtml(pet.species || '-')}</td>
               <td>${escapeHtml(pet.breed || '-')}</td>
@@ -379,9 +386,16 @@ function formatDocumentsSection(documents: any[]): string {
     `;
   }
 
+  const totalSize = documents.reduce((sum, doc) => sum + (doc.file_size || 0), 0);
+
   return `
     <section class="section">
       <h2>Documents (${documents.length})</h2>
+      <p style="color: #6b7280; margin-bottom: 1rem;">
+        Total: ${documents.length} files (${formatFileSize(totalSize)})
+        <br/>
+        <em>All documents are included in the "documents" folder of this download.</em>
+      </p>
       <table>
         <thead>
           <tr>
@@ -548,10 +562,10 @@ function formatDate(date: string | null | undefined): string {
   }
 }
 
-function formatAge(years: number | null, months: number | null): string {
+function formatAge(years: number | null | undefined, months: number | null | undefined): string {
   const parts = [];
-  if (years) parts.push(`${years}y`);
-  if (months) parts.push(`${months}m`);
+  if (years !== null && years !== undefined) parts.push(`${years}y`);
+  if (months !== null && months !== undefined && months > 0) parts.push(`${months}m`);
   return parts.length > 0 ? parts.join(' ') : '-';
 }
 

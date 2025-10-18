@@ -13,11 +13,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, Crown, Users, FileText, Settings, Download, Trash2, Star, Calendar, CreditCard, Receipt, ExternalLink, Phone, Shield } from 'lucide-react';
+import { Download, Trash2, UserCircle, Bell, Shield, Users, Loader2, Crown, FileText, Settings, Star, Calendar, CreditCard, Receipt, ExternalLink, Phone } from "lucide-react";
+import { exportUserData } from '@/features/export/exporter';
+import { downloadExport } from '@/features/export/download';
+import { log } from '@/lib/log';
 import { au } from '@/lib/auEnglish';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { z } from 'zod';
-import { log } from '@/lib/log';
 import { ExportData } from '@/pages/settings/ExportData';
 import { DeleteAccount } from '@/pages/settings/DeleteAccount';
 
@@ -173,33 +175,8 @@ export default function Account() {
     try {
       log.debug('[Export] Starting data export...');
       
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('No active session');
-      }
-      
-      log.debug('[Export] Session found, calling export-data function...');
-      
-      const { data, error } = await supabase.functions.invoke('export-data', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-      
-      log.debug('[Export] Function response:', { data, error });
-      
-      if (error) throw error;
-      
-      // Create blob and download
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `petlinkid-export-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const exportData = await exportUserData();
+      await downloadExport(exportData);
       
       toast.success('Data exported successfully');
     } catch (error: any) {
