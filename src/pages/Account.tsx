@@ -210,14 +210,30 @@ export default function Account() {
   const handleDeleteAccount = async () => {
     setDeletingAccount(true);
     try {
-      const { error } = await supabase.functions.invoke('delete-account');
+      console.log('[Delete Account] Starting account deletion...');
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('No active session');
+      }
+      
+      console.log('[Delete Account] Session found, calling delete-account function...');
+      
+      const { data, error } = await supabase.functions.invoke('delete-account', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+      
+      console.log('[Delete Account] Function response:', { data, error });
+      
       if (error) throw error;
       
       toast.success('Your account has been deleted');
       await signOut();
       navigate('/');
     } catch (error) {
-      console.error('Error deleting account:', error);
+      console.error('[Delete Account] Error deleting account:', error);
       toast.error('Failed to delete account');
       setDeletingAccount(false);
     }
