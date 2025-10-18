@@ -1,14 +1,15 @@
 import { ExportData } from './exporter';
+import { generateHTMLExport } from './formatters';
 import { log } from '@/lib/log';
 
 /**
- * Download export data as JSON file
+ * Download export data as HTML file
  */
 export function downloadExport(data: ExportData): void {
   try {
-    const filename = `petlinkid-export-${new Date().toISOString().split('T')[0]}.json`;
-    const json = JSON.stringify(data, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
+    const filename = `petlinkid-export-${new Date().toISOString().split('T')[0]}.html`;
+    const html = generateHTMLExport(data);
+    const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     
     const link = document.createElement('a');
