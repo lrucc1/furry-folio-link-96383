@@ -20,6 +20,7 @@ interface Invite {
   expires_at: string;
   token: string;
   pet_id: string;
+  invited_by: string;
 }
 
 interface Member {
@@ -63,7 +64,7 @@ useEffect(() => {
       const { data: inviteData, error: inviteError } = await supabase
         .from('pet_invites')
         .select('*')
-        .eq('invited_by', user.id)
+        .or(`invited_by.eq.${user.id},email.eq.${user.email}`)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
@@ -216,24 +217,30 @@ useEffect(() => {
                       {au('Expires')} {new Date(invite.expires_at).toLocaleDateString()}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => copyInviteLink(invite.token)}
-                    >
-                      <Copy className="w-4 h-4 mr-2" />
-                      {au('Copy Link')}
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => revokeInvite(invite.id)}
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      {au('Revoke')}
-                    </Button>
-                  </div>
+                  {invite.invited_by === user?.id ? (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyInviteLink(invite.token)}
+                      >
+                        <Copy className="w-4 h-4 mr-2" />
+                        {au('Copy Link')}
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => revokeInvite(invite.id)}
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        {au('Revoke')}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary">{au('Incoming')}</Badge>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

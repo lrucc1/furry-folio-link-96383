@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, Calendar, AlertTriangle, CheckCircle, Syringe, Heart, AlertCircle, UserPlus } from 'lucide-react';
+import { Mail, Calendar, AlertTriangle, CheckCircle, Syringe, Heart, AlertCircle, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -14,6 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format, differenceInDays, isBefore } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 interface Notification {
   id: string;
@@ -33,12 +34,36 @@ export const NotificationsDropdown = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [invitesCount, setInvitesCount] = useState(0);
+  const [invitesNotified, setInvitesNotified] = useState(false);
 
   useEffect(() => {
     if (user && isOpen) {
       fetchNotifications();
     }
   }, [user, isOpen]);
+
+  // Fetch pending invites count to drive badge and toast
+  const fetchInvitesCount = async () => {
+    if (!user?.email) { setInvitesCount(0); return; }
+    const { count } = await supabase
+      .from('pet_invites')
+      .select('id', { count: 'exact', head: true })
+      .eq('email', user.email)
+      .eq('status', 'pending');
+    const c = count || 0;
+    setInvitesCount(c);
+    if (c > 0 && !invitesNotified) {
+      toast.info('You have a pending pet invite');
+      setInvitesNotified(true);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchInvitesCount();
+    }
+  }, [user]);
 
   const fetchNotifications = async () => {
     if (!user) return;
@@ -227,6 +252,7 @@ export const NotificationsDropdown = () => {
   };
 
   const urgentCount = notifications.filter(n => n.isOverdue || n.priority === 'high').length;
+  const badgeCount = invitesCount > 0 ? invitesCount : urgentCount;
 
   const handleNotificationClick = () => {
     setIsOpen(false);
@@ -239,10 +265,10 @@ export const NotificationsDropdown = () => {
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
-          <Bell className="w-5 h-5" />
-          {urgentCount > 0 && (
+          <Mail className="w-5 h-5" />
+          {badgeCount > 0 && (
             <Badge className="absolute -top-1 -right-1 w-5 h-5 text-xs p-0 flex items-center justify-center bg-destructive text-destructive-foreground">
-              {urgentCount > 9 ? '9+' : urgentCount}
+              {badgeCount > 9 ? '9+' : badgeCount}
             </Badge>
           )}
         </Button>
