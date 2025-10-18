@@ -13,11 +13,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, Crown, Users, FileText, Settings, Download, Trash2, Star, Calendar, CreditCard, Receipt, ExternalLink, Phone } from 'lucide-react';
+import { Loader2, Crown, Users, FileText, Settings, Download, Trash2, Star, Calendar, CreditCard, Receipt, ExternalLink, Phone, Shield } from 'lucide-react';
 import { au } from '@/lib/auEnglish';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { z } from 'zod';
-import log from '@/lib/log';
+import { log } from '@/lib/log';
+import { ExportData } from '@/pages/settings/ExportData';
+import { DeleteAccount } from '@/pages/settings/DeleteAccount';
 
 const SUBSCRIPTION_TIERS = {
   free: { name: 'Free', productId: null },
@@ -310,7 +312,7 @@ export default function Account() {
           <h1 className="text-3xl font-bold mb-8">{au('Account Settings')}</h1>
 
           <Tabs defaultValue="subscription" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="subscription">
                 <Crown className="w-4 h-4 mr-2" />
                 {au('Subscription')}
@@ -318,6 +320,10 @@ export default function Account() {
               <TabsTrigger value="profile">
                 <Settings className="w-4 h-4 mr-2" />
                 {au('Profile')}
+              </TabsTrigger>
+              <TabsTrigger value="privacy">
+                <Shield className="w-4 h-4 mr-2" />
+                {au('Privacy')}
               </TabsTrigger>
             </TabsList>
 
@@ -671,6 +677,11 @@ export default function Account() {
                   </div>
                 </div>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="privacy" className="space-y-6">
+              <ExportData />
+              <DeleteAccount />
             </TabsContent>
           </Tabs>
         </div>
