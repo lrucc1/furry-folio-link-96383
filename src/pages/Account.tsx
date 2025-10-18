@@ -168,7 +168,23 @@ export default function Account() {
   const handleExportData = async () => {
     setExportingData(true);
     try {
-      const { data, error } = await supabase.functions.invoke('export-data');
+      console.log('[Export] Starting data export...');
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('No active session');
+      }
+      
+      console.log('[Export] Session found, calling export-data function...');
+      
+      const { data, error } = await supabase.functions.invoke('export-data', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+      
+      console.log('[Export] Function response:', { data, error });
+      
       if (error) throw error;
       
       // Create blob and download
@@ -184,7 +200,7 @@ export default function Account() {
       
       toast.success('Data exported successfully');
     } catch (error) {
-      console.error('Error exporting data:', error);
+      console.error('[Export] Error exporting data:', error);
       toast.error('Failed to export data');
     } finally {
       setExportingData(false);
