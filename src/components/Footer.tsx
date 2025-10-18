@@ -80,8 +80,8 @@ export const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/australian-privacy" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Australian Privacy
+                <Link to="/data-handling" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Data Handling
                 </Link>
               </li>
             </ul>

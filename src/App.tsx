@@ -24,6 +24,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import About from "./pages/About";
 import Terms from "./pages/Terms";
 import AustralianPrivacy from "./pages/AustralianPrivacy";
+import DataHandling from "./pages/DataHandling";
 import AppDownloads from "./pages/AppDownloads";
 import SmartRecoveryTags from "./pages/SmartRecoveryTags";
 import Profile from "./pages/Profile";
@@ -54,6 +55,7 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy-australia" element={<AustralianPrivacy />} />
+            <Route path="/data-handling" element={<DataHandling />} />
             <Route path="/downloads" element={<AppDownloads />} />
             <Route path="/smart-tags" element={<SmartRecoveryTags />} />
             <Route 

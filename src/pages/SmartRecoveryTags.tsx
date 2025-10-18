@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import log from '@/lib/log';
 import { 
   QrCode, 
   Wifi, 
@@ -81,7 +82,7 @@ export default function SmartRecoveryTags() {
         description: "We'll be in touch soon with updates about Smart Recovery Tags."
       });
     } catch (error) {
-      console.error('Error submitting interest:', error);
+      log.error('Error submitting interest:', error);
       toast({
         title: 'Submission failed',
         description: 'Please try again or contact us directly.',

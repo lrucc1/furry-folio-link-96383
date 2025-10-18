@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { usePlan } from '@/lib/plan/PlanContext';
 import { Button } from '@/components/ui/button';
 import { Crown } from 'lucide-react';
 import { au } from '@/lib/auEnglish';
@@ -11,6 +12,12 @@ interface UpgradeInlineProps {
 export function UpgradeInline({ feature }: UpgradeInlineProps) {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
+  const { tier } = usePlan();
+
+  // Don't show upgrade CTA for family plan users (no upgrade path)
+  if (tier === 'family') {
+    return null;
+  }
 
   const handleUpgrade = () => {
     setBusy(true);
