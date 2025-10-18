@@ -22,6 +22,20 @@ interface Invite {
   pet?: {
     name: string;
     species: string;
+    photo_url?: string;
+  };
+}
+
+interface Membership {
+  id: string;
+  user_id: string;
+  pet_id: string;
+  role: string;
+  created_at: string;
+  pet?: {
+    name: string;
+    species: string;
+    photo_url?: string;
   };
 }
 
@@ -29,6 +43,7 @@ export default function InviteStatus() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [invites, setInvites] = useState<Invite[]>([]);
+  const [memberships, setMemberships] = useState<Membership[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -54,7 +69,7 @@ export default function InviteStatus() {
         (data || []).map(async (invite) => {
           const { data: pet } = await supabase
             .from('pets')
-            .select('name, species')
+            .select('name, species, photo_url')
             .eq('id', invite.pet_id)
             .single();
 
@@ -66,6 +81,33 @@ export default function InviteStatus() {
       );
 
       setInvites(invitesWithPets);
+
+      // Fetch active memberships for this user
+      const { data: membershipsData, error: membershipError } = await supabase
+        .from('pet_memberships')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (membershipError) throw membershipError;
+
+      // Fetch pet details for each membership
+      const membershipsWithPets = await Promise.all(
+        (membershipsData || []).map(async (membership) => {
+          const { data: pet } = await supabase
+            .from('pets')
+            .select('name, species, photo_url')
+            .eq('id', membership.pet_id)
+            .single();
+
+          return {
+            ...membership,
+            pet: pet || undefined
+          };
+        })
+      );
+
+      setMemberships(membershipsWithPets);
     } catch (error) {
       console.error('Error fetching invites:', error);
       toast.error(au('Failed to load invites'));
@@ -166,18 +208,81 @@ export default function InviteStatus() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
             <p className="text-muted-foreground">{au('Loading invitations...')}</p>
           </div>
-        ) : invites.length === 0 ? (
+        ) : invites.length === 0 && memberships.length === 0 ? (
           <Card>
             <CardContent className="text-center py-12">
               <Mail className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <h3 className="text-lg font-semibold mb-2">{au('No invitations')}</h3>
+              <h3 className="text-lg font-semibold mb-2">{au('No invitations or shared pets')}</h3>
               <p className="text-muted-foreground">
-                {au('You have not received any pet invitations yet.')}
+                {au('You have not received any pet invitations and have no shared pets yet.')}
               </p>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-6">
+            {/* Active Shares Section */}
+            {memberships.length > 0 && (
+              <div>
+                <h2 className="text-xl font-semibold mb-4">{au('Active Shares')}</h2>
+                <div className="grid gap-4">
+                  {memberships.map((membership) => (
+                    <Card key={membership.id}>
+                      <CardHeader>
+                        <CardTitle className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            {membership.pet?.photo_url && (
+                              <img 
+                                src={membership.pet.photo_url} 
+                                alt={membership.pet.name}
+                                className="w-10 h-10 rounded-full object-cover"
+                              />
+                            )}
+                            <span>{membership.pet?.name || au('Unknown Pet')}</span>
+                          </div>
+                          <Badge variant="secondary">
+                            {membership.role === 'vet' ? au('Veterinarian') : 
+                             membership.role === 'family' ? au('Family') :
+                             au('Caregiver')}
+                          </Badge>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <span className="font-medium">{au('Species')}:</span>{' '}
+                              {membership.pet?.species || au('Unknown')}
+                            </div>
+                            <div>
+                              <span className="font-medium">{au('Role')}:</span>{' '}
+                              {membership.role === 'vet' && au('Veterinarian - Read-only medical access')}
+                              {membership.role === 'family' && au('Family - Can view and edit')}
+                              {membership.role === 'caregiver' && au('Caregiver - Read-only access')}
+                            </div>
+                            <div>
+                              <span className="font-medium">{au('Shared on')}:</span>{' '}
+                              {new Date(membership.created_at).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <Button
+                            onClick={() => navigate(`/pets/${membership.pet_id}`)}
+                            className="w-full mt-4"
+                          >
+                            {au('View Pet Profile')}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Invitations Section */}
+            {invites.length > 0 && (
+              <div>
+                <h2 className="text-xl font-semibold mb-4">{au('Pending Invites')}</h2>
+                <div className="grid gap-4">
             {invites.map((invite) => (
               <Card key={invite.id}>
                 <CardHeader>
@@ -247,6 +352,9 @@ export default function InviteStatus() {
                 </CardContent>
               </Card>
             ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
