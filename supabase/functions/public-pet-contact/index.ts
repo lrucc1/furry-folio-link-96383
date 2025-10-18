@@ -41,21 +41,7 @@ serve(async (req) => {
       );
     }
 
-    // Only expose owner info if pet is marked as lost
-    if (!pet.is_lost) {
-      return new Response(
-        JSON.stringify({
-          pet: { name: pet.name },
-          emergency_contact: {
-            name: pet.emergency_contact_name ?? null,
-            phone: pet.emergency_contact_phone ?? null,
-          },
-          owner: null,
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
-      );
-    }
-
+    // Fetch owner profile (always, regardless of lost status)
     let owner = null as null | { full_name: string | null; email: string | null; phone: string | null };
 
     if (pet.user_id) {

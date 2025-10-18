@@ -64,24 +64,22 @@ const PublicPetProfile = () => {
 
       if (petError) throw petError
 
-      // If pet is lost, fetch owner profile data via public function (bypasses RLS safely)
+      // Fetch owner profile data via public function (always, for "found pet" scenarios)
       let ownerProfile = null
-      if (petData.is_lost) {
-        try {
-          const { data, error } = await supabase.functions.invoke('public-pet-contact', {
-            body: { public_id: publicId }
-          });
+      try {
+        const { data, error } = await supabase.functions.invoke('public-pet-contact', {
+          body: { public_id: publicId }
+        });
 
-          if (!error && data?.owner) {
-            ownerProfile = {
-              full_name: data.owner.full_name ?? null,
-              email: data.owner.email ?? null,
-              phone: data.owner.phone ?? null,
-            };
-          }
-        } catch (e) {
-          console.error('Error invoking public-pet-contact:', e);
+        if (!error && data?.owner) {
+          ownerProfile = {
+            full_name: data.owner.full_name ?? null,
+            email: data.owner.email ?? null,
+            phone: data.owner.phone ?? null,
+          };
         }
+      } catch (e) {
+        console.error('Error invoking public-pet-contact:', e);
       }
 
       setPet({
@@ -183,102 +181,113 @@ const PublicPetProfile = () => {
               </div>
             </div>
 
+            {/* Lost Pet Alert - only if marked as lost */}
             {pet.is_lost && (
-              <div className="mt-6 space-y-4">
-                <div className="p-4 bg-destructive/10 rounded-lg border border-destructive/20">
-                  <h3 className="font-semibold text-destructive mb-2 flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    This pet is lost - Please help reunite them!
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    If you've found {pet.name}, please contact the owner using the details below.
-                  </p>
-                </div>
-
-                {/* Owner Contact Information - Only shown when pet is lost */}
-                <Card className="bg-primary/5 border-primary/20">
-                  <CardContent className="p-4 space-y-3">
-                    <h4 className="font-semibold text-sm text-primary mb-3">Owner Contact Information</h4>
-                    
-                    {pet.emergency_contact_name && (
-                      <div className="flex items-center gap-3 text-sm">
-                        <User className="w-4 h-4 text-primary" />
-                        <div>
-                          <p className="text-xs text-muted-foreground">Emergency Contact</p>
-                          <p className="font-medium">{pet.emergency_contact_name}</p>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {pet.emergency_contact_phone && (
-                      <div className="flex items-center gap-3 text-sm">
-                        <Phone className="w-4 h-4 text-primary" />
-                        <div className="flex-1">
-                          <p className="text-xs text-muted-foreground">Emergency Contact Phone</p>
-                          <a 
-                            href={`tel:${pet.emergency_contact_phone}`}
-                            className="font-medium text-primary hover:underline"
-                          >
-                            {pet.emergency_contact_phone}
-                          </a>
-                        </div>
-                        <Button 
-                          size="sm" 
-                          onClick={() => window.location.href = `tel:${pet.emergency_contact_phone}`}
-                        >
-                          Call Now
-                        </Button>
-                      </div>
-                    )}
-
-                    {pet.profiles?.phone && (
-                      <div className="flex items-center gap-3 text-sm">
-                        <Phone className="w-4 h-4 text-primary" />
-                        <div className="flex-1">
-                          <p className="text-xs text-muted-foreground">Owner's Phone</p>
-                          <a 
-                            href={`tel:${pet.profiles.phone}`}
-                            className="font-medium text-primary hover:underline"
-                          >
-                            {pet.profiles.phone}
-                          </a>
-                        </div>
-                        <Button 
-                          size="sm" 
-                          onClick={() => window.location.href = `tel:${pet.profiles.phone}`}
-                        >
-                          Call Now
-                        </Button>
-                      </div>
-                    )}
-                    
-                    {pet.profiles?.email && (
-                      <div className="flex items-center gap-3 text-sm">
-                        <Mail className="w-4 h-4 text-primary" />
-                        <div className="flex-1">
-                          <p className="text-xs text-muted-foreground">Email</p>
-                          <a 
-                            href={`mailto:${pet.profiles.email}`}
-                            className="font-medium text-primary hover:underline break-all"
-                          >
-                            {pet.profiles.email}
-                          </a>
-                        </div>
-                      </div>
-                    )}
-
-                    {pet.profiles?.full_name && (
-                      <div className="flex items-center gap-3 text-sm">
-                        <User className="w-4 h-4 text-primary" />
-                        <div>
-                          <p className="text-xs text-muted-foreground">Owner</p>
-                          <p className="font-medium">{pet.profiles.full_name}</p>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+              <div className="mt-6 p-4 bg-destructive/10 rounded-lg border border-destructive/20">
+                <h3 className="font-semibold text-destructive mb-2 flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  🚨 This pet is lost - Please help reunite them!
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  If you've found {pet.name}, please contact the owner immediately using the details below.
+                </p>
               </div>
+            )}
+
+            {/* Owner Contact Information - Always shown */}
+            {(pet.profiles?.phone || pet.profiles?.email || pet.emergency_contact_phone) && (
+              <Card className={`mt-6 ${pet.is_lost ? 'bg-primary/5 border-primary/20' : 'bg-muted/50'}`}>
+                <CardContent className="p-4 space-y-3">
+                  <h4 className="font-semibold text-sm mb-3">
+                    {pet.is_lost ? '📞 Contact Owner Immediately' : '👋 If Found, Please Contact Owner'}
+                  </h4>
+                  
+                  {!pet.is_lost && (
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Found this pet? They're not marked as lost, but the owner would appreciate being contacted.
+                    </p>
+                  )}
+
+                  {pet.profiles?.phone && (
+                    <div className="flex items-center gap-3 text-sm">
+                      <Phone className="w-4 h-4 text-primary" />
+                      <div className="flex-1">
+                        <p className="text-xs text-muted-foreground">Owner's Phone</p>
+                        <a 
+                          href={`tel:${pet.profiles.phone}`}
+                          className="font-medium text-primary hover:underline"
+                        >
+                          {pet.profiles.phone}
+                        </a>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        variant={pet.is_lost ? 'default' : 'outline'}
+                        onClick={() => window.location.href = `tel:${pet.profiles.phone}`}
+                      >
+                        Call Now
+                      </Button>
+                    </div>
+                  )}
+
+                  {pet.emergency_contact_phone && (
+                    <div className="flex items-center gap-3 text-sm">
+                      <Phone className="w-4 h-4 text-primary" />
+                      <div className="flex-1">
+                        <p className="text-xs text-muted-foreground">Emergency Contact</p>
+                        <a 
+                          href={`tel:${pet.emergency_contact_phone}`}
+                          className="font-medium text-primary hover:underline"
+                        >
+                          {pet.emergency_contact_phone}
+                        </a>
+                      </div>
+                      <Button 
+                        size="sm"
+                        variant="outline"
+                        onClick={() => window.location.href = `tel:${pet.emergency_contact_phone}`}
+                      >
+                        Call
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {pet.profiles?.email && (
+                    <div className="flex items-center gap-3 text-sm">
+                      <Mail className="w-4 h-4 text-primary" />
+                      <div className="flex-1">
+                        <p className="text-xs text-muted-foreground">Email</p>
+                        <a 
+                          href={`mailto:${pet.profiles.email}`}
+                          className="font-medium text-primary hover:underline break-all"
+                        >
+                          {pet.profiles.email}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+
+                  {pet.profiles?.full_name && (
+                    <div className="flex items-center gap-3 text-sm">
+                      <User className="w-4 h-4 text-primary" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Owner</p>
+                        <p className="font-medium">{pet.profiles.full_name}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {pet.emergency_contact_name && (
+                    <div className="flex items-center gap-3 text-sm">
+                      <User className="w-4 h-4 text-primary" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Emergency Contact Name</p>
+                        <p className="font-medium">{pet.emergency_contact_name}</p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             )}
           </CardContent>
         </Card>
