@@ -171,14 +171,14 @@ export default function Account() {
   const handleExportData = async () => {
     setExportingData(true);
     try {
-      console.log('[Export] Starting data export...');
+      log.debug('[Export] Starting data export...');
       
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         throw new Error('No active session');
       }
       
-      console.log('[Export] Session found, calling export-data function...');
+      log.debug('[Export] Session found, calling export-data function...');
       
       const { data, error } = await supabase.functions.invoke('export-data', {
         headers: {
@@ -186,7 +186,7 @@ export default function Account() {
         },
       });
       
-      console.log('[Export] Function response:', { data, error });
+      log.debug('[Export] Function response:', { data, error });
       
       if (error) throw error;
       
@@ -195,16 +195,16 @@ export default function Account() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'petlinkid-export.json';
+      a.download = `petlinkid-export-${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
       toast.success('Data exported successfully');
-    } catch (error) {
-      console.error('[Export] Error exporting data:', error);
-      toast.error('Failed to export data');
+    } catch (error: any) {
+      log.error('[Export] Error exporting data:', error);
+      toast.error(error.message || 'Failed to export data');
     } finally {
       setExportingData(false);
     }
@@ -230,14 +230,20 @@ export default function Account() {
       
       log.debug('[Delete Account] Function response:', { data, error });
       
-      if (error) throw error;
+      if (error) {
+        log.error('[Delete Account] Function error:', error);
+        throw new Error(error.message || 'Failed to delete account');
+      }
       
+      log.info('[Delete Account] Account deleted successfully');
       toast.success('Your account has been deleted');
+      
+      // Sign out and redirect
       await signOut();
       navigate('/');
-    } catch (error) {
+    } catch (error: any) {
       log.error('[Delete Account] Error deleting account:', error);
-      toast.error('Failed to delete account');
+      toast.error(error.message || 'Failed to delete account');
       setDeletingAccount(false);
     }
   };
