@@ -3,8 +3,9 @@ import { useParams } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/Logo'
-import { Heart, MapPin, Shield, Calendar } from 'lucide-react'
+import { Heart, MapPin, Shield, Calendar, Phone, Mail, User } from 'lucide-react'
 import { calculateAge } from '@/lib/age-utils'
 
 interface Pet {
@@ -17,6 +18,12 @@ interface Pet {
   is_lost: boolean
   public_id: string
   microchip_number: string | null
+  emergency_contact_name: string | null
+  emergency_contact_phone: string | null
+  profiles?: {
+    email: string | null
+    full_name: string | null
+  }
 }
 
 const PublicPetProfile = () => {
@@ -34,14 +41,44 @@ const PublicPetProfile = () => {
     if (!publicId) return
 
     try {
-      const { data, error } = await supabase
+      // First get the pet data
+      const { data: petData, error: petError } = await supabase
         .from('pets')
-        .select('id, name, species, breed, date_of_birth, photo_url, is_lost, public_id, microchip_number')
+        .select(`
+          id, 
+          name, 
+          species, 
+          breed, 
+          date_of_birth, 
+          photo_url, 
+          is_lost, 
+          public_id, 
+          microchip_number,
+          emergency_contact_name,
+          emergency_contact_phone,
+          user_id
+        `)
         .eq('public_id', publicId)
         .single()
 
-      if (error) throw error
-      setPet(data)
+      if (petError) throw petError
+
+      // If pet is lost, fetch owner profile data
+      let ownerProfile = null
+      if (petData.is_lost && petData.user_id) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('email, full_name')
+          .eq('id', petData.user_id)
+          .single()
+        
+        ownerProfile = profileData
+      }
+
+      setPet({
+        ...petData,
+        profiles: ownerProfile
+      })
     } catch (error) {
       console.error('Error fetching pet details:', error)
     } finally {
@@ -138,14 +175,79 @@ const PublicPetProfile = () => {
             </div>
 
             {pet.is_lost && (
-              <div className="mt-6 p-4 bg-destructive/10 rounded-lg border border-destructive/20">
-                <h3 className="font-semibold text-destructive mb-2 flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  This pet is lost
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  If you've found {pet.name}, please use the contact information on their tag or scan their QR code tag for reunion instructions.
-                </p>
+              <div className="mt-6 space-y-4">
+                <div className="p-4 bg-destructive/10 rounded-lg border border-destructive/20">
+                  <h3 className="font-semibold text-destructive mb-2 flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    This pet is lost - Please help reunite them!
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    If you've found {pet.name}, please contact the owner using the details below.
+                  </p>
+                </div>
+
+                {/* Owner Contact Information - Only shown when pet is lost */}
+                <Card className="bg-primary/5 border-primary/20">
+                  <CardContent className="p-4 space-y-3">
+                    <h4 className="font-semibold text-sm text-primary mb-3">Owner Contact Information</h4>
+                    
+                    {pet.emergency_contact_name && (
+                      <div className="flex items-center gap-3 text-sm">
+                        <User className="w-4 h-4 text-primary" />
+                        <div>
+                          <p className="text-xs text-muted-foreground">Emergency Contact</p>
+                          <p className="font-medium">{pet.emergency_contact_name}</p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {pet.emergency_contact_phone && (
+                      <div className="flex items-center gap-3 text-sm">
+                        <Phone className="w-4 h-4 text-primary" />
+                        <div className="flex-1">
+                          <p className="text-xs text-muted-foreground">Phone</p>
+                          <a 
+                            href={`tel:${pet.emergency_contact_phone}`}
+                            className="font-medium text-primary hover:underline"
+                          >
+                            {pet.emergency_contact_phone}
+                          </a>
+                        </div>
+                        <Button 
+                          size="sm" 
+                          onClick={() => window.location.href = `tel:${pet.emergency_contact_phone}`}
+                        >
+                          Call Now
+                        </Button>
+                      </div>
+                    )}
+                    
+                    {pet.profiles?.email && (
+                      <div className="flex items-center gap-3 text-sm">
+                        <Mail className="w-4 h-4 text-primary" />
+                        <div className="flex-1">
+                          <p className="text-xs text-muted-foreground">Email</p>
+                          <a 
+                            href={`mailto:${pet.profiles.email}`}
+                            className="font-medium text-primary hover:underline break-all"
+                          >
+                            {pet.profiles.email}
+                          </a>
+                        </div>
+                      </div>
+                    )}
+
+                    {pet.profiles?.full_name && (
+                      <div className="flex items-center gap-3 text-sm">
+                        <User className="w-4 h-4 text-primary" />
+                        <div>
+                          <p className="text-xs text-muted-foreground">Owner</p>
+                          <p className="font-medium">{pet.profiles.full_name}</p>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             )}
           </CardContent>
