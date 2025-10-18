@@ -23,6 +23,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { z } from 'zod';
 import { ExportData } from '@/pages/settings/ExportData';
 import { DeleteAccount } from '@/pages/settings/DeleteAccount';
+import { ENV_CONFIG } from '@/config/environment';
 
 const SUBSCRIPTION_TIERS = {
   free: { name: 'Free', productId: null },
@@ -375,21 +376,29 @@ export default function Account() {
                   </div>
                 )}
 
-                <div className="flex gap-3">
-                  {subscription?.subscribed ? (
-                    <Button
-                      onClick={handleManageSubscription}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      <Cog className="w-4 h-4 mr-2" />
-                      {au('Manage Subscription')}
-                    </Button>
+                <div className="flex flex-col gap-3">
+                  {ENV_CONFIG.useInAppPurchases ? (
+                    <>
+                      {subscription?.subscribed ? (
+                        <Button
+                          onClick={handleManageSubscription}
+                          variant="outline"
+                          className="flex-1"
+                        >
+                          <Cog className="w-4 h-4 mr-2" />
+                          {au('Manage Subscription')}
+                        </Button>
+                      ) : (
+                        <Button onClick={() => navigate('/pricing')} className="flex-1">
+                          <Crown className="w-4 h-4 mr-2" />
+                          {au('Upgrade to Premium')}
+                        </Button>
+                      )}
+                    </>
                   ) : (
-                    <Button onClick={() => navigate('/pricing')} className="flex-1">
-                      <Crown className="w-4 h-4 mr-2" />
-                      {au('Upgrade to Premium')}
-                    </Button>
+                    <div className="text-sm text-muted-foreground p-3 bg-muted/30 rounded-lg">
+                      {au('Manage your subscription at')} <a href={ENV_CONFIG.marketingUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">petlinkid.io</a>
+                    </div>
                   )}
                 </div>
               </Card>

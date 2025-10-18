@@ -3,6 +3,48 @@
 ## Overview
 This document covers the **ios_free** build configuration for PetLinkID. This is a login-only iOS client with no in-app purchases, designed for App Store compliance and TestFlight distribution.
 
+## Phase 3: UI Modifications ✅
+
+### Completed Features
+
+1. **PremiumInfoSheet Component**
+   - Neutral info dialog for iOS free builds
+   - Shows "PetLinkID Premium" title with Crown icon
+   - Message: "Premium requires an active subscription linked to your account. Create or manage your subscription at petlinkid.io."
+   - Two buttons: "OK" and "Open Website" (opens ENV_CONFIG.marketingUrl)
+
+2. **UpgradeInline Component Updates**
+   - Guards upgrade CTAs with ENV_CONFIG.useInAppPurchases check
+   - Shows PremiumInfoSheet instead of navigating to /pricing when useInAppPurchases=false
+   - Maintains existing behavior for web builds
+
+3. **Account Page Updates**
+   - Subscription tab guards manage/upgrade buttons with ENV_CONFIG.useInAppPurchases
+   - iOS free build shows: "Manage your subscription at petlinkid.io" with external link
+   - Web build keeps existing Stripe checkout/manage flows
+
+4. **Pricing Page Updates**
+   - Redirects to home page when ENV_CONFIG.useInAppPurchases=false
+   - iOS free build has no pricing/checkout page accessible
+
+5. **Feature Gating**
+   - FeatureGuard component uses UpgradeInline (which now respects iOS free config)
+   - All premium features show info sheet instead of checkout on iOS free
+
+### Environment-Specific Behavior
+
+**Web Build (USE_IN_APP_PURCHASES=true):**
+- Full Stripe checkout flows
+- /pricing page accessible
+- Upgrade buttons navigate to checkout
+- Manage subscription via Stripe portal
+
+**iOS Free Build (USE_IN_APP_PURCHASES=false):**
+- No checkout/subscribe UI
+- /pricing page redirects to home
+- Upgrade CTAs show info sheet with external link
+- Account page shows static text with petlinkid.io link
+
 ## Phase 2: Environment & Entitlements ✅
 
 ### Completed Features
@@ -42,23 +84,22 @@ VITE_BUILD_PROFILE=ios_free
 ```typescript
 // In any component:
 import { useEntitlement } from '@/hooks/useEntitlement';
+import { ENV_CONFIG } from '@/config/environment';
 
 function MyComponent() {
   const { hasPremium, canShowUpgrade, marketingUrl } = useEntitlement();
   
   if (!hasPremium) {
-    // Show info sheet instead of upgrade button
+    if (ENV_CONFIG.useInAppPurchases) {
+      // Show upgrade button
+    } else {
+      // Show info sheet
+    }
   }
 }
 ```
 
 ## Next Steps
-
-### Phase 3: UI Modifications (Pending)
-- Remove IAP UI components (Subscribe/Restore buttons)
-- Replace upgrade CTAs with info sheets
-- Update Settings screen with manage subscription link
-- Add Apple-compliant onboarding copy
 
 ### Phase 4: Xcode Export (Pending)
 - iOS signing configuration
@@ -87,9 +128,10 @@ curl -X POST https://[your-project].supabase.co/functions/v1/get-entitlements \
 - ✅ No in-app purchase code in this build
 - ✅ External link to petlinkid.io for subscription management
 - ✅ Account required for access
-- ⏳ Pending: Onboarding copy review
+- ✅ Neutral onboarding copy (no pricing/discounts in-app)
 - ⏳ Pending: Info.plist usage strings
+- ⏳ Pending: App Store screenshots
 
 ---
 
-**Status**: Phase 2 Complete | Next: Phase 3 (UI Modifications)
+**Status**: Phase 3 Complete | Next: Phase 4 (Xcode Export)

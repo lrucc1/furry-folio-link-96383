@@ -8,6 +8,8 @@ import { Card } from '@/components/ui/card';
 import { Check, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { ENV_CONFIG } from '@/config/environment';
+import { PremiumInfoSheet } from '@/components/PremiumInfoSheet';
 
 const SUBSCRIPTION_TIERS = {
   free: {
@@ -72,6 +74,13 @@ export default function Pricing() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [showInfoSheet, setShowInfoSheet] = useState(false);
+
+  // Redirect to home if in iOS free build (no pricing page needed)
+  if (!ENV_CONFIG.useInAppPurchases) {
+    navigate('/');
+    return null;
+  }
 
   const handleRefreshSubscription = async () => {
     setRefreshing(true);
