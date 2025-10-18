@@ -75,14 +75,40 @@ const Dashboard = () => {
     if (!user) return
 
     try {
-      const { data, error } = await supabase
+      // Fetch pets owned by user
+      const { data: ownedPets, error: ownedError } = await supabase
         .from('pets')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
 
-      if (error) throw error
-      setPets(data || [])
+      if (ownedError) throw ownedError
+
+      // Fetch shared pet IDs via memberships
+      const { data: memberships, error: membershipError } = await supabase
+        .from('pet_memberships')
+        .select('pet_id')
+        .eq('user_id', user.id)
+
+      if (membershipError) throw membershipError
+
+      // Fetch the actual shared pets
+      let sharedPets: Pet[] = []
+      if (memberships && memberships.length > 0) {
+        const petIds = memberships.map(m => m.pet_id)
+        const { data: sharedPetsData, error: sharedError } = await supabase
+          .from('pets')
+          .select('*')
+          .in('id', petIds)
+
+        if (sharedError) throw sharedError
+        sharedPets = sharedPetsData || []
+      }
+
+      // Combine owned and shared pets
+      const allPets = [...(ownedPets || []), ...sharedPets]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+
+      setPets(allPets)
     } catch (error) {
       console.error('Error fetching pets:', error)
     } finally {
