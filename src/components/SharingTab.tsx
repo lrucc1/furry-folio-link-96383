@@ -56,17 +56,21 @@ useEffect(() => {
       return;
     }
 
-    console.log('[SharingTab] Fetching sharing data (global invites) for user:', user.id);
+    console.log('[SharingTab] Fetching sharing data for user:', user.id, 'email:', user.email, 'petId:', petId);
     setLoading(true);
 
-    // Fetch invites created by current user (across all pets)
+    // Fetch ALL invites (both sent by user and sent to user)
     try {
+      console.log('[SharingTab] Querying with user.id:', user.id, 'user.email:', user.email?.toLowerCase());
+      
       const { data: inviteData, error: inviteError } = await supabase
         .from('pet_invites')
         .select('*')
-        .or(`invited_by.eq.${user.id},email.eq.${user.email}`)
+        .or(`invited_by.eq.${user.id},email.eq.${user.email?.toLowerCase()}`)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
+
+      console.log('[SharingTab] Invite query result:', { data: inviteData, error: inviteError });
 
       if (inviteError) {
         console.error('[SharingTab] Error fetching invites:', inviteError);
@@ -99,14 +103,14 @@ useEffect(() => {
       setPetsById({});
     }
 
-    // Fetch members
+    // Fetch members for this specific pet
     try {
       const { data: memberData, error: memberError } = await supabase
         .from('pet_memberships')
         .select('*')
         .eq('pet_id', petId);
 
-      console.log('[SharingTab] Members result:', { data: memberData, error: memberError });
+      console.log('[SharingTab] Members query for petId', petId, ':', { data: memberData, error: memberError });
 
       if (memberError) {
         console.error('[SharingTab] Error fetching members:', memberError);
