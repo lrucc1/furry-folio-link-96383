@@ -157,75 +157,102 @@ export function SharingTab({ petId }: SharingTabProps) {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {members.length > 0 ? (
+          {/* Pending Invites Section */}
+          {invites.length > 0 && (
             <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                {au('Pending Invites')}
+              </h3>
+              {invites.map((invite) => (
+                <div key={invite.id} className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">{invite.email}</p>
+                      <Badge variant="outline" className="text-xs">
+                        {au('Pending')}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {invite.role === 'vet' && au('Veterinarian - Read-only medical access')}
+                      {invite.role === 'family' && au('Family - Can view and edit')}
+                      {invite.role === 'caregiver' && au('Caregiver - Read-only access')}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {au('Expires')} {new Date(invite.expires_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyInviteLink(invite.token)}
+                    >
+                      <Copy className="w-4 h-4 mr-2" />
+                      {au('Copy Link')}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => revokeInvite(invite.id)}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      {au('Revoke')}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Active Members Section */}
+          {members.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                {au('Active Members')}
+              </h3>
               {members.map((member) => (
-                <div key={member.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div>
+                <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex-1 space-y-1">
                     <p className="font-medium">{member.user_id}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {member.role === 'vet' && au('Veterinarian - Read-only medical access')}
+                      {member.role === 'family' && au('Family - Can view and edit')}
+                      {member.role === 'caregiver' && au('Caregiver - Read-only access')}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant={member.role === 'owner' ? 'default' : 'secondary'}>
-                      {member.role === 'owner' ? au('Owner') : au(member.role)}
+                      {member.role === 'vet' ? au('Veterinarian') : 
+                       member.role === 'family' ? au('Family') :
+                       member.role === 'caregiver' ? au('Caregiver') :
+                       au('Owner')}
                     </Badge>
                     {member.role !== 'owner' && (
                       <Button
-                        variant="ghost"
-                        size="icon"
+                        variant="destructive"
+                        size="sm"
                         onClick={() => removeMember(member.id)}
                       >
-                        <Trash2 className="w-4 h-4 text-destructive" />
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        {au('Remove')}
                       </Button>
                     )}
                   </div>
                 </div>
               ))}
             </div>
-          ) : (
+          )}
+
+          {/* Empty State */}
+          {members.length === 0 && invites.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
               <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
               <p>{au('No members yet')}</p>
+              <p className="text-sm mt-1">{au('Click "Invite family member" to share access')}</p>
             </div>
           )}
         </CardContent>
       </Card>
-
-      {invites.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{au('Pending invites')}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {invites.map((invite) => (
-              <div key={invite.id} className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex-1">
-                  <p className="font-medium">{invite.email}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {au('Expires on')} {new Date(invite.expires_at).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">{au(invite.role)}</Badge>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => copyInviteLink(invite.token)}
-                  >
-                    <Copy className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => revokeInvite(invite.id)}
-                  >
-                    <Trash2 className="w-4 h-4 text-destructive" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
 
       <InviteFamilyModal
         open={modalOpen}
