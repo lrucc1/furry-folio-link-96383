@@ -5,6 +5,7 @@ const ALLOWED_ORIGINS = new Set([
   'https://petlinkid.com',
   'https://www.petlinkid.com',
   'https://petlinkid.lovable.app',
+  'https://furry-folio-link-96383.lovable.app',
   'http://localhost:5173',
   'http://localhost:8080'
 ]);
