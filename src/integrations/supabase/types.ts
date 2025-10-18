@@ -622,7 +622,7 @@ export type Database = {
           display_name: string
           email: string
           pet_count: number
-          premium_tier: string
+          plan_tier: string
           roles: string[]
           user_id: string
         }[]
