@@ -42,7 +42,7 @@ export function ExportData() {
           {au('Export my data')}
         </CardTitle>
         <CardDescription>
-          {au('Download all your PetLinkID data in JSON format. This includes your profile, pets, vaccinations, health reminders, documents, and more.')}
+          {au('Download all your PetLinkID data as an HTML report with all uploaded documents. This includes your profile, pets, vaccinations, health reminders, and more.')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -51,10 +51,10 @@ export function ExportData() {
             <h4 className="font-medium mb-2">{au('What\'s included:')}</h4>
             <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
               <li>{au('Profile information')}</li>
-              <li>{au('Pet records and details')}</li>
+              <li>{au('Pet records and details (with photos)')}</li>
               <li>{au('Vaccination records')}</li>
               <li>{au('Health reminders')}</li>
-              <li>{au('Document metadata')}</li>
+              <li>{au('All uploaded documents (original files)')}</li>
               <li>{au('Pet memberships')}</li>
               <li>{au('Invitations (if you\'re the owner)')}</li>
               <li>{au('Notifications')}</li>
@@ -80,7 +80,7 @@ export function ExportData() {
           </Button>
 
           <p className="text-xs text-muted-foreground">
-            {au('Your data will be downloaded as a JSON file to your device. This file contains personal information, so please store it securely.')}
+            {au('Your data will be downloaded as a ZIP file containing an HTML report and all your uploaded documents. This file contains personal information, so please store it securely.')}
           </p>
         </div>
       </CardContent>
