@@ -13,7 +13,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Download, Trash2, UserCircle, Bell, Shield, Users, Loader2, Crown, FileText, Settings, Star, Calendar, CreditCard, Receipt, ExternalLink, Phone } from "lucide-react";
+import { Download, Trash2, UserCircle, Bell, Shield, Users, Loader2, Crown, FileText, Settings, Star, Calendar, CreditCard, Receipt, ExternalLink, Phone, Cog } from "lucide-react";
+import { ManageSubscriptionModal } from '@/components/ManageSubscriptionModal';
 import { exportUserData } from '@/features/export/exporter';
 import { downloadExport } from '@/features/export/download';
 import { log } from '@/lib/log';
@@ -66,6 +67,8 @@ export default function Account() {
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [profileData, setProfileData] = useState({ full_name: '', phone: '' });
   const [savingProfile, setSavingProfile] = useState(false);
+  const [petCount, setPetCount] = useState(0);
+  const [manageModalOpen, setManageModalOpen] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -75,6 +78,7 @@ export default function Account() {
     checkSubscription();
     calculateStorageUsage();
     fetchProfile();
+    fetchPetCount();
   }, [user, navigate]);
 
   const checkSubscription = async () => {
@@ -139,18 +143,20 @@ export default function Account() {
   };
 
   const handleManageSubscription = async () => {
-    setManagingSubscription(true);
+    setManageModalOpen(true);
+  };
+
+  const fetchPetCount = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('customer-portal');
+      const { count, error } = await supabase
+        .from('pets')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user?.id);
+      
       if (error) throw error;
-      if (data?.url) {
-        window.open(data.url, '_blank');
-      }
+      setPetCount(count || 0);
     } catch (error) {
-      console.error('Error opening customer portal:', error);
-      toast.error('Failed to open subscription management');
-    } finally {
-      setManagingSubscription(false);
+      log.error('Error fetching pet count:', error);
     }
   };
 
@@ -373,18 +379,11 @@ export default function Account() {
                   {subscription?.subscribed ? (
                     <Button
                       onClick={handleManageSubscription}
-                      disabled={managingSubscription}
                       variant="outline"
                       className="flex-1"
                     >
-                      {managingSubscription ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          {au('Loading...')}
-                        </>
-                      ) : (
-                        au('Manage Subscription')
-                      )}
+                      <Cog className="w-4 h-4 mr-2" />
+                      {au('Manage Subscription')}
                     </Button>
                   ) : (
                     <Button onClick={() => navigate('/pricing')} className="flex-1">
@@ -600,6 +599,18 @@ export default function Account() {
           </Tabs>
         </div>
       </main>
+
+      <ManageSubscriptionModal
+        open={manageModalOpen}
+        onOpenChange={setManageModalOpen}
+        currentTier={tier}
+        currentPetCount={petCount}
+        currentStorageMB={storageUsedMB}
+        onPlanChange={() => {
+          checkSubscription();
+          setManageModalOpen(false);
+        }}
+      />
     </div>
   );
 }
