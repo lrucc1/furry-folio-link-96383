@@ -362,7 +362,7 @@ export function SharingTab({ petId }: SharingTabProps) {
           {members.length > 0 && (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                {au('Active Members')}
+                {au('Active Shares')}
               </h3>
               {members.map((member) => (
                 <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg">
