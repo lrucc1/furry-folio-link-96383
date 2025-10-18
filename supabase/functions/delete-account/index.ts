@@ -1,26 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
-const ALLOWED_ORIGINS = new Set([
-  'https://petlinkid.com',
-  'https://www.petlinkid.com',
-  'https://petlinkid.lovable.app',
-  'https://furry-folio-link-96383.lovable.app',
-  'http://localhost:5173',
-  'http://localhost:8080'
-]);
-
-function cors(origin: string) {
-  const allowed = ALLOWED_ORIGINS.has(origin);
-  return {
-    allowed,
-    headers: {
-      'Access-Control-Allow-Origin': allowed ? origin : 'https://petlinkid.com',
-      'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-      'Access-Control-Allow-Methods': 'POST,OPTIONS'
-    }
-  };
-}
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST,OPTIONS'
+};
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -28,16 +13,10 @@ const logStep = (step: string, details?: any) => {
 };
 
 serve(async (req) => {
-  const origin = req.headers.get('origin') ?? '';
-  const c = cors(origin);
-  
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: c.headers });
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
   
-  if (!c.allowed) {
-    return new Response('Forbidden', { status: 403, headers: c.headers });
-  }
 
   try {
     logStep("Function started");
@@ -47,7 +26,7 @@ serve(async (req) => {
       logStep("ERROR: No authorization header");
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { ...c.headers, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -64,7 +43,7 @@ serve(async (req) => {
       logStep("ERROR: User authentication failed", { error: userError });
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { ...c.headers, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -109,7 +88,7 @@ serve(async (req) => {
       logStep("ERROR: Failed to delete user", { error: deleteError });
       return new Response(JSON.stringify({ error: "Failed to delete account" }), {
         status: 500,
-        headers: { ...c.headers, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -117,7 +96,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ status: "deleted" }), {
       status: 200,
-      headers: { ...c.headers, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
 
   } catch (error) {
@@ -125,7 +104,7 @@ serve(async (req) => {
     logStep("ERROR in delete-account", { message: errorMessage });
     return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
-      headers: { ...c.headers, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
