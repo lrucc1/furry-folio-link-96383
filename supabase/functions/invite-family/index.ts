@@ -38,8 +38,8 @@ serve(async (req) => {
       throw new Error('Missing required fields: pet_id, email, role');
     }
 
-    if (!['family', 'caregiver'].includes(role)) {
-      throw new Error('Invalid role. Must be "family" or "caregiver"');
+    if (!['family', 'caregiver', 'vet'].includes(role)) {
+      throw new Error('Invalid role. Must be "family", "caregiver" or "vet"');
     }
 
     // Check if user owns this pet

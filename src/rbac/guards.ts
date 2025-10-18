@@ -17,7 +17,7 @@ export function canInvite(role: Role): boolean {
 }
 
 export function isReadOnly(role: Role): boolean {
-  return role === 'caregiver';
+  return role === 'caregiver' || role === 'vet';
 }
 
 export function canDeletePets(role: Role): boolean {
