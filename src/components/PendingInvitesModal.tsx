@@ -45,29 +45,39 @@ export function PendingInvitesModal({ open, onClose }: PendingInvitesModalProps)
     if (!user) return;
 
     try {
+      console.log('[PendingInvites] Fetching invites for:', user.email);
+      
       const { data, error } = await supabase
         .from('pet_invites')
-        .select(`
-          id,
-          pet_id,
-          email,
-          role,
-          token,
-          expires_at,
-          pets:pet_id (
-            name,
-            species
-          )
-        `)
+        .select('*')
         .eq('email', user.email)
         .eq('status', 'pending')
         .gt('expires_at', new Date().toISOString());
 
+      console.log('[PendingInvites] Query result:', { data, error });
+
       if (error) throw error;
 
-      setInvites(data || []);
+      // Fetch pet details separately
+      const invitesWithPets = await Promise.all(
+        (data || []).map(async (invite) => {
+          const { data: pet } = await supabase
+            .from('pets')
+            .select('name, species')
+            .eq('id', invite.pet_id)
+            .single();
+
+          return {
+            ...invite,
+            pet: pet || undefined
+          };
+        })
+      );
+
+      console.log('[PendingInvites] Invites with pet details:', invitesWithPets);
+      setInvites(invitesWithPets);
     } catch (error) {
-      console.error('Error fetching pending invites:', error);
+      console.error('[PendingInvites] Error fetching invites:', error);
     } finally {
       setLoading(false);
     }
