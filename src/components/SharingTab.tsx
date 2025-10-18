@@ -27,6 +27,7 @@ interface Invite {
 interface Member {
   id: string;
   user_id: string;
+  pet_id: string;
   role: string;
   created_at: string;
   email?: string;
@@ -389,6 +390,9 @@ export function SharingTab({ petId }: SharingTabProps) {
                       {member.role === 'vet' && au('Veterinarian - Read-only medical access')}
                       {member.role === 'family' && au('Family - Can view and edit')}
                       {member.role === 'caregiver' && au('Caregiver - Read-only access')}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {au('For')}: {petsById[member.pet_id]?.name || au('This pet')}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
