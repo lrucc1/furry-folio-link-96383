@@ -30,7 +30,7 @@ export function InviteFamilyModal({ open, onClose, petId, onSuccess }: InviteFam
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: '',
-    role: 'family' as 'family' | 'caregiver',
+    role: 'family' as 'family' | 'caregiver' | 'vet',
     selectedPetId: petId || ''
   });
 
@@ -178,7 +178,7 @@ export function InviteFamilyModal({ open, onClose, petId, onSuccess }: InviteFam
               <Label htmlFor="role">{au('Role')}</Label>
               <Select
                 value={formData.role}
-                onValueChange={(value: 'family' | 'caregiver') => setFormData({ ...formData, role: value })}
+                onValueChange={(value: 'family' | 'caregiver' | 'vet') => setFormData({ ...formData, role: value })}
               >
                 <SelectTrigger className="bg-background">
                   <SelectValue />
@@ -186,8 +186,14 @@ export function InviteFamilyModal({ open, onClose, petId, onSuccess }: InviteFam
                 <SelectContent className="bg-background z-50">
                   <SelectItem value="family">{au('Family')}</SelectItem>
                   <SelectItem value="caregiver">{au('Caregiver')}</SelectItem>
+                  <SelectItem value="vet">{au('Veterinarian (VetShare)')}</SelectItem>
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                {formData.role === 'vet' && au('Vets can only view medical records and health information')}
+                {formData.role === 'family' && au('Family members can view and edit all pet information')}
+                {formData.role === 'caregiver' && au('Caregivers have read-only access to pet information')}
+              </p>
             </div>
 
             <DialogFooter>
