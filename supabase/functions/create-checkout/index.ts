@@ -61,8 +61,22 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
 
-    const { priceId } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    let priceId: string | undefined = body?.priceId;
+    const tier = body?.tier as 'premium' | 'family' | undefined;
+
+    // Fallback mapping: allow clients to pass a tier instead of priceId
+    const TIER_TO_PRICE: Record<string, string> = {
+      premium: 'price_1SJk4yEhyEZfSSpN8x8KqTGY',
+      family: 'price_1SJk5TEhyEZfSSpNKpDL6ZyO',
+    };
+
+    if (!priceId && tier && TIER_TO_PRICE[tier]) {
+      priceId = TIER_TO_PRICE[tier];
+    }
+
     if (!priceId) throw new Error("Price ID is required");
+
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
       apiVersion: "2024-06-20" 

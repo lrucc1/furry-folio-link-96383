@@ -27,7 +27,8 @@ const TIER_INFO = {
     icon: null,
     maxPets: 1,
     maxStorageMB: 0,
-    productId: null
+    productId: null,
+    priceId: null
   },
   premium: { 
     name: 'Premium', 
@@ -35,7 +36,8 @@ const TIER_INFO = {
     icon: Star,
     maxPets: 5,
     maxStorageMB: 50,
-    productId: 'prod_TGGcRtzlK6vz7A'
+    productId: 'prod_TGGcRtzlK6vz7A',
+    priceId: 'price_1SJk4yEhyEZfSSpN8x8KqTGY'
   },
   family: { 
     name: 'Family', 
@@ -43,7 +45,8 @@ const TIER_INFO = {
     icon: Crown,
     maxPets: -1,
     maxStorageMB: 200,
-    productId: 'prod_TGGcY3nKNalPuA'
+    productId: 'prod_TGGcY3nKNalPuA',
+    priceId: 'price_1SJk5TEhyEZfSSpNKpDL6ZyO'
   },
 };
 
@@ -76,14 +79,17 @@ export function ManageSubscriptionModal({
   const handleUpgrade = async (targetTier: 'premium' | 'family') => {
     setLoading(true);
     try {
+      const priceId = TIER_INFO[targetTier as 'premium' | 'family'].priceId as string | null;
+      if (!priceId) throw new Error('Missing priceId for target tier');
+
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { tier: targetTier }
+        body: { priceId }
       });
-      
+
       if (error) throw error;
-      
+
       if (data?.url) {
-        window.open(data.url, '_blank');
+        window.location.href = data.url;
         toast.success(au('Redirecting to checkout...'));
       }
     } catch (error) {
