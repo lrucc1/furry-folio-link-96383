@@ -53,6 +53,7 @@ const SUBSCRIPTION_TIERS = {
     name: 'Family',
     price: 7.99,
     priceId: 'price_1SJk5TEhyEZfSSpNKpDL6ZyO',
+    priceIdAnnual: 'price_1SJk9JEhyEZfSSpNFATW8hkx',
     productId: 'prod_TGGcY3nKNalPuA',
     interval: 'month',
     features: [
@@ -208,7 +209,7 @@ export default function Pricing() {
                     : 'Subscribe Monthly'}
                 </Button>
                 
-                {key === 'premium' && (
+                {(key === 'premium' || key === 'family') && (
                   <Button
                     className="w-full"
                     variant="secondary"

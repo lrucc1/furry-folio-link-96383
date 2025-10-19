@@ -18,6 +18,7 @@
 
 ### Family Plan
 - **Monthly**: $7.99 AUD/month
+- **Annual**: $86.29 AUD/year (10% discount - only shown on Stripe checkout)
 - **Features**:
   - Everything in Premium
   - Unlimited pets
@@ -48,6 +49,7 @@
 ### Family (Updated)
 - **Product ID**: `prod_TGGcY3nKNalPuA`
 - **Monthly Price ID**: `price_1SJk5TEhyEZfSSpNKpDL6ZyO` ($7.99 AUD/month)
+- **Annual Price ID**: `price_1SJk9JEhyEZfSSpNFATW8hkx` ($86.29 AUD/year)
 
 ---
 
@@ -89,12 +91,16 @@
 - **Premium Plan**: 
   - "Subscribe Monthly" button ($4.49/month)
   - "Subscribe Annually (10% off)" button ($48.44/year) - **NEW**
-- **Family Plan**: "Subscribe Monthly" button ($7.99/month)
+- **Family Plan**: 
+  - "Subscribe Monthly" button ($7.99/month)
+  - "Subscribe Annually (10% off)" button ($86.29/year) - **NEW**
 
 ### Annual Discount
-- Only available for Premium plan
-- 10% discount: $4.49 × 12 = $53.88 → $48.44/year
-- Annual option only visible on Pricing page, not mentioned elsewhere in the app
+- Available for both Premium and Family plans
+- 10% discount on annual billing
+- **Premium**: $4.49 × 12 = $53.88 → $48.44/year
+- **Family**: $7.99 × 12 = $95.88 → $86.29/year
+- Annual options only visible on Pricing page, not mentioned elsewhere in the app
 
 ### Checkout Flow
 1. User clicks "Subscribe Monthly" or "Subscribe Annually (10% off)"
@@ -114,6 +120,7 @@
 - Premium (New): `prod_TGGcRtzlK6vz7A` - $4.49/month ✅
 - Premium Annual (New): `prod_TGGcf3kSLGuP3p` - $48.44/year ✅
 - Family (New): `prod_TGGcY3nKNalPuA` - $7.99/month ✅
+- Family Annual (New): `prod_TGGgvnrO5knuc6` - $86.29/year ✅
 
 ### Existing Subscribers
 - Grandfathered at old pricing until they manually change plans
@@ -125,11 +132,12 @@
 
 - [ ] Pricing page displays correct prices
 - [ ] Premium shows both monthly and annual options
-- [ ] Family shows only monthly option
+- [ ] Family shows both monthly and annual options
 - [ ] Stripe checkout opens with correct price ID
 - [ ] Monthly checkout works for Premium
 - [ ] Annual checkout works for Premium (10% off)
 - [ ] Monthly checkout works for Family
+- [ ] Annual checkout works for Family (10% off)
 - [ ] Account page shows correct pricing
 - [ ] Admin dashboard MRR calculation accurate
 - [ ] Homepage displays updated pricing
