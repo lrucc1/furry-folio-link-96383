@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Upload, FileText, Image as ImageIcon, Trash2, Eye } from 'lucide-react';
+import { Upload, FileText, Image as ImageIcon, Trash2, Eye, Edit2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DocumentViewer } from './DocumentViewer';
 import { ImageCropDialog } from './ImageCropDialog';
@@ -20,6 +20,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface PetDocument {
   id: string;
@@ -53,6 +61,9 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
   const [imageToCrop, setImageToCrop] = useState<string | null>(null);
   const [pendingFileName, setPendingFileName] = useState<string>('');
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [docToEdit, setDocToEdit] = useState<PetDocument | null>(null);
+  const [newFileName, setNewFileName] = useState('');
 
   useEffect(() => {
     fetchDocuments();
@@ -247,6 +258,41 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
     return <FileText className="w-8 h-8" />;
   };
 
+  const openEditDialog = (doc: PetDocument) => {
+    setDocToEdit(doc);
+    // Remove extension from filename for editing
+    const nameWithoutExt = doc.file_name.substring(0, doc.file_name.lastIndexOf('.')) || doc.file_name;
+    setNewFileName(nameWithoutExt);
+    setEditDialogOpen(true);
+  };
+
+  const handleRename = async () => {
+    if (!docToEdit || !user || !newFileName.trim()) return;
+
+    try {
+      // Get the file extension from the original filename
+      const extension = docToEdit.file_name.substring(docToEdit.file_name.lastIndexOf('.'));
+      const finalFileName = newFileName.trim() + extension;
+
+      // Update the filename in the database
+      const { error } = await supabase
+        .from('pet_documents')
+        .update({ file_name: finalFileName })
+        .eq('id', docToEdit.id);
+
+      if (error) throw error;
+
+      toast.success('Filename updated successfully');
+      fetchDocuments();
+      setEditDialogOpen(false);
+      setDocToEdit(null);
+      setNewFileName('');
+    } catch (error) {
+      console.error('Error renaming file:', error);
+      toast.error('Failed to rename file');
+    }
+  };
+
   const storageLimit = STORAGE_LIMITS[subscriptionInfo.tier];
   const storageUsedPercent = storageLimit > 0 ? (totalStorage / storageLimit) * 100 : 0;
 
@@ -315,13 +361,23 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
                       variant="ghost"
                       size="icon"
                       onClick={() => handleView(doc)}
+                      title="View document"
                     >
                       <Eye className="w-4 h-4" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
+                      onClick={() => openEditDialog(doc)}
+                      title="Edit filename"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => confirmDelete(doc)}
+                      title="Delete document"
                     >
                       <Trash2 className="w-4 h-4 text-destructive" />
                     </Button>
@@ -376,6 +432,46 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
         onCropComplete={handleCroppedImage}
         aspectRatio={4 / 3}
       />
+
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Filename</DialogTitle>
+            <DialogDescription>
+              Rename your document to keep everything clearly labeled. The file extension will be preserved automatically.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="filename">Filename</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="filename"
+                  value={newFileName}
+                  onChange={(e) => setNewFileName(e.target.value)}
+                  placeholder="Enter new filename"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleRename();
+                    }
+                  }}
+                />
+                <span className="text-muted-foreground text-sm whitespace-nowrap">
+                  {docToEdit?.file_name.substring(docToEdit.file_name.lastIndexOf('.'))}
+                </span>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleRename} disabled={!newFileName.trim()}>
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
