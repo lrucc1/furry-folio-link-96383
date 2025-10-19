@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { DocumentViewer } from './DocumentViewer';
 import { ImageCropDialog } from './ImageCropDialog';
 import { FeatureGuard } from '@/components/FeatureGuard';
+import { cn } from '@/lib/utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -64,6 +65,7 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [docToEdit, setDocToEdit] = useState<PetDocument | null>(null);
   const [newFileName, setNewFileName] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     fetchDocuments();
@@ -92,9 +94,36 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
     }
   };
 
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const file = e.dataTransfer.files?.[0];
+    if (!file || !user) return;
+
+    processFile(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
+
+    processFile(file);
+    event.target.value = '';
+  };
+
+  const processFile = async (file: File) => {
+    if (!user) return;
 
     // Check if user has document storage access
     const storageLimit = STORAGE_LIMITS[subscriptionInfo.tier];
@@ -126,13 +155,11 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
         setCropDialogOpen(true);
       };
       reader.readAsDataURL(file);
-      event.target.value = '';
       return;
     }
 
     // For non-image files, upload directly
     await uploadFile(file, file.name);
-    event.target.value = '';
   };
 
   const handleCroppedImage = async (croppedBlob: Blob) => {
@@ -313,7 +340,15 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
           <CardContent className="space-y-4">
             <div>
               <Label htmlFor="document-upload" className="cursor-pointer">
-                <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary transition-colors">
+                <div 
+                  className={cn(
+                    "border-2 border-dashed rounded-lg p-6 text-center transition-colors",
+                    isDragging ? "border-primary bg-primary/5" : "hover:border-primary"
+                  )}
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                >
                   <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground mb-1">
                     {uploading ? 'Uploading...' : 'Click to upload or drag and drop'}

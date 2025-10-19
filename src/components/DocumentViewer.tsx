@@ -87,11 +87,17 @@ export const DocumentViewer = ({ url, filename, mimeType, isOpen, onClose }: Doc
                 className="max-w-full h-auto"
               />
             ) : isPDF ? (
-              <iframe
-                src={url}
+              <object
+                data={url}
+                type="application/pdf"
                 className="w-full h-full min-h-[600px] bg-white rounded"
-                title={filename}
-              />
+              >
+                <embed
+                  src={url}
+                  type="application/pdf"
+                  className="w-full h-full min-h-[600px]"
+                />
+              </object>
             ) : isOfficeDoc ? (
               <iframe
                 src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`}
