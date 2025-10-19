@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
+import { toast } from 'sonner'
 
 interface SubscriptionInfo {
   subscribed: boolean
@@ -68,8 +69,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // For manual subscriptions, use the tier directly
         let tier: 'free' | 'premium' | 'family' = 'free'
         let maxPets = 1
+        const apiEffectiveTier = data.effective_tier as 'free' | 'premium' | 'family' | undefined;
         
-        if (isManualSub && tierInfo) {
+        if (apiEffectiveTier) {
+          tier = apiEffectiveTier
+          maxPets = apiEffectiveTier === 'family' ? -1 : apiEffectiveTier === 'premium' ? 5 : 1
+        } else if (isManualSub && tierInfo) {
           tier = tierInfo.tier
           maxPets = tierInfo.maxPets
         } else if (data.subscribed && tierInfo) {

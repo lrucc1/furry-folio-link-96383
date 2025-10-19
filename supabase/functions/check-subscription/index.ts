@@ -57,17 +57,37 @@ serve(async (req) => {
       
       // Map tier names to product IDs for consistency
       const tierToProductMap: Record<string, string> = {
-        'premium': 'prod_TBUW3WogN0dEtQ',
-        'family': 'prod_TBUX7Ubgxwr3co',
+        'premium': 'prod_TGGcRtzlK6vz7A',
+        'family': 'prod_TGGcY3nKNalPuA',
       };
       
       const productId = tierToProductMap[manualSub.tier_name] || null;
       
+      // Persist manual tier on profile for consistency
+      await supabaseClient
+        .from('profiles')
+        .update({
+          plan_tier: manualSub.tier_name,
+          plan_source: 'manual',
+          plan_updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id);
+
+      await supabaseClient.from('plan_audit').insert({
+        actor_id: user.id,
+        target_id: user.id,
+        action: 'MANUAL_SUB_ACTIVE',
+        new_tier: manualSub.tier_name,
+        note: 'Manual subscription detected',
+      });
+
       return new Response(JSON.stringify({
         subscribed: true,
         product_id: productId,
         subscription_end: null,
-        manual: true
+        manual: true,
+        desired_tier: manualSub.tier_name,
+        effective_tier: manualSub.tier_name
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -77,16 +97,16 @@ serve(async (req) => {
     // Fallback: check profile plan_tier/premium_tier if set by admin
     const { data: profileTier } = await supabaseClient
       .from('profiles')
-      .select('plan_tier, premium_tier')
+      .select('plan_tier')
       .eq('id', user.id)
       .maybeSingle();
 
-    const assignedTier = profileTier?.plan_tier || profileTier?.premium_tier;
+    const assignedTier = profileTier?.plan_tier;
     if (assignedTier && assignedTier !== 'free') {
       logStep("Found assigned tier on profile", { tier: assignedTier });
       const tierToProductMap: Record<string, string> = {
-        'premium': 'prod_TBUW3WogN0dEtQ',
-        'family': 'prod_TBUX7Ubgxwr3co',
+        'premium': 'prod_TGGcRtzlK6vz7A',
+        'family': 'prod_TGGcY3nKNalPuA',
       };
       const productId = tierToProductMap[assignedTier] || null;
       return new Response(JSON.stringify({
@@ -134,14 +154,104 @@ serve(async (req) => {
       logStep("No active subscription found");
     }
 
+    // Map Stripe product to tier
+    const PRODUCT_TO_TIER: Record<string, 'premium' | 'family'> = {
+      'prod_TGGcRtzlK6vz7A': 'premium',
+      'prod_TGGcY3nKNalPuA': 'family',
+    };
+
+    let desiredTier: 'free' | 'premium' | 'family' = 'free';
+    if (hasActiveSub && productId && PRODUCT_TO_TIER[productId as string]) {
+      desiredTier = PRODUCT_TO_TIER[productId as string];
+    }
+
+    // Count user's pets
+    const { count: petCount } = await supabaseClient
+      .from('pets')
+      .select('id', { head: true, count: 'exact' })
+      .eq('user_id', user.id);
+
+    // Get current profile tier
+    const { data: currentProfile } = await supabaseClient
+      .from('profiles')
+      .select('plan_tier')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    const currentTier = (currentProfile?.plan_tier as 'free'|'premium'|'family') ?? 'free';
+
+    // Enforce downgrade constraints
+    const MAX_PETS: Record<'free'|'premium'|'family', number> = { free: 1, premium: 5, family: -1 };
+    let enforcement: { blocked: boolean; reason?: string; pet_count?: number; limit?: number } | null = null;
+    let effectiveTier: 'free' | 'premium' | 'family' = desiredTier;
+
+    if (desiredTier === 'premium' && typeof petCount === 'number' && petCount > MAX_PETS.premium) {
+      enforcement = { blocked: true, reason: 'Too many pets for Premium', pet_count: petCount, limit: MAX_PETS.premium };
+      effectiveTier = currentTier === 'family' ? 'family' : 'premium';
+    } else if (desiredTier === 'free' && typeof petCount === 'number' && petCount > MAX_PETS.free) {
+      enforcement = { blocked: true, reason: 'Too many pets for Free', pet_count: petCount, limit: MAX_PETS.free };
+      // Keep the higher of current or 'premium' to avoid locking user out
+      effectiveTier = currentTier !== 'free' ? currentTier : 'premium';
+    }
+
+    // Persist profile tier
+    await supabaseClient
+      .from('profiles')
+      .update({
+        plan_tier: effectiveTier,
+        plan_source: 'stripe',
+        plan_updated_at: new Date().toISOString(),
+      })
+      .eq('id', user.id);
+
+    // Upsert subscription record
+    const { data: existingSub } = await supabaseClient
+      .from('user_subscriptions')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (existingSub?.id) {
+      await supabaseClient
+        .from('user_subscriptions')
+        .update({
+          status: hasActiveSub ? 'active' : 'canceled',
+          tier_name: desiredTier,
+          current_period_end: subscriptionEnd,
+        })
+        .eq('id', existingSub.id);
+    } else {
+      await supabaseClient
+        .from('user_subscriptions')
+        .insert({
+          user_id: user.id,
+          status: hasActiveSub ? 'active' : 'canceled',
+          tier_name: desiredTier,
+          current_period_end: subscriptionEnd,
+        });
+    }
+
+    // Audit
+    await supabaseClient.from('plan_audit').insert({
+      actor_id: user.id,
+      target_id: user.id,
+      action: 'AUTO_UPDATE_FROM_STRIPE',
+      new_tier: effectiveTier,
+      note: enforcement?.reason ?? 'OK',
+    });
+
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
       product_id: productId,
-      subscription_end: subscriptionEnd
-  }), {
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-    status: 200,
-  });
+      subscription_end: subscriptionEnd,
+      desired_tier: desiredTier,
+      effective_tier: effectiveTier,
+      pet_count: petCount ?? 0,
+      enforcement,
+    }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200,
+    });
 } catch (error) {
   const errorMessage = error instanceof Error ? error.message : String(error);
   logStep("ERROR in check-subscription", { message: errorMessage });
