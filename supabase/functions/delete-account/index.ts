@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import Stripe from "https://esm.sh/stripe@18.5.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -79,6 +80,25 @@ serve(async (req) => {
       logStep("Deleted profile");
     } catch (err) {
       logStep("Warning: Error deleting profile", { error: err });
+    }
+
+    // Delete Stripe customer if exists
+    try {
+      const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+      if (stripeKey && userData.user.email) {
+        const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+        const customers = await stripe.customers.list({ email: userData.user.email, limit: 1 });
+        
+        if (customers.data.length > 0) {
+          const customerId = customers.data[0].id;
+          await stripe.customers.del(customerId);
+          logStep("Deleted Stripe customer", { customerId });
+        } else {
+          logStep("No Stripe customer found to delete");
+        }
+      }
+    } catch (err) {
+      logStep("Warning: Error deleting Stripe customer", { error: err });
     }
 
     // Delete user from auth
