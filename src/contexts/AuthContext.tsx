@@ -20,8 +20,8 @@ interface AuthContextType {
 }
 
 const SUBSCRIPTION_TIERS = {
-  'prod_TBUW3WogN0dEtQ': { tier: 'premium' as const, maxPets: 5 },
-  'prod_TBUX7Ubgxwr3co': { tier: 'family' as const, maxPets: -1 },
+  'prod_TGGcRtzlK6vz7A': { tier: 'premium' as const, maxPets: 5 },
+  'prod_TGGcY3nKNalPuA': { tier: 'family' as const, maxPets: -1 },
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
