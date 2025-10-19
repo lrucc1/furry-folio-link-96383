@@ -18,7 +18,8 @@ interface DocumentViewerProps {
 export const DocumentViewer = ({ url, filename, mimeType, isOpen, onClose }: DocumentViewerProps) => {
   const [zoom, setZoom] = useState(100);
   const [rotation, setRotation] = useState(0);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [numPages, setNumPages] = useState(0);
+  const canvasesRef = useRef<HTMLCanvasElement[]>([]);
 
   // Configure pdf.js worker once
   useEffect(() => {
@@ -28,7 +29,7 @@ export const DocumentViewer = ({ url, filename, mimeType, isOpen, onClose }: Doc
     } catch {}
   }, []);
 
-  // Render first page of PDF whenever zoom/rotation/url changes
+  // Render entire PDF when url/zoom/rotation changes
   useEffect(() => {
     if (!isOpen) return;
     const isPDF = (mimeType && mimeType.toLowerCase().includes('pdf')) || filename.toLowerCase().endsWith('.pdf');
@@ -39,17 +40,22 @@ export const DocumentViewer = ({ url, filename, mimeType, isOpen, onClose }: Doc
       try {
         const task = getDocument({ url });
         const pdf = await task.promise;
-        const page = await pdf.getPage(1);
-        const viewport = page.getViewport({ scale: zoom / 100, rotation });
-        const canvas = canvasRef.current;
-        if (!canvas || cancelled) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        await page.render({ canvasContext: ctx as any, viewport } as any).promise;
+        if (cancelled) return;
+        setNumPages(pdf.numPages);
+
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale: zoom / 100, rotation });
+          const canvas = canvasesRef.current[i - 1];
+          if (!canvas || cancelled) continue;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) continue;
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          await page.render({ canvasContext: ctx as any, viewport } as any).promise;
+        }
       } catch (e) {
-        // swallow; a fallback button is shown elsewhere if needed
+        // ignore rendering errors to avoid crashing the dialog
       }
     })();
 
@@ -57,7 +63,7 @@ export const DocumentViewer = ({ url, filename, mimeType, isOpen, onClose }: Doc
       cancelled = true;
     };
   }, [url, isOpen, zoom, rotation, mimeType, filename]);
-  const handleZoomIn = () => setZoom(prev => Math.min(prev + 25, 200));
+  const handleZoomIn = () => setZoom(prev => Math.min(prev + 25, 300));
   const handleZoomOut = () => setZoom(prev => Math.max(prev - 25, 50));
   const handleRotate = () => setRotation(prev => (prev + 90) % 360);
 
@@ -129,8 +135,18 @@ export const DocumentViewer = ({ url, filename, mimeType, isOpen, onClose }: Doc
                 className="max-w-full h-auto"
               />
             ) : isPDF ? (
-              <div className="w-full h-full min-h-[600px] flex items-center justify-center">
-                <canvas ref={canvasRef} className="bg-white rounded shadow max-w-full h-auto" />
+              <div className="w-full h-full min-h-[600px]">
+                <div className="mx-auto flex flex-col items-center gap-4">
+                  {Array.from({ length: numPages }).map((_, i) => (
+                    <canvas
+                      key={i}
+                      ref={(el) => {
+                        if (el) canvasesRef.current[i] = el;
+                      }}
+                      className="bg-white rounded shadow max-w-full h-auto"
+                    />
+                  ))}
+                </div>
               </div>
             ) : isOfficeDoc ? (
               <iframe
