@@ -98,9 +98,10 @@ export default function AdminDashboard() {
       // Calculate KPIs
       setTotalUsers(userData.length);
       const premium = userData.filter((u) => u.plan_tier === 'premium').length;
+      const family = userData.filter((u) => u.plan_tier === 'family').length;
       setPremiumUsers(premium);
       setPremiumPercentage(userData.length > 0 ? (premium / userData.length) * 100 : 0);
-      setEstimatedMRR(premium * 9.99); // Adjust price as needed
+      setEstimatedMRR((premium * 4.49) + (family * 7.99)); // Updated pricing
     } catch (error) {
       console.error('Error fetching users:', error);
       toast.error('Failed to load users');

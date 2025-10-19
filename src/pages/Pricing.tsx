@@ -31,9 +31,10 @@ const SUBSCRIPTION_TIERS = {
   },
   premium: {
     name: 'Premium',
-    price: 7.99,
-    priceId: 'price_1SF7X8EhyEZfSSpNyU9Qv14q',
-    productId: 'prod_TBUW3WogN0dEtQ',
+    price: 4.49,
+    priceId: 'price_1SJk4yEhyEZfSSpN8x8KqTGY',
+    priceIdAnnual: 'price_1SJk5EEhyEZfSSpNpADhN5AQ',
+    productId: 'prod_TGGcRtzlK6vz7A',
     interval: 'month',
     features: [
       'Up to 5 pets',
@@ -50,9 +51,9 @@ const SUBSCRIPTION_TIERS = {
   },
   family: {
     name: 'Family',
-    price: 12.99,
-    priceId: 'price_1SF7YIEhyEZfSSpN9pnfDV1Q',
-    productId: 'prod_TBUX7Ubgxwr3co',
+    price: 7.99,
+    priceId: 'price_1SJk5TEhyEZfSSpNKpDL6ZyO',
+    productId: 'prod_TGGcY3nKNalPuA',
     interval: 'month',
     features: [
       'Everything in Premium',
@@ -89,19 +90,26 @@ export default function Pricing() {
     setRefreshing(false);
   };
 
-  const handleSubscribe = async (tierKey: string) => {
+  const handleSubscribe = async (tierKey: string, isAnnual: boolean = false) => {
     if (!user) {
       navigate('/auth');
       return;
     }
 
     const tier = SUBSCRIPTION_TIERS[tierKey as keyof typeof SUBSCRIPTION_TIERS];
-    if (!tier.priceId) return;
+    
+    // Determine which price ID to use
+    let priceId = tier.priceId;
+    if (isAnnual && 'priceIdAnnual' in tier && tier.priceIdAnnual) {
+      priceId = tier.priceIdAnnual;
+    }
+    
+    if (!priceId) return;
 
     setLoading(tierKey);
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { priceId: tier.priceId },
+        body: { priceId },
       });
 
       if (error) throw error;
@@ -184,20 +192,35 @@ export default function Pricing() {
                 ))}
               </ul>
 
-              <Button
-                className="w-full"
-                variant={tier.popular ? 'default' : 'outline'}
-                onClick={() => handleSubscribe(key)}
-                disabled={loading === key || (key === 'free' || (subscriptionInfo.tier === key))}
-              >
-                {loading === key
-                  ? 'Loading...'
-                  : subscriptionInfo.tier === key
-                  ? 'Current Plan'
-                  : key === 'free'
-                  ? 'Free Forever'
-                  : 'Subscribe Now'}
-              </Button>
+              <div className="space-y-2">
+                <Button
+                  className="w-full"
+                  variant={tier.popular ? 'default' : 'outline'}
+                  onClick={() => handleSubscribe(key, false)}
+                  disabled={loading === key || (key === 'free' || (subscriptionInfo.tier === key))}
+                >
+                  {loading === key
+                    ? 'Loading...'
+                    : subscriptionInfo.tier === key
+                    ? 'Current Plan'
+                    : key === 'free'
+                    ? 'Free Forever'
+                    : 'Subscribe Monthly'}
+                </Button>
+                
+                {key === 'premium' && (
+                  <Button
+                    className="w-full"
+                    variant="secondary"
+                    onClick={() => handleSubscribe(key, true)}
+                    disabled={loading === key || (subscriptionInfo.tier === key)}
+                  >
+                    {loading === key
+                      ? 'Loading...'
+                      : 'Subscribe Annually (10% off)'}
+                  </Button>
+                )}
+              </div>
             </Card>
           ))}
         </div>

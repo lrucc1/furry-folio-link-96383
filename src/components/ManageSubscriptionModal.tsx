@@ -31,19 +31,19 @@ const TIER_INFO = {
   },
   premium: { 
     name: 'Premium', 
-    price: '$7.99', 
+    price: '$4.49', 
     icon: Star,
     maxPets: 5,
     maxStorageMB: 50,
-    productId: 'prod_TBUW3WogN0dEtQ'
+    productId: 'prod_TGGcRtzlK6vz7A'
   },
   family: { 
     name: 'Family', 
-    price: '$12.99', 
+    price: '$7.99', 
     icon: Crown,
     maxPets: -1,
     maxStorageMB: 200,
-    productId: 'prod_TBUX7Ubgxwr3co'
+    productId: 'prod_TGGcY3nKNalPuA'
   },
 };
 

@@ -27,8 +27,8 @@ import { ENV_CONFIG } from '@/config/environment';
 
 const SUBSCRIPTION_TIERS = {
   free: { name: 'Free', productId: null },
-  premium: { name: 'Premium', productId: 'prod_TBUW3WogN0dEtQ' },
-  family: { name: 'Family', productId: 'prod_TBUX7Ubgxwr3co' },
+  premium: { name: 'Premium', productId: 'prod_TGGcRtzlK6vz7A' },
+  family: { name: 'Family', productId: 'prod_TGGcY3nKNalPuA' },
 };
 
 interface SubscriptionStatus {
@@ -167,8 +167,8 @@ export default function Account() {
 
   const getTierPrice = (tierKey: string) => {
     if (tierKey === 'free') return '$0';
-    if (tierKey === 'premium') return '$7.99';
-    if (tierKey === 'family') return '$12.99';
+    if (tierKey === 'premium') return '$4.49';
+    if (tierKey === 'family') return '$7.99';
     return '$0';
   };
 

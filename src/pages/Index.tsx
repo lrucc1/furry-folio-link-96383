@@ -61,7 +61,7 @@ const pricingPlans = [
   },
   {
     name: "Premium",
-    price: "7.99",
+    price: "4.49",
     period: "month",
     description: "For growing pet families",
     features: [
@@ -80,7 +80,7 @@ const pricingPlans = [
   },
   {
     name: "Family",
-    price: "12.99",
+    price: "7.99",
     period: "month",
     description: "Complete protection for multi-pet households",
     features: [
