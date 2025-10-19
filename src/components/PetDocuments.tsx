@@ -212,25 +212,9 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
   };
 
   const handleView = async (doc: PetDocument) => {
-    if (!user) return;
-
-    try {
-      // Get signed URL for private documents
-      const fileName = doc.file_url.split('/').pop() || '';
-      const path = `${user.id}/${petId}/${fileName}`;
-      
-      const { data, error } = await supabase.storage
-        .from('pet-documents')
-        .createSignedUrl(path, 3600); // 1 hour expiry
-
-      if (error) throw error;
-
-      setSelectedDoc({ ...doc, file_url: data.signedUrl });
-      setViewerOpen(true);
-    } catch (error) {
-      console.error('Error viewing document:', error);
-      toast.error('Failed to load document');
-    }
+    // Bucket is public; use the public URL directly for reliable inline viewing
+    setSelectedDoc(doc);
+    setViewerOpen(true);
   };
 
   const confirmDelete = (doc: PetDocument) => {

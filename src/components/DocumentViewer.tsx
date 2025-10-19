@@ -26,8 +26,8 @@ export const DocumentViewer = ({ url, filename, mimeType, isOpen, onClose }: Doc
     link.click();
   };
 
-  const isImage = mimeType.startsWith('image/');
-  const isPDF = mimeType === 'application/pdf';
+  const isImage = mimeType?.startsWith('image/');
+  const isPDF = (mimeType && mimeType.toLowerCase().includes('pdf')) || filename.toLowerCase().endsWith('.pdf');
   const isOfficeDoc = [
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -87,17 +87,11 @@ export const DocumentViewer = ({ url, filename, mimeType, isOpen, onClose }: Doc
                 className="max-w-full h-auto"
               />
             ) : isPDF ? (
-              <object
-                data={url}
-                type="application/pdf"
+              <iframe
+                src={`${url}#view=FitH`}
                 className="w-full h-full min-h-[600px] bg-white rounded"
-              >
-                <embed
-                  src={url}
-                  type="application/pdf"
-                  className="w-full h-full min-h-[600px]"
-                />
-              </object>
+                title={filename}
+              />
             ) : isOfficeDoc ? (
               <iframe
                 src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`}
