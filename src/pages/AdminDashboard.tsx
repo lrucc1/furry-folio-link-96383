@@ -146,6 +146,18 @@ const AdminDashboard = () => {
     }
   }, [searchQuery, allUsers]);
 
+  // Refresh subscription tiers when opening the edit-tier dialog
+  useEffect(() => {
+    const loadTiers = async () => {
+      const { data } = await supabase
+        .from('subscription_tiers')
+        .select('*')
+        .order('price_monthly', { ascending: true });
+      if (data) setAvailableTiers(data as SubscriptionTier[]);
+    };
+    if (editingUser) loadTiers();
+  }, [editingUser]);
+
   const fetchAllData = async () => {
     try {
       setLoading(true);
