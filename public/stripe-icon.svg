@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 24 24" fill="none" stroke="hsl(175 60% 45%)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Exact Feather/Lucide Link-2 geometry, rotated 45° around center -->
+  <g transform="rotate(45 12 12)">
+    <path d="M15 7h3a5 5 0 0 1 0 10h-3"/>
+    <path d="M9 17H6a5 5 0 0 1 0-10h3"/>
+    <line x1="8" y1="12" x2="16" y2="12"/>
+  </g>
+</svg>
