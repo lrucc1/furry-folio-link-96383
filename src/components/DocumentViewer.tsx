@@ -87,11 +87,23 @@ export const DocumentViewer = ({ url, filename, mimeType, isOpen, onClose }: Doc
                 className="max-w-full h-auto"
               />
             ) : isPDF ? (
-              <iframe
-                src={`${url}#view=FitH`}
-                className="w-full h-full min-h-[600px] bg-white rounded"
-                title={filename}
-              />
+              <div className="w-full h-full min-h-[600px] flex flex-col">
+                <object
+                  data={url}
+                  type="application/pdf"
+                  className="w-full flex-1"
+                >
+                  <div className="flex flex-col items-center justify-center h-full gap-4">
+                    <p className="text-muted-foreground">
+                      Unable to display PDF in browser
+                    </p>
+                    <Button onClick={handleDownload}>
+                      <Download className="w-4 h-4 mr-2" />
+                      Download PDF to view
+                    </Button>
+                  </div>
+                </object>
+              </div>
             ) : isOfficeDoc ? (
               <iframe
                 src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`}
