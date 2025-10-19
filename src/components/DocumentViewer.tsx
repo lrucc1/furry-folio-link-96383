@@ -1,7 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ZoomIn, ZoomOut, Download, RotateCw, X } from 'lucide-react';
+import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
+// Vite: load pdf.js worker via URL
+// @ts-ignore - vite query param returns a string URL
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 interface DocumentViewerProps {
   url: string;
@@ -14,7 +18,45 @@ interface DocumentViewerProps {
 export const DocumentViewer = ({ url, filename, mimeType, isOpen, onClose }: DocumentViewerProps) => {
   const [zoom, setZoom] = useState(100);
   const [rotation, setRotation] = useState(0);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  // Configure pdf.js worker once
+  useEffect(() => {
+    try {
+      // @ts-ignore worker URL string
+      GlobalWorkerOptions.workerSrc = pdfjsWorker;
+    } catch {}
+  }, []);
+
+  // Render first page of PDF whenever zoom/rotation/url changes
+  useEffect(() => {
+    if (!isOpen) return;
+    const isPDF = (mimeType && mimeType.toLowerCase().includes('pdf')) || filename.toLowerCase().endsWith('.pdf');
+    if (!isPDF) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const task = getDocument({ url });
+        const pdf = await task.promise;
+        const page = await pdf.getPage(1);
+        const viewport = page.getViewport({ scale: zoom / 100, rotation });
+        const canvas = canvasRef.current;
+        if (!canvas || cancelled) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        await page.render({ canvasContext: ctx as any, viewport } as any).promise;
+      } catch (e) {
+        // swallow; a fallback button is shown elsewhere if needed
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [url, isOpen, zoom, rotation, mimeType, filename]);
   const handleZoomIn = () => setZoom(prev => Math.min(prev + 25, 200));
   const handleZoomOut = () => setZoom(prev => Math.max(prev - 25, 50));
   const handleRotate = () => setRotation(prev => (prev + 90) % 360);
@@ -47,7 +89,7 @@ export const DocumentViewer = ({ url, filename, mimeType, isOpen, onClose }: Doc
             {filename}
           </h2>
           <div className="flex items-center gap-2">
-            {isImage && (
+            {(isImage || isPDF) && (
               <>
                 <Button variant="ghost" size="icon" onClick={handleZoomOut}>
                   <ZoomOut className="w-4 h-4" />
@@ -87,22 +129,8 @@ export const DocumentViewer = ({ url, filename, mimeType, isOpen, onClose }: Doc
                 className="max-w-full h-auto"
               />
             ) : isPDF ? (
-              <div className="w-full h-full min-h-[600px] flex flex-col">
-                <object
-                  data={url}
-                  type="application/pdf"
-                  className="w-full flex-1"
-                >
-                  <div className="flex flex-col items-center justify-center h-full gap-4">
-                    <p className="text-muted-foreground">
-                      Unable to display PDF in browser
-                    </p>
-                    <Button onClick={handleDownload}>
-                      <Download className="w-4 h-4 mr-2" />
-                      Download PDF to view
-                    </Button>
-                  </div>
-                </object>
+              <div className="w-full h-full min-h-[600px] flex items-center justify-center">
+                <canvas ref={canvasRef} className="bg-white rounded shadow max-w-full h-auto" />
               </div>
             ) : isOfficeDoc ? (
               <iframe
