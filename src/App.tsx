@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { PlanProvider } from "./lib/plan/PlanContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { ProfileSetupDialog } from "./components/ProfileSetupDialog";
 import { AdminRoute } from "./components/AdminRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -46,6 +47,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <ProfileSetupDialog />
           <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
