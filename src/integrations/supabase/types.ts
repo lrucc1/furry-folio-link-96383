@@ -423,18 +423,22 @@ export type Database = {
           id: string
           latest_invoice_id: string | null
           manual_override: boolean | null
+          next_billing_at: string | null
           phone: string | null
           plan_expires_at: string | null
           plan_notes: string | null
           plan_source: string | null
           plan_tier: string | null
           plan_updated_at: string | null
+          plan_v2: string | null
           role: string | null
           stripe_current_period_end: string | null
           stripe_customer_id: string | null
           stripe_status: string | null
           stripe_subscription_id: string | null
           stripe_tier: string | null
+          subscription_status: string | null
+          trial_end_at: string | null
           updated_at: string
           user_id: string | null
         }
@@ -449,18 +453,22 @@ export type Database = {
           id: string
           latest_invoice_id?: string | null
           manual_override?: boolean | null
+          next_billing_at?: string | null
           phone?: string | null
           plan_expires_at?: string | null
           plan_notes?: string | null
           plan_source?: string | null
           plan_tier?: string | null
           plan_updated_at?: string | null
+          plan_v2?: string | null
           role?: string | null
           stripe_current_period_end?: string | null
           stripe_customer_id?: string | null
           stripe_status?: string | null
           stripe_subscription_id?: string | null
           stripe_tier?: string | null
+          subscription_status?: string | null
+          trial_end_at?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -475,18 +483,22 @@ export type Database = {
           id?: string
           latest_invoice_id?: string | null
           manual_override?: boolean | null
+          next_billing_at?: string | null
           phone?: string | null
           plan_expires_at?: string | null
           plan_notes?: string | null
           plan_source?: string | null
           plan_tier?: string | null
           plan_updated_at?: string | null
+          plan_v2?: string | null
           role?: string | null
           stripe_current_period_end?: string | null
           stripe_customer_id?: string | null
           stripe_status?: string | null
           stripe_subscription_id?: string | null
           stripe_tier?: string | null
+          subscription_status?: string | null
+          trial_end_at?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -519,6 +531,27 @@ export type Database = {
           id?: number
           likelihood?: number
           name?: string | null
+        }
+        Relationships: []
+      }
+      storage_usage: {
+        Row: {
+          id: string
+          total_bytes: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          total_bytes?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          total_bytes?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -694,6 +727,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_user_storage: { Args: { p_user_id: string }; Returns: number }
       can_edit_pet: {
         Args: { _pet_id: string; _user_id: string }
         Returns: boolean
@@ -714,6 +748,7 @@ export type Database = {
       get_database_stats: { Args: never; Returns: Json }
       get_system_activity_stats: { Args: never; Returns: Json }
       get_user_growth_stats: { Args: never; Returns: Json }
+      get_user_plan: { Args: { p_user_id: string }; Returns: string }
       has_active_subscription: { Args: { _user_id: string }; Returns: boolean }
       has_pet_access: {
         Args: { _pet_id: string; _user_id: string }

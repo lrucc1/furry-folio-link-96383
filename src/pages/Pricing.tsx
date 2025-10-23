@@ -1,114 +1,42 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Check, Crown, Sparkles } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Check, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { usePlanV2 } from '@/hooks/usePlanV2';
 import { toast } from 'sonner';
-import { ENV_CONFIG } from '@/config/environment';
-import { PremiumInfoSheet } from '@/components/PremiumInfoSheet';
-
-const SUBSCRIPTION_TIERS = {
-  free: {
-    name: 'Free',
-    price: 0,
-    priceId: null,
-    productId: null,
-    interval: 'forever',
-    features: [
-      'Up to 1 pet',
-      'Basic pet profiles',
-      'Lost pet alerts',
-      'Health reminders',
-      '1 free lost-pet poster',
-    ],
-    maxPets: 1,
-    popular: false,
-    conversionPurpose: 'Bring users in & build trust',
-  },
-  premium: {
-    name: 'Premium',
-    price: 4.49,
-    priceId: 'price_1SJk4yEhyEZfSSpN8x8KqTGY',
-    priceIdAnnual: 'price_1SJk5EEhyEZfSSpNpADhN5AQ',
-    productId: 'prod_TGGcRtzlK6vz7A',
-    interval: 'month',
-    features: [
-      'Up to 5 pets',
-      'Family sharing (up to 5 members)',
-      'Unlimited custom lost pet posters',
-      'VetShare - Share medical records with vets via QR code',
-      'Document storage (50MB)',
-      'Priority support',
-      'Advanced health tracking',
-    ],
-    maxPets: 5,
-    popular: true,
-    conversionPurpose: 'Capture early upgrades',
-  },
-  family: {
-    name: 'Family',
-    price: 7.99,
-    priceId: 'price_1SJk5TEhyEZfSSpNKpDL6ZyO',
-    priceIdAnnual: 'price_1SJk9JEhyEZfSSpNFATW8hkx',
-    productId: 'prod_TGGcY3nKNalPuA',
-    interval: 'month',
-    features: [
-      'Everything in Premium',
-      'Unlimited pets',
-      'Family sharing (up to 10 members)',
-      'Multi-household sharing',
-      'VetShare - Share medical records with vets via QR code',
-      'Document storage (200MB)',
-      'Priority support',
-    ],
-    maxPets: -1,
-    popular: false,
-    conversionPurpose: 'Retain power users, multi-households',
-  },
-};
+import { PLANS, formatPrice, getYearlySavings } from '@/config/pricing';
 
 export default function Pricing() {
-  const { user, subscriptionInfo, refreshSubscription } = useAuth();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
-  const [showInfoSheet, setShowInfoSheet] = useState(false);
+  const { user } = useAuth();
+  const { plan, isTrialActive, daysUntilTrialEnd } = usePlanV2();
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+  const [checkingOut, setCheckingOut] = useState(false);
 
-  // Redirect to home if in iOS free build (no pricing page needed)
-  if (!ENV_CONFIG.useInAppPurchases) {
-    navigate('/');
-    return null;
-  }
-
-  const handleRefreshSubscription = async () => {
-    setRefreshing(true);
-    await refreshSubscription();
-    toast.success('Subscription status updated!');
-    setRefreshing(false);
-  };
-
-  const handleSubscribe = async (tierKey: string, isAnnual: boolean = false) => {
+  const handleSubscribe = async () => {
     if (!user) {
       navigate('/auth');
       return;
     }
 
-    const tier = SUBSCRIPTION_TIERS[tierKey as keyof typeof SUBSCRIPTION_TIERS];
+    setCheckingOut(true);
     
-    // Determine which price ID to use
-    let priceId = tier.priceId;
-    if (isAnnual && 'priceIdAnnual' in tier && tier.priceIdAnnual) {
-      priceId = tier.priceIdAnnual;
-    }
-    
-    if (!priceId) return;
-
-    setLoading(tierKey);
     try {
+      const priceId = billingPeriod === 'monthly' 
+        ? PLANS.PRO.stripe_price_monthly 
+        : PLANS.PRO.stripe_price_yearly;
+
+      if (!priceId) {
+        toast.error('Stripe integration not configured');
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { priceId },
       });
@@ -116,126 +44,214 @@ export default function Pricing() {
       if (error) throw error;
 
       if (data?.url) {
-        window.location.href = data.url;
+        window.open(data.url, '_blank');
       }
-    } catch (error) {
-      console.error('Error creating checkout session:', error);
-      toast.error('Failed to start checkout. Please try again.');
+    } catch (error: any) {
+      console.error('Checkout error:', error);
+      toast.error(error.message || 'Failed to start checkout');
     } finally {
-      setLoading(null);
+      setCheckingOut(false);
     }
   };
 
+  const savings = getYearlySavings();
+  const price = billingPeriod === 'monthly' 
+    ? PLANS.PRO.price_monthly_aud 
+    : PLANS.PRO.price_yearly_aud;
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="container mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Choose Your Plan</h1>
-          <p className="text-xl text-muted-foreground">
-            Start free and upgrade as your pet family grows
-          </p>
-          {user && subscriptionInfo.subscribed && (
-            <div className="mt-4 flex items-center justify-center gap-2">
-              <p className="text-sm text-muted-foreground">
-                Current plan: <span className="font-semibold capitalize">{subscriptionInfo.tier}</span>
-              </p>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                onClick={handleRefreshSubscription}
-                disabled={refreshing}
-              >
-                {refreshing ? 'Refreshing...' : 'Refresh Status'}
-              </Button>
-            </div>
-          )}
-        </div>
+      <main className="flex-1 container mx-auto px-4 py-12">
+        <div className="max-w-5xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold mb-4">Choose Your Plan</h1>
+            <p className="text-xl text-muted-foreground">
+              Start with a 7-day free trial of Pro. No credit card required.
+            </p>
+            
+            {isTrialActive && (
+              <Badge variant="secondary" className="mt-4">
+                <Sparkles className="w-4 h-4 mr-1" />
+                {daysUntilTrialEnd} {daysUntilTrialEnd === 1 ? 'day' : 'days'} left in your Pro trial
+              </Badge>
+            )}
+          </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {Object.entries(SUBSCRIPTION_TIERS).map(([key, tier]) => (
-            <Card
-              key={key}
-              className={`p-8 relative ${
-                tier.popular
-                  ? 'border-primary shadow-lg scale-105'
-                  : 'border-border'
+          {/* Billing Period Toggle - Only show for Pro */}
+          <div className="flex items-center justify-center gap-2 p-1 bg-muted rounded-lg max-w-xs mx-auto mb-8">
+            <button
+              onClick={() => setBillingPeriod('monthly')}
+              className={`flex-1 px-4 py-2 rounded-md transition-colors ${
+                billingPeriod === 'monthly'
+                  ? 'bg-background shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {tier.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <div className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
-                    <Star className="w-4 h-4" />
-                    Most Popular
+              Monthly
+            </button>
+            <button
+              onClick={() => setBillingPeriod('yearly')}
+              className={`flex-1 px-4 py-2 rounded-md transition-colors relative ${
+                billingPeriod === 'yearly'
+                  ? 'bg-background shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Yearly
+              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded">
+                Save {savings}%
+              </span>
+            </button>
+          </div>
+
+          {/* Plan Cards */}
+          <div className="grid md:grid-cols-2 gap-8 mb-12">
+            {/* Free Plan */}
+            <Card className={plan === 'FREE' ? 'border-primary' : ''}>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Free</CardTitle>
+                  {plan === 'FREE' && (
+                    <Badge>Current Plan</Badge>
+                  )}
+                </div>
+                <CardDescription>Perfect for getting started</CardDescription>
+                <div className="mt-4">
+                  <div className="text-4xl font-bold">A$0</div>
+                  <div className="text-muted-foreground">Forever free</div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <span>1 pet profile</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <span>QR tag linking & lost/found contact</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <span>1 caregiver (view-only)</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <span>2 active reminders</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <span>{PLANS.FREE.entitlements.docs_storage_mb}MB document storage</span>
                   </div>
                 </div>
-              )}
+              </CardContent>
+            </Card>
 
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold mb-2">{tier.name}</h2>
-                <div className="mb-4">
-                  <span className="text-4xl font-bold">
-                    ${tier.price}
-                  </span>
-                  <span className="text-muted-foreground">
-                    {tier.price === 0 ? '' : `/${tier.interval}`}
-                  </span>
-                </div>
+            {/* Pro Plan */}
+            <Card className="border-primary relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-sm font-semibold">
+                RECOMMENDED
               </div>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Crown className="w-5 h-5 text-primary" />
+                    Pro
+                  </CardTitle>
+                  {(plan === 'PRO' || plan === 'TRIAL') && (
+                    <Badge>Current Plan</Badge>
+                  )}
+                </div>
+                <CardDescription>Full features for pet families</CardDescription>
+                <div className="mt-4">
+                  <div className="text-4xl font-bold">{formatPrice(price)}</div>
+                  <div className="text-muted-foreground">
+                    per {billingPeriod === 'monthly' ? 'month' : 'year'}
+                  </div>
+                  {billingPeriod === 'yearly' && (
+                    <div className="text-sm text-primary mt-1">
+                      Just {formatPrice(price / 12)}/month
+                    </div>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <span className="font-semibold">Unlimited pet profiles</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <span className="font-semibold">Full caregiver access (read & write)</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <span className="font-semibold">Unlimited health reminders</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <span>Large document vault ({PLANS.PRO.entitlements.docs_storage_mb}MB)</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <span>Data export</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <span>Priority support</span>
+                  </div>
+                </div>
 
-              <ul className="space-y-3 mb-8">
-                {tier.features.map((feature, index) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="space-y-2">
-                <Button
-                  className="w-full"
-                  variant={tier.popular ? 'default' : 'outline'}
-                  onClick={() => handleSubscribe(key, false)}
-                  disabled={loading === key || (key === 'free' || (subscriptionInfo.tier === key))}
-                >
-                  {loading === key
-                    ? 'Loading...'
-                    : subscriptionInfo.tier === key
-                    ? 'Current Plan'
-                    : key === 'free'
-                    ? 'Free Forever'
-                    : 'Subscribe Monthly'}
-                </Button>
-                
-                {(key === 'premium' || key === 'family') && (
-                  <Button
+                {user ? (
+                  plan === 'FREE' ? (
+                    <Button 
+                      onClick={handleSubscribe}
+                      disabled={checkingOut}
+                      size="lg"
+                      className="w-full"
+                    >
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      {checkingOut ? 'Processing...' : 'Start 7-Day Free Trial'}
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={() => navigate('/account')}
+                      variant="outline"
+                      size="lg"
+                      className="w-full"
+                    >
+                      Manage Subscription
+                    </Button>
+                  )
+                ) : (
+                  <Button 
+                    onClick={() => navigate('/auth')}
+                    size="lg"
                     className="w-full"
-                    variant="secondary"
-                    onClick={() => handleSubscribe(key, true)}
-                    disabled={loading === key || (subscriptionInfo.tier === key)}
                   >
-                    {loading === key
-                      ? 'Loading...'
-                      : 'Subscribe Annually (10% off)'}
+                    Sign Up for Free Trial
                   </Button>
                 )}
-              </div>
-            </Card>
-          ))}
-        </div>
 
-        <div className="mt-16 text-center">
-          <p className="text-muted-foreground mb-4">
-            All plans include secure data storage and 24/7 access to your pet's information
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Prices in AUD. Cancel anytime. No hidden fees.
-          </p>
+                <p className="text-xs text-center text-muted-foreground">
+                  7-day free trial • No credit card required • Cancel anytime
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* FAQ or Additional Info */}
+          <div className="text-center text-sm text-muted-foreground">
+            <p>All prices in Australian Dollars (AUD)</p>
+            <p className="mt-2">Need help choosing? <a href="/contact" className="text-primary hover:underline">Contact us</a></p>
+          </div>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );
