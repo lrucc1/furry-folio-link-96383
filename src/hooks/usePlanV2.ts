@@ -4,6 +4,25 @@ import { supabase } from '@/integrations/supabase/client';
 import { PlanType, getEntitlements, PLANS } from '@/config/pricing';
 import { EntitlementServiceV2, UserUsage } from '@/services/EntitlementServiceV2';
 
+// Helper function to normalize legacy plan types to current FREE/PRO structure
+function normalizePlanType(plan: string): PlanType {
+  const planUpper = String(plan).toUpperCase();
+  
+  // Map legacy plans (PREMIUM, TRIAL, FAMILY) to PRO
+  if (planUpper === 'PREMIUM' || planUpper === 'TRIAL' || planUpper === 'FAMILY') {
+    return 'PRO';
+  }
+  
+  // Valid current plans
+  if (planUpper === 'PRO' || planUpper === 'FREE') {
+    return planUpper as PlanType;
+  }
+  
+  // Default to FREE for unknown plans
+  console.warn(`Unknown plan type: ${plan}, defaulting to FREE`);
+  return 'FREE';
+}
+
 export function usePlanV2() {
   const { user } = useAuth();
   const [plan, setPlan] = useState<PlanType>('FREE');
@@ -45,7 +64,11 @@ export function usePlanV2() {
       }
 
       if (data) {
-        setPlan((data.plan_v2 as PlanType) || 'FREE');
+        // Normalize legacy plan types to current FREE/PRO structure
+        const rawPlan = data.plan_v2 || 'FREE';
+        const normalizedPlan = normalizePlanType(rawPlan);
+        
+        setPlan(normalizedPlan);
         setSubscriptionStatus(data.subscription_status || 'none');
         setTrialEndAt(data.trial_end_at ? new Date(data.trial_end_at) : null);
         setNextBillingAt(data.next_billing_at ? new Date(data.next_billing_at) : null);

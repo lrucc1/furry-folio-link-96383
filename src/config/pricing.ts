@@ -81,8 +81,29 @@ export const ENTITLEMENTS = {
   PRO: PLANS.PRO.entitlements,
 };
 
-export function getEntitlements(plan: PlanType): PlanEntitlements {
-  return PLANS[plan].entitlements;
+export function getEntitlements(plan: PlanType | string): PlanEntitlements {
+  // Map legacy plan types to current structure
+  const normalizedPlan = normalizePlanType(plan);
+  return PLANS[normalizedPlan].entitlements;
+}
+
+// Helper function to normalize legacy plan types
+function normalizePlanType(plan: PlanType | string): PlanType {
+  const planUpper = String(plan).toUpperCase();
+  
+  // Map legacy plans to current structure
+  if (planUpper === 'PREMIUM' || planUpper === 'TRIAL' || planUpper === 'FAMILY') {
+    return 'PRO';
+  }
+  
+  // If it's a valid plan type, return it
+  if (planUpper === 'PRO' || planUpper === 'FREE') {
+    return planUpper as PlanType;
+  }
+  
+  // Default to FREE for unknown plans
+  console.warn(`Unknown plan type: ${plan}, defaulting to FREE`);
+  return 'FREE';
 }
 
 export function formatPrice(amount: number): string {
