@@ -128,34 +128,39 @@ export default function Pricing() {
                 <div className="space-y-2">
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span>1 pet profile</span>
+                    <span>1 Pet Profile</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span>QR tag linking & lost/found contact</span>
+                    <span>1 Read-only Caregiver</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span>1 caregiver (view-only)</span>
+                    <span>2 Active Health Reminders</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span>2 active reminders</span>
+                    <span>100MB Document Storage</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span>{PLANS.FREE.entitlements.docs_storage_mb}MB document storage</span>
+                    <span>Basic Support</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Pro Plan */}
-            <Card className="border-primary relative overflow-hidden">
-              <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-sm font-semibold">
-                RECOMMENDED
-              </div>
-              <CardHeader>
+            <Card className={`relative ${plan === 'PRO' ? 'border-primary' : ''}`}>
+              {plan !== 'PRO' && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+                  <div className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
+                    <Crown className="w-4 h-4" />
+                    Most Popular
+                  </div>
+                </div>
+              )}
+              <CardHeader className="pt-8">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <Crown className="w-5 h-5 text-primary" />
@@ -182,27 +187,31 @@ export default function Pricing() {
                 <div className="space-y-2">
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span className="font-semibold">Unlimited pet profiles</span>
+                    <span>Unlimited Pet Profiles</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span className="font-semibold">Full caregiver access (read & write)</span>
+                    <span>Full Caregiver Access (read & write)</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span className="font-semibold">Unlimited health reminders</span>
+                    <span>Unlimited Health Reminders</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span>Large document vault ({PLANS.PRO.entitlements.docs_storage_mb}MB)</span>
+                    <span>5GB Document Storage</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span>Data export</span>
+                    <span>Data Export Capability</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span>Priority support</span>
+                    <span>Priority Support</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <span>7-Day Free Trial</span>
                   </div>
                 </div>
 
