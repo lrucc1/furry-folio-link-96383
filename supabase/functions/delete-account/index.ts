@@ -82,7 +82,7 @@ serve(async (req) => {
       logStep("Warning: Error deleting profile", { error: err });
     }
 
-    // Delete Stripe customer if exists
+    // Cancel Stripe subscription before deleting account
     try {
       const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
       if (stripeKey && userData.user.email) {
@@ -91,14 +91,26 @@ serve(async (req) => {
         
         if (customers.data.length > 0) {
           const customerId = customers.data[0].id;
-          await stripe.customers.del(customerId);
-          logStep("Deleted Stripe customer", { customerId });
+          
+          // List and cancel all active subscriptions
+          const subscriptions = await stripe.subscriptions.list({ customer: customerId });
+          for (const subscription of subscriptions.data) {
+            if (subscription.status === 'active' || subscription.status === 'trialing') {
+              await stripe.subscriptions.update(subscription.id, {
+                cancel_at_period_end: true,
+              });
+              logStep("Canceled subscription at period end", { subscriptionId: subscription.id });
+            }
+          }
+          
+          logStep("Stripe subscriptions processed", { customerId });
         } else {
-          logStep("No Stripe customer found to delete");
+          logStep("No Stripe customer found");
         }
       }
     } catch (err) {
-      logStep("Warning: Error deleting Stripe customer", { error: err });
+      logStep("Warning: Error processing Stripe subscriptions", { error: err });
+      // Continue with deletion even if Stripe fails
     }
 
     // Delete user from auth

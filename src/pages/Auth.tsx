@@ -53,7 +53,10 @@ const AuthPage = () => {
 
         <div className="text-center mt-6">
           <p className="text-white/70 text-sm">
-            By signing in, you agree to our <Link to="/terms" className="underline">Terms of Service</Link> and <Link to="/privacy" className="underline">Privacy Policy</Link>.
+            By signing in, you agree to our{' '}
+            <Link to="/terms" className="underline hover:text-white">Terms of Service</Link>,{' '}
+            <Link to="/subscription-terms" className="underline hover:text-white">Subscription Terms</Link>, and{' '}
+            <Link to="/privacy" className="underline hover:text-white">Privacy Policy</Link>.
           </p>
         </div>
       </div>

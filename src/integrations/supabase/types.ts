@@ -91,6 +91,36 @@ export type Database = {
           },
         ]
       }
+      legal_consents: {
+        Row: {
+          consent_type: string
+          consented_at: string
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string
+          version: string | null
+        }
+        Insert: {
+          consent_type: string
+          consented_at?: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id: string
+          version?: string | null
+        }
+        Update: {
+          consent_type?: string
+          consented_at?: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string
+          version?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -389,6 +419,7 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          latest_invoice_id: string | null
           manual_override: boolean | null
           phone: string | null
           plan_expires_at: string | null
@@ -397,6 +428,11 @@ export type Database = {
           plan_tier: string | null
           plan_updated_at: string | null
           role: string | null
+          stripe_current_period_end: string | null
+          stripe_customer_id: string | null
+          stripe_status: string | null
+          stripe_subscription_id: string | null
+          stripe_tier: string | null
           updated_at: string
           user_id: string | null
         }
@@ -407,6 +443,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
+          latest_invoice_id?: string | null
           manual_override?: boolean | null
           phone?: string | null
           plan_expires_at?: string | null
@@ -415,6 +452,11 @@ export type Database = {
           plan_tier?: string | null
           plan_updated_at?: string | null
           role?: string | null
+          stripe_current_period_end?: string | null
+          stripe_customer_id?: string | null
+          stripe_status?: string | null
+          stripe_subscription_id?: string | null
+          stripe_tier?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -425,6 +467,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          latest_invoice_id?: string | null
           manual_override?: boolean | null
           phone?: string | null
           plan_expires_at?: string | null
@@ -433,6 +476,11 @@ export type Database = {
           plan_tier?: string | null
           plan_updated_at?: string | null
           role?: string | null
+          stripe_current_period_end?: string | null
+          stripe_customer_id?: string | null
+          stripe_status?: string | null
+          stripe_subscription_id?: string | null
+          stripe_tier?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -465,6 +513,39 @@ export type Database = {
           id?: number
           likelihood?: number
           name?: string | null
+        }
+        Relationships: []
+      }
+      stripe_webhook_events: {
+        Row: {
+          error: string | null
+          event_id: string
+          event_type: string
+          id: string
+          payload: Json
+          processed: boolean | null
+          processed_at: string | null
+          received_at: string | null
+        }
+        Insert: {
+          error?: string | null
+          event_id: string
+          event_type: string
+          id?: string
+          payload: Json
+          processed?: boolean | null
+          processed_at?: string | null
+          received_at?: string | null
+        }
+        Update: {
+          error?: string | null
+          event_id?: string
+          event_type?: string
+          id?: string
+          payload?: Json
+          processed?: boolean | null
+          processed_at?: string | null
+          received_at?: string | null
         }
         Relationships: []
       }
@@ -611,12 +692,9 @@ export type Database = {
         Args: { _pet_id: string; _user_id: string }
         Returns: boolean
       }
-      get_admin_stats: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      get_admin_stats: { Args: never; Returns: Json }
       get_all_users_admin: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_at: string
           display_name: string
@@ -627,18 +705,10 @@ export type Database = {
           user_id: string
         }[]
       }
-      get_database_stats: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      get_system_activity_stats: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      get_user_growth_stats: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      get_database_stats: { Args: never; Returns: Json }
+      get_system_activity_stats: { Args: never; Returns: Json }
+      get_user_growth_stats: { Args: never; Returns: Json }
+      has_active_subscription: { Args: { _user_id: string }; Returns: boolean }
       has_pet_access: {
         Args: { _pet_id: string; _user_id: string }
         Returns: boolean

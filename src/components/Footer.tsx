@@ -75,6 +75,16 @@ export const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/subscription-terms" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Subscription Terms
+                </Link>
+              </li>
+              <li>
+                <Link to="/refunds" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Refunds & Guarantees
+                </Link>
+              </li>
+              <li>
                 <Link to="/data-handling" className="text-muted-foreground hover:text-foreground transition-colors">
                   Data Handling
                 </Link>

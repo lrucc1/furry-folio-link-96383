@@ -23,10 +23,13 @@ import LostPetGuide from "./pages/LostPetGuide";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import About from "./pages/About";
 import Terms from "./pages/Terms";
+import SubscriptionTerms from "./pages/SubscriptionTerms";
+import RefundsPolicy from "./pages/RefundsPolicy";
 import AustralianPrivacy from "./pages/AustralianPrivacy";
 import DataHandling from "./pages/DataHandling";
 import AppDownloads from "./pages/AppDownloads";
 import SmartRecoveryTags from "./pages/SmartRecoveryTags";
+import BillingSettings from "./pages/settings/BillingSettings";
 
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
@@ -55,6 +58,8 @@ const App = () => (
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/about" element={<About />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/subscription-terms" element={<SubscriptionTerms />} />
+            <Route path="/refunds" element={<RefundsPolicy />} />
             <Route path="/privacy-australia" element={<AustralianPrivacy />} />
             <Route path="/data-handling" element={<DataHandling />} />
             <Route path="/downloads" element={<AppDownloads />} />
@@ -122,6 +127,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <InviteStatus />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/settings/billing" 
+              element={
+                <ProtectedRoute>
+                  <BillingSettings />
                 </ProtectedRoute>
               } 
             />

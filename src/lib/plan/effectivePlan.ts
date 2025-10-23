@@ -6,6 +6,7 @@ export interface ProfilePlanData {
   manual_override?: boolean;
   stripe_tier?: Tier | null;
   stripe_status?: string | null;
+  stripe_current_period_end?: string | null;
   plan_source?: PlanSource;
 }
 

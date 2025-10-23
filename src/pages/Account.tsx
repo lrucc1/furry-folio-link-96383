@@ -376,7 +376,7 @@ export default function Account() {
                   </div>
                 )}
 
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   {ENV_CONFIG.useInAppPurchases ? (
                     <>
                       {subscription?.subscribed ? (
@@ -392,6 +392,16 @@ export default function Account() {
                         <Button onClick={() => navigate('/pricing')} className="flex-1">
                           <Crown className="w-4 h-4 mr-2" />
                           {au('Upgrade to Premium')}
+                        </Button>
+                      )}
+                      {tier !== 'free' && (
+                        <Button
+                          onClick={() => navigate('/settings/billing')}
+                          variant="secondary"
+                          className="flex-1"
+                        >
+                          <CreditCard className="w-4 h-4 mr-2" />
+                          {au('Manage Billing')}
                         </Button>
                       )}
                     </>
