@@ -104,6 +104,23 @@ serve(async (req) => {
           break;
         }
 
+        // Check if profile exists (Issue 4: Handle deleted users)
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('id, deletion_scheduled')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (!profile) {
+          logStep("Profile not found (possibly deleted), skipping webhook", { userId: user.id });
+          break;
+        }
+
+        if (profile.deletion_scheduled) {
+          logStep("Profile scheduled for deletion, skipping webhook", { userId: user.id });
+          break;
+        }
+
         // Determine tier from product
         const priceId = subscription.items.data[0]?.price.id;
         const productId = subscription.items.data[0]?.price.product as string;
@@ -140,6 +157,23 @@ serve(async (req) => {
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription;
         logStep("Processing subscription deletion", { subscriptionId: subscription.id });
+
+        // Check if profile exists (Issue 4: Handle deleted users)
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('id, deletion_scheduled')
+          .eq('stripe_subscription_id', subscription.id)
+          .maybeSingle();
+
+        if (!profile) {
+          logStep("Profile not found (possibly deleted), skipping webhook");
+          break;
+        }
+
+        if (profile.deletion_scheduled) {
+          logStep("Profile scheduled for deletion, skipping webhook", { userId: profile.id });
+          break;
+        }
 
         // Update profile to free tier
         const { error: updateError } = await supabaseClient

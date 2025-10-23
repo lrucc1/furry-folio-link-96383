@@ -74,14 +74,13 @@ export function DeleteAccount() {
             <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
               <h4 className="font-medium text-destructive mb-2">{au('Warning:')}</h4>
               <ul className="text-sm space-y-1 list-disc list-inside">
-                <li>{au('All your pets and their records will be deleted')}</li>
-                <li>{au('All health reminders and vaccinations will be deleted')}</li>
-                <li>{au('All documents will be deleted')}</li>
-                <li>{au('All invitations will be cancelled')}</li>
-                <li>{au('This action is immediate and cannot be undone')}</li>
+                <li>{au('Your active Stripe subscription will be canceled immediately')}</li>
+                <li>{au('Your account will be marked for deletion')}</li>
+                <li>{au('All data will be permanently removed after 30 days')}</li>
+                <li>{au('This includes all pets, health records, documents, and invitations')}</li>
               </ul>
-              <p className="text-sm mt-3 pt-3 border-t border-destructive/20 text-muted-foreground">
-                {au('Your account will be marked for deletion and permanently removed from our systems after 30 days.')}
+              <p className="text-sm mt-3 pt-3 border-t border-destructive/20 font-medium">
+                {au('30-Day Grace Period: You can contact support within 30 days to restore your account.')}
               </p>
             </div>
 

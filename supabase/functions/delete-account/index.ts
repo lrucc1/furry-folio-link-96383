@@ -49,7 +49,8 @@ serve(async (req) => {
     }
 
     const userId = userData.user.id;
-    logStep("User authenticated", { userId });
+    const userEmail = userData.user.email;
+    logStep("User authenticated", { userId, email: userEmail });
 
     // Create admin client with service role key
     const adminClient = createClient(
@@ -58,73 +59,60 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    // Delete user data from tables (wrapped in try/catch for missing tables)
-    const tables = ['pets', 'health_reminders', 'pet_documents', 'vaccinations', 'notifications', 'family_members'];
-    
-    for (const table of tables) {
-      try {
-        const { error } = await adminClient.from(table).delete().eq('user_id', userId);
-        if (error) {
-          logStep(`Warning: Error deleting from ${table}`, { error: error.message });
-        } else {
-          logStep(`Deleted data from ${table}`);
-        }
-      } catch (err) {
-        logStep(`Warning: Table ${table} may not exist`, { error: err });
-      }
-    }
-
-    // Delete user profile
-    try {
-      await adminClient.from('profiles').delete().eq('id', userId);
-      logStep("Deleted profile");
-    } catch (err) {
-      logStep("Warning: Error deleting profile", { error: err });
-    }
-
-    // Cancel Stripe subscription before deleting account
+    // Cancel Stripe subscription and delete customer (Issue 1)
+    let stripeCustomerId: string | null = null;
     try {
       const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-      if (stripeKey && userData.user.email) {
+      if (stripeKey && userEmail) {
         const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-        const customers = await stripe.customers.list({ email: userData.user.email, limit: 1 });
+        const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
         
         if (customers.data.length > 0) {
-          const customerId = customers.data[0].id;
+          stripeCustomerId = customers.data[0].id;
           
-          // List and cancel all active subscriptions
-          const subscriptions = await stripe.subscriptions.list({ customer: customerId });
+          // List and immediately cancel all active subscriptions
+          const subscriptions = await stripe.subscriptions.list({ customer: stripeCustomerId });
           for (const subscription of subscriptions.data) {
             if (subscription.status === 'active' || subscription.status === 'trialing') {
-              await stripe.subscriptions.update(subscription.id, {
-                cancel_at_period_end: true,
-              });
-              logStep("Canceled subscription at period end", { subscriptionId: subscription.id });
+              await stripe.subscriptions.cancel(subscription.id);
+              logStep("Canceled subscription immediately", { subscriptionId: subscription.id });
             }
           }
           
-          logStep("Stripe subscriptions processed", { customerId });
+          // Delete Stripe customer record
+          await stripe.customers.del(stripeCustomerId);
+          logStep("Deleted Stripe customer", { customerId: stripeCustomerId });
         } else {
           logStep("No Stripe customer found");
         }
       }
     } catch (err) {
-      logStep("Warning: Error processing Stripe subscriptions", { error: err });
-      // Continue with deletion even if Stripe fails
+      logStep("Warning: Error processing Stripe", { error: err });
+      // Continue with soft deletion even if Stripe fails
     }
 
-    // Delete user from auth
-    const { error: deleteError } = await adminClient.auth.admin.deleteUser(userId);
-    
-    if (deleteError) {
-      logStep("ERROR: Failed to delete user", { error: deleteError });
-      return new Response(JSON.stringify({ error: "Failed to delete account" }), {
+    // Soft delete: Mark account for deletion (Issue 5)
+    const deletionDate = new Date();
+    const { error: softDeleteError } = await adminClient
+      .from('profiles')
+      .update({
+        deleted_at: deletionDate.toISOString(),
+        deletion_scheduled: true,
+      })
+      .eq('id', userId);
+
+    if (softDeleteError) {
+      logStep("ERROR: Failed to mark account for deletion", { error: softDeleteError });
+      return new Response(JSON.stringify({ error: "Failed to schedule account deletion" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    logStep("Account deleted successfully");
+    logStep("Account marked for deletion (30-day grace period)", { 
+      deletedAt: deletionDate.toISOString(),
+      hardDeleteAfter: new Date(deletionDate.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    });
 
     return new Response(JSON.stringify({ status: "deleted" }), {
       status: 200,
