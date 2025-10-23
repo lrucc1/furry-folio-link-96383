@@ -127,11 +127,10 @@ export default function BillingSettings() {
                       Upgrade Plan
                     </Link>
                   </Button>
-                ) : plan === 'TRIAL' ? (
-                  <Button asChild>
+                ) : plan === 'PREMIUM' || plan === 'FAMILY' ? (
+                  <Button asChild variant="outline">
                     <Link to="/pricing">
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Subscribe Now
+                      View Plans
                     </Link>
                   </Button>
                 ) : (
@@ -176,7 +175,7 @@ export default function BillingSettings() {
               )}
 
               {/* Billing Date */}
-              {nextBillingAt && plan === 'PRO' && (
+              {nextBillingAt && (plan === 'PREMIUM' || plan === 'FAMILY') && (
                 <div className="pt-4 border-t">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Calendar className="w-4 h-4" />
@@ -192,7 +191,7 @@ export default function BillingSettings() {
                 </div>
               )}
 
-              {plan === 'PRO' && (
+              {(plan === 'PREMIUM' || plan === 'FAMILY') && (
                 <div className="pt-4 border-t">
                   <h4 className="text-sm font-medium mb-2">Billing Portal</h4>
                   <p className="text-sm text-muted-foreground mb-3">

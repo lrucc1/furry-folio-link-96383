@@ -84,9 +84,9 @@ export function ChangeTierModal({ userId, currentTier, userName, onClose, onSave
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="free">free - $0/month</SelectItem>
-                <SelectItem value="premium">premium - $4.49/month</SelectItem>
-                <SelectItem value="family">family - $7.99/month</SelectItem>
+                <SelectItem value="free">Free - A$0/month (1 pet)</SelectItem>
+                <SelectItem value="premium">Premium - A$4.49/month (5 pets, family sharing)</SelectItem>
+                <SelectItem value="family">Family - A$7.99/month (unlimited pets, 10 caregivers)</SelectItem>
               </SelectContent>
             </Select>
           </div>

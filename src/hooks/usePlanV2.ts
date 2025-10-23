@@ -45,7 +45,14 @@ export function usePlanV2() {
       }
 
       if (data) {
-        setPlan((data.plan_v2 as PlanType) || 'FREE');
+        // Map old plan values to new ones
+        let userPlan = (data.plan_v2 as PlanType) || 'FREE';
+        // Convert legacy PRO or TRIAL to PREMIUM (as strings before casting)
+        const planStr = String(userPlan);
+        if (planStr === 'PRO' || planStr === 'TRIAL') {
+          userPlan = 'PREMIUM' as PlanType;
+        }
+        setPlan(userPlan);
         setSubscriptionStatus(data.subscription_status || 'none');
         setTrialEndAt(data.trial_end_at ? new Date(data.trial_end_at) : null);
         setNextBillingAt(data.next_billing_at ? new Date(data.next_billing_at) : null);
@@ -94,7 +101,7 @@ export function usePlanV2() {
     ? Math.ceil((trialEndAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
     : null;
 
-  const isTrialActive = plan === 'TRIAL' && daysUntilTrialEnd && daysUntilTrialEnd > 0;
+  const isTrialActive = false; // Trials removed in 2025 pricing
 
   return {
     plan,
@@ -107,7 +114,8 @@ export function usePlanV2() {
     loading,
     daysUntilTrialEnd,
     isTrialActive,
-    isPro: plan === 'PRO' || plan === 'TRIAL',
+    isPremium: plan === 'PREMIUM',
+    isFamily: plan === 'FAMILY',
     isFree: plan === 'FREE',
     refresh: fetchPlanData,
   };
