@@ -25,17 +25,19 @@ export default function Pricing() {
       return;
     }
 
+    const priceId = billingPeriod === 'monthly' 
+      ? PLANS.PRO.stripe_price_monthly 
+      : PLANS.PRO.stripe_price_yearly;
+
+    if (!priceId) {
+      toast.error('Checkout is not configured yet. Please contact support.');
+      console.warn('Stripe price IDs not set. Set VITE_STRIPE_PRICE_PRO_MONTHLY_AUD and VITE_STRIPE_PRICE_PRO_YEARLY_AUD');
+      return;
+    }
+
     setCheckingOut(true);
     
     try {
-      const priceId = billingPeriod === 'monthly' 
-        ? PLANS.PRO.stripe_price_monthly 
-        : PLANS.PRO.stripe_price_yearly;
-
-      if (!priceId) {
-        toast.error('Stripe integration not configured');
-        return;
-      }
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { priceId },
