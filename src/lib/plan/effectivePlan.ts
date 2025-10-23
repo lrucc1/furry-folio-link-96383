@@ -7,6 +7,7 @@ export interface ProfilePlanData {
   stripe_tier?: Tier | null;
   stripe_status?: string | null;
   stripe_current_period_end?: string | null;
+  stripe_customer_id?: string | null;
   plan_source?: PlanSource;
 }
 

@@ -98,7 +98,7 @@ export default function BillingSettings() {
                   Upgrade Plan
                 </Link>
               </Button>
-            ) : (
+            ) : profile?.stripe_customer_id ? (
               <Button 
                 onClick={handleManageBilling} 
                 disabled={loading}
@@ -116,10 +116,14 @@ export default function BillingSettings() {
                   </>
                 )}
               </Button>
+            ) : (
+              <div className="text-sm text-muted-foreground">
+                You don't have an active Stripe subscription. Your plan is managed by an administrator.
+              </div>
             )}
           </div>
 
-          {profile?.stripe_current_period_end && (
+          {profile?.stripe_current_period_end && profile?.stripe_customer_id && (
             <div className="pt-4 border-t">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Calendar className="w-4 h-4" />
@@ -135,7 +139,7 @@ export default function BillingSettings() {
             </div>
           )}
 
-          {tier !== 'free' && (
+          {tier !== 'free' && profile?.stripe_customer_id && (
             <div className="pt-4 border-t">
               <h4 className="text-sm font-medium mb-2">Billing Portal</h4>
               <p className="text-sm text-muted-foreground mb-3">
