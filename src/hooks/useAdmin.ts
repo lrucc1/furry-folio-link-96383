@@ -9,14 +9,20 @@ export const useAdmin = () => {
 
   useEffect(() => {
     const checkAdminStatus = async () => {
+      // Early return if no user - don't make unnecessary requests
       if (!user) {
-        console.debug('[useAdmin] No user, skipping admin check');
         setIsAdmin(false);
         setLoading(false);
         return;
       }
 
-      console.debug('[useAdmin] Checking admin for user', { id: user.id, email: user.email });
+      // Check if we have a valid session before making admin checks
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setIsAdmin(false);
+        setLoading(false);
+        return;
+      }
 
       try {
         // Try RPC first (bypasses RLS via SECURITY DEFINER)
@@ -24,10 +30,8 @@ export const useAdmin = () => {
           _user_id: user.id,
           _role: 'admin',
         });
-        console.debug('[useAdmin] RPC has_role result', { rpcData, rpcError });
 
         if (rpcError) {
-          console.warn('RPC has_role failed, falling back to direct query:', rpcError);
           // Fall back to direct table query (RLS allows users to view their own roles)
           const { data: roleRow, error: roleError } = await supabase
             .from('user_roles')
@@ -36,10 +40,8 @@ export const useAdmin = () => {
             .eq('role', 'admin')
             .maybeSingle();
 
-          console.debug('[useAdmin] Fallback table query result', { roleRow, roleError });
-
           if (roleError) {
-            console.error('Error checking admin status via table:', roleError);
+            console.error('[useAdmin] Error checking admin status:', roleError);
             setIsAdmin(false);
           } else {
             setIsAdmin(!!roleRow);
@@ -48,7 +50,7 @@ export const useAdmin = () => {
           setIsAdmin(Boolean(rpcData));
         }
       } catch (error) {
-        console.error('Error in admin check:', error);
+        console.error('[useAdmin] Error in admin check:', error);
         setIsAdmin(false);
       } finally {
         setLoading(false);

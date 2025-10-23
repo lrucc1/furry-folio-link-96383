@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePlanV2 } from '@/hooks/usePlanV2';
 import { toast } from 'sonner';
 import { PLANS, formatPrice, getYearlySavings } from '@/config/pricing';
+import { getPriceId, isCheckoutAvailable } from '@/lib/stripeConfig';
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -25,19 +26,16 @@ export default function Pricing() {
       return;
     }
 
-    const priceId = billingPeriod === 'monthly' 
-      ? PLANS.PRO.stripe_price_monthly 
-      : PLANS.PRO.stripe_price_yearly;
-
-    if (!priceId) {
-      toast.error('Checkout is not configured yet. Please contact support.');
-      console.warn('Stripe price IDs not set. Set VITE_STRIPE_PRICE_PRO_MONTHLY_AUD and VITE_STRIPE_PRICE_PRO_YEARLY_AUD');
+    // Check if checkout is available for this billing period
+    if (!isCheckoutAvailable(billingPeriod)) {
+      toast.error('Checkout is not configured. Please contact support or configure Stripe price IDs in project settings.');
       return;
     }
 
     setCheckingOut(true);
     
     try {
+      const priceId = getPriceId('PRO', billingPeriod);
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { priceId },
@@ -212,12 +210,12 @@ export default function Pricing() {
                   plan === 'FREE' ? (
                     <Button 
                       onClick={handleSubscribe}
-                      disabled={checkingOut}
+                      disabled={checkingOut || !isCheckoutAvailable(billingPeriod)}
                       size="lg"
                       className="w-full"
                     >
                       <Sparkles className="w-4 h-4 mr-2" />
-                      {checkingOut ? 'Processing...' : 'Start 7-Day Free Trial'}
+                      {checkingOut ? 'Processing...' : !isCheckoutAvailable(billingPeriod) ? 'Checkout Unavailable' : 'Start 7-Day Free Trial'}
                     </Button>
                   ) : (
                     <Button 

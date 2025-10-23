@@ -7,14 +7,12 @@ export const TRIAL_DAYS = parseInt(import.meta.env.VITE_TRIAL_DAYS || '7', 10);
 export const FREE_DOCS_STORAGE_MB = parseInt(import.meta.env.VITE_FREE_DOCS_STORAGE_MB || '100', 10);
 export const PRO_DOCS_STORAGE_MB = parseInt(import.meta.env.VITE_PRO_DOCS_STORAGE_MB || '5000', 10);
 
-// Stripe Price IDs (AUD) - Optional in development
+// Stripe Price IDs (AUD) - Import from centralized config
+import { getPriceId, isCheckoutAvailable } from '@/lib/stripeConfig';
+
+// Export for backward compatibility
 export const STRIPE_PRICE_PRO_MONTHLY_AUD = import.meta.env.VITE_STRIPE_PRICE_PRO_MONTHLY_AUD || '';
 export const STRIPE_PRICE_PRO_YEARLY_AUD = import.meta.env.VITE_STRIPE_PRICE_PRO_YEARLY_AUD || '';
-
-// Only warn in production if Stripe prices not configured (don't block the app)
-if (import.meta.env.PROD && (!STRIPE_PRICE_PRO_MONTHLY_AUD || !STRIPE_PRICE_PRO_YEARLY_AUD)) {
-  console.warn('WARNING: Stripe price IDs not configured. Checkout will not work until configured.');
-}
 
 export type PlanType = 'FREE' | 'PRO' | 'TRIAL';
 

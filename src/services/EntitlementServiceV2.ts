@@ -76,12 +76,12 @@ export class EntitlementServiceV2 {
       .eq('user_id', userId)
       .eq('completed', false);
 
-    // Get storage usage
+    // Get storage usage - use maybeSingle to avoid 406 errors if no row exists
     const { data: storageData } = await supabase
       .from('storage_usage')
       .select('total_bytes')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
     const storageMb = storageData ? storageData.total_bytes / (1024 * 1024) : 0;
 
