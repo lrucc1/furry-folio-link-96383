@@ -17,17 +17,16 @@ export function PaywallModal({ open, onOpenChange, feature, reason }: PaywallMod
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
 
   const price = billingPeriod === 'monthly' 
-    ? PLANS.PREMIUM.price_monthly_aud 
-    : PLANS.PREMIUM.price_yearly_aud;
+    ? PLANS.PRO.price_monthly_aud 
+    : PLANS.PRO.price_yearly_aud;
 
-  const savings = getYearlySavings('PREMIUM');
+  const savings = getYearlySavings();
 
-  const premiumBenefits = [
-    'Up to 5 pet profiles',
-    'Family sharing (5 members with full access)',
-    'VetShare - Share medical records with vets',
+  const proBenefits = [
+    'Unlimited pet profiles',
+    'Full caregiver access (read & write)',
     'Unlimited health reminders',
-    '50MB document storage',
+    'Large document storage (5GB)',
     'Data export capability',
     'Priority support',
   ];
@@ -38,10 +37,10 @@ export function PaywallModal({ open, onOpenChange, feature, reason }: PaywallMod
         <DialogHeader>
           <DialogTitle className="text-2xl flex items-center gap-2">
             <Crown className="w-6 h-6 text-primary" />
-            Upgrade to Premium
+            Upgrade to Pro
           </DialogTitle>
           <DialogDescription>
-            {reason || `${feature} is a Premium feature. Upgrade to unlock full access.`}
+            {reason || `${feature} is a Pro feature. Upgrade to unlock full access.`}
           </DialogDescription>
         </DialogHeader>
 
@@ -88,9 +87,9 @@ export function PaywallModal({ open, onOpenChange, feature, reason }: PaywallMod
 
           {/* Benefits */}
           <div className="space-y-3">
-            <div className="font-semibold">Everything in Premium:</div>
+            <div className="font-semibold">Everything in Pro:</div>
             <div className="grid gap-2">
-              {premiumBenefits.map((benefit, i) => (
+              {proBenefits.map((benefit, i) => (
                 <div key={i} className="flex items-start gap-2">
                   <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                   <span className="text-sm">{benefit}</span>
@@ -109,11 +108,11 @@ export function PaywallModal({ open, onOpenChange, feature, reason }: PaywallMod
             className="w-full"
           >
             <Crown className="w-4 h-4 mr-2" />
-            View Plans
+            Start 7-Day Free Trial
           </Button>
 
           <p className="text-xs text-center text-muted-foreground">
-            Choose from Premium or Family plans. All plans include 10% discount on annual billing.
+            Full Pro features for 7 days. Cancel anytime during trial at no charge.
           </p>
         </div>
       </DialogContent>

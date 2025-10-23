@@ -127,11 +127,23 @@ export default function BillingSettings() {
                       Upgrade Plan
                     </Link>
                   </Button>
-                ) : plan === 'PREMIUM' || plan === 'FAMILY' ? (
-                  <Button asChild variant="outline">
-                    <Link to="/pricing">
-                      View Plans
-                    </Link>
+                ) : plan === 'PRO' ? (
+                  <Button 
+                    onClick={handleManageBilling} 
+                    disabled={loading}
+                    variant="outline"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Opening...
+                      </>
+                    ) : (
+                      <>
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        Manage Billing
+                      </>
+                    )}
                   </Button>
                 ) : (
                   <Button 
@@ -175,7 +187,7 @@ export default function BillingSettings() {
               )}
 
               {/* Billing Date */}
-              {nextBillingAt && (plan === 'PREMIUM' || plan === 'FAMILY') && (
+              {nextBillingAt && plan === 'PRO' && (
                 <div className="pt-4 border-t">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Calendar className="w-4 h-4" />
@@ -191,7 +203,7 @@ export default function BillingSettings() {
                 </div>
               )}
 
-              {(plan === 'PREMIUM' || plan === 'FAMILY') && (
+              {plan === 'PRO' && (
                 <div className="pt-4 border-t">
                   <h4 className="text-sm font-medium mb-2">Billing Portal</h4>
                   <p className="text-sm text-muted-foreground mb-3">

@@ -37,14 +37,7 @@ export class EntitlementServiceV2 {
       return 'FREE';
     }
 
-    // Map legacy values
-    let userPlan = (data.plan_v2 as PlanType) || 'FREE';
-    const planStr = String(userPlan);
-    if (planStr === 'PRO' || planStr === 'TRIAL') {
-      userPlan = 'PREMIUM' as PlanType;
-    }
-
-    return userPlan;
+    return (data.plan_v2 as PlanType) || 'FREE';
   }
 
   async getUserUsage(userId: string): Promise<UserUsage> {
@@ -109,7 +102,7 @@ export class EntitlementServiceV2 {
         if (currentCount > limit) {
           return {
             allowed: false,
-            reason: `Free plan allows maximum ${limit} pet${limit > 1 ? 's' : ''}. Upgrade to Premium for ${PLANS.PREMIUM.entitlements.pets_max || 'more'} pets.`,
+            reason: `Free plan allows maximum ${limit} pet${limit > 1 ? 's' : ''}. Upgrade to Pro for unlimited pets.`,
             upgrade_required: true,
           };
         }
@@ -124,7 +117,7 @@ export class EntitlementServiceV2 {
         if (currentCount > limit) {
           return {
             allowed: false,
-            reason: `Free plan allows maximum ${limit} active reminders. Upgrade to Premium for unlimited reminders.`,
+            reason: `Free plan allows maximum ${limit} active reminders. Upgrade to Pro for unlimited reminders.`,
             upgrade_required: true,
           };
         }
@@ -138,7 +131,7 @@ export class EntitlementServiceV2 {
         if (currentUsage > limit) {
           return {
             allowed: false,
-            reason: `Storage limit exceeded. Free plan allows ${limit}MB. Upgrade to Premium for ${PLANS.PREMIUM.entitlements.docs_storage_mb}MB or Family for ${PLANS.FAMILY.entitlements.docs_storage_mb}MB.`,
+            reason: `Storage limit exceeded. Free plan allows ${limit}MB. Upgrade to Pro for ${PLANS.PRO.entitlements.docs_storage_mb}MB.`,
             upgrade_required: true,
           };
         }
@@ -149,7 +142,7 @@ export class EntitlementServiceV2 {
         if (!entitlements.export_enabled) {
           return {
             allowed: false,
-            reason: 'Data export is a Premium feature. Upgrade to export your pet data.',
+            reason: 'Data export is a Pro feature. Upgrade to export your pet data.',
             upgrade_required: true,
           };
         }
@@ -160,7 +153,7 @@ export class EntitlementServiceV2 {
         if (!entitlements.caregivers_readwrite_enabled) {
           return {
             allowed: false,
-            reason: 'Read/write caregiver access is a Premium feature. Free plan allows view-only access.',
+            reason: 'Read/write caregiver access is a Pro feature. Free plan allows view-only access.',
             upgrade_required: true,
           };
         }

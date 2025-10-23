@@ -54,10 +54,10 @@ export default function Pricing() {
     }
   };
 
-  const savings = getYearlySavings('PREMIUM');
+  const savings = getYearlySavings();
   const price = billingPeriod === 'monthly' 
-    ? PLANS.PREMIUM.price_monthly_aud 
-    : PLANS.PREMIUM.price_yearly_aud;
+    ? PLANS.PRO.price_monthly_aud 
+    : PLANS.PRO.price_yearly_aud;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -159,9 +159,9 @@ export default function Pricing() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <Crown className="w-5 h-5 text-primary" />
-                    Premium
+                    Pro
                   </CardTitle>
-                  {(plan === 'PREMIUM' || plan === 'FAMILY') && (
+                  {plan === 'PRO' && (
                     <Badge>Current Plan</Badge>
                   )}
                 </div>
@@ -194,7 +194,7 @@ export default function Pricing() {
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span>Large document vault ({PLANS.PREMIUM.entitlements.docs_storage_mb}MB)</span>
+                    <span>Large document vault ({PLANS.PRO.entitlements.docs_storage_mb}MB)</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
