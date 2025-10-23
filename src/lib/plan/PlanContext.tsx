@@ -29,21 +29,38 @@ export function PlanProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const { data } = await supabase
-      .from('profiles')
-      .select('plan_tier, manual_override, plan_source')
-      .eq('id', user.id)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('plan_tier, manual_override, plan_source')
+        .eq('id', user.id)
+        .maybeSingle();
 
-    if (data) {
-      const profileData: ProfilePlanData = {
-        plan_tier: data.plan_tier as Tier | undefined,
-        manual_override: data.manual_override,
-        plan_source: data.plan_source as PlanSource | undefined,
-      };
-      setProfile(profileData);
-      setTier(computeEffectiveTier(profileData));
-      setSource((data.plan_source as PlanSource) || 'stripe');
+      if (error) {
+        console.error('[PlanProvider] Error fetching profile:', error);
+        setTier('free');
+        setSource('system');
+        setProfile(null);
+      } else if (data) {
+        const profileData: ProfilePlanData = {
+          plan_tier: data.plan_tier as Tier | undefined,
+          manual_override: data.manual_override,
+          plan_source: data.plan_source as PlanSource | undefined,
+        };
+        setProfile(profileData);
+        setTier(computeEffectiveTier(profileData));
+        setSource((data.plan_source as PlanSource) || 'stripe');
+      } else {
+        // No profile found - set defaults
+        setTier('free');
+        setSource('system');
+        setProfile(null);
+      }
+    } catch (error) {
+      console.error('[PlanProvider] Unexpected error:', error);
+      setTier('free');
+      setSource('system');
+      setProfile(null);
     }
     setLoading(false);
   };
