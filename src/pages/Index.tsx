@@ -48,53 +48,34 @@ const pricingPlans = [
     name: "Free",
     price: "0",
     period: "forever",
-    description: "Perfect for single pet households",
+    description: "Perfect for getting started with one pet",
     features: [
       "1 Pet Profile",
-      "Basic QR Recovery Tag", 
-      "Vaccination Reminders",
-      "Registry Links",
-      "Lost Pet Alerts"
+      "1 Read-only Caregiver",
+      "2 Active Health Reminders",
+      "100MB Document Storage",
+      "Basic Support"
     ],
     cta: "Get Started Free",
     variant: "outline" as const
   },
   {
-    name: "Premium",
-    price: "4.49",
+    name: "Pro",
+    price: "2.99",
     period: "month",
-    description: "For growing pet families",
-    features: [
-      "Up to 5 Pet Profiles",
-      "Advanced QR & NFC Tags",
-      "Priority Recovery Alerts",
-      "Family Sharing (up to 5 members)",
-      "Unlimited Custom Lost Pet Posters",
-      "VetShare - Share with vets via QR",
-      "Document Storage (50MB)",
-      "Priority Support"
-    ],
-    cta: "Upgrade to Premium",
-    variant: "hero" as const,
-    popular: true
-  },
-  {
-    name: "Family",
-    price: "7.99",
-    period: "month",
-    description: "Complete protection for multi-pet households",
+    description: "Full features for pet families",
     features: [
       "Unlimited Pet Profiles",
-      "Advanced QR & NFC Tags",
-      "Priority Recovery Alerts",
-      "Family Sharing (up to 10 members)",
-      "Multi-household Sharing",
-      "VetShare - Share with vets via QR",
-      "Document Storage (200MB)",
-      "Priority Support"
+      "Full Caregiver Access (read & write)",
+      "Unlimited Health Reminders",
+      "5GB Document Storage",
+      "Data Export Capability",
+      "Priority Support",
+      "7-Day Free Trial"
     ],
-    cta: "Upgrade to Family",
-    variant: "outline" as const
+    cta: "Start 7-Day Free Trial",
+    variant: "hero" as const,
+    popular: true
   }
 ];
 
@@ -169,7 +150,7 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               {pricingPlans.map((plan, index) => (
                 <Card 
                   key={index} 
@@ -191,7 +172,7 @@ const Index = () => {
                   <div className="text-center mb-6">
                     <h2 className="text-2xl font-bold mb-2">{plan.name}</h2>
                     <div className="mb-4">
-                      <span className="text-4xl font-bold">${plan.price}</span>
+                      <span className="text-4xl font-bold">A${plan.price}</span>
                       <span className="text-muted-foreground">
                         {plan.price === '0' ? '' : `/${plan.period}`}
                       </span>
