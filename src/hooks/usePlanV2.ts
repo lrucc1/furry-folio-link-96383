@@ -30,22 +30,34 @@ export function usePlanV2() {
 
     setLoading(true);
     
-    const { data } = await supabase
-      .from('profiles')
-      .select('plan_v2, subscription_status, trial_end_at, next_billing_at')
-      .eq('id', user.id)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('plan_v2, subscription_status, trial_end_at, next_billing_at')
+        .eq('id', user.id)
+        .single();
 
-    if (data) {
-      setPlan((data.plan_v2 as PlanType) || 'FREE');
-      setSubscriptionStatus(data.subscription_status || 'none');
-      setTrialEndAt(data.trial_end_at ? new Date(data.trial_end_at) : null);
-      setNextBillingAt(data.next_billing_at ? new Date(data.next_billing_at) : null);
+      if (error) {
+        console.warn('Error fetching plan data, defaulting to FREE:', error);
+        setPlan('FREE');
+        setLoading(false);
+        return;
+      }
 
-      // Fetch usage
-      const service = EntitlementServiceV2.getInstance();
-      const userUsage = await service.getUserUsage(user.id);
-      setUsage(userUsage);
+      if (data) {
+        setPlan((data.plan_v2 as PlanType) || 'FREE');
+        setSubscriptionStatus(data.subscription_status || 'none');
+        setTrialEndAt(data.trial_end_at ? new Date(data.trial_end_at) : null);
+        setNextBillingAt(data.next_billing_at ? new Date(data.next_billing_at) : null);
+
+        // Fetch usage
+        const service = EntitlementServiceV2.getInstance();
+        const userUsage = await service.getUserUsage(user.id);
+        setUsage(userUsage);
+      }
+    } catch (err) {
+      console.error('Failed to fetch plan data:', err);
+      setPlan('FREE');
     }
 
     setLoading(false);
