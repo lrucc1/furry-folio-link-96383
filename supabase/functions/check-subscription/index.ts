@@ -27,9 +27,11 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
-    logStep("Stripe key verified");
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") ?? "";
+    const stripeAvailable = !!stripeKey;
+    if (!stripeAvailable) {
+      logStep("Stripe key not set - running in no-Stripe mode");
+    }
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header provided");
@@ -120,38 +122,40 @@ serve(async (req) => {
       });
     }
 
-    // If no manual subscription or profile tier, check Stripe
-    const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    
-    if (customers.data.length === 0) {
-      logStep("No customer found, returning unsubscribed state");
-      return new Response(JSON.stringify({ subscribed: false }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
+    // If no manual subscription or profile tier, optionally check Stripe (if configured)
+    let hasActiveSub = false;
+    let productId: string | null = null;
+    let subscriptionEnd: string | null = null;
 
-    const customerId = customers.data[0].id;
-    logStep("Found Stripe customer", { customerId });
+    if (stripeAvailable) {
+      const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
+      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+      
+      if (customers.data.length === 0) {
+        logStep("No customer found, returning unsubscribed state");
+      } else {
+        const customerId = customers.data[0].id;
+        logStep("Found Stripe customer", { customerId });
 
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "active",
-      limit: 1,
-    });
-    const hasActiveSub = subscriptions.data.length > 0;
-    let productId = null;
-    let subscriptionEnd = null;
+        const subscriptions = await stripe.subscriptions.list({
+          customer: customerId,
+          status: "active",
+          limit: 1,
+        });
+        hasActiveSub = subscriptions.data.length > 0;
 
-    if (hasActiveSub) {
-      const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
-      productId = subscription.items.data[0].price.product;
-      logStep("Determined subscription product", { productId });
+        if (hasActiveSub) {
+          const subscription = subscriptions.data[0];
+          subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+          logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
+          productId = subscription.items.data[0].price.product as string;
+          logStep("Determined subscription product", { productId });
+        } else {
+          logStep("No active subscription found");
+        }
+      }
     } else {
-      logStep("No active subscription found");
+      logStep("Skipping Stripe checks (no key configured)");
     }
 
     // Map Stripe product to tier
@@ -179,6 +183,15 @@ serve(async (req) => {
       .maybeSingle();
 
     const currentTier = (currentProfile?.plan_tier as 'free'|'premium'|'family') ?? 'free';
+    
+    // If Stripe isn't available, return unsubscribed without mutating DB state
+    if (!stripeAvailable) {
+      logStep("Returning unsubscribed state (no Stripe, no manual tier)");
+      return new Response(JSON.stringify({ subscribed: false }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     // Enforce downgrade constraints
     const MAX_PETS: Record<'free'|'premium'|'family', number> = { free: 1, premium: 5, family: -1 };
