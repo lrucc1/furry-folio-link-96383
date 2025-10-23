@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePlanV2 } from '@/hooks/usePlanV2';
 import { supabase } from '@/integrations/supabase/client';
 import { format, isAfter, isBefore, addDays, differenceInDays } from 'date-fns';
 import { Calendar, AlertTriangle, CheckCircle, Clock, Syringe, Heart } from 'lucide-react';
@@ -36,6 +37,7 @@ interface HealthReminder {
 
 export const HealthReminders = () => {
   const { user } = useAuth();
+  const { entitlement } = usePlanV2();
   const [reminders, setReminders] = useState<HealthReminder[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -150,6 +152,12 @@ export const HealthReminders = () => {
   const urgentReminders = reminders.filter(r => r.isOverdue || r.daysUntil <= 7);
   const upcomingReminders = reminders.filter(r => !r.isOverdue && r.daysUntil > 7);
 
+  // Apply reminder limits
+  const maxReminders = entitlement?.reminders_active_max || 2;
+  const displayedReminders = entitlement?.reminders_active_max === null 
+    ? reminders 
+    : reminders.slice(0, maxReminders);
+
   return (
     <Card>
       <CardHeader>
@@ -159,7 +167,7 @@ export const HealthReminders = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {reminders.length === 0 ? (
+        {displayedReminders.length === 0 ? (
           <Alert>
             <CheckCircle className="h-4 w-4" />
             <AlertDescription>

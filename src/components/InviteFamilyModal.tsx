@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePlanV2 } from '@/hooks/usePlanV2';
 import { au } from '@/lib/auEnglish';
 import { Copy } from 'lucide-react';
 
@@ -26,6 +27,7 @@ interface InviteFamilyModalProps {
 
 export function InviteFamilyModal({ open, onClose, petId, onSuccess }: InviteFamilyModalProps) {
   const { user } = useAuth();
+  const { entitlement } = usePlanV2();
   const [saving, setSaving] = useState(false);
   const [pets, setPets] = useState<Pet[]>([]);
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
@@ -203,7 +205,9 @@ export function InviteFamilyModal({ open, onClose, petId, onSuccess }: InviteFam
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-background z-50">
-                  <SelectItem value="family">{au('Family')}</SelectItem>
+                  <SelectItem value="family" disabled={!entitlement?.caregivers_readwrite_enabled}>
+                    {au('Family')} {!entitlement?.caregivers_readwrite_enabled && '(Pro)'}
+                  </SelectItem>
                   <SelectItem value="caregiver">{au('Caregiver')}</SelectItem>
                   <SelectItem value="vet">{au('Veterinarian (VetShare)')}</SelectItem>
                 </SelectContent>
@@ -213,6 +217,11 @@ export function InviteFamilyModal({ open, onClose, petId, onSuccess }: InviteFam
                 {formData.role === 'family' && au('Family members can view and edit all pet information')}
                 {formData.role === 'caregiver' && au('Caregivers have read-only access to pet information')}
               </p>
+              {!entitlement?.caregivers_readwrite_enabled && formData.role === 'family' && (
+                <p className="text-xs text-warning mt-1">
+                  {au('Read-write family sharing requires Pro plan')}
+                </p>
+              )}
             </div>
 
             <DialogFooter>

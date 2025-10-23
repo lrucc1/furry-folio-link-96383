@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePlanV2 } from '@/hooks/usePlanV2';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -44,14 +45,9 @@ interface PetDocumentsProps {
   petId: string;
 }
 
-const STORAGE_LIMITS = {
-  free: 0, // No document storage on free
-  premium: 50 * 1024 * 1024, // 50MB
-  family: 200 * 1024 * 1024, // 200MB
-};
-
 export const PetDocuments = ({ petId }: PetDocumentsProps) => {
-  const { user, subscriptionInfo } = useAuth();
+  const { user } = useAuth();
+  const { entitlement, loading: planLoading } = usePlanV2();
   const [documents, setDocuments] = useState<PetDocument[]>([]);
   const [uploading, setUploading] = useState(false);
   const [viewerOpen, setViewerOpen] = useState(false);
@@ -123,20 +119,20 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
   };
 
   const processFile = async (file: File) => {
-    if (!user) return;
+    if (!user || !entitlement) return;
 
     // Check if user has document storage access
-    const storageLimit = STORAGE_LIMITS[subscriptionInfo.tier];
+    const storageLimit = entitlement.docs_storage_mb * 1024 * 1024;
     if (storageLimit === 0) {
-      toast.error('Document storage is not available on the Free plan. Please upgrade to Premium or Family.');
+      toast.error('Document storage is not available on the Free plan. Please upgrade to Pro.');
       return;
     }
 
     // Check if adding this file would exceed storage limit
     if (totalStorage + file.size > storageLimit) {
-      const limitMB = storageLimit / (1024 * 1024);
+      const limitMB = (storageLimit / (1024 * 1024)).toFixed(0);
       const usedMB = (totalStorage / (1024 * 1024)).toFixed(2);
-      toast.error(`Storage limit exceeded. You're using ${usedMB}MB of ${limitMB}MB on the ${subscriptionInfo.tier} plan.`);
+      toast.error(`Storage limit exceeded. You're using ${usedMB}MB of ${limitMB}MB.`);
       return;
     }
 
@@ -304,7 +300,7 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
     }
   };
 
-  const storageLimit = STORAGE_LIMITS[subscriptionInfo.tier];
+  const storageLimit = entitlement ? entitlement.docs_storage_mb * 1024 * 1024 : 0;
   const storageUsedPercent = storageLimit > 0 ? (totalStorage / storageLimit) * 100 : 0;
 
   return (
