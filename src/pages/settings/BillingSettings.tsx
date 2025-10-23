@@ -2,13 +2,14 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CreditCard, Calendar, AlertCircle, ExternalLink } from "lucide-react";
+import { Loader2, CreditCard, Calendar, AlertCircle, ExternalLink, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlan } from "@/lib/plan/PlanContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Link } from "react-router-dom";
+import { DashboardHeader } from "@/components/DashboardHeader";
 
 export default function BillingSettings() {
   const [loading, setLoading] = useState(false);
@@ -50,129 +51,141 @@ export default function BillingSettings() {
   const isPastDue = profile?.stripe_status === 'past_due';
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">Billing & Subscriptions</h2>
-        <p className="text-muted-foreground">Manage your subscription and payment methods</p>
-      </div>
-
-      {isPastDue && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Your payment is past due. Please update your payment method to continue using premium features.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="w-5 h-5" />
-            Current Plan
-          </CardTitle>
-          <CardDescription>
-            Your subscription details and billing information
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Plan</p>
-              <div className="flex items-center gap-2 mt-1">
-                <p className="text-lg font-semibold capitalize">{tier}</p>
-                {hasActiveSubscription && (
-                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                    Active
-                  </Badge>
-                )}
-                {isPastDue && (
-                  <Badge variant="destructive">Past Due</Badge>
-                )}
-              </div>
-            </div>
-
-            {tier === 'free' ? (
-              <Button asChild>
-                <Link to="/pricing">
-                  Upgrade Plan
-                </Link>
-              </Button>
-            ) : profile?.stripe_customer_id ? (
-              <Button 
-                onClick={handleManageBilling} 
-                disabled={loading}
-                variant="outline"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Opening...
-                  </>
-                ) : (
-                  <>
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    Manage Billing
-                  </>
-                )}
-              </Button>
-            ) : (
-              <div className="text-sm text-muted-foreground">
-                You don't have an active Stripe subscription. Your plan is managed by an administrator.
-              </div>
-            )}
-          </div>
-
-          {profile?.stripe_current_period_end && profile?.stripe_customer_id && (
-            <div className="pt-4 border-t">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Calendar className="w-4 h-4" />
-                <span>
-                  {profile.stripe_status === 'active' ? 'Renews' : 'Expires'} on{' '}
-                  {new Date(profile.stripe_current_period_end).toLocaleDateString('en-AU', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  })}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {tier !== 'free' && profile?.stripe_customer_id && (
-            <div className="pt-4 border-t">
-              <h4 className="text-sm font-medium mb-2">Billing Portal</h4>
-              <p className="text-sm text-muted-foreground mb-3">
-                Use the Stripe Customer Portal to:
-              </p>
-              <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                <li>Update payment method</li>
-                <li>View billing history and invoices</li>
-                <li>Upgrade or downgrade your plan</li>
-                <li>Cancel your subscription</li>
-              </ul>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {tier === 'free' && (
-        <Card className="border-primary/20 bg-primary/5">
-          <CardHeader>
-            <CardTitle>Upgrade to Premium</CardTitle>
-            <CardDescription>
-              Unlock unlimited pets, health tracking, and more
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link to="/pricing">
-                View Plans
+    <div className="min-h-screen bg-background">
+      <DashboardHeader />
+      
+      <main className="container mx-auto px-4 py-8">
+        <div className="max-w-3xl mx-auto space-y-6">
+          <div>
+            <Button variant="ghost" asChild className="mb-4">
+              <Link to="/account">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Account
               </Link>
             </Button>
-          </CardContent>
-        </Card>
-      )}
+            <h2 className="text-2xl font-bold">Billing & Subscriptions</h2>
+            <p className="text-muted-foreground">Manage your subscription and payment methods</p>
+          </div>
+
+          {isPastDue && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Your payment is past due. Please update your payment method to continue using premium features.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5" />
+                Current Plan
+              </CardTitle>
+              <CardDescription>
+                Your subscription details and billing information
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Plan</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-lg font-semibold capitalize">{tier}</p>
+                    {hasActiveSubscription && (
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        Active
+                      </Badge>
+                    )}
+                    {isPastDue && (
+                      <Badge variant="destructive">Past Due</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {tier === 'free' ? (
+                  <Button asChild>
+                    <Link to="/pricing">
+                      Upgrade Plan
+                    </Link>
+                  </Button>
+                ) : profile?.stripe_customer_id ? (
+                  <Button 
+                    onClick={handleManageBilling} 
+                    disabled={loading}
+                    variant="outline"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Opening...
+                      </>
+                    ) : (
+                      <>
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        Manage Billing
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <div className="text-sm text-muted-foreground">
+                    You don't have an active Stripe subscription. Your plan is managed by an administrator.
+                  </div>
+                )}
+              </div>
+
+              {profile?.stripe_current_period_end && profile?.stripe_customer_id && (
+                <div className="pt-4 border-t">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Calendar className="w-4 h-4" />
+                    <span>
+                      {profile.stripe_status === 'active' ? 'Renews' : 'Expires'} on{' '}
+                      {new Date(profile.stripe_current_period_end).toLocaleDateString('en-AU', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {tier !== 'free' && profile?.stripe_customer_id && (
+                <div className="pt-4 border-t">
+                  <h4 className="text-sm font-medium mb-2">Billing Portal</h4>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Use the Stripe Customer Portal to:
+                  </p>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>Update payment method</li>
+                    <li>View billing history and invoices</li>
+                    <li>Upgrade or downgrade your plan</li>
+                    <li>Cancel your subscription</li>
+                  </ul>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {tier === 'free' && (
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader>
+                <CardTitle>Upgrade to Premium</CardTitle>
+                <CardDescription>
+                  Unlock unlimited pets, health tracking, and more
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button asChild className="w-full">
+                  <Link to="/pricing">
+                    View Plans
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </main>
     </div>
   );
 }
