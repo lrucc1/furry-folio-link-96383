@@ -2,19 +2,20 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CreditCard, Calendar, AlertCircle, ExternalLink, ArrowLeft } from "lucide-react";
+import { Loader2, CreditCard, Calendar, AlertCircle, ExternalLink, ArrowLeft, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { usePlan } from "@/lib/plan/PlanContext";
+import { usePlanV2 } from "@/hooks/usePlanV2";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Link } from "react-router-dom";
 import { DashboardHeader } from "@/components/DashboardHeader";
+import { formatPrice } from "@/config/pricing";
 
 export default function BillingSettings() {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
-  const { tier, profile } = usePlan();
+  const { plan, planConfig, subscriptionStatus, trialEndAt, nextBillingAt, daysUntilTrialEnd, isTrialActive } = usePlanV2();
 
   const handleManageBilling = async () => {
     if (!user) {
@@ -47,8 +48,8 @@ export default function BillingSettings() {
     }
   };
 
-  const hasActiveSubscription = profile?.stripe_status === 'active' || profile?.stripe_status === 'trialing';
-  const isPastDue = profile?.stripe_status === 'past_due';
+  const hasActiveSubscription = subscriptionStatus === 'active' || subscriptionStatus === 'trialing';
+  const isPastDue = subscriptionStatus === 'past_due';
 
   return (
     <div className="min-h-screen bg-background">
@@ -66,6 +67,17 @@ export default function BillingSettings() {
             <h2 className="text-2xl font-bold">Billing & Subscriptions</h2>
             <p className="text-muted-foreground">Manage your subscription and payment methods</p>
           </div>
+
+          {/* Trial Status Alert */}
+          {isTrialActive && daysUntilTrialEnd && daysUntilTrialEnd <= 2 && (
+            <Alert>
+              <Sparkles className="h-4 w-4" />
+              <AlertDescription>
+                Your Pro trial ends in {daysUntilTrialEnd} {daysUntilTrialEnd === 1 ? 'day' : 'days'}. 
+                Upgrade now to keep unlimited pets, reminders, and all Pro features.
+              </AlertDescription>
+            </Alert>
+          )}
 
           {isPastDue && (
             <Alert variant="destructive">
@@ -91,8 +103,14 @@ export default function BillingSettings() {
                 <div>
                   <p className="text-sm text-muted-foreground">Plan</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <p className="text-lg font-semibold capitalize">{tier}</p>
-                    {hasActiveSubscription && (
+                    <p className="text-lg font-semibold">{planConfig?.name}</p>
+                    {isTrialActive && (
+                      <Badge variant="secondary" className="bg-purple-50 text-purple-700 border-purple-200">
+                        <Sparkles className="w-3 h-3 mr-1" />
+                        Trial
+                      </Badge>
+                    )}
+                    {hasActiveSubscription && !isTrialActive && (
                       <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                         Active
                       </Badge>
@@ -103,13 +121,20 @@ export default function BillingSettings() {
                   </div>
                 </div>
 
-                {tier === 'free' ? (
+                {plan === 'FREE' ? (
                   <Button asChild>
                     <Link to="/pricing">
                       Upgrade Plan
                     </Link>
                   </Button>
-                ) : profile?.stripe_customer_id ? (
+                ) : plan === 'TRIAL' ? (
+                  <Button asChild>
+                    <Link to="/pricing">
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Subscribe Now
+                    </Link>
+                  </Button>
+                ) : (
                   <Button 
                     onClick={handleManageBilling} 
                     disabled={loading}
@@ -127,20 +152,37 @@ export default function BillingSettings() {
                       </>
                     )}
                   </Button>
-                ) : (
-                  <div className="text-sm text-muted-foreground">
-                    You don't have an active Stripe subscription. Your plan is managed by an administrator.
-                  </div>
                 )}
               </div>
 
-              {profile?.stripe_current_period_end && profile?.stripe_customer_id && (
+              {/* Trial Info */}
+              {isTrialActive && trialEndAt && (
+                <div className="pt-4 border-t">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">
+                      Trial ends on{' '}
+                      <span className="font-medium text-foreground">
+                        {trialEndAt.toLocaleDateString('en-AU', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        })}
+                      </span>
+                      {' '}({daysUntilTrialEnd} {daysUntilTrialEnd === 1 ? 'day' : 'days'} remaining)
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Billing Date */}
+              {nextBillingAt && plan === 'PRO' && (
                 <div className="pt-4 border-t">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Calendar className="w-4 h-4" />
                     <span>
-                      {profile.stripe_status === 'active' ? 'Renews' : 'Expires'} on{' '}
-                      {new Date(profile.stripe_current_period_end).toLocaleDateString('en-AU', {
+                      {subscriptionStatus === 'active' ? 'Renews' : 'Expires'} on{' '}
+                      {nextBillingAt.toLocaleDateString('en-AU', {
                         day: 'numeric',
                         month: 'long',
                         year: 'numeric',
@@ -150,7 +192,7 @@ export default function BillingSettings() {
                 </div>
               )}
 
-              {tier !== 'free' && profile?.stripe_customer_id && (
+              {plan === 'PRO' && (
                 <div className="pt-4 border-t">
                   <h4 className="text-sm font-medium mb-2">Billing Portal</h4>
                   <p className="text-sm text-muted-foreground mb-3">
@@ -167,10 +209,10 @@ export default function BillingSettings() {
             </CardContent>
           </Card>
 
-          {tier === 'free' && (
+          {plan === 'FREE' && (
             <Card className="border-primary/20 bg-primary/5">
               <CardHeader>
-                <CardTitle>Upgrade to Premium</CardTitle>
+                <CardTitle>Upgrade to Pro</CardTitle>
                 <CardDescription>
                   Unlock unlimited pets, health tracking, and more
                 </CardDescription>
@@ -178,7 +220,8 @@ export default function BillingSettings() {
               <CardContent>
                 <Button asChild className="w-full">
                   <Link to="/pricing">
-                    View Plans
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Start 7-Day Free Trial
                   </Link>
                 </Button>
               </CardContent>

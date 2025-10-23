@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
-import { usePlan } from '@/lib/plan/PlanContext'
-import { TierFeatures } from '@/config/tierFeatures'
+import { usePlanV2 } from '@/hooks/usePlanV2'
+import { EntitlementServiceV2 } from '@/services/EntitlementServiceV2'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,6 +13,7 @@ import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { DashboardHeader } from '@/components/DashboardHeader'
+import { PaywallModal } from '@/components/PaywallModal'
 import { ArrowLeft, Upload } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from '@/hooks/use-toast'
@@ -20,32 +21,35 @@ import { au } from '@/lib/auEnglish'
 
 const AddPet = () => {
   const { user } = useAuth()
-  const { tier } = usePlan()
+  const { plan, usage, entitlement } = usePlanV2()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
-  const [petCount, setPetCount] = useState(0)
+  const [showPaywall, setShowPaywall] = useState(false)
 
+  // Check entitlement when component loads
   useEffect(() => {
-    checkPetCount()
-  }, [user])
+    checkCanAddPet()
+  }, [user, usage])
 
-  const checkPetCount = async () => {
-    if (!user) return
+  const checkCanAddPet = async () => {
+    if (!user || !entitlement) return
     
-    const { count } = await supabase
-      .from('pets')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
+    const service = EntitlementServiceV2.getInstance()
+    const check = await service.checkEntitlement(user.id, 'pets_max', 1)
     
-    setPetCount(count || 0)
+    if (!check.allowed) {
+      setShowPaywall(true)
+    }
   }
 
-  const maxPets = TierFeatures[tier].maxPets as number
-  const canAddPet = maxPets === -1 || petCount < maxPets
-  const remainingPets = maxPets === -1 
+  const maxPets = entitlement?.pets_max ?? 0
+  const currentPets = usage.pets_count
+  const canAddPet = maxPets === null || currentPets < maxPets
+  const remainingPets = maxPets === null 
     ? 'Unlimited' 
-    : Math.max(0, maxPets - petCount)
-  const progressPercentage = maxPets === -1 ? 0 : (petCount / maxPets) * 100
+    : Math.max(0, maxPets - currentPets)
+  const progressPercentage = maxPets === null ? 0 : (currentPets / maxPets) * 100
+  
   const [formData, setFormData] = useState({
     name: '',
     species: '',
@@ -67,14 +71,17 @@ const AddPet = () => {
     e.preventDefault()
     if (!user) return
 
-    // Check pet limit
-    if (maxPets !== -1 && petCount >= maxPets) {
+    // Check pet limit with EntitlementServiceV2
+    const service = EntitlementServiceV2.getInstance()
+    const check = await service.checkEntitlement(user.id, 'pets_max', 1)
+    
+    if (!check.allowed) {
+      setShowPaywall(true)
       toast({
         title: au("Pet limit reached"),
-        description: au(`You've reached the limit of ${maxPets} pet(s) on the ${tier} plan. Please upgrade to add more pets.`),
+        description: check.reason || au(`Upgrade to add more pets.`),
         variant: "destructive",
       })
-      navigate('/pricing')
       return
     }
 
@@ -152,18 +159,18 @@ const AddPet = () => {
               <div>
                 <p className="text-sm text-muted-foreground">{au('Current Plan')}</p>
                 <p className="text-xl font-semibold capitalize">
-                  {tier === 'family' ? au('Family') : tier === 'premium' ? au('Premium') : au('Free')}
+                  {plan}
                 </p>
               </div>
               <div className="text-right">
                 <p className="text-sm text-muted-foreground">{au('Pets Available')}</p>
                 <p className="text-xl font-semibold">
-                  {petCount} {au('of')} {maxPets === -1 ? au('Unlimited') : maxPets}
+                  {currentPets} {au('of')} {maxPets === null ? au('Unlimited') : maxPets}
                 </p>
               </div>
             </div>
             
-            {maxPets !== -1 && (
+            {maxPets !== null && (
               <div className="space-y-2">
                 <Progress value={progressPercentage} className="h-2" />
                 <p className="text-sm text-muted-foreground text-center">
@@ -392,6 +399,13 @@ const AddPet = () => {
           </CardContent>
         </Card>
       </main>
+
+      <PaywallModal 
+        open={showPaywall}
+        onOpenChange={setShowPaywall}
+        feature="Add Pet"
+        reason="Free plan allows 1 pet. Upgrade to Pro for unlimited pets."
+      />
     </div>
   )
 }

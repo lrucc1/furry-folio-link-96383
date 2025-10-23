@@ -121,27 +121,35 @@ serve(async (req) => {
           break;
         }
 
-        // Determine tier from product
+        // Determine tier from product - map to new plan_v2
         const priceId = subscription.items.data[0]?.price.id;
         const productId = subscription.items.data[0]?.price.product as string;
         
-        let tier = 'free';
-        if (productId.includes('family')) {
-          tier = 'family';
-        } else if (productId.includes('premium')) {
-          tier = 'premium';
+        // Map to new plan_v2: PRO or TRIAL
+        let plan_v2 = 'PRO';
+        let subscription_status = subscription.status;
+        
+        // If it's a trialing subscription, set plan to TRIAL
+        if (subscription.status === 'trialing') {
+          plan_v2 = 'TRIAL';
         }
 
-        // Update profile with subscription data
+        // Update profile with subscription data using new plan_v2 fields
         const { error: updateError } = await supabaseClient
           .from('profiles')
           .update({
             stripe_customer_id: subscription.customer as string,
             stripe_subscription_id: subscription.id,
             stripe_status: subscription.status,
-            stripe_tier: tier,
+            stripe_tier: plan_v2.toLowerCase(),
             stripe_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            plan_tier: tier, // Also update plan_tier for backwards compatibility
+            // New plan_v2 fields
+            plan_v2: plan_v2,
+            subscription_status: subscription_status,
+            next_billing_at: new Date(subscription.current_period_end * 1000).toISOString(),
+            trial_end_at: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
+            // Keep old fields for backwards compatibility
+            plan_tier: plan_v2.toLowerCase(),
           })
           .eq('id', user.id);
 
@@ -150,7 +158,7 @@ serve(async (req) => {
           throw updateError;
         }
 
-        logStep("Subscription updated successfully", { userId: user.id, tier, status: subscription.status });
+        logStep("Subscription updated successfully", { userId: user.id, plan_v2, status: subscription.status });
         break;
       }
 
@@ -175,13 +183,17 @@ serve(async (req) => {
           break;
         }
 
-        // Update profile to free tier
+        // Update profile to free tier using new plan_v2
         const { error: updateError } = await supabaseClient
           .from('profiles')
           .update({
             stripe_status: 'canceled',
             stripe_tier: 'free',
             plan_tier: 'free',
+            // New plan_v2 fields
+            plan_v2: 'FREE',
+            subscription_status: 'canceled',
+            next_billing_at: null,
           })
           .eq('stripe_subscription_id', subscription.id);
 
@@ -214,6 +226,7 @@ serve(async (req) => {
             .from('profiles')
             .update({
               stripe_status: 'past_due',
+              subscription_status: 'past_due',
               latest_invoice_id: invoice.id,
             })
             .eq('stripe_subscription_id', invoice.subscription as string);
@@ -222,7 +235,7 @@ serve(async (req) => {
             logStep("Error updating profile on payment failure", { error: updateError });
           }
         }
-        // TODO: Send notification to user
+        // TODO: Send notification to user via email
         break;
       }
 

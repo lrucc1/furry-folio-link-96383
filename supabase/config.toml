@@ -41,3 +41,6 @@ verify_jwt = true
 
 [functions.cleanup-deleted-accounts]
 verify_jwt = false
+
+[functions.send-trial-notifications]
+verify_jwt = false
