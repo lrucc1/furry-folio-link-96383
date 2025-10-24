@@ -104,6 +104,7 @@ const AddPet = () => {
     try {
       // Build insert payload to match backend schema columns only
       const insertData = {
+        user_id: user.id,
         name: formData.name.trim(),
         species: formData.species,
         breed: formData.breed || null,
@@ -122,13 +123,7 @@ const AddPet = () => {
 
       const { data, error } = await supabase
         .from('pets')
-        .insert([
-            {
-              ...insertData,
-              user_id: user.id,
-              public_id: Math.random().toString(36).substr(2, 9),
-            }
-        ])
+        .insert([insertData])
         .select()
         .single()
 
