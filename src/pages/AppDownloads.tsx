@@ -12,6 +12,9 @@ import {
   Shield,
   Zap
 } from "lucide-react";
+import screenshotDashboard from "@/assets/screenshot-dashboard.png";
+import screenshotQR from "@/assets/screenshot-qr.png";
+import screenshotHealth from "@/assets/screenshot-health.png";
 
 const AppDownloads = () => {
   const appFeatures = [
@@ -153,24 +156,24 @@ const AppDownloads = () => {
             <CardContent>
               <div className="grid md:grid-cols-3 gap-6">
                 <div className="text-center">
-                  <div className="w-full h-64 bg-gradient-primary/10 rounded-lg mb-4 flex items-center justify-center">
-                    <Smartphone className="w-16 h-16 text-primary" />
+                  <div className="w-full h-64 bg-muted rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+                    <img src={screenshotDashboard} alt="Pet Dashboard showing multiple pet profiles" className="h-full w-auto object-contain" />
                   </div>
                   <h4 className="font-semibold mb-2">Pet Dashboard</h4>
                   <p className="text-sm text-muted-foreground">View all your pets at a glance with health status and recent updates.</p>
                 </div>
                 
                 <div className="text-center">
-                  <div className="w-full h-64 bg-gradient-primary/10 rounded-lg mb-4 flex items-center justify-center">
-                    <Smartphone className="w-16 h-16 text-primary" />
+                  <div className="w-full h-64 bg-muted rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+                    <img src={screenshotQR} alt="QR code scanner interface" className="h-full w-auto object-contain" />
                   </div>
                   <h4 className="font-semibold mb-2">QR Scanner</h4>
                   <p className="text-sm text-muted-foreground">Instantly scan QR tags to access pet information and contact owners.</p>
                 </div>
                 
                 <div className="text-center">
-                  <div className="w-full h-64 bg-gradient-primary/10 rounded-lg mb-4 flex items-center justify-center">
-                    <Smartphone className="w-16 h-16 text-primary" />
+                  <div className="w-full h-64 bg-muted rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+                    <img src={screenshotHealth} alt="Health tracking and vaccination reminders" className="h-full w-auto object-contain" />
                   </div>
                   <h4 className="font-semibold mb-2">Health Tracking</h4>
                   <p className="text-sm text-muted-foreground">Track vaccinations, medications, and receive smart reminders.</p>
