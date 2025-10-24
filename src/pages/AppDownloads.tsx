@@ -267,29 +267,6 @@ const AppDownloads = () => {
           </Card>
         </section>
 
-        {/* Call to Action */}
-        <Card className="bg-gradient-hero text-white border-0">
-          <CardContent className="text-center py-12">
-            <Download className="w-12 h-12 mx-auto mb-4" />
-            <h3 className="text-2xl font-bold mb-4">
-              Download PetLinkID Today
-            </h3>
-            <p className="text-white/90 mb-6 max-w-2xl mx-auto">
-              Join thousands of Australian pet owners who trust PetLinkID to keep their furry family members safe and healthy.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="secondary" size="lg">
-                <Download className="w-5 h-5 mr-2" />
-                Download Free
-              </Button>
-              <Button variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10" asChild>
-                <Link to="/auth">
-                  Create Account
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
       </main>
     </div>
   );
