@@ -50,11 +50,13 @@ const AddPet = () => {
 
   const maxPets = entitlement?.pets_max ?? 0
   const currentPets = usage.pets_count
-  const canAddPet = maxPets === null || currentPets < maxPets
-  const remainingPets = maxPets === null 
+  // Handle both null and -1 as unlimited
+  const isUnlimited = maxPets === null || maxPets === -1 || maxPets < 0
+  const canAddPet = isUnlimited || currentPets < maxPets
+  const remainingPets = isUnlimited 
     ? 'Unlimited' 
     : Math.max(0, maxPets - currentPets)
-  const progressPercentage = maxPets === null ? 0 : (currentPets / maxPets) * 100
+  const progressPercentage = isUnlimited ? 0 : (currentPets / maxPets) * 100
   
   const [formData, setFormData] = useState({
     name: '',
@@ -177,12 +179,12 @@ const AddPet = () => {
               <div className="text-right">
                 <p className="text-sm text-muted-foreground">{au('Pets Available')}</p>
                 <p className="text-xl font-semibold">
-                  {currentPets} {au('of')} {maxPets === null ? au('Unlimited') : maxPets}
+                  {currentPets} {au('of')} {isUnlimited ? au('Unlimited') : maxPets}
                 </p>
               </div>
             </div>
             
-            {maxPets !== null && (
+            {!isUnlimited && (
               <div className="space-y-2">
                 <Progress value={progressPercentage} className="h-2" />
                 <p className="text-sm text-muted-foreground text-center">
