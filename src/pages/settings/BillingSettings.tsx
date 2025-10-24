@@ -83,7 +83,7 @@ export default function BillingSettings() {
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                Your payment is past due. Please update your payment method to continue using premium features.
+                Your payment is past due. Please update your payment method to continue using paid features.
               </AlertDescription>
             </Alert>
           )}

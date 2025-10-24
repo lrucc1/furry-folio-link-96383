@@ -94,7 +94,7 @@ const AppDownloads = () => {
               </div>
               
               <p className="text-muted-foreground text-sm mt-4">
-                Free download • No ads • Premium features available
+                Free download • No ads • Pro features available
               </p>
             </CardContent>
           </Card>

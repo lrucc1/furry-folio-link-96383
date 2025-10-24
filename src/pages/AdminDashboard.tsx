@@ -57,7 +57,9 @@ interface AdminStats {
   total_pets: number;
   lost_pets: number;
   total_vaccinations: number;
-  premium_users: number;
+  fire_users?: number;
+  pro_users?: number;
+  premium_users?: number;
   pets_by_species: Record<string, number>;
   registrations_this_month: number;
   pets_added_this_month: number;
@@ -376,8 +378,8 @@ const AdminDashboard = () => {
       color: 'text-purple-600'
     },
     {
-      title: 'Premium Users',
-      value: stats.premium_users,
+      title: 'Pro Users',
+      value: stats.pro_users ?? stats.premium_users ?? 0,
       icon: Crown,
       description: 'Paying customers',
       color: 'text-yellow-600'
@@ -398,7 +400,8 @@ const AdminDashboard = () => {
     }
   ];
 
-  const conversionRate = stats.total_users > 0 ? ((stats.premium_users / stats.total_users) * 100).toFixed(1) : '0';
+  const paidUserCount = stats.pro_users ?? stats.premium_users ?? 0;
+  const conversionRate = stats.total_users > 0 ? ((paidUserCount / stats.total_users) * 100).toFixed(1) : '0';
   const averagePetsPerUser = stats.total_users > 0 ? (stats.total_pets / stats.total_users).toFixed(1) : '0';
 
   return (

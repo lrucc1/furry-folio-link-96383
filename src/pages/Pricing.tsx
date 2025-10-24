@@ -140,7 +140,7 @@ export default function Pricing() {
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span>100MB Document Storage</span>
+                    <span>50MB Document Storage</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
@@ -199,7 +199,7 @@ export default function Pricing() {
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span>5GB Document Storage</span>
+                    <span>200MB Document Storage</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />

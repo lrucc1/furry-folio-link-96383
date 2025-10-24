@@ -3,12 +3,12 @@ import { Crown, ExternalLink } from 'lucide-react';
 import { ENV_CONFIG } from '@/config/environment';
 import { Button } from '@/components/ui/button';
 
-interface PremiumInfoSheetProps {
+interface PaidPlanInfoSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function PremiumInfoSheet({ open, onOpenChange }: PremiumInfoSheetProps) {
+export function PaidPlanInfoSheet({ open, onOpenChange }: PaidPlanInfoSheetProps) {
   const handleOpenWebsite = () => {
     window.open(ENV_CONFIG.marketingUrl, '_blank');
   };
@@ -19,10 +19,10 @@ export function PremiumInfoSheet({ open, onOpenChange }: PremiumInfoSheetProps) 
         <AlertDialogHeader>
           <div className="flex items-center gap-2 mb-2">
             <Crown className="w-6 h-6 text-primary" />
-            <AlertDialogTitle>PetLinkID Premium</AlertDialogTitle>
+            <AlertDialogTitle>PetLinkID Pro Plan</AlertDialogTitle>
           </div>
           <AlertDialogDescription className="text-base">
-            Premium requires an active subscription linked to your account. Create or manage your subscription at petlinkid.io.
+            Our Pro plan requires an active subscription linked to your account. Create or manage your subscription at petlinkid.io.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">

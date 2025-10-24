@@ -21,17 +21,7 @@ export const TierFeatures: Record<Tier, Record<FeatureKey, boolean | number>> = 
     documents: false,
     familyShare: false
   },
-  premium: {
-    maxPets: 5,
-    smartTags: true,
-    reminders: true,
-    lostMode: true,
-    dataExport: true,
-    prioritySupport: true,
-    documents: true,
-    familyShare: true
-  },
-  family: {
+  pro: {
     maxPets: -1,
     smartTags: true,
     reminders: true,

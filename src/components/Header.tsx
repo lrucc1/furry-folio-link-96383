@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Logo } from "./Logo";
-import { Menu, Plus, Star, Crown } from "lucide-react";
+import { Menu, Plus, Crown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
@@ -37,12 +37,12 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
         </div>
 
         <nav className="hidden md:flex items-center gap-6">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="text-foreground hover:text-primary"
-            onClick={() => user ? navigate('/dashboard') : navigate('/auth')}
+            asChild
           >
-            My Pets
+            <Link to={user ? '/dashboard' : '/auth'}>My Pets</Link>
           </Button>
           <Button 
             variant="ghost" 
@@ -51,12 +51,12 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
           >
             <Link to="/smart-tags">Smart Tags</Link>
           </Button>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="text-foreground hover:text-primary"
-            onClick={() => user ? navigate('/dashboard') : navigate('/auth')}
+            asChild
           >
-            Reminders
+            <Link to={user ? '/dashboard' : '/auth'}>Reminders</Link>
           </Button>
         </nav>
 
@@ -66,16 +66,15 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
               {loading ? (
                 <Skeleton className="h-6 w-20" />
               ) : (
-                <Badge className={
-                  tier === 'family' 
-                    ? 'bg-gradient-to-r from-amber-500 to-yellow-600 text-white border-0' 
-                    : tier === 'premium' 
-                    ? 'bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0' 
-                    : 'bg-muted text-muted-foreground'
-                }>
-                  {tier === 'family' && <Crown className="w-3 h-3 mr-1" />}
-                  {tier === 'premium' && <Star className="w-3 h-3 mr-1" />}
-                  {tier === 'family' ? au('Family') : tier === 'premium' ? au('Premium') : au('Free')}
+                <Badge
+                  className={
+                    tier === 'pro'
+                      ? 'bg-gradient-to-r from-amber-500 to-yellow-600 text-white border-0'
+                      : 'bg-muted text-muted-foreground'
+                  }
+                >
+                  {tier === 'pro' && <Crown className="w-3 h-3 mr-1" />}
+                  {tier === 'pro' ? au('Pro') : au('Free')}
                 </Badge>
               )}
               <NotificationsDropdown />

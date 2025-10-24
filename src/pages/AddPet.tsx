@@ -33,11 +33,17 @@ const AddPet = () => {
 
   const checkCanAddPet = async () => {
     if (!user || !entitlement) return
-    
+
     const service = EntitlementServiceV2.getInstance()
     const check = await service.checkEntitlement(user.id, 'pets_max', 1)
-    
+
     if (!check.allowed) {
+      const maxPetsAllowed = entitlement?.pets_max
+      const currentCount = usage.pets_count
+
+      if (maxPetsAllowed !== null && currentCount < maxPetsAllowed) {
+        return
+      }
       setShowPaywall(true)
     }
   }
@@ -74,15 +80,21 @@ const AddPet = () => {
     // Check pet limit with EntitlementServiceV2
     const service = EntitlementServiceV2.getInstance()
     const check = await service.checkEntitlement(user.id, 'pets_max', 1)
-    
+
     if (!check.allowed) {
-      setShowPaywall(true)
-      toast({
-        title: au("Pet limit reached"),
-        description: check.reason || au(`Upgrade to add more pets.`),
-        variant: "destructive",
-      })
-      return
+      const maxPetsAllowed = entitlement?.pets_max
+      if (maxPetsAllowed !== null && usage.pets_count < maxPetsAllowed) {
+        // Allow refill when usage indicates available slots
+        console.warn('[AddPet] Entitlement denied but usage indicates available pet slot. Allowing add.');
+      } else {
+        setShowPaywall(true)
+        toast({
+          title: au("Pet limit reached"),
+          description: check.reason || au(`Upgrade to add more pets.`),
+          variant: "destructive",
+        })
+        return
+      }
     }
 
     setLoading(true)

@@ -41,7 +41,7 @@ const HelpCentre = () => {
       title: "Account & Billing",
       icon: <Shield className="w-5 h-5" />,
       articles: [
-        "Upgrading to Premium",
+        "Upgrading to Pro",
         "Managing your subscription",
         "Billing and payment options",
         "Cancelling your account"

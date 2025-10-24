@@ -4,8 +4,8 @@
  */
 
 export const TRIAL_DAYS = parseInt(import.meta.env.VITE_TRIAL_DAYS || '7', 10);
-export const FREE_DOCS_STORAGE_MB = parseInt(import.meta.env.VITE_FREE_DOCS_STORAGE_MB || '100', 10);
-export const PRO_DOCS_STORAGE_MB = parseInt(import.meta.env.VITE_PRO_DOCS_STORAGE_MB || '5000', 10);
+export const FREE_DOCS_STORAGE_MB = parseInt(import.meta.env.VITE_FREE_DOCS_STORAGE_MB || '50', 10);
+export const PRO_DOCS_STORAGE_MB = parseInt(import.meta.env.VITE_PRO_DOCS_STORAGE_MB || '200', 10);
 
 // Stripe Price IDs (AUD) - Import from centralized config
 import { getPriceId, isCheckoutAvailable } from '@/lib/stripeConfig';
