@@ -9,13 +9,15 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DashboardHeader } from '@/components/DashboardHeader'
 import { Footer } from '@/components/Footer'
-import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download, Upload, Scan, ExternalLink, Bell, CheckCircle, Trash2, Plus } from 'lucide-react'
+import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download, Upload, Scan, ExternalLink, Bell, CheckCircle, Trash2, Plus, Eye, Edit2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from '@/hooks/use-toast'
 import { PetDocuments } from '@/components/PetDocuments'
 import { VaccinationModal } from '@/components/VaccinationModal'
+import { EditVaccinationModal } from '@/components/EditVaccinationModal'
 import { SharingTab } from '@/components/SharingTab'
 import { HealthReminderModal } from '@/components/HealthReminderModal'
+import { EditHealthReminderModal } from '@/components/EditHealthReminderModal'
 import { au } from '@/lib/auEnglish'
 
 interface Pet {
@@ -47,6 +49,7 @@ interface Vaccination {
   vaccine_name: string
   vaccine_date: string
   next_due_date: string | null
+  notes: string | null
 }
 
 interface HealthReminder {
@@ -67,7 +70,11 @@ const PetDetails = () => {
   const [healthReminders, setHealthReminders] = useState<HealthReminder[]>([])
   const [loading, setLoading] = useState(true)
   const [vaccinationModalOpen, setVaccinationModalOpen] = useState(false)
+  const [editVaccinationModalOpen, setEditVaccinationModalOpen] = useState(false)
+  const [selectedVaccination, setSelectedVaccination] = useState<Vaccination | null>(null)
   const [healthReminderModalOpen, setHealthReminderModalOpen] = useState(false)
+  const [editReminderModalOpen, setEditReminderModalOpen] = useState(false)
+  const [selectedReminder, setSelectedReminder] = useState<HealthReminder | null>(null)
 
   useEffect(() => {
     if (id) {
@@ -103,7 +110,7 @@ const PetDetails = () => {
     try {
       const { data, error } = await (supabase as any)
         .from('vaccinations')
-        .select('id, vaccine_name, vaccine_date, next_due_date')
+        .select('id, vaccine_name, vaccine_date, next_due_date, notes')
         .eq('pet_id', id)
         .order('vaccine_date', { ascending: false })
 
@@ -179,6 +186,16 @@ const PetDetails = () => {
         variant: "destructive",
       })
     }
+  }
+
+  const handleEditVaccination = (vaccination: Vaccination) => {
+    setSelectedVaccination(vaccination)
+    setEditVaccinationModalOpen(true)
+  }
+
+  const handleEditReminder = (reminder: HealthReminder) => {
+    setSelectedReminder(reminder)
+    setEditReminderModalOpen(true)
   }
 
   const toggleLostStatus = async () => {
@@ -495,18 +512,29 @@ const PetDetails = () => {
                 {vaccinations.length > 0 ? (
                   <div className="space-y-3">
                     {vaccinations.map((vaccination) => (
-                      <div key={vaccination.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div>
+                      <div key={vaccination.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors group">
+                        <div className="flex-1">
                           <h4 className="font-medium">{vaccination.vaccine_name}</h4>
                           <p className="text-sm text-muted-foreground">
                             {au('Given')}: {new Date(vaccination.vaccine_date).toLocaleDateString()}
                           </p>
+                          {vaccination.next_due_date && (
+                            <Badge 
+                              variant={new Date(vaccination.next_due_date) < new Date() ? "destructive" : "secondary"}
+                              className="mt-2"
+                            >
+                              {au('Due')}: {new Date(vaccination.next_due_date).toLocaleDateString()}
+                            </Badge>
+                          )}
                         </div>
-                        {vaccination.next_due_date && (
-                          <Badge variant={new Date(vaccination.next_due_date) < new Date() ? "destructive" : "secondary"}>
-                            {au('Due')}: {new Date(vaccination.next_due_date).toLocaleDateString()}
-                          </Badge>
-                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditVaccination(vaccination)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     ))}
                   </div>
@@ -540,7 +568,7 @@ const PetDetails = () => {
                       return (
                         <div 
                           key={reminder.id} 
-                          className={`flex items-center justify-between p-4 border rounded-lg ${
+                          className={`flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors group ${
                             reminder.completed ? 'bg-muted/50 opacity-60' : isPastDue ? 'border-destructive/50 bg-destructive/5' : ''
                           }`}
                         >
@@ -574,17 +602,13 @@ const PetDetails = () => {
                             {isPastDue && (
                               <Badge variant="destructive">Overdue</Badge>
                             )}
-                            {!reminder.completed && !isPastDue && (
-                              <Badge variant="secondary">
-                                {new Date(reminder.reminder_date).toLocaleDateString()}
-                              </Badge>
-                            )}
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => deleteReminder(reminder.id)}
+                              onClick={() => handleEditReminder(reminder)}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity"
                             >
-                              <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                              <Edit2 className="w-4 h-4" />
                             </Button>
                           </div>
                         </div>
@@ -679,9 +703,33 @@ const PetDetails = () => {
         onSuccess={fetchVaccinations}
       />
 
+      <EditVaccinationModal
+        open={editVaccinationModalOpen}
+        onClose={() => {
+          setEditVaccinationModalOpen(false)
+          setSelectedVaccination(null)
+        }}
+        vaccination={selectedVaccination}
+        petId={id!}
+        defaultClinic={pet?.clinic_name || pet?.vet_clinic || ''}
+        defaultClinicAddress={pet?.clinic_address || ''}
+        onSuccess={fetchVaccinations}
+      />
+
       <HealthReminderModal
         open={healthReminderModalOpen}
         onClose={() => setHealthReminderModalOpen(false)}
+        petId={id!}
+        onSuccess={fetchHealthReminders}
+      />
+
+      <EditHealthReminderModal
+        open={editReminderModalOpen}
+        onClose={() => {
+          setEditReminderModalOpen(false)
+          setSelectedReminder(null)
+        }}
+        reminder={selectedReminder}
         petId={id!}
         onSuccess={fetchHealthReminders}
       />
