@@ -57,7 +57,7 @@ export const DashboardHeader = () => {
               <Link to="/smart-tags">Smart Tags</Link>
             </Button>
             <Button variant="ghost" className="text-foreground hover:text-primary" asChild>
-              <Link to="/dashboard">Reminders</Link>
+              <Link to="/reminders">Reminders</Link>
             </Button>
           </nav>
 

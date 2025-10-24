@@ -56,7 +56,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
             className="text-foreground hover:text-primary"
             asChild
           >
-            <Link to={user ? '/dashboard' : '/auth'}>Reminders</Link>
+            <Link to={user ? '/reminders' : '/auth'}>Reminders</Link>
           </Button>
         </nav>
 
