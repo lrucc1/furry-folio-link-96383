@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CreditCard, Calendar, AlertCircle, ExternalLink, ArrowLeft, Sparkles } from "lucide-react";
+import { Loader2, CreditCard, Calendar, AlertCircle, ExternalLink, ArrowLeft, Sparkles, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,7 +15,10 @@ import { formatPrice } from "@/config/pricing";
 export default function BillingSettings() {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
-  const { plan, planConfig, subscriptionStatus, trialEndAt, nextBillingAt, daysUntilTrialEnd, isTrialActive } = usePlanV2();
+  const { plan, planConfig, subscriptionStatus, trialEndAt, nextBillingAt, daysUntilTrialEnd, isTrialActive, usage } = usePlanV2();
+  
+  const isPro = plan === 'PRO';
+  const hasMultiplePets = usage.pets_count > 1;
 
   const handleManageBilling = async () => {
     if (!user) {
@@ -201,6 +204,30 @@ export default function BillingSettings() {
                     </span>
                   </div>
                 </div>
+              )}
+
+              {/* Downgrade Warning */}
+              {isPro && hasMultiplePets && (
+                <Alert variant="destructive" className="mt-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    <p className="font-semibold mb-2">Cannot downgrade with {usage.pets_count} pets</p>
+                    <p className="text-sm mb-3">
+                      The Free plan allows only 1 pet. Before canceling your Pro subscription:
+                    </p>
+                    <ol className="text-sm space-y-1 list-decimal list-inside mb-3">
+                      <li>Download your pet data to keep a backup</li>
+                      <li>Delete {usage.pets_count - 1} pet(s) to get within the Free plan limit</li>
+                      <li>Then you can cancel your subscription</li>
+                    </ol>
+                    <Button asChild variant="outline" size="sm" className="w-full">
+                      <Link to="/settings/export-data">
+                        <Download className="w-4 h-4 mr-2" />
+                        Download Pet Data First
+                      </Link>
+                    </Button>
+                  </AlertDescription>
+                </Alert>
               )}
 
               {plan === 'PRO' && (
