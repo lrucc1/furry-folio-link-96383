@@ -48,14 +48,13 @@ const AddPet = () => {
     }
   }
 
-  const maxPets = entitlement?.pets_max ?? 0
   const currentPets = usage.pets_count
-  // Handle both null and -1 as unlimited
-  const isUnlimited = maxPets === null || maxPets === -1 || maxPets < 0
+  const isProPlan = plan === 'PRO'
+  const rawMax = entitlement?.pets_max ?? (isProPlan ? null : 1)
+  const isUnlimited = isProPlan || rawMax === null || (typeof rawMax === 'number' && rawMax < 0)
+  const maxPets = isUnlimited ? -1 : (rawMax as number)
   const canAddPet = isUnlimited || currentPets < maxPets
-  const remainingPets = isUnlimited 
-    ? 'Unlimited' 
-    : Math.max(0, maxPets - currentPets)
+  const remainingPets = isUnlimited ? 'Unlimited' : Math.max(0, maxPets - currentPets)
   const progressPercentage = isUnlimited ? 0 : (currentPets / maxPets) * 100
   
   const [formData, setFormData] = useState({
