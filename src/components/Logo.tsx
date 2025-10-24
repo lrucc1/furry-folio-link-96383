@@ -14,7 +14,7 @@ export const Logo = ({
   showText = true 
 }: LogoProps) => {
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
+    <div className={`flex items-center gap-2 cursor-pointer ${className}`}>
       <div className="relative">
         <Link2 className={`${iconClassName} text-primary rotate-45`} strokeWidth={2.5} />
       </div>
