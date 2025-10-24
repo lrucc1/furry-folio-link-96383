@@ -20,6 +20,7 @@ export function VaccinationModal({ open, onClose, petId, onSuccess }: Vaccinatio
   const [formData, setFormData] = useState({
     vaccine_name: '',
     vaccine_date: '',
+    next_due_date: '',
     clinic: '',
     notes: ''
   });
@@ -50,6 +51,7 @@ export function VaccinationModal({ open, onClose, petId, onSuccess }: Vaccinatio
           user_id: user.id,
           vaccine_name: formData.vaccine_name,
           vaccine_date: formData.vaccine_date,
+          next_due_date: formData.next_due_date || null,
           notes: formData.notes || null
         });
 
@@ -59,6 +61,7 @@ export function VaccinationModal({ open, onClose, petId, onSuccess }: Vaccinatio
       setFormData({
         vaccine_name: '',
         vaccine_date: '',
+        next_due_date: '',
         clinic: '',
         notes: ''
       });
@@ -97,6 +100,17 @@ export function VaccinationModal({ open, onClose, petId, onSuccess }: Vaccinatio
               value={formData.vaccine_date}
               onChange={(e) => setFormData({ ...formData, vaccine_date: e.target.value })}
               required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="next_due_date">{au('Next due date')}</Label>
+            <Input
+              id="next_due_date"
+              type="date"
+              value={formData.next_due_date}
+              onChange={(e) => setFormData({ ...formData, next_due_date: e.target.value })}
+              placeholder={au('Optional - for reminders')}
             />
           </div>
 

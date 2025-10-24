@@ -9,12 +9,13 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DashboardHeader } from '@/components/DashboardHeader'
 import { Footer } from '@/components/Footer'
-import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download, Upload, Scan, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download, Upload, Scan, ExternalLink, Bell, CheckCircle, Trash2, Plus } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from '@/hooks/use-toast'
 import { PetDocuments } from '@/components/PetDocuments'
 import { VaccinationModal } from '@/components/VaccinationModal'
 import { SharingTab } from '@/components/SharingTab'
+import { HealthReminderModal } from '@/components/HealthReminderModal'
 import { au } from '@/lib/auEnglish'
 
 interface Pet {
@@ -46,19 +47,31 @@ interface Vaccination {
   next_due_date: string | null
 }
 
+interface HealthReminder {
+  id: string
+  title: string
+  reminder_type: string | null
+  reminder_date: string
+  description: string | null
+  completed: boolean
+}
+
 const PetDetails = () => {
   const { id } = useParams<{ id: string }>()
   const { user } = useAuth()
   const navigate = useNavigate()
   const [pet, setPet] = useState<Pet | null>(null)
   const [vaccinations, setVaccinations] = useState<Vaccination[]>([])
+  const [healthReminders, setHealthReminders] = useState<HealthReminder[]>([])
   const [loading, setLoading] = useState(true)
   const [vaccinationModalOpen, setVaccinationModalOpen] = useState(false)
+  const [healthReminderModalOpen, setHealthReminderModalOpen] = useState(false)
 
   useEffect(() => {
     if (id) {
       fetchPetDetails()
       fetchVaccinations()
+      fetchHealthReminders()
     }
   }, [id, user])
 
@@ -96,6 +109,73 @@ const PetDetails = () => {
       setVaccinations(data || [])
     } catch (error) {
       console.error('Error fetching vaccinations:', error)
+    }
+  }
+
+  const fetchHealthReminders = async () => {
+    if (!id) return
+
+    try {
+      const { data, error } = await (supabase as any)
+        .from('health_reminders')
+        .select('*')
+        .eq('pet_id', id)
+        .order('reminder_date', { ascending: true })
+
+      if (error) throw error
+      setHealthReminders(data || [])
+    } catch (error) {
+      console.error('Error fetching health reminders:', error)
+    }
+  }
+
+  const toggleReminderComplete = async (reminderId: string, currentStatus: boolean) => {
+    try {
+      const { error } = await (supabase as any)
+        .from('health_reminders')
+        .update({ completed: !currentStatus })
+        .eq('id', reminderId)
+
+      if (error) throw error
+
+      setHealthReminders(healthReminders.map(r => 
+        r.id === reminderId ? { ...r, completed: !currentStatus } : r
+      ))
+
+      toast({
+        title: !currentStatus ? "Reminder completed" : "Reminder reopened",
+      })
+    } catch (error) {
+      console.error('Error updating reminder:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update reminder",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const deleteReminder = async (reminderId: string) => {
+    try {
+      const { error } = await (supabase as any)
+        .from('health_reminders')
+        .delete()
+        .eq('id', reminderId)
+
+      if (error) throw error
+
+      setHealthReminders(healthReminders.filter(r => r.id !== reminderId))
+
+      toast({
+        title: "Reminder deleted",
+      })
+    } catch (error) {
+      console.error('Error deleting reminder:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete reminder",
+        variant: "destructive",
+      })
     }
   }
 
@@ -432,11 +512,95 @@ const PetDetails = () => {
                   <div className="text-center py-8">
                     <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
                     <p className="text-muted-foreground mb-4">{au('No vaccinations recorded yet')}</p>
-                    <Button onClick={() => setVaccinationModalOpen(true)}>
-                      {au('Add vaccination')}
-                    </Button>
                   </div>
                 )}
+                {vaccinations.length > 0 && (
+                  <Button onClick={() => setVaccinationModalOpen(true)} className="w-full mt-4">
+                    <Plus className="w-4 h-4 mr-2" />
+                    {au('Add vaccination')}
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="w-5 h-5" />
+                  Health Reminders
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {healthReminders.length > 0 ? (
+                  <div className="space-y-3">
+                    {healthReminders.map((reminder) => {
+                      const isOverdue = new Date(reminder.reminder_date) < new Date()
+                      const isPastDue = isOverdue && !reminder.completed
+                      
+                      return (
+                        <div 
+                          key={reminder.id} 
+                          className={`flex items-center justify-between p-4 border rounded-lg ${
+                            reminder.completed ? 'bg-muted/50 opacity-60' : isPastDue ? 'border-destructive/50 bg-destructive/5' : ''
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 flex-1">
+                            <button
+                              onClick={() => toggleReminderComplete(reminder.id, reminder.completed)}
+                              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                                reminder.completed 
+                                  ? 'bg-primary border-primary' 
+                                  : 'border-muted-foreground hover:border-primary'
+                              }`}
+                            >
+                              {reminder.completed && <CheckCircle className="w-3 h-3 text-primary-foreground" />}
+                            </button>
+                            <div className="flex-1">
+                              <h4 className={`font-medium ${reminder.completed ? 'line-through' : ''}`}>
+                                {reminder.title}
+                              </h4>
+                              <p className="text-sm text-muted-foreground">
+                                {reminder.reminder_type && (
+                                  <span className="capitalize">{reminder.reminder_type.replace('_', ' ')} • </span>
+                                )}
+                                {new Date(reminder.reminder_date).toLocaleDateString()}
+                              </p>
+                              {reminder.description && (
+                                <p className="text-sm text-muted-foreground mt-1">{reminder.description}</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {isPastDue && (
+                              <Badge variant="destructive">Overdue</Badge>
+                            )}
+                            {!reminder.completed && !isPastDue && (
+                              <Badge variant="secondary">
+                                {new Date(reminder.reminder_date).toLocaleDateString()}
+                              </Badge>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteReminder(reminder.id)}
+                            >
+                              <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Bell className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                    <p className="text-muted-foreground mb-4">No health reminders set</p>
+                  </div>
+                )}
+                <Button onClick={() => setHealthReminderModalOpen(true)} className="w-full mt-4">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Health Reminder
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -511,6 +675,13 @@ const PetDetails = () => {
         onClose={() => setVaccinationModalOpen(false)}
         petId={id!}
         onSuccess={fetchVaccinations}
+      />
+
+      <HealthReminderModal
+        open={healthReminderModalOpen}
+        onClose={() => setHealthReminderModalOpen(false)}
+        petId={id!}
+        onSuccess={fetchHealthReminders}
       />
       
       <Footer />

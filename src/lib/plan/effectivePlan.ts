@@ -12,7 +12,7 @@ export interface ProfilePlanData {
   plan_source?: PlanSource;
 }
 
-function normalizeTier(tier?: LegacyTier | null): Tier {
+function normalizeTier(tier?: LegacyTier | string | null): Tier {
   const value = (tier || 'free').toString().toLowerCase();
 
   switch (value) {
