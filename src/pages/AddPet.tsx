@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { DashboardHeader } from '@/components/DashboardHeader'
 import { PaywallModal } from '@/components/PaywallModal'
+import { VetClinicAutocomplete, VetClinicData } from '@/components/VetClinicAutocomplete'
 import { ArrowLeft, Upload } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from '@/hooks/use-toast'
@@ -68,7 +69,8 @@ const AddPet = () => {
     microchip_number: '',
     registry_name: '',
     registry_link: '',
-    vet_clinic: '',
+    clinic_name: '',
+    clinic_address: '',
     insurance_provider: '',
     insurance_policy: '',
     notes: '',
@@ -111,7 +113,10 @@ const AddPet = () => {
         microchip_number: formData.microchip_number || null,
         registry_name: formData.registry_name || null,
         registry_link: formData.registry_link || null,
-        vet_name: formData.vet_clinic || null,
+        clinic_name: formData.clinic_name || null,
+        clinic_address: formData.clinic_address || null,
+        insurance_provider: formData.insurance_provider || null,
+        insurance_policy: formData.insurance_policy || null,
         notes: formData.notes || null,
       }
 
@@ -356,12 +361,18 @@ const AddPet = () => {
                 <h3 className="text-lg font-semibold">Health & Care</h3>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="vet_clinic">Vet Clinic</Label>
-                  <Input
-                    id="vet_clinic"
-                    value={formData.vet_clinic}
-                    onChange={(e) => handleInputChange('vet_clinic', e.target.value)}
-                    placeholder="Clinic name and contact"
+                  <Label htmlFor="clinic_name">Vet Clinic</Label>
+                  <VetClinicAutocomplete
+                    value={formData.clinic_name}
+                    clinicAddress={formData.clinic_address}
+                    onChange={(data: VetClinicData) => {
+                      setFormData(prev => ({
+                        ...prev,
+                        clinic_name: data.name,
+                        clinic_address: data.address,
+                      }))
+                    }}
+                    placeholder="Start typing vet clinic name…"
                   />
                 </div>
 
