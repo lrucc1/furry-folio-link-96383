@@ -31,6 +31,8 @@ interface Pet {
   registry_name: string | null
   registry_link: string | null
   vet_clinic: string | null
+  clinic_name: string | null
+  clinic_address: string | null
   insurance_provider: string | null
   insurance_policy: string | null
   notes: string | null
@@ -672,6 +674,8 @@ const PetDetails = () => {
         open={vaccinationModalOpen}
         onClose={() => setVaccinationModalOpen(false)}
         petId={id!}
+        defaultClinic={pet?.clinic_name || pet?.vet_clinic || ''}
+        defaultClinicAddress={pet?.clinic_address || ''}
         onSuccess={fetchVaccinations}
       />
 

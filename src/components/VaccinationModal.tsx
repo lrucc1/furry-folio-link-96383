@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { VetClinicAutocomplete, VetClinicData } from '@/components/VetClinicAutocomplete';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { au } from '@/lib/auEnglish';
@@ -12,16 +13,26 @@ interface VaccinationModalProps {
   open: boolean;
   onClose: () => void;
   petId: string;
+  defaultClinic?: string;
+  defaultClinicAddress?: string;
   onSuccess: () => void;
 }
 
-export function VaccinationModal({ open, onClose, petId, onSuccess }: VaccinationModalProps) {
+export function VaccinationModal({ 
+  open, 
+  onClose, 
+  petId, 
+  defaultClinic = '',
+  defaultClinicAddress = '',
+  onSuccess 
+}: VaccinationModalProps) {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     vaccine_name: '',
     vaccine_date: '',
     next_due_date: '',
-    clinic: '',
+    clinic_name: defaultClinic,
+    clinic_address: defaultClinicAddress,
     notes: ''
   });
 
@@ -62,7 +73,8 @@ export function VaccinationModal({ open, onClose, petId, onSuccess }: Vaccinatio
         vaccine_name: '',
         vaccine_date: '',
         next_due_date: '',
-        clinic: '',
+        clinic_name: defaultClinic,
+        clinic_address: defaultClinicAddress,
         notes: ''
       });
       onSuccess();
@@ -73,6 +85,14 @@ export function VaccinationModal({ open, onClose, petId, onSuccess }: Vaccinatio
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleClinicChange = (clinicData: VetClinicData) => {
+    setFormData({ 
+      ...formData, 
+      clinic_name: clinicData.name,
+      clinic_address: clinicData.address
+    });
   };
 
   return (
@@ -115,11 +135,12 @@ export function VaccinationModal({ open, onClose, petId, onSuccess }: Vaccinatio
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="clinic">{au('Clinic')}</Label>
-            <Input
-              id="clinic"
-              value={formData.clinic}
-              onChange={(e) => setFormData({ ...formData, clinic: e.target.value })}
+            <Label htmlFor="clinic_name">{au('Clinic')}</Label>
+            <VetClinicAutocomplete
+              value={formData.clinic_name}
+              clinicAddress={formData.clinic_address}
+              onChange={handleClinicChange}
+              placeholder={au('Search for vet clinic...')}
             />
           </div>
 
