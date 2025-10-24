@@ -113,7 +113,7 @@ export default function SmartRecoveryTags() {
     {
       icon: Wifi,
       title: 'NFC Smart Tags',
-      description: 'Tap-to-access functionality with no app required. Premium metal finish included.'
+      description: 'Tap-to-access functionality with no app required. Pro metal finish included.'
     },
     {
       icon: MapPin,

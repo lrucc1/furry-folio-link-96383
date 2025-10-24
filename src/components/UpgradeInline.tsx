@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Crown } from 'lucide-react';
 import { au } from '@/lib/auEnglish';
 import { ENV_CONFIG } from '@/config/environment';
-import { PremiumInfoSheet } from '@/components/PremiumInfoSheet';
+import { PaidPlanInfoSheet } from '@/components/PaidPlanInfoSheet';
 
 interface UpgradeInlineProps {
   feature: string;
@@ -18,7 +18,7 @@ export function UpgradeInline({ feature }: UpgradeInlineProps) {
   const { tier } = usePlan();
 
   // Don't show upgrade CTA for family plan users (no upgrade path)
-  if (tier === 'family') {
+  if (tier === 'pro') {
     return null;
   }
 
@@ -40,9 +40,9 @@ export function UpgradeInline({ feature }: UpgradeInlineProps) {
             <Crown className="w-6 h-6 text-primary" />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-foreground mb-1">{au('Premium Feature')}</h3>
+            <h3 className="font-semibold text-foreground mb-1">{au('Paid Feature')}</h3>
             <p className="text-muted-foreground text-sm mb-4">
-              {au('This feature is available on')} <strong>{au('Premium')}</strong> {au('plans')}.
+              {au('This feature is available on our')} <strong>{au('Pro')}</strong> {au('plan')}.
             </p>
             <Button 
               onClick={handleUpgrade} 
@@ -51,13 +51,13 @@ export function UpgradeInline({ feature }: UpgradeInlineProps) {
               className="gap-2"
             >
               <Crown className="w-4 h-4" />
-              {au('Upgrade to Premium')}
+              {au('View Paid Plans')}
             </Button>
           </div>
         </div>
       </div>
-      
-      <PremiumInfoSheet open={showInfoSheet} onOpenChange={setShowInfoSheet} />
+
+      <PaidPlanInfoSheet open={showInfoSheet} onOpenChange={setShowInfoSheet} />
     </>
   );
 }

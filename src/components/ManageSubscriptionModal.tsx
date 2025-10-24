@@ -6,49 +6,41 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Crown, Star, AlertTriangle, Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { Crown, AlertTriangle, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { au } from '@/lib/auEnglish';
 import { TierFeatures } from '@/config/tierFeatures';
+import { PLANS } from '@/config/pricing';
 import { log } from '@/lib/log';
 
 interface ManageSubscriptionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  currentTier: 'free' | 'premium' | 'family';
+  currentTier: 'free' | 'pro';
   currentPetCount: number;
   currentStorageMB: number;
   onPlanChange: () => void;
 }
 
 const TIER_INFO = {
-  free: { 
-    name: 'Free', 
-    price: '$0', 
+  free: {
+    name: 'Free',
+    price: '$0',
     icon: null,
     maxPets: 1,
-    maxStorageMB: 0,
+    maxStorageMB: PLANS.FREE.entitlements.docs_storage_mb,
     productId: null,
-    priceId: null
+    priceId: null,
   },
-  premium: { 
-    name: 'Premium', 
-    price: '$4.49', 
-    icon: Star,
-    maxPets: 5,
-    maxStorageMB: 50,
-    productId: 'prod_TGGcRtzlK6vz7A',
-    priceId: 'price_1SJk4yEhyEZfSSpN8x8KqTGY'
-  },
-  family: { 
-    name: 'Family', 
-    price: '$7.99', 
+  pro: {
+    name: 'Pro',
+    price: '$7.99',
     icon: Crown,
     maxPets: -1,
-    maxStorageMB: 200,
+    maxStorageMB: PLANS.PRO.entitlements.docs_storage_mb,
     productId: 'prod_TGGcY3nKNalPuA',
-    priceId: 'price_1SJk5TEhyEZfSSpNKpDL6ZyO'
+    priceId: 'price_1SJk5TEhyEZfSSpNKpDL6ZyO',
   },
-};
+} as const;
 
 export function ManageSubscriptionModal({
   open,
@@ -61,7 +53,7 @@ export function ManageSubscriptionModal({
   const [loading, setLoading] = useState(false);
   const [openingPortal, setOpeningPortal] = useState(false);
 
-  const canDowngradeTo = (targetTier: 'free' | 'premium' | 'family') => {
+  const canDowngradeTo = (targetTier: 'free' | 'pro') => {
     const targetLimits = TIER_INFO[targetTier];
     
     const petCheck = targetLimits.maxPets === -1 || currentPetCount <= targetLimits.maxPets;
@@ -76,10 +68,10 @@ export function ManageSubscriptionModal({
     };
   };
 
-  const handleUpgrade = async (targetTier: 'premium' | 'family') => {
+  const handleUpgrade = async (targetTier: 'pro') => {
     setLoading(true);
     try {
-      const priceId = TIER_INFO[targetTier as 'premium' | 'family'].priceId as string | null;
+      const priceId = TIER_INFO[targetTier].priceId as string | null;
       if (!priceId) throw new Error('Missing priceId for target tier');
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
@@ -116,15 +108,12 @@ export function ManageSubscriptionModal({
     }
   };
 
-  const renderPlanOption = (tier: 'free' | 'premium' | 'family') => {
+  const renderPlanOption = (tier: 'free' | 'pro') => {
     if (tier === currentTier) return null;
     
     const tierInfo = TIER_INFO[tier];
     const Icon = tierInfo.icon;
-    const isUpgrade = (
-      (currentTier === 'free' && (tier === 'premium' || tier === 'family')) ||
-      (currentTier === 'premium' && tier === 'family')
-    );
+    const isUpgrade = currentTier === 'free' && tier === 'pro';
     const isDowngrade = !isUpgrade;
     
     const validation = isDowngrade ? canDowngradeTo(tier) : { 
@@ -226,11 +215,10 @@ export function ManageSubscriptionModal({
           <div className="space-y-3">
             <h3 className="font-semibold">{au('Available Plans')}</h3>
             {renderPlanOption('free')}
-            {renderPlanOption('premium')}
-            {renderPlanOption('family')}
+            {renderPlanOption('pro')}
           </div>
 
-          {(currentTier === 'premium' || currentTier === 'family') && (
+          {currentTier === 'pro' && (
             <div className="pt-4 border-t">
               <p className="text-sm text-muted-foreground mb-3">
                 {au('To cancel or make other changes to your subscription, use the Stripe Customer Portal:')}

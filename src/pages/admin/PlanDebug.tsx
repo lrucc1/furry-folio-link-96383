@@ -47,7 +47,7 @@ export default function PlanDebug() {
             <CardContent className="space-y-2">
               <div className="flex justify-between">
                 <span className="font-medium">Effective Tier:</span>
-                <span className={tier === 'premium' ? 'text-primary font-bold' : 'text-muted-foreground'}>
+                <span className={tier !== 'free' ? 'text-primary font-bold' : 'text-muted-foreground'}>
                   {tier}
                 </span>
               </div>

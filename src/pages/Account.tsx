@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlan } from '@/lib/plan/PlanContext';
 import { TierFeatures } from '@/config/tierFeatures';
+import { PLANS } from '@/config/pricing';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -13,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Download, Trash2, UserCircle, Bell, Shield, Users, Loader2, Crown, FileText, Settings, Star, Calendar, CreditCard, Receipt, ExternalLink, Phone, Cog } from "lucide-react";
+import { Download, Trash2, UserCircle, Bell, Shield, Users, Loader2, Crown, FileText, Settings, Calendar, CreditCard, Receipt, ExternalLink, Phone, Cog } from "lucide-react";
 import { ManageSubscriptionModal } from '@/components/ManageSubscriptionModal';
 import { exportUserData } from '@/features/export/exporter';
 import { downloadExport } from '@/features/export/download';
@@ -26,9 +27,8 @@ import { DeleteAccount } from '@/pages/settings/DeleteAccount';
 import { ENV_CONFIG } from '@/config/environment';
 
 const SUBSCRIPTION_TIERS = {
-  free: { name: 'Free', productId: null },
-  premium: { name: 'Premium', productId: 'prod_TGGcRtzlK6vz7A' },
-  family: { name: 'Family', productId: 'prod_TGGcY3nKNalPuA' },
+  free: { name: 'Free', productIds: [] as string[] },
+  pro: { name: 'Pro', productIds: ['prod_TGGcY3nKNalPuA', 'prod_TGGcRtzlK6vz7A'] },
 };
 
 interface SubscriptionStatus {
@@ -70,6 +70,10 @@ export default function Account() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [petCount, setPetCount] = useState(0);
   const [manageModalOpen, setManageModalOpen] = useState(false);
+
+  const storageLimitMB = tier === 'pro'
+    ? PLANS.PRO.entitlements.docs_storage_mb
+    : PLANS.FREE.entitlements.docs_storage_mb;
 
   useEffect(() => {
     if (!user) {
@@ -162,13 +166,11 @@ export default function Account() {
   };
 
   const getTierName = (tierKey: string) => {
-    return tierKey === 'family' ? au('Family') : tierKey === 'premium' ? au('Premium') : au('Free');
+    return tierKey === 'pro' ? au('Pro') : au('Free');
   };
 
   const getTierPrice = (tierKey: string) => {
-    if (tierKey === 'free') return '$0';
-    if (tierKey === 'premium') return '$4.49';
-    if (tierKey === 'family') return '$7.99';
+    if (tierKey === 'pro') return '$7.99';
     return '$0';
   };
 
@@ -320,25 +322,22 @@ export default function Account() {
             <TabsContent value="subscription" className="space-y-6">
               {/* Current Plan Card */}
               <Card className={`p-6 ${
-                tier === 'family' 
-                  ? 'bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 border-amber-200 dark:border-amber-800' 
-                  : tier === 'premium' 
-                  ? 'bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-950/20 dark:to-amber-950/20 border-yellow-200 dark:border-yellow-800' 
+                tier === 'pro'
+                  ? 'bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 border-amber-200 dark:border-amber-800'
                   : ''
               }`}>
                 <div className="flex items-start justify-between mb-6">
                   <div>
                     <div className="flex items-center gap-3 mb-2">
                       <h2 className="text-2xl font-bold">{getTierName(tier)}</h2>
-                      <Badge className={
-                        tier === 'family' 
-                          ? 'bg-gradient-to-r from-amber-500 to-yellow-600 text-white border-0' 
-                          : tier === 'premium' 
-                          ? 'bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0' 
-                          : 'bg-muted text-muted-foreground'
-                      }>
-                        {tier === 'family' && <Crown className="w-3 h-3 mr-1" />}
-                        {tier === 'premium' && <Star className="w-3 h-3 mr-1" />}
+                      <Badge
+                        className={
+                          tier === 'pro'
+                            ? 'bg-gradient-to-r from-amber-500 to-yellow-600 text-white border-0'
+                            : 'bg-muted text-muted-foreground'
+                        }
+                      >
+                        {tier === 'pro' && <Crown className="w-3 h-3 mr-1" />}
                         {au('Current Plan')}
                       </Badge>
                     </div>
@@ -391,7 +390,7 @@ export default function Account() {
                       ) : (
                         <Button onClick={() => navigate('/pricing')} className="flex-1">
                           <Crown className="w-4 h-4 mr-2" />
-                          {au('Upgrade to Premium')}
+                          {au('Explore Paid Plans')}
                         </Button>
                       )}
                       {tier !== 'free' && (
@@ -500,12 +499,12 @@ export default function Account() {
                 </Card>
               )}
 
-              {(tier === 'premium' || tier === 'family') && (
-                <>
-                  <Card className="p-6">
-                    <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                      <Users className="w-5 h-5" />
-                      {au('Family Sharing')}
+          {tier === 'pro' && (
+            <>
+              <Card className="p-6">
+                <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  {au('Family Sharing')}
                     </h2>
                     <p className="text-muted-foreground mb-4">
                       {au('Share access to your pets with family members')}
@@ -520,16 +519,16 @@ export default function Account() {
                       <FileText className="w-5 h-5" />
                       {au('Document Storage')}
                     </h2>
-                    <p className="text-muted-foreground">
+                  <p className="text-muted-foreground">
                       {au('Storage used')}: {loadingStorage ? (
                         <Loader2 className="w-4 h-4 inline animate-spin ml-2" />
                       ) : (
-                        `${storageUsedMB} MB / ${tier === 'family' ? '200' : '50'} MB`
+                        `${storageUsedMB} MB / ${storageLimitMB} MB`
                       )}
-                    </p>
-                  </Card>
-                </>
-              )}
+                  </p>
+              </Card>
+            </>
+          )}
             </TabsContent>
 
             <TabsContent value="profile" className="space-y-6">

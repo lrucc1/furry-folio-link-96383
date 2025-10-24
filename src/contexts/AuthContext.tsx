@@ -2,11 +2,12 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
+import { normalizeTier, Tier } from '@/lib/plan/effectivePlan'
 
 interface SubscriptionInfo {
   subscribed: boolean
   product_id: string | null
-  tier: 'free' | 'premium' | 'family'
+  tier: Tier
   maxPets: number
   subscription_end: string | null
 }
@@ -21,8 +22,8 @@ interface AuthContextType {
 }
 
 const SUBSCRIPTION_TIERS = {
-  'prod_TGGcRtzlK6vz7A': { tier: 'premium' as const, maxPets: 5 },
-  'prod_TGGcY3nKNalPuA': { tier: 'family' as const, maxPets: -1 },
+  'prod_TGGcRtzlK6vz7A': { tier: 'pro' as Tier, maxPets: -1 },
+  'prod_TGGcY3nKNalPuA': { tier: 'pro' as Tier, maxPets: -1 },
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -67,13 +68,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const tierInfo = data.product_id && SUBSCRIPTION_TIERS[data.product_id as keyof typeof SUBSCRIPTION_TIERS]
         
         // For manual subscriptions, use the tier directly
-        let tier: 'free' | 'premium' | 'family' = 'free'
+        let tier: Tier = 'free'
         let maxPets = 1
-        const apiEffectiveTier = data.effective_tier as 'free' | 'premium' | 'family' | undefined;
-        
+        const apiEffectiveTier = data.effective_tier as string | undefined;
+
         if (apiEffectiveTier) {
-          tier = apiEffectiveTier
-          maxPets = apiEffectiveTier === 'family' ? -1 : apiEffectiveTier === 'premium' ? 5 : 1
+          tier = normalizeTier(apiEffectiveTier)
+          maxPets = tier === 'pro' ? -1 : 1
         } else if (isManualSub && tierInfo) {
           tier = tierInfo.tier
           maxPets = tierInfo.maxPets

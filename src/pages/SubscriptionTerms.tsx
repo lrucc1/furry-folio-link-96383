@@ -40,7 +40,7 @@ export default function SubscriptionTerms() {
               <div>
                 <h3 className="font-semibold mb-2">1. Subscription Plans</h3>
                 <p className="text-muted-foreground">
-                  PetLinkID offers Free, Premium, and Family subscription plans. Each plan provides different features and pet limits as described on our pricing page. Prices are displayed in AUD and may vary by region.
+                  PetLinkID offers Free and Pro subscription plans. Each plan provides different features and pet limits as described on our pricing page. Prices are displayed in AUD and may vary by region.
                 </p>
               </div>
 
@@ -54,14 +54,14 @@ export default function SubscriptionTerms() {
               <div>
                 <h3 className="font-semibold mb-2">3. Free Trial</h3>
                 <p className="text-muted-foreground">
-                  If offered, free trials allow you to test Premium or Family features. You won't be charged until the trial period ends. You can cancel anytime during the trial without being charged.
+                  If offered, free trials allow you to test Pro features. You won't be charged until the trial period ends. You can cancel anytime during the trial without being charged.
                 </p>
               </div>
 
               <div>
                 <h3 className="font-semibold mb-2">4. Cancellation</h3>
                 <p className="text-muted-foreground">
-                  You may cancel your subscription at any time through your account settings or the Stripe Customer Portal. Upon cancellation, you'll continue to have access to premium features until the end of your current billing period. No refunds are provided for partial billing periods unless required by law.
+                  You may cancel your subscription at any time through your account settings or the Stripe Customer Portal. Upon cancellation, you'll continue to have access to paid features until the end of your current billing period. No refunds are provided for partial billing periods unless required by law.
                 </p>
               </div>
 

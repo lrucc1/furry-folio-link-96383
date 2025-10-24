@@ -17,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { normalizeTier } from '@/lib/plan/effectivePlan';
 
 interface UserData {
   user_id: string;
@@ -51,9 +52,19 @@ export default function AdminDashboard() {
 
   // KPI states
   const [totalUsers, setTotalUsers] = useState(0);
-  const [premiumUsers, setPremiumUsers] = useState(0);
-  const [premiumPercentage, setPremiumPercentage] = useState(0);
+  const [proUsers, setProUsers] = useState(0);
+  const [proPercentage, setProPercentage] = useState(0);
   const [estimatedMRR, setEstimatedMRR] = useState(0);
+
+  const getTierDisplay = (tier?: string) => {
+    const normalized = (tier || 'free').toLowerCase();
+
+    if (['pro', 'family', 'fire', 'premium', 'trial'].includes(normalized)) {
+      return { label: 'Pro', variant: 'default' as const, Icon: Crown };
+    }
+
+    return { label: 'Free', variant: 'secondary' as const, Icon: null };
+  };
 
   useEffect(() => {
     if (isAdmin) {
@@ -97,11 +108,13 @@ export default function AdminDashboard() {
 
       // Calculate KPIs
       setTotalUsers(userData.length);
-      const premium = userData.filter((u) => u.plan_tier === 'premium').length;
-      const family = userData.filter((u) => u.plan_tier === 'family').length;
-      setPremiumUsers(premium);
-      setPremiumPercentage(userData.length > 0 ? (premium / userData.length) * 100 : 0);
-      setEstimatedMRR((premium * 4.49) + (family * 7.99)); // Updated pricing
+      const pro = userData.filter((u) => {
+        const normalized = (u.plan_tier || 'free').toLowerCase();
+        return ['pro', 'family', 'fire', 'premium', 'trial'].includes(normalized);
+      }).length;
+      setProUsers(pro);
+      setProPercentage(userData.length > 0 ? (pro / userData.length) * 100 : 0);
+      setEstimatedMRR(pro * 7.99);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast.error('Failed to load users');
@@ -172,21 +185,21 @@ export default function AdminDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Premium Users</CardTitle>
-            <Crown className="h-4 w-4 text-primary" />
+            <CardTitle className="text-sm font-medium">Pro Users</CardTitle>
+            <Crown className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{premiumUsers}</div>
+            <div className="text-2xl font-bold">{proUsers}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Premium %</CardTitle>
+            <CardTitle className="text-sm font-medium">Pro %</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{premiumPercentage.toFixed(1)}%</div>
+            <div className="text-2xl font-bold">{proPercentage.toFixed(1)}%</div>
           </CardContent>
         </Card>
 
@@ -245,16 +258,21 @@ export default function AdminDashboard() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={user.plan_tier === 'premium' ? 'default' : 'secondary'}>
-                            {user.plan_tier === 'premium' ? (
-                              <>
-                                <Crown className="w-3 h-3 mr-1" />
-                                Premium
-                              </>
-                            ) : (
-                              'Free'
-                            )}
-                          </Badge>
+                          {(() => {
+                            const { label, variant, Icon } = getTierDisplay(user.plan_tier);
+                            return (
+                              <Badge variant={variant}>
+                                {Icon ? (
+                                  <>
+                                    <Icon className="w-3 h-3 mr-1" />
+                                    {label}
+                                  </>
+                                ) : (
+                                  label
+                                )}
+                              </Badge>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">{user.plan_source || 'stripe'}</Badge>
@@ -318,7 +336,7 @@ export default function AdminDashboard() {
       {showChangeTierModal && selectedUser && (
         <ChangeTierModal
           userId={selectedUser.user_id}
-          currentTier={(selectedUser.plan_tier as 'free' | 'premium') || 'free'}
+          currentTier={normalizeTier((selectedUser.plan_tier as string | undefined) || 'free')}
           userName={selectedUser.display_name || selectedUser.email}
           onClose={() => setShowChangeTierModal(false)}
           onSaved={handleTierSaved}

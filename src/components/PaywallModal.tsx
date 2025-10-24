@@ -26,7 +26,7 @@ export function PaywallModal({ open, onOpenChange, feature, reason }: PaywallMod
     'Unlimited pet profiles',
     'Full caregiver access (read & write)',
     'Unlimited health reminders',
-    'Large document storage (5GB)',
+    'Expanded document storage (200MB)',
     'Data export capability',
     'Priority support',
   ];

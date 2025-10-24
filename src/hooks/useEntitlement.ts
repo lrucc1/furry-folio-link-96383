@@ -38,12 +38,12 @@ export function useEntitlement() {
     };
   }, [user]);
 
-  const hasPremium = entitlement.plan === 'premium' || entitlement.plan === 'family';
+  const hasPaidPlan = entitlement.plan === 'pro';
 
   return {
     entitlement,
     loading,
-    hasPremium,
+    hasPaidPlan,
     canShowUpgrade: ENV_CONFIG.useInAppPurchases,
     marketingUrl: ENV_CONFIG.marketingUrl,
     refresh: async () => {

@@ -31,21 +31,21 @@ const features = [
     icon: Shield,
     title: "VetShare",
     description: "Share medical records with vets via QR code for seamless healthcare coordination.",
-    badge: "Premium",
+    badge: "Pro",
     color: "text-green-500"
   },
   {
     icon: Calendar,
     title: "Health Reminders",
     description: "Never miss vaccinations, medications, or vet appointments with smart notifications.",
-    badge: "Premium",
+    badge: "Pro",
     color: "text-warning"
   },
   {
     icon: Users,
     title: "Family Sharing",
     description: "Share pet access with family members, pet sitters, and emergency contacts.",
-    badge: "Premium",
+    badge: "Pro",
     color: "text-primary"
   },
   {
@@ -97,7 +97,7 @@ export const FeatureGrid = () => {
                     <feature.icon className="w-6 h-6" />
                   </div>
                   <Badge 
-                    variant={feature.badge === "Premium" ? "default" : "secondary"}
+                    variant={feature.badge === "Pro" ? "default" : "secondary"}
                     className="text-xs"
                   >
                     {feature.badge}
