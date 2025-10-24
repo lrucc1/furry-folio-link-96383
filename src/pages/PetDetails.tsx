@@ -514,12 +514,10 @@ const PetDetails = () => {
                     <p className="text-muted-foreground mb-4">{au('No vaccinations recorded yet')}</p>
                   </div>
                 )}
-                {vaccinations.length > 0 && (
-                  <Button onClick={() => setVaccinationModalOpen(true)} className="w-full mt-4">
-                    <Plus className="w-4 h-4 mr-2" />
-                    {au('Add vaccination')}
-                  </Button>
-                )}
+                <Button onClick={() => setVaccinationModalOpen(true)} className="w-full mt-4">
+                  <Plus className="w-4 h-4 mr-2" />
+                  {au('Add vaccination')}
+                </Button>
               </CardContent>
             </Card>
 
