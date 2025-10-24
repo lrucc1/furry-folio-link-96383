@@ -161,10 +161,15 @@ export const HealthReminders = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Heart className="w-5 h-5" />
-          Health Reminders
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Heart className="w-5 h-5" />
+            Health Reminders
+          </CardTitle>
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/reminders">View All</Link>
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {displayedReminders.length === 0 ? (
@@ -241,7 +246,7 @@ export const HealthReminders = () => {
                 
                 {upcomingReminders.length > 3 && (
                   <Button variant="ghost" size="sm" className="w-full" asChild>
-                    <Link to="/dashboard">
+                    <Link to="/reminders">
                       View {upcomingReminders.length - 3} more reminders
                     </Link>
                   </Button>

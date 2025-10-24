@@ -15,6 +15,7 @@ import Dashboard from "./pages/Dashboard";
 import AddPet from "./pages/AddPet";
 import EditPet from "./pages/EditPet";
 import PetDetails from "./pages/PetDetails";
+import Reminders from "./pages/Reminders";
 import FoundPet from "./pages/FoundPet";
 import PublicPetProfile from "./pages/PublicPetProfile";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -113,6 +114,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <EditPet />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/reminders" 
+                element={
+                  <ProtectedRoute>
+                    <Reminders />
                   </ProtectedRoute>
                 } 
               />
