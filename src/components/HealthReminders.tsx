@@ -198,11 +198,12 @@ export const HealthReminders = () => {
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <Badge className={getPriorityColor(reminder.priority, reminder.isOverdue)}>
-                          {getStatusText(reminder.daysUntil, reminder.isOverdue)}
-                        </Badge>
-                      </div>
+                      <Badge 
+                        variant={reminder.isOverdue ? "destructive" : "secondary"}
+                        className="flex-shrink-0"
+                      >
+                        {getStatusText(reminder.daysUntil, reminder.isOverdue)}
+                      </Badge>
                     </div>
                   );
                 })}
@@ -227,13 +228,14 @@ export const HealthReminders = () => {
                         <p className="text-xs text-muted-foreground">
                           {reminder.petName} • {format(reminder.dueDate, 'MMM dd, yyyy')}
                         </p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <Badge className={getPriorityColor(reminder.priority, false)}>
+                      <Badge 
+                        variant="outline"
+                        className="flex-shrink-0 text-muted-foreground"
+                      >
                         {getStatusText(reminder.daysUntil, false)}
                       </Badge>
-                    </div>
                   </div>
                 ))}
                 
