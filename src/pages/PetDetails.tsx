@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DashboardHeader } from '@/components/DashboardHeader'
 import { Footer } from '@/components/Footer'
-import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download, Upload, Scan, ExternalLink, Bell, CheckCircle, Trash2, Plus, Eye, Edit2 } from 'lucide-react'
+import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download, Upload, Scan, ExternalLink, Bell, CheckCircle, Trash2, Plus, Eye, Edit2, Syringe, AlertCircle } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from '@/hooks/use-toast'
 import { PetDocuments } from '@/components/PetDocuments'
@@ -510,33 +510,62 @@ const PetDetails = () => {
               </CardHeader>
               <CardContent>
                 {vaccinations.length > 0 ? (
-                  <div className="space-y-3">
-                    {vaccinations.map((vaccination) => (
-                      <div key={vaccination.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors group">
-                        <div className="flex-1">
-                          <h4 className="font-medium">{vaccination.vaccine_name}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {au('Given')}: {new Date(vaccination.vaccine_date).toLocaleDateString()}
-                          </p>
-                          {vaccination.next_due_date && (
-                            <Badge 
-                              variant={new Date(vaccination.next_due_date) < new Date() ? "destructive" : "secondary"}
-                              className="mt-2"
-                            >
-                              {au('Due')}: {new Date(vaccination.next_due_date).toLocaleDateString()}
-                            </Badge>
-                          )}
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {vaccinations.map((vaccination) => {
+                      const dueDate = vaccination.next_due_date ? new Date(vaccination.next_due_date) : null
+                      const today = new Date()
+                      const daysUntilDue = dueDate ? Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : null
+                      
+                      let dueDateColor = 'text-muted-foreground'
+                      let dueDateBg = 'bg-muted/50'
+                      if (daysUntilDue !== null) {
+                        if (daysUntilDue < 0 || daysUntilDue <= 7) {
+                          dueDateColor = 'text-destructive'
+                          dueDateBg = 'bg-destructive/10'
+                        } else if (daysUntilDue <= 30) {
+                          dueDateColor = 'text-yellow-600 dark:text-yellow-500'
+                          dueDateBg = 'bg-yellow-50 dark:bg-yellow-950/30'
+                        }
+                      }
+                      
+                      return (
+                        <div 
+                          key={vaccination.id} 
+                          className="group relative flex items-center gap-3 p-3 border rounded-lg hover:border-primary/50 hover:bg-accent/50 transition-all cursor-pointer"
                           onClick={() => handleEditVaccination(vaccination)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity"
                         >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${dueDateBg}`}>
+                            <Syringe className={`w-5 h-5 ${dueDateColor}`} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-sm truncate">{vaccination.vaccine_name}</h4>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(vaccination.vaccine_date).toLocaleDateString()}
+                            </p>
+                            {dueDate && (
+                              <p className={`text-xs font-medium ${dueDateColor} mt-1`}>
+                                {daysUntilDue < 0 
+                                  ? `Overdue ${Math.abs(daysUntilDue)}d` 
+                                  : daysUntilDue === 0
+                                  ? 'Due today'
+                                  : `Due in ${daysUntilDue}d`}
+                              </p>
+                            )}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleEditVaccination(vaccination)
+                            }}
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )
+                    })}
                   </div>
                 ) : (
                   <div className="text-center py-8">
@@ -560,57 +589,78 @@ const PetDetails = () => {
               </CardHeader>
               <CardContent>
                 {healthReminders.length > 0 ? (
-                  <div className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {healthReminders.map((reminder) => {
-                      const isOverdue = new Date(reminder.reminder_date) < new Date()
-                      const isPastDue = isOverdue && !reminder.completed
+                      const dueDate = new Date(reminder.reminder_date)
+                      const today = new Date()
+                      const daysUntilDue = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+                      
+                      let dueDateColor = 'text-muted-foreground'
+                      let dueDateBg = 'bg-muted/50'
+                      let iconColor = 'text-muted-foreground'
+                      
+                      if (!reminder.completed) {
+                        if (daysUntilDue < 0 || daysUntilDue <= 7) {
+                          dueDateColor = 'text-destructive'
+                          dueDateBg = 'bg-destructive/10'
+                          iconColor = 'text-destructive'
+                        } else if (daysUntilDue <= 30) {
+                          dueDateColor = 'text-yellow-600 dark:text-yellow-500'
+                          dueDateBg = 'bg-yellow-50 dark:bg-yellow-950/30'
+                          iconColor = 'text-yellow-600 dark:text-yellow-500'
+                        }
+                      }
+                      
+                      const ReminderIcon = reminder.completed ? CheckCircle : Bell
                       
                       return (
                         <div 
                           key={reminder.id} 
-                          className={`flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors group ${
-                            reminder.completed ? 'bg-muted/50 opacity-60' : isPastDue ? 'border-destructive/50 bg-destructive/5' : ''
+                          className={`group relative flex items-center gap-3 p-3 border rounded-lg hover:border-primary/50 hover:bg-accent/50 transition-all cursor-pointer ${
+                            reminder.completed ? 'opacity-60' : ''
                           }`}
+                          onClick={() => handleEditReminder(reminder)}
                         >
-                          <div className="flex items-center gap-3 flex-1">
-                            <button
-                              onClick={() => toggleReminderComplete(reminder.id, reminder.completed)}
-                              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                                reminder.completed 
-                                  ? 'bg-primary border-primary' 
-                                  : 'border-muted-foreground hover:border-primary'
-                              }`}
-                            >
-                              {reminder.completed && <CheckCircle className="w-3 h-3 text-primary-foreground" />}
-                            </button>
-                            <div className="flex-1">
-                              <h4 className={`font-medium ${reminder.completed ? 'line-through' : ''}`}>
-                                {reminder.title}
-                              </h4>
-                              <p className="text-sm text-muted-foreground">
-                                {reminder.reminder_type && (
-                                  <span className="capitalize">{reminder.reminder_type.replace('_', ' ')} • </span>
-                                )}
-                                {new Date(reminder.reminder_date).toLocaleDateString()}
-                              </p>
-                              {reminder.description && (
-                                <p className="text-sm text-muted-foreground mt-1">{reminder.description}</p>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              toggleReminderComplete(reminder.id, reminder.completed)
+                            }}
+                            className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${dueDateBg} hover:scale-105 transition-transform`}
+                          >
+                            <ReminderIcon className={`w-5 h-5 ${reminder.completed ? 'text-primary' : iconColor}`} />
+                          </button>
+                          <div className="flex-1 min-w-0">
+                            <h4 className={`font-medium text-sm truncate ${reminder.completed ? 'line-through' : ''}`}>
+                              {reminder.title}
+                            </h4>
+                            <p className="text-xs text-muted-foreground">
+                              {reminder.reminder_type && (
+                                <span className="capitalize">{reminder.reminder_type.replace('_', ' ')} • </span>
                               )}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {isPastDue && (
-                              <Badge variant="destructive">Overdue</Badge>
+                              {new Date(reminder.reminder_date).toLocaleDateString()}
+                            </p>
+                            {!reminder.completed && (
+                              <p className={`text-xs font-medium ${dueDateColor} mt-1`}>
+                                {daysUntilDue < 0 
+                                  ? `Overdue ${Math.abs(daysUntilDue)}d` 
+                                  : daysUntilDue === 0
+                                  ? 'Due today'
+                                  : `Due in ${daysUntilDue}d`}
+                              </p>
                             )}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEditReminder(reminder)}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </Button>
                           </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleEditReminder(reminder)
+                            }}
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
                         </div>
                       )
                     })}
