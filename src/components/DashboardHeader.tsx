@@ -44,7 +44,7 @@ export const DashboardHeader = () => {
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => navigate('/dashboard')}>
               <Menu className="w-5 h-5" />
             </Button>
-            <Link to="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <Logo />
             </Link>
           </div>
