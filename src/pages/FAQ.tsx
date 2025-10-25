@@ -238,7 +238,7 @@ export default function FAQ() {
 
         <div className="space-y-8">
           {faqs.map((section, idx) => (
-            <Card key={idx} className="bg-gradient-card border-0 shadow-soft">
+            <Card key={idx} id={section.category.toLowerCase().replace(/\s+&\s+/g, '-').replace(/\s+/g, '-')} className="bg-gradient-card border-0 shadow-soft scroll-mt-20">
               <CardHeader>
                 <CardTitle className="text-2xl text-foreground">
                   {section.category}
