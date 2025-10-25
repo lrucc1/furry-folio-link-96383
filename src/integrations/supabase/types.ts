@@ -50,7 +50,11 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          last_notification_sent_at: string | null
+          next_notification_at: string | null
           pet_id: string
+          recurrence_enabled: boolean | null
+          recurrence_interval: string | null
           reminder_date: string
           reminder_type: string | null
           title: string
@@ -62,7 +66,11 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          last_notification_sent_at?: string | null
+          next_notification_at?: string | null
           pet_id: string
+          recurrence_enabled?: boolean | null
+          recurrence_interval?: string | null
           reminder_date: string
           reminder_type?: string | null
           title: string
@@ -74,7 +82,11 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          last_notification_sent_at?: string | null
+          next_notification_at?: string | null
           pet_id?: string
+          recurrence_enabled?: boolean | null
+          recurrence_interval?: string | null
           reminder_date?: string
           reminder_type?: string | null
           title?: string
@@ -504,6 +516,42 @@ export type Database = {
         }
         Relationships: []
       }
+      reminder_notifications: {
+        Row: {
+          days_before: number | null
+          id: string
+          notification_type: string
+          pet_id: string
+          reminder_id: string
+          reminder_type: string
+          sent_at: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          days_before?: number | null
+          id?: string
+          notification_type: string
+          pet_id: string
+          reminder_id: string
+          reminder_type: string
+          sent_at?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          days_before?: number | null
+          id?: string
+          notification_type?: string
+          pet_id?: string
+          reminder_id?: string
+          reminder_type?: string
+          sent_at?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       smart_tag_interest: {
         Row: {
           comments: string | null
@@ -682,9 +730,13 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          last_notification_sent_at: string | null
           next_due_date: string | null
+          next_notification_at: string | null
           notes: string | null
           pet_id: string
+          recurrence_enabled: boolean | null
+          recurrence_interval: string | null
           updated_at: string | null
           user_id: string
           vaccine_date: string
@@ -693,9 +745,13 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
+          last_notification_sent_at?: string | null
           next_due_date?: string | null
+          next_notification_at?: string | null
           notes?: string | null
           pet_id: string
+          recurrence_enabled?: boolean | null
+          recurrence_interval?: string | null
           updated_at?: string | null
           user_id: string
           vaccine_date: string
@@ -704,9 +760,13 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
+          last_notification_sent_at?: string | null
           next_due_date?: string | null
+          next_notification_at?: string | null
           notes?: string | null
           pet_id?: string
+          recurrence_enabled?: boolean | null
+          recurrence_interval?: string | null
           updated_at?: string | null
           user_id?: string
           vaccine_date?: string
