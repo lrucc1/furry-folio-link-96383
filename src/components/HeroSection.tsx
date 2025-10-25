@@ -55,7 +55,7 @@ export const HeroSection = () => {
               <div className="text-center">
                 <Smartphone className="w-8 h-8 mx-auto mb-2 text-primary-glow" />
                 <p className="text-sm text-white/80">Cross-Platform</p>
-                <p className="text-xs text-white/60">iOS, Android & Web</p>
+                <p className="text-xs text-white/60">iOS & Web</p>
               </div>
             </div>
           </div>

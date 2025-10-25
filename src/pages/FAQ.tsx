@@ -39,7 +39,7 @@ const faqs = [
       },
       {
         q: "Do I need special equipment to scan the QR code?",
-        a: "No! Any smartphone camera can scan the QR code. Just point the camera at the code and tap the notification that appears - it works on both iOS and Android devices."
+        a: "No! Any smartphone camera can scan the QR code. Just point the camera at the code and tap the notification that appears."
       },
       {
         q: "Can I print my pet's QR code?",
@@ -145,11 +145,11 @@ const faqs = [
     questions: [
       {
         q: "What devices can I use PetLinkID on?",
-        a: "PetLinkID works on iOS, Android, and any web browser. Your pet's information is automatically synced across all your devices, so you can access it anywhere."
+        a: "PetLinkID works on iOS and any web browser. Your pet's information is automatically synced across all your devices, so you can access it anywhere."
       },
       {
         q: "Do I need to install an app?",
-        a: "You can use PetLinkID directly in your web browser, or download our mobile apps for iOS and Android for a native experience with push notifications."
+        a: "You can use PetLinkID directly in your web browser, or download our iOS app for a native experience with push notifications."
       },
       {
         q: "Is my data synced between devices?",
