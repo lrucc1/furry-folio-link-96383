@@ -17,7 +17,7 @@ export const HeroSection = () => {
             
             <h1 className="text-4xl lg:text-6xl font-bold mb-6 leading-tight">
               Your Pet's
-              <span className="block bg-gradient-to-r from-white to-primary-glow bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-white to-primary-glow bg-clip-text text-transparent [-webkit-text-fill-color:transparent] [backface-visibility:hidden] [transform:translateZ(0)]">
                 Digital Passport
               </span>
             </h1>
