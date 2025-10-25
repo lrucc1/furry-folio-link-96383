@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -21,7 +22,9 @@ export function HealthReminderModal({ open, onClose, petId, onSuccess }: HealthR
     title: '',
     reminder_type: 'general',
     reminder_date: '',
-    description: ''
+    description: '',
+    recurrence_enabled: false,
+    recurrence_interval: 'none' as 'none' | 'monthly' | 'yearly'
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,7 +49,9 @@ export function HealthReminderModal({ open, onClose, petId, onSuccess }: HealthR
           reminder_type: formData.reminder_type,
           reminder_date: formData.reminder_date,
           description: formData.description || null,
-          completed: false
+          completed: false,
+          recurrence_enabled: formData.recurrence_enabled,
+          recurrence_interval: formData.recurrence_enabled ? formData.recurrence_interval : 'none'
         });
 
       if (error) throw error;
@@ -56,7 +61,9 @@ export function HealthReminderModal({ open, onClose, petId, onSuccess }: HealthR
         title: '',
         reminder_type: 'general',
         reminder_date: '',
-        description: ''
+        description: '',
+        recurrence_enabled: false,
+        recurrence_interval: 'none'
       });
       onSuccess();
       onClose();
@@ -115,6 +122,38 @@ export function HealthReminderModal({ open, onClose, petId, onSuccess }: HealthR
               onChange={(e) => setFormData({ ...formData, reminder_date: e.target.value })}
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Repeat</Label>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Enable recurring reminder</span>
+              <Switch
+                checked={formData.recurrence_enabled}
+                onCheckedChange={(checked) => setFormData({ ...formData, recurrence_enabled: checked })}
+                aria-label="Enable recurring reminder"
+              />
+            </div>
+            {formData.recurrence_enabled && (
+              <div className="pt-2">
+                <Label className="text-sm">Repeat interval</Label>
+                <Select
+                  value={formData.recurrence_interval}
+                  onValueChange={(val) => setFormData({ ...formData, recurrence_interval: val as 'monthly' | 'yearly' })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select interval" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                    <SelectItem value="yearly">Yearly</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  We will remind you before the next due date based on this interval.
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
