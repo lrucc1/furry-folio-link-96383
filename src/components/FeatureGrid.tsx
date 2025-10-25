@@ -73,7 +73,7 @@ const features = [
   {
     icon: Smartphone,
     title: "Cross Platform",
-    description: "Access your pet's information anywhere - iOS, Android, or web browser.",
+    description: "Access your pet's information anywhere - iOS or web browser.",
     badge: "Universal",
     color: "text-primary",
     faqId: "cross-platform-access"
