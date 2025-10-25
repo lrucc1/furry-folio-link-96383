@@ -57,8 +57,8 @@ const features = [
   },
   {
     icon: MapPin,
-    title: "Lost Pet Network",
-    description: "Instantly create shareable lost pet alerts with location and contact information.",
+    title: "Lost Pet",
+    description: "Instantly create shareable lost pet alerts and posters using your pet's digital ID and QR code with location and contact information.",
     badge: "Free",
     color: "text-destructive"
   },
