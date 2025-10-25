@@ -34,6 +34,7 @@ const EditPet = () => {
     sex: '',
     date_of_birth: '',
     desexed: false,
+    weight_kg: '',
     microchip_number: '',
     registry_name: '',
     registry_link: '',
@@ -72,6 +73,7 @@ const EditPet = () => {
         sex: data.gender || '',
         date_of_birth: data.date_of_birth || '',
         desexed: !!data.desexed,
+        weight_kg: data.weight_kg ? String(data.weight_kg) : '',
         microchip_number: data.microchip_number || '',
         registry_name: data.registry_name || '',
         registry_link: data.registry_link || '',
@@ -200,6 +202,7 @@ const EditPet = () => {
         gender: formData.sex || null,
         date_of_birth: formData.date_of_birth || null,
         desexed: formData.desexed,
+        weight_kg: formData.weight_kg ? parseFloat(formData.weight_kg) : null,
         microchip_number: formData.microchip_number || null,
         registry_name: formData.registry_name || null,
         registry_link: formData.registry_link || null,
@@ -391,6 +394,21 @@ const EditPet = () => {
                       type="date"
                       value={formData.date_of_birth}
                       onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="weight_kg">Weight (kg)</Label>
+                    <Input
+                      id="weight_kg"
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      value={formData.weight_kg}
+                      onChange={(e) => handleInputChange('weight_kg', e.target.value)}
+                      placeholder="e.g., 25.5"
                     />
                   </div>
                 </div>

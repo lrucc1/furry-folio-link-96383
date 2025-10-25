@@ -29,6 +29,7 @@ interface Pet {
   sex: string | null
   date_of_birth: string | null
   desexed: boolean
+  weight_kg: number | null
   microchip_number: string | null
   registry_name: string | null
   registry_link: string | null
@@ -377,6 +378,12 @@ const PetDetails = () => {
                         </p>
                       </div>
                     </>
+                  )}
+                  {pet.weight_kg && (
+                    <div>
+                      <span className="text-muted-foreground">Weight:</span>
+                      <p className="font-medium">{pet.weight_kg} kg</p>
+                    </div>
                   )}
                 </div>
               </div>
