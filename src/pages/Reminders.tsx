@@ -20,6 +20,8 @@ interface Vaccination {
   next_due_date: string | null;
   pet_id: string;
   notes: string | null;
+  recurrence_enabled: boolean | null;
+  recurrence_interval: string | null;
   pets: {
     name: string;
     photo_url: string | null;
@@ -34,6 +36,8 @@ interface HealthReminder {
   description: string | null;
   completed: boolean;
   pet_id: string;
+  recurrence_enabled: boolean | null;
+  recurrence_interval: string | null;
   pets: {
     name: string;
     photo_url: string | null;
@@ -82,6 +86,8 @@ export default function Reminders() {
           next_due_date,
           pet_id,
           notes,
+          recurrence_enabled,
+          recurrence_interval,
           pets!inner(name, photo_url, user_id)
         `)
         .eq('pets.user_id', user?.id)
@@ -101,6 +107,8 @@ export default function Reminders() {
           description,
           completed,
           pet_id,
+          recurrence_enabled,
+          recurrence_interval,
           pets!inner(name, photo_url, user_id)
         `)
         .eq('pets.user_id', user?.id)
@@ -279,14 +287,19 @@ export default function Reminders() {
                                 <div className="flex items-start justify-between gap-4">
                                   <div className="flex items-start gap-3 flex-1">
                                     <Icon className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
-                                    <div className="flex-1">
-                                      <h3 className="font-semibold">{reminder.title}</h3>
-                                      <p className="text-sm text-muted-foreground">
-                                        {reminder.petName} • {format(reminder.dueDate, 'MMM dd, yyyy')}
-                                      </p>
-                                      {reminder.details && (
-                                        <p className="text-sm text-muted-foreground mt-2">{reminder.details}</p>
-                                      )}
+                                     <div className="flex-1">
+                                       <h3 className="font-semibold">{reminder.title}</h3>
+                                       <p className="text-sm text-muted-foreground">
+                                         {reminder.petName} • {format(reminder.dueDate, 'MMM dd, yyyy')}
+                                       </p>
+                                       {(reminder.originalData as any).recurrence_enabled && (
+                                         <Badge variant="secondary" className="mt-1 text-xs">
+                                           Repeats {(reminder.originalData as any).recurrence_interval}
+                                         </Badge>
+                                       )}
+                                       {reminder.details && (
+                                         <p className="text-sm text-muted-foreground mt-2">{reminder.details}</p>
+                                       )}
                                     </div>
                                   </div>
                                   <div className="flex flex-col items-end gap-2">
@@ -339,14 +352,19 @@ export default function Reminders() {
                                 <div className="flex items-start justify-between gap-4">
                                   <div className="flex items-start gap-3 flex-1">
                                     <Icon className="w-5 h-5 text-muted-foreground mt-0.5 flex-shrink-0" />
-                                    <div className="flex-1">
-                                      <h3 className="font-semibold">{reminder.title}</h3>
-                                      <p className="text-sm text-muted-foreground">
-                                        {reminder.petName} • {format(reminder.dueDate, 'MMM dd, yyyy')}
-                                      </p>
-                                      {reminder.details && (
-                                        <p className="text-sm text-muted-foreground mt-2">{reminder.details}</p>
-                                      )}
+                                     <div className="flex-1">
+                                       <h3 className="font-semibold">{reminder.title}</h3>
+                                       <p className="text-sm text-muted-foreground">
+                                         {reminder.petName} • {format(reminder.dueDate, 'MMM dd, yyyy')}
+                                       </p>
+                                       {(reminder.originalData as any).recurrence_enabled && (
+                                         <Badge variant="secondary" className="mt-1 text-xs">
+                                           Repeats {(reminder.originalData as any).recurrence_interval}
+                                         </Badge>
+                                       )}
+                                       {reminder.details && (
+                                         <p className="text-sm text-muted-foreground mt-2">{reminder.details}</p>
+                                       )}
                                     </div>
                                   </div>
                                   <div className="flex flex-col items-end gap-2">
