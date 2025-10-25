@@ -45,7 +45,7 @@ const features = [
     icon: Users,
     title: "Family Sharing",
     description: "Share all-in-one access to pet profiles, documents, health reminders, and vet records with family members, caregivers, babysitters, and emergency contacts.",
-    badge: "Premium",
+    badge: "Pro",
     color: "text-accent"
   },
   {
@@ -97,8 +97,8 @@ export const FeatureGrid = () => {
                     <feature.icon className="w-6 h-6" />
                   </div>
                   <Badge 
-                    variant={feature.badge === "Pro" || feature.badge === "Premium" ? "default" : "secondary"}
-                    className={`text-xs ${feature.badge === "Premium" ? "bg-accent text-accent-foreground" : ""}`}
+                    variant={feature.badge === "Pro" ? "default" : "secondary"}
+                    className="text-xs"
                   >
                     {feature.badge}
                   </Badge>
