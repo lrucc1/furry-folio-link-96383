@@ -1,5 +1,4 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { Resend } from "npm:resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -13,7 +12,7 @@ const log = (level: string, message: string, data?: any) => {
   console.log(JSON.stringify({ level, message, data, timestamp: new Date().toISOString() }));
 };
 
-const handler = async (req: Request): Promise<Response> => {
+Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -37,17 +36,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       const { data: reminders, error: reminderError } = await supabase
         .from('health_reminders')
-        .select(`
-          id,
-          pet_id,
-          user_id,
-          reminder_date,
-          title,
-          description,
-          reminder_type,
-          pets (name, species),
-          profiles (email, display_name)
-        `)
+        .select('*')
         .eq('reminder_date', targetDateStr)
         .eq('completed', false);
 
@@ -57,7 +46,29 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       if (reminders && reminders.length > 0) {
-        healthRemindersToNotify.push(...reminders.map(r => ({ ...r, days_before: days })));
+        for (const reminder of reminders) {
+          // Fetch pet and profile data separately
+          const { data: pet } = await supabase
+            .from('pets')
+            .select('name, species')
+            .eq('id', reminder.pet_id)
+            .single();
+          
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('email, display_name')
+            .eq('id', reminder.user_id)
+            .single();
+
+          healthRemindersToNotify.push({ 
+            ...reminder, 
+            days_before: days,
+            pet_name: pet?.name,
+            pet_species: pet?.species,
+            user_email: profile?.email,
+            user_name: profile?.display_name
+          });
+        }
       }
     }
 
@@ -71,16 +82,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       const { data: vaccinations, error: vaccinationError } = await supabase
         .from('vaccinations')
-        .select(`
-          id,
-          pet_id,
-          user_id,
-          next_due_date,
-          vaccine_name,
-          notes,
-          pets (name, species),
-          profiles (email, display_name)
-        `)
+        .select('*')
         .eq('next_due_date', targetDateStr);
 
       if (vaccinationError) {
@@ -89,7 +91,29 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       if (vaccinations && vaccinations.length > 0) {
-        vaccinationsToNotify.push(...vaccinations.map(v => ({ ...v, days_before: days })));
+        for (const vaccination of vaccinations) {
+          // Fetch pet and profile data separately
+          const { data: pet } = await supabase
+            .from('pets')
+            .select('name, species')
+            .eq('id', vaccination.pet_id)
+            .single();
+          
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('email, display_name')
+            .eq('id', vaccination.user_id)
+            .single();
+
+          vaccinationsToNotify.push({ 
+            ...vaccination, 
+            days_before: days,
+            pet_name: pet?.name,
+            pet_species: pet?.species,
+            user_email: profile?.email,
+            user_name: profile?.display_name
+          });
+        }
       }
     }
 
@@ -104,10 +128,10 @@ const handler = async (req: Request): Promise<Response> => {
     // Send emails for health reminders
     for (const reminder of healthRemindersToNotify) {
       try {
-        const userEmail = reminder.profiles?.email;
-        const userName = reminder.profiles?.display_name || 'Pet Owner';
-        const petName = reminder.pets?.name || 'Your pet';
-        const petSpecies = reminder.pets?.species || 'pet';
+        const userEmail = reminder.user_email;
+        const userName = reminder.user_name || 'Pet Owner';
+        const petName = reminder.pet_name || 'Your pet';
+        const petSpecies = reminder.pet_species || 'pet';
 
         if (!userEmail) {
           log("warn", "No email found for user", { reminder_id: reminder.id });
@@ -176,10 +200,10 @@ const handler = async (req: Request): Promise<Response> => {
     // Send emails for vaccinations
     for (const vaccination of vaccinationsToNotify) {
       try {
-        const userEmail = vaccination.profiles?.email;
-        const userName = vaccination.profiles?.display_name || 'Pet Owner';
-        const petName = vaccination.pets?.name || 'Your pet';
-        const petSpecies = vaccination.pets?.species || 'pet';
+        const userEmail = vaccination.user_email;
+        const userName = vaccination.user_name || 'Pet Owner';
+        const petName = vaccination.pet_name || 'Your pet';
+        const petSpecies = vaccination.pet_species || 'pet';
 
         if (!userEmail) {
           log("warn", "No email found for user", { vaccination_id: vaccination.id });
@@ -270,6 +294,4 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
   }
-};
-
-serve(handler);
+});
