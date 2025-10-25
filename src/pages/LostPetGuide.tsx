@@ -35,7 +35,8 @@ const LostPetGuide = () => {
     {
       icon: <Share className="w-6 h-6" />,
       title: "Spread the Word",
-      description: "Post on social media, community groups, and lost pet websites immediately."
+      description: "Post on social media, community groups, and lost pet websites immediately. Use the lost pet poster tool on your pet's profile to create shareable alerts.",
+      link: "/faq#lost-pet-recovery"
     }
   ];
 
@@ -123,6 +124,11 @@ const LostPetGuide = () => {
                       <p className="text-muted-foreground text-sm mt-1">
                         {step.description}
                       </p>
+                      {step.link && (
+                        <Button variant="link" size="sm" className="px-0 h-auto mt-2" asChild>
+                          <Link to={step.link}>Learn more →</Link>
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </CardHeader>
