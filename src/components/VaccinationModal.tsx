@@ -8,6 +8,8 @@ import { VetClinicAutocomplete, VetClinicData } from '@/components/VetClinicAuto
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { au } from '@/lib/auEnglish';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 
 interface VaccinationModalProps {
   open: boolean;
@@ -33,7 +35,9 @@ export function VaccinationModal({
     next_due_date: '',
     clinic_name: defaultClinic,
     clinic_address: defaultClinicAddress,
-    notes: ''
+    notes: '',
+    recurrence_enabled: false,
+    recurrence_interval: 'none' as 'none' | 'monthly' | 'yearly'
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,7 +67,9 @@ export function VaccinationModal({
           vaccine_name: formData.vaccine_name,
           vaccine_date: formData.vaccine_date,
           next_due_date: formData.next_due_date || null,
-          notes: formData.notes || null
+          notes: formData.notes || null,
+          recurrence_enabled: formData.recurrence_enabled,
+          recurrence_interval: formData.recurrence_enabled ? formData.recurrence_interval : 'none'
         });
 
       if (error) throw error;
@@ -75,7 +81,9 @@ export function VaccinationModal({
         next_due_date: '',
         clinic_name: defaultClinic,
         clinic_address: defaultClinicAddress,
-        notes: ''
+        notes: '',
+        recurrence_enabled: false,
+        recurrence_interval: 'none'
       });
       onSuccess();
       onClose();
@@ -132,6 +140,38 @@ export function VaccinationModal({
               onChange={(e) => setFormData({ ...formData, next_due_date: e.target.value })}
               placeholder={au('Optional - for reminders')}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>{au('Repeat')}</Label>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">{au('Enable recurring reminder')}</span>
+              <Switch
+                checked={formData.recurrence_enabled}
+                onCheckedChange={(checked) => setFormData({ ...formData, recurrence_enabled: checked })}
+                aria-label={au('Enable recurring reminder')}
+              />
+            </div>
+            {formData.recurrence_enabled && (
+              <div className="pt-2">
+                <Label className="text-sm">{au('Repeat interval')}</Label>
+                <Select
+                  value={formData.recurrence_interval}
+                  onValueChange={(val) => setFormData({ ...formData, recurrence_interval: val as 'monthly' | 'yearly' })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={au('Select interval')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="monthly">{au('Monthly')}</SelectItem>
+                    <SelectItem value="yearly">{au('Yearly')}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {au('We will remind you before the next due date based on this interval.')}
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
