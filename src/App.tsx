@@ -21,6 +21,7 @@ import PublicPetProfile from "./pages/PublicPetProfile";
 import AdminDashboard from "./pages/AdminDashboard";
 import PlanDebug from "./pages/admin/PlanDebug";
 import HelpCentre from "./pages/HelpCentre";
+import FAQ from "./pages/FAQ";
 import Contact from "./pages/Contact";
 import LostPetGuide from "./pages/LostPetGuide";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -58,6 +59,7 @@ const App = () => (
               <Route path="/found/:publicId" element={<FoundPet />} />
               <Route path="/pet/:publicId" element={<PublicPetProfile />} />
               <Route path="/help" element={<HelpCentre />} />
+              <Route path="/faq" element={<FAQ />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/lost-pet-guide" element={<LostPetGuide />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
