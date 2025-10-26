@@ -1,0 +1,130 @@
+{
+  "app_privacy": {
+    "platform": "ios",
+    "app_name": "PetLinkID",
+    "app_version": "1.0.0",
+    "developer_name": "PetLinkID Australia",
+    "privacy_policy_url": "https://petlinkid.com/privacy",
+    "data_types": [
+      {
+        "category": "Contact Info",
+        "types": [
+          {
+            "type": "Name",
+            "purposes": ["App Functionality", "Analytics"],
+            "linked_to_user": true,
+            "used_for_tracking": false
+          },
+          {
+            "type": "Email Address",
+            "purposes": ["App Functionality", "Customer Support"],
+            "linked_to_user": true,
+            "used_for_tracking": false
+          },
+          {
+            "type": "Phone Number",
+            "purposes": ["App Functionality", "Customer Support"],
+            "linked_to_user": true,
+            "used_for_tracking": false
+          }
+        ]
+      },
+      {
+        "category": "User Content",
+        "types": [
+          {
+            "type": "Photos or Videos",
+            "purposes": ["App Functionality"],
+            "linked_to_user": true,
+            "used_for_tracking": false,
+            "description": "Pet photos uploaded by users"
+          },
+          {
+            "type": "Other User Content",
+            "purposes": ["App Functionality"],
+            "linked_to_user": true,
+            "used_for_tracking": false,
+            "description": "Pet health records, vaccination records, and medical documents"
+          }
+        ]
+      },
+      {
+        "category": "Identifiers",
+        "types": [
+          {
+            "type": "User ID",
+            "purposes": ["App Functionality", "Analytics"],
+            "linked_to_user": true,
+            "used_for_tracking": false
+          }
+        ]
+      },
+      {
+        "category": "Usage Data",
+        "types": [
+          {
+            "type": "Product Interaction",
+            "purposes": ["Analytics", "Product Personalization"],
+            "linked_to_user": true,
+            "used_for_tracking": false,
+            "description": "How users interact with the app to improve experience"
+          }
+        ]
+      },
+      {
+        "category": "Diagnostics",
+        "types": [
+          {
+            "type": "Crash Data",
+            "purposes": ["App Functionality"],
+            "linked_to_user": false,
+            "used_for_tracking": false
+          },
+          {
+            "type": "Performance Data",
+            "purposes": ["App Functionality"],
+            "linked_to_user": false,
+            "used_for_tracking": false
+          }
+        ]
+      },
+      {
+        "category": "Financial Info",
+        "types": [
+          {
+            "type": "Payment Info",
+            "purposes": ["App Functionality"],
+            "linked_to_user": true,
+            "used_for_tracking": false,
+            "description": "Processed securely via Stripe (PCI-DSS compliant)"
+          }
+        ]
+      }
+    ],
+    "privacy_practices": {
+      "data_not_collected": [],
+      "data_linked_to_you": [
+        "Name",
+        "Email Address",
+        "Phone Number",
+        "Photos or Videos",
+        "Other User Content",
+        "User ID",
+        "Product Interaction",
+        "Payment Info"
+      ],
+      "data_not_linked_to_you": [
+        "Crash Data",
+        "Performance Data"
+      ],
+      "data_used_to_track_you": []
+    },
+    "notes": {
+      "australian_compliance": "PetLinkID complies with Australian Privacy Principles (APPs) under the Privacy Act 1988",
+      "data_retention": "User data is retained while account is active. Users can export or delete their data at any time.",
+      "third_party_sharing": "Pet contact information may be shared publicly when a pet is marked as lost or when someone scans a QR tag.",
+      "security": "All data is encrypted in transit and at rest. Payment processing via Stripe (PCI-DSS Level 1 certified).",
+      "user_rights": "Users can access, export, correct, or delete their data via in-app settings."
+    }
+  }
+}

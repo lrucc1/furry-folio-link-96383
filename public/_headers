@@ -1,0 +1,27 @@
+# Security Headers for PetLinkID Production Deployment
+# These headers enhance security and should be configured in your hosting platform
+# For Lovable deployment, add these via deployment settings or configure at CDN level
+
+/*
+  # Strict Transport Security - Force HTTPS for 1 year
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  
+  # Prevent clickjacking attacks
+  X-Frame-Options: DENY
+  
+  # Prevent MIME type sniffing
+  X-Content-Type-Options: nosniff
+  
+  # Referrer policy - send origin only for cross-origin requests
+  Referrer-Policy: strict-origin-when-cross-origin
+  
+  # Permissions Policy - disable unused browser features
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()
+  
+  # Content Security Policy - Strict policy for production
+  # Note: Adjust this based on your actual third-party integrations
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://*.supabase.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co https://api.stripe.com wss://*.supabase.co; frame-src https://js.stripe.com https://hooks.stripe.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+  
+  # Additional security headers
+  X-XSS-Protection: 1; mode=block
+  X-Permitted-Cross-Domain-Policies: none

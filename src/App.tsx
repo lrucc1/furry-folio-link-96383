@@ -34,6 +34,7 @@ import DataHandling from "./pages/DataHandling";
 import AppDownloads from "./pages/AppDownloads";
 import SmartRecoveryTags from "./pages/SmartRecoveryTags";
 import BillingSettings from "./pages/settings/BillingSettings";
+import Support from "./pages/Support";
 
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
@@ -71,7 +72,8 @@ const App = () => (
               <Route path="/data-handling" element={<DataHandling />} />
               <Route path="/downloads" element={<AppDownloads />} />
               <Route path="/smart-tags" element={<SmartRecoveryTags />} />
-              <Route 
+              <Route path="/support" element={<Support />} />
+              <Route
                 path="/admin" 
                 element={
                   <AdminRoute>
