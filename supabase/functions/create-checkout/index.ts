@@ -68,8 +68,8 @@ serve(async (req) => {
     const withTrial = body?.withTrial === true;
 
     // PRO tier price IDs - these are the hardcoded Stripe price IDs for your PRO plan
-    const PRO_PRICE_MONTHLY = 'price_1SJk4yEhyEZfSSpN8x8KqTGY'; // Update with your actual PRO monthly price ID
-    const PRO_PRICE_YEARLY = 'price_1SJk5TEhyEZfSSpNKpDL6ZyO';  // Update with your actual PRO yearly price ID
+    const PRO_PRICE_MONTHLY = 'price_1SMaydEhyEZfSSpNTP4b7ISS'; // Pro monthly A$2.99
+    const PRO_PRICE_YEARLY = 'price_1SJk5TEhyEZfSSpNKpDL6ZyO';  // TODO: update with actual Pro yearly price ID when ready
 
     // If priceId not provided, determine from tier and billing period
     if (!priceId && tier === 'PRO') {
