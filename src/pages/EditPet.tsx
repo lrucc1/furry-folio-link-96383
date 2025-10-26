@@ -640,24 +640,26 @@ const EditPet = () => {
 
         {/* Delete Pet Section - Only visible to owners */}
         {canDeletePets(role) && (
-          <Card className="mt-6 border-destructive/50">
-            <CardHeader>
-              <CardTitle className="text-destructive">Danger Zone</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Permanently delete this pet profile and all associated data
-              </p>
-            </CardHeader>
-            <CardContent>
+          <div className="mt-8 pt-6 border-t">
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="text-sm font-medium">Delete Pet Profile</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Remove this pet and all associated records from your account
+                </p>
+              </div>
               <Button
-                variant="destructive"
+                variant="outline"
+                size="sm"
                 onClick={() => setDeleteDialogOpen(true)}
                 disabled={deleting}
+                className="text-destructive hover:text-destructive"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
-                Delete Pet Profile
+                Delete
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
