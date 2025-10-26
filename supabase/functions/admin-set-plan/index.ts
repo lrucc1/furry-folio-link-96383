@@ -54,23 +54,30 @@ serve(async (req) => {
     if (!requester?.id) throw new Error("User not authenticated");
     logStep("Requester authenticated", { userId: requester.id });
 
-    // Check if requester is admin
-    const { data: requesterProfile } = await supabaseAdmin
-      .from('profiles')
-      .select('role')
-      .eq('id', requester.id)
-      .single();
+    // Check if requester is admin using the secure has_role function
+    const { data: isAdmin, error: roleCheckError } = await supabaseAdmin
+      .rpc('has_role', {
+        _user_id: requester.id,
+        _role: 'admin'
+      });
 
-    const isAdmin = requesterProfile?.role === 'super_admin' || requesterProfile?.role === 'system_admin';
+    if (roleCheckError) {
+      logStep("Error checking admin role", { error: roleCheckError });
+      return new Response(JSON.stringify({ error: "Failed to verify admin status" }), {
+        status: 500,
+        headers: { ...corsHeaders(origin), "Content-Type": "application/json" },
+      });
+    }
+
     if (!isAdmin) {
-      logStep("Permission denied - not admin", { role: requesterProfile?.role });
+      logStep("Permission denied - not admin");
       return new Response(JSON.stringify({ error: "Forbidden: Admin access required" }), {
         status: 403,
         headers: { ...corsHeaders(origin), "Content-Type": "application/json" },
       });
     }
 
-    logStep("Admin verified", { role: requesterProfile.role });
+    logStep("Admin verified");
 
     // Parse request body
     const body = await req.json();
