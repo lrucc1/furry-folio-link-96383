@@ -103,10 +103,10 @@ serve(async (req) => {
       success_url: `${origin}/account?success=true`,
       cancel_url: `${origin}/pricing?canceled=true`,
       subscription_data: {
-        description: 'Up to 5 pets, family sharing up to 5 members, VetShare, custom lost pet posters, 50MB document storage, priority support',
+        description: 'Full features for pet families',
         metadata: {
           plan: 'Pro',
-          features: 'Up to 5 pets, family sharing up to 5 members, VetShare, custom lost pet posters, 50MB document storage, priority support'
+          features: 'Unlimited Pet Profiles, Full Caregiver Access (read & write), Unlimited Health Reminders, 200MB Document Storage, Data Export Capability, Priority Support'
         }
       }
     };

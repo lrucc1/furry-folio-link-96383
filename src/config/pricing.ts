@@ -59,17 +59,17 @@ export const PLANS: Record<PlanType, PlanConfig> = {
   PRO: {
     id: 'PRO',
     name: 'Pro',
-    description: 'Up to 5 pets, family sharing up to 5 members, VetShare, custom lost pet posters, 50MB document storage, priority support',
+    description: 'Full features for pet families',
     price_monthly_aud: 2.99,
     price_yearly_aud: 28.99,
     stripe_price_monthly: STRIPE_PRICE_PRO_MONTHLY_AUD,
     stripe_price_yearly: STRIPE_PRICE_PRO_YEARLY_AUD,
     entitlements: {
-      pets_max: 5,
+      pets_max: null, // unlimited
       caregivers_readonly_max: 5,
       caregivers_readwrite_enabled: true,
       reminders_active_max: null, // unlimited
-      docs_storage_mb: 50,
+      docs_storage_mb: 200,
       export_enabled: true,
       priority_support: true,
     },
