@@ -151,13 +151,12 @@ const PrivacyPolicy = () => {
 
               <h2 className="text-2xl font-bold text-foreground mb-4">6. Contact Us</h2>
               <p className="text-muted-foreground mb-4">
-                If you have questions about this Privacy Policy or wish to exercise your rights, please contact us:
+                If you have questions about this Privacy Policy or wish to exercise your rights, please{' '}
+                <Link to="/contact" className="text-primary underline hover:text-primary/80">
+                  contact us via our contact form
+                </Link>
+                .
               </p>
-              <ul className="text-muted-foreground space-y-1 mb-6">
-                <li>Email: privacy@petpassport.com.au</li>
-                <li>Phone: 1800 PET HELP</li>
-                <li>Mail: Privacy Officer, PetLinkID, 123 Pet Street, Sydney, NSW 2000</li>
-              </ul>
 
               <h2 className="text-2xl font-bold text-foreground mb-4">7. Changes to This Policy</h2>
               <p className="text-muted-foreground">
