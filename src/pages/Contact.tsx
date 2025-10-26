@@ -44,27 +44,72 @@ const Contact = () => {
           </div>
         </div>
 
-        <div className="max-w-2xl mx-auto">
-          <Card className="bg-gradient-card border-0 shadow-medium">
-            <CardContent className="text-center py-12">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-6">
-                <Mail className="w-8 h-8 text-primary" />
-              </div>
-              
-              <h2 className="text-2xl font-bold mb-4">Email Support</h2>
-              
-              <p className="text-muted-foreground mb-6">
-                Have questions or need assistance? Send us an email and we'll get back to you as soon as possible.
-              </p>
-              
-              <Button asChild size="lg" className="w-full sm:w-auto">
-                <a href="mailto:support@petlinkid.io">
-                  <Mail className="w-4 h-4 mr-2" />
-                  support@petlinkid.io
-                </a>
-              </Button>
-            </CardContent>
-          </Card>
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Contact Form */}
+          <div className="lg:col-span-2">
+            <Card className="bg-gradient-card border-0 shadow-medium">
+              <CardHeader>
+                <CardTitle className="text-2xl">Send us a message</CardTitle>
+                <p className="text-muted-foreground">
+                  Fill out the form below and we'll get back to you within 24 hours.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input id="firstName" placeholder="Enter your first name" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input id="lastName" placeholder="Enter your last name" />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" type="email" placeholder="Enter your email address" />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="subject">Subject</Label>
+                  <Input id="subject" placeholder="What's this about?" />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="message">Message</Label>
+                  <Textarea 
+                    id="message" 
+                    placeholder="Tell us how we can help you and your pet..."
+                    className="min-h-32"
+                  />
+                </div>
+                
+                <Button className="w-full" size="lg">
+                  <Send className="w-4 h-4 mr-2" />
+                  Send Message
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Contact Info */}
+          <div className="space-y-6">
+            <Card className="bg-gradient-card border-0 shadow-medium">
+              <CardHeader>
+                <CardTitle>Contact Information</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-start gap-3">
+                  <Mail className="w-5 h-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="font-medium">Email</p>
+                    <p className="text-muted-foreground text-sm">support@petlinkid.io</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </main>
     </div>
