@@ -63,17 +63,17 @@ serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     let priceId: string | undefined = body?.priceId;
-    const tier = body?.tier as 'premium' | 'family' | undefined;
-    const withTrial = body?.withTrial === true; // New parameter for trial
+    const tier = body?.tier;
+    const billingPeriod = body?.billingPeriod || 'monthly';
+    const withTrial = body?.withTrial === true;
 
-    // Fallback mapping: allow clients to pass a tier instead of priceId
-    const TIER_TO_PRICE: Record<string, string> = {
-      premium: 'price_1SJk4yEhyEZfSSpN8x8KqTGY',
-      family: 'price_1SJk5TEhyEZfSSpNKpDL6ZyO',
-    };
+    // PRO tier price IDs - these are the hardcoded Stripe price IDs for your PRO plan
+    const PRO_PRICE_MONTHLY = 'price_1SJk4yEhyEZfSSpN8x8KqTGY'; // Update with your actual PRO monthly price ID
+    const PRO_PRICE_YEARLY = 'price_1SJk5TEhyEZfSSpNKpDL6ZyO';  // Update with your actual PRO yearly price ID
 
-    if (!priceId && tier && TIER_TO_PRICE[tier]) {
-      priceId = TIER_TO_PRICE[tier];
+    // If priceId not provided, determine from tier and billing period
+    if (!priceId && tier === 'PRO') {
+      priceId = billingPeriod === 'yearly' ? PRO_PRICE_YEARLY : PRO_PRICE_MONTHLY;
     }
 
     if (!priceId) throw new Error("Price ID is required");
