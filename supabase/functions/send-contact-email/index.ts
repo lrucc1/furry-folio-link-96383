@@ -26,10 +26,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Received contact form submission:", { firstName, lastName, email, subject });
 
-    // Send email to support (using verified Resend email in test mode)
+    // Send email to support inbox
     const emailResponse = await resend.emails.send({
-      from: "PetLinkID Contact <onboarding@resend.dev>",
-      to: ["leonrucci93@gmail.com"], // Your verified Resend email
+      from: "PetLinkID Support <support@petlinkid.io>",
+      to: ["support@petlinkid.io"],
       replyTo: email,
       subject: `Contact Form: ${subject}`,
       html: `
@@ -44,10 +44,14 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     console.log("Email sent successfully:", emailResponse);
+    if ((emailResponse as any)?.error) {
+      console.error("Resend support email error:", (emailResponse as any).error);
+      throw new Error((emailResponse as any).error.message || "Failed to send support email");
+    }
 
     // Send confirmation email to user
     await resend.emails.send({
-      from: "PetLinkID <onboarding@resend.dev>",
+      from: "PetLinkID Support <support@petlinkid.io>",
       to: [email],
       subject: "We received your message!",
       html: `
