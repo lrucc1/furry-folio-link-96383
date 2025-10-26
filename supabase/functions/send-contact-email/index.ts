@@ -26,10 +26,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Received contact form submission:", { firstName, lastName, email, subject });
 
-    // Send email to support
+    // Send email to support (using verified Resend email in test mode)
     const emailResponse = await resend.emails.send({
       from: "PetLinkID Contact <onboarding@resend.dev>",
-      to: ["support@petlinkid.io"],
+      to: ["leonrucci93@gmail.com"], // Your verified Resend email
       replyTo: email,
       subject: `Contact Form: ${subject}`,
       html: `
