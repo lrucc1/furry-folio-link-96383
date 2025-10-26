@@ -18,6 +18,7 @@ import { EditVaccinationModal } from '@/components/EditVaccinationModal'
 import { SharingTab } from '@/components/SharingTab'
 import { HealthReminderModal } from '@/components/HealthReminderModal'
 import { EditHealthReminderModal } from '@/components/EditHealthReminderModal'
+import { InstagramShareCard } from '@/components/InstagramShareCard'
 import { au } from '@/lib/auEnglish'
 
 interface Pet {
@@ -728,7 +729,15 @@ const PetDetails = () => {
                       </div>
                     </div>
 
-                    <div className="flex gap-4">
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <InstagramShareCard
+                        petName={pet.name}
+                        petSpecies={pet.species}
+                        petBreed={pet.breed}
+                        petPhoto={pet.photo_url}
+                        publicId={pet.public_id}
+                        publicUrl={publicUrl}
+                      />
                       <Button onClick={generatePoster} className="flex-1">
                         <Download className="w-4 h-4 mr-2" />
                         Generate Poster
@@ -746,6 +755,26 @@ const PetDetails = () => {
 
           {/* Sharing Tab */}
           <TabsContent value="sharing" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Share {pet.name}&apos;s Profile</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-col gap-3">
+                  <InstagramShareCard
+                    petName={pet.name}
+                    petSpecies={pet.species}
+                    petBreed={pet.breed}
+                    petPhoto={pet.photo_url}
+                    publicId={pet.public_id}
+                    publicUrl={publicUrl}
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Create a beautiful Instagram-ready card to share {pet.name}&apos;s profile and help PetLinkID grow! 🚀
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
             <SharingTab petId={id!} />
           </TabsContent>
         </Tabs>
