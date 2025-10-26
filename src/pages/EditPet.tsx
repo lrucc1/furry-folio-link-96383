@@ -12,8 +12,20 @@ import { Switch } from '@/components/ui/switch'
 import { DashboardHeader } from '@/components/DashboardHeader'
 import { ImageCropDialog } from '@/components/ImageCropDialog'
 import { VetClinicAutocomplete, VetClinicData } from '@/components/VetClinicAutocomplete'
-import { ArrowLeft, Upload, X } from 'lucide-react'
+import { ArrowLeft, Upload, X, Trash2 } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
+import { useRole } from '@/rbac/useRole'
+import { canDeletePets } from '@/rbac/guards'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 const EditPet = () => {
   const { id } = useParams<{ id: string }>()
@@ -25,6 +37,9 @@ const EditPet = () => {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [cropDialogOpen, setCropDialogOpen] = useState(false)
   const [imageToCrop, setImageToCrop] = useState<string | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const { role } = useRole(id || null)
   
   const [formData, setFormData] = useState({
     name: '',
@@ -243,6 +258,59 @@ const EditPet = () => {
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleDelete = async () => {
+    if (!user || !id) return
+
+    setDeleting(true)
+    try {
+      // Delete related data first
+      await supabase.from('vaccinations').delete().eq('pet_id', id)
+      await supabase.from('health_reminders').delete().eq('pet_id', id)
+      await supabase.from('pet_documents').delete().eq('pet_id', id)
+      await supabase.from('pet_memberships').delete().eq('pet_id', id)
+      await supabase.from('pet_invites').delete().eq('pet_id', id)
+
+      // Delete pet photo from storage if exists
+      if (formData.photo_url) {
+        try {
+          const photoPath = formData.photo_url.split('/').pop()
+          if (photoPath && photoPath.includes(user.id)) {
+            const fullPath = `${user.id}/${photoPath.split(`${user.id}/`)[1]}`
+            await supabase.storage.from('pet-documents').remove([fullPath])
+          }
+        } catch (error) {
+          console.error('Error deleting photo:', error)
+        }
+      }
+
+      // Finally delete the pet
+      const { error } = await supabase
+        .from('pets')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id)
+
+      if (error) throw error
+
+      toast({
+        title: "Pet deleted",
+        description: `${formData.name} has been removed from your account.`,
+      })
+
+      navigate('/dashboard')
+    } catch (error) {
+      console.error('Error deleting pet:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete pet. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setDeleting(false)
+      setDeleteDialogOpen(false)
+    }
   }
 
   if (loading) {
@@ -569,6 +637,63 @@ const EditPet = () => {
             </form>
           </CardContent>
         </Card>
+
+        {/* Delete Pet Section - Only visible to owners */}
+        {canDeletePets(role) && (
+          <Card className="mt-6 border-destructive/50">
+            <CardHeader>
+              <CardTitle className="text-destructive">Danger Zone</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Permanently delete this pet profile and all associated data
+              </p>
+            </CardHeader>
+            <CardContent>
+              <Button
+                variant="destructive"
+                onClick={() => setDeleteDialogOpen(true)}
+                disabled={deleting}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Pet Profile
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete <strong>{formData.name}</strong> and all associated data including:
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li>Health records and vaccinations</li>
+                  <li>Health reminders</li>
+                  <li>Documents and photos</li>
+                  <li>Family member access</li>
+                </ul>
+                <p className="mt-3 font-semibold text-destructive">This action cannot be undone.</p>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDelete}
+                disabled={deleting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                    Deleting...
+                  </>
+                ) : (
+                  'Delete Forever'
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         <ImageCropDialog
           open={cropDialogOpen}
