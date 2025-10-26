@@ -173,11 +173,11 @@ const PrivacyPolicy = () => {
                 Questions About Privacy?
               </h3>
               <p className="text-white/90 mb-6 max-w-2xl mx-auto">
-                Our privacy team is here to help you understand how we protect your information.
+                Our team is here to help you understand how we protect your information.
               </p>
               <Button variant="secondary" size="lg" asChild>
                 <Link to="/contact">
-                  Contact Privacy Team
+                  Contact Our Team
                 </Link>
               </Button>
             </CardContent>
