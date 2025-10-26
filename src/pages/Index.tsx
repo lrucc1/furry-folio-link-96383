@@ -15,7 +15,11 @@ import {
   Zap,
   Users
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useState } from "react";
 
 // Mock data for demonstration
 const mockPets = [
@@ -80,6 +84,36 @@ const pricingPlans = [
 ];
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [checkingOut, setCheckingOut] = useState(false);
+
+  const handleStartProTrial = async () => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    setCheckingOut(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          tier: 'PRO',
+          billingPeriod: 'monthly',
+          withTrial: true,
+        },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (e) {
+      console.error('Frontpage trial checkout error:', e);
+      toast.error('Could not start trial. Please try again.');
+    } finally {
+      setCheckingOut(false);
+    }
+  };
+
   const handleViewPetDetails = (pet: any) => {
     console.log("Viewing details for:", pet.name);
   };
@@ -87,7 +121,6 @@ const Index = () => {
   const handleToggleLost = (petId: string) => {
     console.log("Toggling lost status for pet:", petId);
   };
-
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -191,15 +224,24 @@ const Index = () => {
                     ))}
                   </ul>
 
-                  <Button 
-                    variant={plan.popular ? 'default' : 'outline'} 
-                    className="w-full"
-                    asChild
-                  >
-                    <Link to="/auth">
-                      {plan.cta}
-                    </Link>
-                  </Button>
+                  {plan.name === 'Pro' ? (
+                    <Button 
+                      variant={plan.popular ? 'default' : 'outline'} 
+                      className="w-full"
+                      onClick={handleStartProTrial}
+                      disabled={checkingOut}
+                    >
+                      {checkingOut ? 'Processing...' : plan.cta}
+                    </Button>
+                  ) : (
+                    <Button 
+                      variant={plan.popular ? 'default' : 'outline'} 
+                      className="w-full"
+                      asChild
+                    >
+                      <Link to="/auth">{plan.cta}</Link>
+                    </Button>
+                  )}
                 </Card>
               ))}
             </div>
