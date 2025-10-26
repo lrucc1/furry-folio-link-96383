@@ -174,7 +174,7 @@ const Contact = () => {
               <CardHeader>
                 <CardTitle>Contact Information</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 <div className="flex items-start gap-3">
                   <Mail className="w-5 h-5 text-primary mt-0.5" />
                   <div>
@@ -182,6 +182,13 @@ const Contact = () => {
                     <p className="text-muted-foreground text-sm">support@petlinkid.io</p>
                   </div>
                 </div>
+                
+                <Button asChild className="w-full" variant="outline">
+                  <a href="mailto:support@petlinkid.io">
+                    <Mail className="w-4 h-4 mr-2" />
+                    Email Support
+                  </a>
+                </Button>
               </CardContent>
             </Card>
           </div>
