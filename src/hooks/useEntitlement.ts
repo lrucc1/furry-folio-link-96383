@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { EntitlementService, Entitlement } from '@/services/EntitlementService';
-import { ENV_CONFIG } from '@/config/environment';
+import { getEnvironmentConfig } from '@/config/environment';
+
+const ENV_CONFIG = getEnvironmentConfig();
 
 export function useEntitlement() {
   const { user } = useAuth();

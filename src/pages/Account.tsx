@@ -24,7 +24,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { z } from 'zod';
 import { ExportData } from '@/pages/settings/ExportData';
 import { DeleteAccount } from '@/pages/settings/DeleteAccount';
-import { ENV_CONFIG } from '@/config/environment';
+import { getEnvironmentConfig } from '@/config/environment';
+
+const ENV_CONFIG = getEnvironmentConfig();
 
 const SUBSCRIPTION_TIERS = {
   free: { name: 'Free', productIds: [] as string[] },

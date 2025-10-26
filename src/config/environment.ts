@@ -133,6 +133,9 @@ export function getEnvironmentConfig() {
     enableDebugLogs: env !== 'production',
     enableSourceMaps: env !== 'production',
     stripeMode: env === 'production' ? 'live' : 'test',
+    // App-specific config
+    useInAppPurchases: false, // iOS app uses web-based subscriptions
+    marketingUrl: 'https://petlinkid.com',
   };
 }
 

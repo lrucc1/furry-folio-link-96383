@@ -1,6 +1,8 @@
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Crown, ExternalLink } from 'lucide-react';
-import { ENV_CONFIG } from '@/config/environment';
+import { getEnvironmentConfig } from '@/config/environment';
+
+const ENV_CONFIG = getEnvironmentConfig();
 import { Button } from '@/components/ui/button';
 
 interface PaidPlanInfoSheetProps {

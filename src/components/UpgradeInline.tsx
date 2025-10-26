@@ -4,7 +4,9 @@ import { usePlan } from '@/lib/plan/PlanContext';
 import { Button } from '@/components/ui/button';
 import { Crown } from 'lucide-react';
 import { au } from '@/lib/auEnglish';
-import { ENV_CONFIG } from '@/config/environment';
+import { getEnvironmentConfig } from '@/config/environment';
+
+const ENV_CONFIG = getEnvironmentConfig();
 import { PaidPlanInfoSheet } from '@/components/PaidPlanInfoSheet';
 
 interface UpgradeInlineProps {
