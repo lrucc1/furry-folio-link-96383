@@ -16,9 +16,38 @@ import { getPriceId, isCheckoutAvailable } from '@/lib/stripeConfig';
 export default function Pricing() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { plan, isTrialActive, daysUntilTrialEnd } = usePlanV2();
+  const { plan, isTrialActive, daysUntilTrialEnd, refresh } = usePlanV2();
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [checkingOut, setCheckingOut] = useState(false);
+  const [startingTrial, setStartingTrial] = useState(false);
+
+  const handleStartTrial = async () => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+
+    setStartingTrial(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('start-trial');
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast.success('7-day free trial activated! Enjoy Pro features.');
+        // Refresh plan data
+        refresh();
+      } else if (data?.error) {
+        toast.error(data.error);
+      }
+    } catch (error: any) {
+      console.error('Trial activation error:', error);
+      toast.error(error.message || 'Failed to start trial');
+    } finally {
+      setStartingTrial(false);
+    }
+  };
 
   const handleSubscribe = async () => {
     if (!user) {
@@ -217,15 +246,26 @@ export default function Pricing() {
 
                 {user ? (
                   plan === 'FREE' ? (
-                    <Button 
-                      onClick={handleSubscribe}
-                      disabled={checkingOut || !isCheckoutAvailable(billingPeriod)}
-                      size="lg"
-                      className="w-full"
-                    >
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      {checkingOut ? 'Processing...' : !isCheckoutAvailable(billingPeriod) ? 'Checkout Unavailable' : 'Start 7-Day Free Trial'}
-                    </Button>
+                    <>
+                      <Button 
+                        onClick={handleStartTrial}
+                        disabled={startingTrial}
+                        size="lg"
+                        className="w-full mb-2"
+                      >
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        {startingTrial ? 'Activating...' : 'Start 7-Day Free Trial'}
+                      </Button>
+                      <Button 
+                        onClick={handleSubscribe}
+                        disabled={checkingOut || !isCheckoutAvailable(billingPeriod)}
+                        size="lg"
+                        variant="outline"
+                        className="w-full"
+                      >
+                        {checkingOut ? 'Processing...' : !isCheckoutAvailable(billingPeriod) ? 'Checkout Unavailable' : 'Subscribe Now'}
+                      </Button>
+                    </>
                   ) : (
                     <Button 
                       onClick={() => navigate('/account')}
