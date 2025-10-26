@@ -102,13 +102,18 @@ serve(async (req) => {
       mode: "subscription",
       success_url: `${origin}/account?success=true`,
       cancel_url: `${origin}/pricing?canceled=true`,
+      subscription_data: {
+        description: 'Up to 5 pets, family sharing up to 5 members, VetShare, custom lost pet posters, 50MB document storage, priority support',
+        metadata: {
+          plan: 'Premium Membership',
+          features: 'Up to 5 pets, family sharing up to 5 members, VetShare, custom lost pet posters, 50MB document storage, priority support'
+        }
+      }
     };
 
     // Add 7-day trial if requested
     if (withTrial) {
-      sessionConfig.subscription_data = {
-        trial_period_days: 7,
-      };
+      sessionConfig.subscription_data.trial_period_days = 7;
     }
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
