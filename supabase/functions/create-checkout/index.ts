@@ -64,6 +64,7 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     let priceId: string | undefined = body?.priceId;
     const tier = body?.tier as 'premium' | 'family' | undefined;
+    const withTrial = body?.withTrial === true; // New parameter for trial
 
     // Fallback mapping: allow clients to pass a tier instead of priceId
     const TIER_TO_PRICE: Record<string, string> = {
@@ -88,7 +89,8 @@ serve(async (req) => {
       customerId = customers.data[0].id;
     }
 
-    const session = await stripe.checkout.sessions.create({
+    // Build session config
+    const sessionConfig: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
@@ -100,7 +102,16 @@ serve(async (req) => {
       mode: "subscription",
       success_url: `${origin}/account?success=true`,
       cancel_url: `${origin}/pricing?canceled=true`,
-    });
+    };
+
+    // Add 7-day trial if requested
+    if (withTrial) {
+      sessionConfig.subscription_data = {
+        trial_period_days: 7,
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...c.headers, "Content-Type": "application/json" },
