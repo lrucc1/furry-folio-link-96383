@@ -114,10 +114,34 @@ export const InstagramShareCard = ({
     ctx.font = 'bold 48px Arial'
     ctx.fillText('PetLinkID', 540, 680)
 
-    // Public ID
+    // Pet ID Badge (similar to profile)
+    const badgeWidth = 220
+    const badgeHeight = 50
+    const badgeX = 540 - badgeWidth / 2
+    const badgeY = 700
+
+    // Badge background
+    ctx.fillStyle = '#f0f0f0'
+    ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 8)
+    ctx.fill()
+
+    // Badge border
+    ctx.strokeStyle = '#e0e0e0'
+    ctx.lineWidth = 2
+    ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 8)
+    ctx.stroke()
+
+    // Shield icon (simplified)
+    ctx.fillStyle = '#666666'
+    ctx.font = '28px Arial'
+    ctx.textAlign = 'left'
+    ctx.fillText('🛡️', badgeX + 15, badgeY + 35)
+
+    // Public ID text
     ctx.fillStyle = '#1a1a1a'
-    ctx.font = '32px Arial'
-    ctx.fillText(publicId, 540, 730)
+    ctx.font = 'bold 24px monospace'
+    ctx.textAlign = 'left'
+    ctx.fillText(publicId, badgeX + 55, badgeY + 34)
 
     // QR Code
     const qrSize = 180
