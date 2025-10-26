@@ -251,7 +251,7 @@ export function SharingTab({ petId }: SharingTabProps) {
             </CardTitle>
             <Button onClick={() => setModalOpen(true)} size="sm">
               <UserPlus className="w-4 h-4 mr-2" />
-              {au('Invite family member')}
+              {au('Invite')}
             </Button>
           </div>
         </CardHeader>
