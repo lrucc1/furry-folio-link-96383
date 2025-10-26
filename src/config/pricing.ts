@@ -58,10 +58,10 @@ export const PLANS: Record<PlanType, PlanConfig> = {
   },
   PRO: {
     id: 'PRO',
-    name: 'Premium Membership',
+    name: 'Pro',
     description: 'Up to 5 pets, family sharing up to 5 members, VetShare, custom lost pet posters, 50MB document storage, priority support',
-    price_monthly_aud: 4.49,
-    price_yearly_aud: 43.99,
+    price_monthly_aud: 2.99,
+    price_yearly_aud: 28.99,
     stripe_price_monthly: STRIPE_PRICE_PRO_MONTHLY_AUD,
     stripe_price_yearly: STRIPE_PRICE_PRO_YEARLY_AUD,
     entitlements: {

@@ -105,7 +105,7 @@ serve(async (req) => {
       subscription_data: {
         description: 'Up to 5 pets, family sharing up to 5 members, VetShare, custom lost pet posters, 50MB document storage, priority support',
         metadata: {
-          plan: 'Premium Membership',
+          plan: 'Pro',
           features: 'Up to 5 pets, family sharing up to 5 members, VetShare, custom lost pet posters, 50MB document storage, priority support'
         }
       }
