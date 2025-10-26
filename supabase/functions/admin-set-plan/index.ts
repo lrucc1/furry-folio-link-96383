@@ -1,5 +1,15 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+
+const SetPlanSchema = z.object({
+  target_user_id: z.string().uuid({ message: "Invalid user ID format" }),
+  new_tier: z.enum(['free', 'premium'], { 
+    errorMap: () => ({ message: 'Tier must be "free" or "premium"' })
+  }),
+  expires_at: z.string().datetime().optional().nullable(),
+  note: z.string().max(500, { message: "Note too long (max 500 characters)" }).optional().nullable()
+});
 
 const ALLOWED_ORIGINS = new Set([
   'https://petlinkid.com',
@@ -63,7 +73,7 @@ serve(async (req) => {
 
     if (roleCheckError) {
       logStep("Error checking admin role", { error: roleCheckError });
-      return new Response(JSON.stringify({ error: "Failed to verify admin status" }), {
+      return new Response(JSON.stringify({ error: "Unable to process request" }), {
         status: 500,
         headers: { ...corsHeaders(origin), "Content-Type": "application/json" },
       });
@@ -79,17 +89,20 @@ serve(async (req) => {
 
     logStep("Admin verified");
 
-    // Parse request body
+    // Parse and validate request body
     const body = await req.json();
-    const { target_user_id, new_tier, expires_at, note } = body;
-
-    if (!target_user_id || !new_tier) {
-      throw new Error("Missing required fields: target_user_id, new_tier");
+    const validation = SetPlanSchema.safeParse(body);
+    
+    if (!validation.success) {
+      const errors = validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+      logStep("Validation error", { errors });
+      return new Response(JSON.stringify({ error: "Invalid input data" }), {
+        status: 400,
+        headers: { ...corsHeaders(origin), "Content-Type": "application/json" },
+      });
     }
 
-    if (!['free', 'premium'].includes(new_tier)) {
-      throw new Error("Invalid tier: must be 'free' or 'premium'");
-    }
+    const { target_user_id, new_tier, expires_at, note } = validation.data;
 
     logStep("Updating target user plan", { target_user_id, new_tier });
 
@@ -108,7 +121,10 @@ serve(async (req) => {
 
     if (updateError) {
       logStep("Error updating profile", { error: updateError });
-      throw new Error(`Failed to update profile: ${updateError.message}`);
+      return new Response(JSON.stringify({ error: "Unable to update plan" }), {
+        status: 500,
+        headers: { ...corsHeaders(origin), "Content-Type": "application/json" },
+      });
     }
 
     logStep("Profile updated successfully");
@@ -139,7 +155,7 @@ serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    return new Response(JSON.stringify({ error: "Unable to process request" }), {
       status: 500,
       headers: { ...corsHeaders(origin), "Content-Type": "application/json" },
     });

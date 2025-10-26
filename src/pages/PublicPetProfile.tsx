@@ -9,18 +9,16 @@ import { Heart, MapPin, Shield, Calendar, Phone, Mail, User } from 'lucide-react
 import { calculateAge } from '@/lib/age-utils'
 
 interface Pet {
-  id: string
   name: string
   species: string
   breed: string | null
   date_of_birth: string | null
   photo_url: string | null
   is_lost: boolean
-  public_id: string
   microchip_number: string | null
   emergency_contact_name: string | null
   emergency_contact_phone: string | null
-  profiles?: {
+  owner?: {
     email: string | null
     full_name: string | null
     phone: string | null
@@ -42,54 +40,39 @@ const PublicPetProfile = () => {
     if (!publicId) return
 
     try {
-      // First get the pet data
-      const { data: petData, error: petError } = await supabase
-        .from('pets')
-        .select(`
-          id, 
-          name, 
-          species, 
-          breed, 
-          date_of_birth, 
-          photo_url, 
-          is_lost, 
-          public_id, 
-          microchip_number,
-          emergency_contact_name,
-          emergency_contact_phone,
-          user_id
-        `)
-        .eq('public_id', publicId)
-        .single()
+      // Fetch all pet data via the secure edge function
+      const { data, error } = await supabase.functions.invoke('public-pet-contact', {
+        body: { public_id: publicId }
+      });
 
-      if (petError) throw petError
-
-      // Fetch owner profile data via public function (always, for "found pet" scenarios)
-      let ownerProfile = null
-      try {
-        const { data, error } = await supabase.functions.invoke('public-pet-contact', {
-          body: { public_id: publicId }
-        });
-
-        if (!error && data?.owner) {
-          ownerProfile = {
-            full_name: data.owner.full_name ?? null,
-            email: data.owner.email ?? null,
-            phone: data.owner.phone ?? null,
-          };
-        }
-      } catch (e) {
-        console.error('Error invoking public-pet-contact:', e);
+      if (error || !data) {
+        console.error('Error fetching pet details:', error);
+        setPet(null);
+        return;
       }
 
+      // Construct pet object from edge function response
       setPet({
-        ...petData,
-        profiles: ownerProfile
-      })
+        name: data.pet.name,
+        species: data.pet.species,
+        breed: data.pet.breed,
+        date_of_birth: data.pet.date_of_birth,
+        photo_url: data.pet.photo_url,
+        is_lost: data.pet.is_lost,
+        microchip_number: data.pet.microchip_number,
+        emergency_contact_name: data.emergency_contact.name,
+        emergency_contact_phone: data.emergency_contact.phone,
+        owner: data.owner ? {
+          full_name: data.owner.full_name,
+          email: data.owner.email,
+          phone: data.owner.phone,
+        } : undefined
+      });
     } catch (error) {
-      console.error('Error fetching pet details:', error)
+      console.error('Error fetching pet details:', error);
+      setPet(null);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -152,10 +135,6 @@ const PublicPetProfile = () => {
               <div className="text-center w-full">
                 <div className="flex items-center justify-center gap-3 mb-2">
                   <h2 className="text-3xl font-bold text-foreground">{pet.name}</h2>
-                  <Badge variant="secondary" className="font-mono text-xs px-3 py-1">
-                    <Shield className="w-3 h-3 mr-1.5" />
-                    {pet.public_id}
-                  </Badge>
                 </div>
                 <p className="text-lg text-muted-foreground mb-6">
                   {pet.breed ? `${pet.breed} ${pet.species}` : pet.species}
@@ -197,7 +176,7 @@ const PublicPetProfile = () => {
             )}
 
             {/* Owner Contact Information - Always shown */}
-            {(pet.profiles?.phone || pet.profiles?.email || pet.emergency_contact_phone) && (
+            {(pet.owner?.phone || pet.owner?.email || pet.emergency_contact_phone) && (
               <Card className={`mt-6 ${pet.is_lost ? 'bg-primary/5 border-primary/20' : 'bg-muted/50'}`}>
                 <CardContent className="p-4 space-y-3">
                   <h4 className="font-semibold text-sm mb-3">
@@ -210,22 +189,22 @@ const PublicPetProfile = () => {
                     </p>
                   )}
 
-                  {pet.profiles?.phone && (
+                  {pet.owner?.phone && (
                     <div className="flex items-center gap-3 text-sm">
                       <Phone className="w-4 h-4 text-primary" />
                       <div className="flex-1">
                         <p className="text-xs text-muted-foreground">Owner's Phone</p>
                         <a 
-                          href={`tel:${pet.profiles.phone}`}
+                          href={`tel:${pet.owner.phone}`}
                           className="font-medium text-primary hover:underline"
                         >
-                          {pet.profiles.phone}
+                          {pet.owner.phone}
                         </a>
                       </div>
                       <Button 
                         size="sm" 
                         variant={pet.is_lost ? 'default' : 'outline'}
-                        onClick={() => window.location.href = `tel:${pet.profiles.phone}`}
+                        onClick={() => window.location.href = `tel:${pet.owner.phone}`}
                       >
                         Call Now
                       </Button>
@@ -254,27 +233,27 @@ const PublicPetProfile = () => {
                     </div>
                   )}
                   
-                  {pet.profiles?.email && (
+                  {pet.owner?.email && (
                     <div className="flex items-center gap-3 text-sm">
                       <Mail className="w-4 h-4 text-primary" />
                       <div className="flex-1">
                         <p className="text-xs text-muted-foreground">Email</p>
                         <a 
-                          href={`mailto:${pet.profiles.email}`}
+                          href={`mailto:${pet.owner.email}`}
                           className="font-medium text-primary hover:underline break-all"
                         >
-                          {pet.profiles.email}
+                          {pet.owner.email}
                         </a>
                       </div>
                     </div>
                   )}
 
-                  {pet.profiles?.full_name && (
+                  {pet.owner?.full_name && (
                     <div className="flex items-center gap-3 text-sm">
                       <User className="w-4 h-4 text-primary" />
                       <div>
                         <p className="text-xs text-muted-foreground">Owner</p>
-                        <p className="font-medium">{pet.profiles.full_name}</p>
+                        <p className="font-medium">{pet.owner.full_name}</p>
                       </div>
                     </div>
                   )}

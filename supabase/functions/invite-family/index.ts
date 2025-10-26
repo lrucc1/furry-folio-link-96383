@@ -1,5 +1,14 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+
+const InviteSchema = z.object({
+  pet_id: z.string().uuid({ message: "Invalid pet ID format" }),
+  email: z.string().email({ message: "Invalid email address" }).max(255, { message: "Email too long" }),
+  role: z.enum(['family', 'caregiver', 'vet'], { 
+    errorMap: () => ({ message: 'Role must be "family", "caregiver", or "vet"' })
+  })
+});
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -32,15 +41,20 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    const { pet_id, email, role } = await req.json();
-
-    if (!pet_id || !email || !role) {
-      throw new Error('Missing required fields: pet_id, email, role');
+    const body = await req.json();
+    
+    // Validate input
+    const validation = InviteSchema.safeParse(body);
+    if (!validation.success) {
+      const errors = validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+      console.error('[invite-family] Validation error:', errors);
+      return new Response(
+        JSON.stringify({ error: 'Invalid input data' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
     }
 
-    if (!['family', 'caregiver', 'vet'].includes(role)) {
-      throw new Error('Invalid role. Must be "family", "caregiver" or "vet"');
-    }
+    const { pet_id, email, role } = validation.data;
 
     // Check if user owns this pet
     const { data: pet, error: petError } = await supabaseClient
@@ -89,7 +103,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in invite-family:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'An unknown error occurred' }),
+      JSON.stringify({ error: 'Unable to process invite request' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
     );
   }
