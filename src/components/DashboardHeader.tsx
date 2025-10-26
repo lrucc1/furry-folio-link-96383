@@ -39,12 +39,12 @@ export const DashboardHeader = () => {
   return (
     <>
       <header className="border-b border-border bg-white/95 backdrop-blur-sm sticky top-0 z-50 shadow-soft">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => navigate('/dashboard')}>
+        <div className="container mx-auto px-3 sm:px-4 h-16 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <Button variant="ghost" size="icon" className="md:hidden shrink-0" onClick={() => navigate('/dashboard')}>
               <Menu className="w-5 h-5" />
             </Button>
-            <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0">
               <Logo />
             </Link>
           </div>
@@ -61,34 +61,36 @@ export const DashboardHeader = () => {
             </Button>
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {planLoading ? (
-              <Skeleton className="h-6 w-20" />
+              <Skeleton className="h-6 w-16 sm:w-20" />
             ) : (
               <Badge
                 className={
                   tier === 'pro'
-                    ? 'bg-gradient-to-r from-amber-500 to-yellow-600 text-white border-0'
-                    : 'bg-muted text-muted-foreground'
+                    ? 'bg-gradient-to-r from-amber-500 to-yellow-600 text-white border-0 text-xs sm:text-sm'
+                    : 'bg-muted text-muted-foreground text-xs sm:text-sm'
                 }
               >
                 {tier === 'pro' && <Crown className="w-3 h-3 mr-1" />}
-                {tier === 'pro' ? au('Pro') : au('Free')}
+                <span className="hidden sm:inline">{tier === 'pro' ? au('Pro') : au('Free')}</span>
+                <span className="sm:hidden">{tier === 'pro' ? 'Pro' : 'Free'}</span>
               </Badge>
             )}
 
             <Button
               variant="ghost"
               size="icon"
+              className="shrink-0 h-9 w-9 sm:h-10 sm:w-10"
               onClick={() => navigate('/invite/status')}
               title={au('View invitations')}
             >
-              <Mail className="w-5 h-5" />
+              <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
 
-            <Button variant="ghost" size="sm" asChild>
+            <Button variant="ghost" size="icon" className="shrink-0 h-9 w-9 sm:h-10 sm:w-10" asChild>
               <Link to="/dashboard">
-                <Bell className="w-4 h-4" />
+                <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
             </Button>
 
