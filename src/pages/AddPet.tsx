@@ -146,7 +146,6 @@ const AddPet = () => {
     try {
       // Build insert payload to match backend schema columns only
       const insertData = {
-        user_id: user.id,
         name: formData.name.trim(),
         species: formData.species.trim(),
         breed: formData.breed || null,
