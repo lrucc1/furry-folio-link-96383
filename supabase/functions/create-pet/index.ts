@@ -44,23 +44,41 @@ Deno.serve(async (req) => {
       return jsonResponse(400, { error: 'validation_error', message: 'Field length exceeded.' })
     }
 
+    // Map and whitelist only columns that exist in public.pets schema
     const insertData: Record<string, any> = {
       user_id: userId,
       name,
       species,
-      breed: payload?.breed || null,
-      color: payload?.color || null,
-      gender: payload?.sex || null,
-      date_of_birth: payload?.date_of_birth || null,
-      microchip_number: payload?.microchip_number || null,
-      registry_name: payload?.registry_name || null,
-      registry_link: payload?.registry_link || null,
-      clinic_name: payload?.clinic_name || null,
-      clinic_address: payload?.clinic_address || null,
-      insurance_provider: payload?.insurance_provider || null,
-      insurance_policy: payload?.insurance_policy || null,
-      notes: payload?.notes || null,
+      // Basic profile
+      breed: payload?.breed ?? null,
+      color: payload?.color ?? null,
+      gender: (payload?.gender ?? payload?.sex) ?? null,
+      date_of_birth: payload?.date_of_birth ?? null,
+      microchip_number: payload?.microchip_number ?? null,
+      notes: payload?.notes ?? null,
+
+      // Optional known columns in current schema (ignored if not provided)
+      age_years: payload?.age_years ?? null,
+      age_months: payload?.age_months ?? null,
+      weight_kg: payload?.weight_kg ?? null,
+      medical_conditions: payload?.medical_conditions ?? null,
+      medications: payload?.medications ?? null,
+      allergies: payload?.allergies ?? null,
+      photo_url: payload?.photo_url ?? null,
+      status: payload?.status ?? null,
+
+      // Vet & emergency contacts (map older field names when present)
+      vet_name: payload?.vet_name ?? payload?.clinic_name ?? null,
+      vet_phone: payload?.vet_phone ?? null,
+      vet_email: payload?.vet_email ?? null,
+      emergency_contact_name: payload?.emergency_contact_name ?? null,
+      emergency_contact_phone: payload?.emergency_contact_phone ?? null,
     }
+
+    // Log for debugging (keys only, not full payload)
+    console.log('[create-pet] user:', userId)
+    console.log('[create-pet] payload keys:', Object.keys(payload || {}))
+    console.log('[create-pet] insertData keys:', Object.keys(insertData))
 
     const { data, error } = await supabase
       .from('pets')
@@ -69,8 +87,13 @@ Deno.serve(async (req) => {
       .single()
 
     if (error) {
-      // Return safe error details only
-      return jsonResponse(403, { error: 'insert_failed', message: 'Permission denied or policy blocked insert.' })
+      console.error('[create-pet] insert error:', error)
+      // Return safe but helpful error details
+      return jsonResponse(400, { 
+        error: 'insert_failed', 
+        message: error.message || 'Insert failed.',
+        code: (error as any).code ?? undefined,
+      })
     }
 
     return jsonResponse(200, { id: data?.id })
