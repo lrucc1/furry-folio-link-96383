@@ -171,8 +171,11 @@ const AddPet = () => {
       console.log('[AddPet] Edge function response:', { data, error })
 
       if (error) {
-        console.error('[AddPet] Edge function error:', error)
-        throw new Error((error as any).message || 'Failed to add pet')
+        const err: any = error
+        console.error('[AddPet] Edge function error:', err)
+        if (err?.context) console.error('[AddPet] Error context:', err.context)
+        const msg = err?.message || err?.context?.message || err?.context?.error || 'Failed to add pet'
+        throw new Error(msg)
       }
 
       if (!data?.id) {

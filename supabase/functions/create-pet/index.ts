@@ -34,45 +34,85 @@ Deno.serve(async (req) => {
     const userId = authData.user.id
     const payload = await req.json()
 
+    // Helpers to sanitize optional inputs
+    const str = (v: any, max?: number) => {
+      if (v === undefined || v === null) return null
+      const s = String(v).trim()
+      if (!s) return null
+      return max ? s.slice(0, max) : s
+    }
+    const num = (v: any) => {
+      if (v === undefined || v === null || v === '') return null
+      const n = Number(v)
+      return Number.isFinite(n) ? n : null
+    }
+    const int = (v: any) => {
+      if (v === undefined || v === null || v === '') return null
+      const n = parseInt(v, 10)
+      return Number.isFinite(n) ? n : null
+    }
+    const date = (v: any) => {
+      if (v === undefined || v === null) return null
+      const s = String(v).trim()
+      return s ? s : null // Expecting YYYY-MM-DD; DB will validate
+    }
+
     // Minimal server-side validation
-    const name = String(payload?.name ?? '').trim()
-    const species = String(payload?.species ?? '').trim()
+    const name = str(payload?.name, 100)
+    const species = str(payload?.species, 50)
     if (!name || !species) {
       return jsonResponse(400, { error: 'validation_error', message: 'Name and species are required.' })
     }
-    if (name.length > 100 || species.length > 50) {
-      return jsonResponse(400, { error: 'validation_error', message: 'Field length exceeded.' })
-    }
 
-    // Map and whitelist only columns that exist in public.pets schema
+    // Map and whitelist only columns that exist in public.pets schema, coercing empty strings to null
     const insertData: Record<string, any> = {
       user_id: userId,
       name,
       species,
-      // Basic profile
-      breed: payload?.breed ?? null,
-      color: payload?.color ?? null,
-      gender: (payload?.gender ?? payload?.sex) ?? null,
-      date_of_birth: payload?.date_of_birth ?? null,
-      microchip_number: payload?.microchip_number ?? null,
-      notes: payload?.notes ?? null,
 
-      // Optional known columns in current schema (ignored if not provided)
-      age_years: payload?.age_years ?? null,
-      age_months: payload?.age_months ?? null,
-      weight_kg: payload?.weight_kg ?? null,
-      medical_conditions: payload?.medical_conditions ?? null,
-      medications: payload?.medications ?? null,
-      allergies: payload?.allergies ?? null,
-      photo_url: payload?.photo_url ?? null,
-      status: payload?.status ?? null,
+      // Basic profile
+      breed: str(payload?.breed),
+      color: str(payload?.color),
+      gender: str(payload?.gender ?? payload?.sex),
+      date_of_birth: date(payload?.date_of_birth),
+      microchip_number: str(payload?.microchip_number),
+      notes: str(payload?.notes, 10000),
+
+      // Numbers & flags
+      age_years: int(payload?.age_years),
+      age_months: int(payload?.age_months),
+      weight_kg: num(payload?.weight_kg),
+      desexed: typeof payload?.desexed === 'boolean' ? payload.desexed : null,
+      is_lost: typeof payload?.is_lost === 'boolean' ? payload.is_lost : null,
+      clinic_lat: num(payload?.clinic_lat),
+      clinic_lng: num(payload?.clinic_lng),
+
+      // Health & media
+      medical_conditions: str(payload?.medical_conditions),
+      medications: str(payload?.medications),
+      allergies: str(payload?.allergies),
+      photo_url: str(payload?.photo_url),
+      status: str(payload?.status),
 
       // Vet & emergency contacts (map older field names when present)
-      vet_name: payload?.vet_name ?? payload?.clinic_name ?? null,
-      vet_phone: payload?.vet_phone ?? null,
-      vet_email: payload?.vet_email ?? null,
-      emergency_contact_name: payload?.emergency_contact_name ?? null,
-      emergency_contact_phone: payload?.emergency_contact_phone ?? null,
+      vet_name: str(payload?.vet_name ?? payload?.clinic_name),
+      vet_phone: str(payload?.vet_phone),
+      vet_email: str(payload?.vet_email),
+      emergency_contact_name: str(payload?.emergency_contact_name),
+      emergency_contact_phone: str(payload?.emergency_contact_phone),
+
+      // Registry & insurance
+      registry_name: str(payload?.registry_name),
+      registry_link: str(payload?.registry_link),
+      insurance_provider: str(payload?.insurance_provider),
+      insurance_policy: str(payload?.insurance_policy),
+
+      // Clinic address extras present in current schema
+      clinic_name: str(payload?.clinic_name),
+      clinic_address: str(payload?.clinic_address),
+      clinic_suburb: str(payload?.clinic_suburb),
+      clinic_state: str(payload?.clinic_state),
+      clinic_postcode: str(payload?.clinic_postcode),
     }
 
     // Log for debugging (keys only, not full payload)
@@ -88,11 +128,12 @@ Deno.serve(async (req) => {
 
     if (error) {
       console.error('[create-pet] insert error:', error)
-      // Return safe but helpful error details
-      return jsonResponse(400, { 
-        error: 'insert_failed', 
-        message: error.message || 'Insert failed.',
+      return jsonResponse(400, {
+        error: 'insert_failed',
+        message: (error as any).message || 'Insert failed.',
         code: (error as any).code ?? undefined,
+        details: (error as any).details ?? undefined,
+        hint: (error as any).hint ?? undefined,
       })
     }
 
