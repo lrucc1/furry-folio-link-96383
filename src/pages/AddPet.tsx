@@ -164,15 +164,13 @@ const AddPet = () => {
 
       console.log('[AddPet] Inserting pet data')
 
-      const { data, error } = await supabase
-        .from('pets')
-        .insert([insertData])
-        .select()
-        .single()
+      const { data, error } = await supabase.functions.invoke('create-pet', {
+        body: insertData,
+      })
 
       if (error) {
-        console.error('[AddPet] Database error:', error)
-        throw error
+        console.error('[AddPet] Edge function error:', error)
+        throw new Error((error as any).message || 'Failed to add pet')
       }
 
       console.log('[AddPet] Pet added successfully:', data?.id)
