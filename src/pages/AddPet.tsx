@@ -162,16 +162,25 @@ const AddPet = () => {
         notes: formData.notes || null,
       }
 
-      console.log('[AddPet] Inserting pet data')
+      console.log('[AddPet] Calling create-pet edge function')
 
       const { data, error } = await supabase.functions.invoke('create-pet', {
         body: insertData,
       })
 
+      console.log('[AddPet] Edge function response:', { data, error })
+
       if (error) {
         console.error('[AddPet] Edge function error:', error)
         throw new Error((error as any).message || 'Failed to add pet')
       }
+
+      if (!data?.id) {
+        console.error('[AddPet] No pet ID returned from function')
+        throw new Error('Pet was not created - no ID returned')
+      }
+
+      console.log('[AddPet] Pet created successfully with ID:', data.id)
 
       console.log('[AddPet] Pet added successfully:', data?.id)
 
