@@ -78,11 +78,23 @@ const AddPet = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user) return
+    if (!user) {
+      console.error('[AddPet] No user found')
+      return
+    }
+
+    console.log('[AddPet] Starting pet submission', {
+      user: user.id,
+      plan,
+      currentPets: usage.pets_count,
+      formData
+    })
 
     // Check pet limit with EntitlementServiceV2
     const service = EntitlementServiceV2.getInstance()
     const check = await service.checkEntitlement(user.id, 'pets_max', 1)
+
+    console.log('[AddPet] Entitlement check result:', check)
 
     if (!check.allowed) {
       const maxPetsAllowed = entitlement?.pets_max
@@ -90,6 +102,7 @@ const AddPet = () => {
         // Allow refill when usage indicates available slots
         console.warn('[AddPet] Entitlement denied but usage indicates available pet slot. Allowing add.');
       } else {
+        console.error('[AddPet] Pet limit reached', { check, maxPetsAllowed, currentCount: usage.pets_count })
         setShowPaywall(true)
         toast({
           title: au("Pet limit reached"),
@@ -121,13 +134,20 @@ const AddPet = () => {
         notes: formData.notes || null,
       }
 
+      console.log('[AddPet] Inserting pet data:', insertData)
+
       const { data, error } = await supabase
         .from('pets')
         .insert([insertData])
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('[AddPet] Database error:', error)
+        throw error
+      }
+
+      console.log('[AddPet] Pet added successfully:', data)
 
       toast({
         title: au("Pet added successfully!"),
@@ -136,10 +156,10 @@ const AddPet = () => {
 
       navigate('/dashboard')
     } catch (error) {
-      console.error('Error adding pet:', error)
+      console.error('[AddPet] Error adding pet:', error)
       toast({
         title: au("Error"),
-        description: au("Failed to add pet. Please try again."),
+        description: error instanceof Error ? error.message : au("Failed to add pet. Please try again."),
         variant: "destructive",
       })
     } finally {
