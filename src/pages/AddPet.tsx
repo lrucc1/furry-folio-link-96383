@@ -19,7 +19,7 @@ import { ArrowLeft, Upload } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from '@/hooks/use-toast'
 import { au } from '@/lib/auEnglish'
-
+import { z } from 'zod'
 const AddPet = () => {
   const { user } = useAuth()
   const { plan, usage, entitlement } = usePlanV2()
@@ -76,6 +76,24 @@ const AddPet = () => {
     notes: '',
   })
 
+  // Client-side validation schema (security: validate before submit)
+  const PetSchema = z.object({
+    name: z.string().trim().min(1, 'Pet name is required').max(100, 'Name must be under 100 characters'),
+    species: z.string().trim().min(1, 'Species is required').max(50, 'Species must be under 50 characters'),
+    breed: z.string().trim().max(100, 'Breed must be under 100 characters').optional().or(z.literal('')),
+    color: z.string().trim().max(100, 'Color must be under 100 characters').optional().or(z.literal('')),
+    sex: z.string().trim().max(20).optional().or(z.literal('')),
+    date_of_birth: z.string().trim().optional().or(z.literal('')),
+    microchip_number: z.string().trim().max(30).optional().or(z.literal('')),
+    registry_name: z.string().trim().max(100).optional().or(z.literal('')),
+    registry_link: z.string().trim().url('Registry website must be a valid URL').optional().or(z.literal('')),
+    clinic_name: z.string().trim().max(120).optional().or(z.literal('')),
+    clinic_address: z.string().trim().max(200).optional().or(z.literal('')),
+    insurance_provider: z.string().trim().max(120).optional().or(z.literal('')),
+    insurance_policy: z.string().trim().max(120).optional().or(z.literal('')),
+    notes: z.string().trim().max(1000, 'Notes must be under 1000 characters').optional().or(z.literal('')),
+  })
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user) {
@@ -87,8 +105,19 @@ const AddPet = () => {
       user: user.id,
       plan,
       currentPets: usage.pets_count,
-      formData
     })
+
+    // Validate inputs before any backend calls
+    const validation = PetSchema.safeParse(formData)
+    if (!validation.success) {
+      const first = validation.error.errors[0]
+      toast({
+        title: au('Please fix the form'),
+        description: first?.message || au('Some fields are invalid.'),
+        variant: 'destructive',
+      })
+      return
+    }
 
     // Check pet limit with EntitlementServiceV2
     const service = EntitlementServiceV2.getInstance()
@@ -119,7 +148,7 @@ const AddPet = () => {
       const insertData = {
         user_id: user.id,
         name: formData.name.trim(),
-        species: formData.species,
+        species: formData.species.trim(),
         breed: formData.breed || null,
         color: formData.color || null,
         gender: (formData.sex as string) || null,
@@ -134,7 +163,7 @@ const AddPet = () => {
         notes: formData.notes || null,
       }
 
-      console.log('[AddPet] Inserting pet data:', insertData)
+      console.log('[AddPet] Inserting pet data')
 
       const { data, error } = await supabase
         .from('pets')
@@ -147,7 +176,7 @@ const AddPet = () => {
         throw error
       }
 
-      console.log('[AddPet] Pet added successfully:', data)
+      console.log('[AddPet] Pet added successfully:', data?.id)
 
       toast({
         title: au("Pet added successfully!"),
@@ -277,7 +306,6 @@ const AddPet = () => {
                       value={formData.breed}
                       onChange={(e) => handleInputChange('breed', e.target.value)}
                       placeholder="e.g., Golden Retriever"
-                      required
                     />
                   </div>
                   
@@ -288,7 +316,6 @@ const AddPet = () => {
                       value={formData.color}
                       onChange={(e) => handleInputChange('color', e.target.value)}
                       placeholder="e.g., Golden, white chest"
-                      required
                     />
                   </div>
                 </div>
@@ -296,7 +323,7 @@ const AddPet = () => {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="sex">Sex *</Label>
-                    <Select onValueChange={(value) => handleInputChange('sex', value)} required>
+                    <Select onValueChange={(value) => handleInputChange('sex', value)} >
                       <SelectTrigger>
                         <SelectValue placeholder="Select sex" />
                       </SelectTrigger>
@@ -314,7 +341,6 @@ const AddPet = () => {
                       type="date"
                       value={formData.date_of_birth}
                       onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
-                      required
                     />
                   </div>
                 </div>
