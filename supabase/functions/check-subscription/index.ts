@@ -10,11 +10,11 @@ serve(async (req: Request) => {
     const authHeader = req.headers.get('authorization') ?? req.headers.get('Authorization') ?? '';
     if (!authHeader.startsWith('Bearer ')) return json(req, { error: 'Auth session missing!' }, 401);
 
-    const sb = makeAnonClient(authHeader);
-    const { data: { user }, error: uerr } = await sb.auth.getUser();
+    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+    const svc = makeServiceClient();
+    const { data: { user }, error: uerr } = await svc.auth.getUser(token);
     if (uerr || !user) return json(req, { error: 'Auth session missing!' }, 401);
 
-    const svc = makeServiceClient();
     const { data: profile, error } = await svc
       .from('profiles')
       .select('is_pro, plan, trial_ends_at, stripe_subscription_id')

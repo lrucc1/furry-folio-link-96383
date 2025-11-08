@@ -11,11 +11,11 @@ serve(async (req: Request) => {
     const authHeader = req.headers.get('authorization') ?? req.headers.get('Authorization') ?? '';
     if (!authHeader.startsWith('Bearer ')) return json(req, { error: 'Missing Authorization Bearer token' }, 401);
 
-    const sb = makeAnonClient(authHeader);
-    const { data: { user }, error: uerr } = await sb.auth.getUser();
+    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+    const svc = makeServiceClient();
+    const { data: { user }, error: uerr } = await svc.auth.getUser(token);
     if (uerr || !user) return json(req, { error: 'User not authenticated' }, 401);
 
-    const svc = makeServiceClient();
     const stripe = new Stripe(must('STRIPE_SECRET_KEY'), { apiVersion: '2023-10-16' });
     const priceId = must('STRIPE_PRICE_ID_PRO_MONTHLY');
 
