@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { PendingDeletions } from '@/components/admin/PendingDeletions';
 import { Header } from '@/components/Header';
 import { Input } from '@/components/ui/input';
 import {
@@ -549,6 +550,9 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Pending Account Deletions */}
+            <PendingDeletions />
           </TabsContent>
 
           {/* Users Tab */}
