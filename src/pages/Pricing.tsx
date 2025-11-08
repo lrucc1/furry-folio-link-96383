@@ -67,12 +67,6 @@ export default function Pricing() {
       return;
     }
 
-    // Check if checkout is available for this billing period
-    if (!isCheckoutAvailable(billingPeriod)) {
-      toast.error('Checkout is not configured. Please contact support or configure Stripe price IDs in project settings.');
-      return;
-    }
-
     setCheckingOut(true);
     
     try {

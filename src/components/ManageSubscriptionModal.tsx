@@ -72,16 +72,13 @@ export function ManageSubscriptionModal({
   const handleUpgrade = async (targetTier: 'pro') => {
     setLoading(true);
     try {
-      const priceId = TIER_INFO[targetTier].priceId as string | null;
-      if (!priceId) throw new Error('Missing priceId for target tier');
-
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) throw new Error('No auth session');
       
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         method: 'POST',
         headers: { Authorization: `Bearer ${session.access_token}` },
-        body: { priceId },
+        body: { billingPeriod: 'monthly' }, // Let backend select price ID
       });
 
       if (error) throw error;

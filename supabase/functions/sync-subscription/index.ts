@@ -65,6 +65,14 @@ serve(async (req: Request) => {
     if (status === 'trialing') plan_v2 = 'TRIAL';
     if (status === 'canceled') plan_v2 = 'FREE';
 
+    console.log('[sync-subscription] Syncing subscription:', { 
+      subscriptionId: sub.id, 
+      status, 
+      plan_v2, 
+      hasPeriodEnd: !!sub.current_period_end,
+      hasTrialEnd: !!sub.trial_end 
+    });
+
     const { error: updateError } = await svc
       .from('profiles')
       .update({
@@ -72,10 +80,10 @@ serve(async (req: Request) => {
         stripe_subscription_id: sub.id,
         stripe_status: status,
         stripe_tier: plan_v2.toLowerCase(),
-        stripe_current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
+        stripe_current_period_end: sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null,
         plan_v2,
         subscription_status: status,
-        next_billing_at: new Date(sub.current_period_end * 1000).toISOString(),
+        next_billing_at: sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null,
         trial_end_at: sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null,
       })
       .eq('id', user.id);
