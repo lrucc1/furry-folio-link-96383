@@ -40,6 +40,8 @@ import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import Account from "./pages/Account";
+import BillingSuccess from "./pages/BillingSuccess";
+import BillingCancel from "./pages/BillingCancel";
 import AcceptInvite from "./pages/invite/AcceptInvite";
 import InviteStatus from "./pages/InviteStatus";
 
@@ -131,6 +133,8 @@ const App = () => (
                 } 
               />
               <Route path="/pricing" element={<Pricing />} />
+              <Route path="/billing/success" element={<BillingSuccess />} />
+              <Route path="/billing/cancel" element={<BillingCancel />} />
               <Route 
                 path="/account" 
                 element={

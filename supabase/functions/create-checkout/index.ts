@@ -41,22 +41,32 @@ serve(async (req: Request) => {
       if (uperr) return json(req, { error: `Profile update failed: ${uperr.message}` }, 500);
     }
 
-    // compute origin safely
+    // compute origin safely - support both production and Lovable preview
     let origin = 'https://petlinkid.com';
     const ref = req.headers.get('origin') ?? req.headers.get('referer');
-    try { if (ref) origin = new URL(ref).origin; } catch {}
+    try { 
+      if (ref) {
+        const refUrl = new URL(ref);
+        // Accept both production domain and lovable.dev
+        if (refUrl.hostname.endsWith('lovable.dev') || refUrl.hostname === 'petlinkid.com') {
+          origin = refUrl.origin;
+        }
+      }
+    } catch {}
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       customer: customerId,
+      client_reference_id: user.id, // Critical: link session to user
       allow_promotion_codes: true,
       line_items: [{ price: priceId, quantity: 1 }],
       subscription_data: {
         trial_period_days: 7,
         trial_settings: { end_behavior: { missing_payment_method: 'cancel' } },
+        metadata: { user_id: user.id }, // Store user_id in subscription metadata
       },
-      success_url: `${origin}/upgrade/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/upgrade/cancelled`,
+      success_url: `${origin}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/billing/cancel`,
     });
 
     return json(req, { url: session.url });

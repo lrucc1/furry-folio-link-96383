@@ -45,7 +45,9 @@ export default function Pricing() {
       if (error) throw error;
 
       if (data?.url) {
-        window.location.href = data.url as string;
+        // Use top-level navigation to escape iframe in Lovable preview
+        const topWindow = window.top ?? window;
+        topWindow.location.href = data.url as string;
       }
     } catch (error: any) {
       console.error('Trial checkout error:', error);
@@ -79,7 +81,9 @@ export default function Pricing() {
       if (error) throw error;
 
       if (data?.url) {
-        window.open(data.url, '_blank');
+        // Use top-level navigation to escape iframe in Lovable preview
+        const topWindow = window.top ?? window;
+        topWindow.location.href = data.url as string;
       }
     } catch (error: any) {
       console.error('Checkout error:', error);
