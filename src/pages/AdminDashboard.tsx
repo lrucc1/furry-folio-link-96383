@@ -550,13 +550,13 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
             </div>
-
-            {/* Pending Account Deletions */}
-            <PendingDeletions />
           </TabsContent>
 
           {/* Users Tab */}
           <TabsContent value="users" className="space-y-6">
+            {/* Pending Account Deletions */}
+            <PendingDeletions />
+
             <Card className="bg-gradient-card border-0 shadow-medium">
               <CardHeader>
                 <div className="flex items-center justify-between">
