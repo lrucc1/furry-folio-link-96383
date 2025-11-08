@@ -36,15 +36,10 @@ export default function Pricing() {
     setCheckingOut(true);
     
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        navigate('/auth');
-        return;
-      }
+      const priceId = getPriceId('PRO', billingPeriod);
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: { priceId },
       });
 
       if (error) throw error;

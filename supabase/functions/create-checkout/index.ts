@@ -16,8 +16,12 @@ serve(async (req: Request) => {
     const { data: { user }, error: uerr } = await svc.auth.getUser(token);
     if (uerr || !user) return json(req, { error: 'User not authenticated' }, 401);
 
+    // Get priceId from request body, fallback to monthly
+    const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
+    const priceId = body.priceId || must('STRIPE_PRICE_ID_PRO_MONTHLY');
+    console.log('Using price ID:', priceId);
+
     const stripe = new Stripe(must('STRIPE_SECRET_KEY'), { apiVersion: '2023-10-16' });
-    const priceId = must('STRIPE_PRICE_ID_PRO_MONTHLY');
 
     // ensure profile + customer
     const { data: profile, error: perr } = await svc
