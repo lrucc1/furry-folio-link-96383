@@ -16,10 +16,20 @@ serve(async (req: Request) => {
     const { data: { user }, error: uerr } = await svc.auth.getUser(token);
     if (uerr || !user) return json(req, { error: 'User not authenticated' }, 401);
 
-    // Get priceId from request body, fallback to monthly
+    // Get priceId or billingPeriod from request body
     const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
-    const priceId = body.priceId || must('STRIPE_PRICE_ID_PRO_MONTHLY');
-    console.log('Using price ID:', priceId);
+    const billingPeriod = body.billingPeriod || 'monthly';
+    
+    // Priority: explicit priceId > billingPeriod-based selection > fallback
+    let priceId = body.priceId;
+    if (!priceId) {
+      if (billingPeriod === 'yearly') {
+        priceId = Deno.env.get('STRIPE_PRICE_ID_PRO_YEARLY') || must('STRIPE_PRICE_ID_PRO_MONTHLY');
+      } else {
+        priceId = must('STRIPE_PRICE_ID_PRO_MONTHLY');
+      }
+    }
+    console.log('Using price ID:', priceId, 'for billing period:', billingPeriod);
 
     const stripe = new Stripe(must('STRIPE_SECRET_KEY'), { apiVersion: '2023-10-16' });
 

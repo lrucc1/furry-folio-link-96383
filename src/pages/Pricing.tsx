@@ -12,6 +12,7 @@ import { usePlanV2 } from '@/hooks/usePlanV2';
 import { toast } from 'sonner';
 import { PLANS, formatPrice, getYearlySavings } from '@/config/pricing';
 import { getPriceId, isCheckoutAvailable } from '@/lib/stripeConfig';
+import { redirectToCheckout } from '@/lib/safeRedirect';
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -36,18 +37,21 @@ export default function Pricing() {
     setCheckingOut(true);
     
     try {
-      const priceId = getPriceId('PRO', billingPeriod);
+      let priceId: string | undefined;
+      try {
+        priceId = getPriceId('PRO', billingPeriod);
+      } catch {
+        // Price ID not configured in frontend, let backend choose
+      }
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { priceId },
+        body: priceId ? { priceId } : { billingPeriod },
       });
 
       if (error) throw error;
 
       if (data?.url) {
-        // Use top-level navigation to escape iframe in Lovable preview
-        const topWindow = window.top ?? window;
-        topWindow.location.href = data.url as string;
+        redirectToCheckout(data.url);
       }
     } catch (error: any) {
       console.error('Trial checkout error:', error);
@@ -72,18 +76,21 @@ export default function Pricing() {
     setCheckingOut(true);
     
     try {
-      const priceId = getPriceId('PRO', billingPeriod);
+      let priceId: string | undefined;
+      try {
+        priceId = getPriceId('PRO', billingPeriod);
+      } catch {
+        // Price ID not configured in frontend, let backend choose
+      }
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { priceId }, // No trial
+        body: priceId ? { priceId } : { billingPeriod },
       });
 
       if (error) throw error;
 
       if (data?.url) {
-        // Use top-level navigation to escape iframe in Lovable preview
-        const topWindow = window.top ?? window;
-        topWindow.location.href = data.url as string;
+        redirectToCheckout(data.url);
       }
     } catch (error: any) {
       console.error('Checkout error:', error);

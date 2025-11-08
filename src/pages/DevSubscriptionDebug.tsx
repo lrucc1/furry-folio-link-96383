@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { CheckCircle2, XCircle, Loader2, RefreshCw } from "lucide-react";
+import { redirectToCheckout } from '@/lib/safeRedirect';
 
 export default function DevSubscriptionDebug() {
   const { user } = useAuth();
@@ -83,8 +84,7 @@ export default function DevSubscriptionDebug() {
       if (error) throw error;
       
       if (data?.url) {
-        const topWindow = window.top ?? window;
-        topWindow.location.href = data.url as string;
+        redirectToCheckout(data.url);
       } else {
         throw new Error('No checkout URL returned');
       }

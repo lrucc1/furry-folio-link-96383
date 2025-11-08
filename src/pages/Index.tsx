@@ -20,6 +20,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useState } from "react";
+import { redirectToCheckout } from "@/lib/safeRedirect";
 
 // Mock data for demonstration
 const mockPets = [
@@ -103,11 +104,11 @@ const Index = () => {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         method: 'POST',
         headers: { Authorization: `Bearer ${session.access_token}` },
+        body: { billingPeriod: 'monthly' },
       });
       if (error) throw error;
       if (data?.url) {
-        const topWindow = window.top ?? window;
-        topWindow.location.href = data.url as string;
+        redirectToCheckout(data.url);
       }
     } catch (e) {
       console.error('Frontpage trial checkout error:', e);

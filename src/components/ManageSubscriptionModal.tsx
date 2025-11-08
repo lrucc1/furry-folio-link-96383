@@ -11,6 +11,7 @@ import { au } from '@/lib/auEnglish';
 import { TierFeatures } from '@/config/tierFeatures';
 import { PLANS } from '@/config/pricing';
 import { log } from '@/lib/log';
+import { redirectToCheckout } from '@/lib/safeRedirect';
 
 interface ManageSubscriptionModalProps {
   open: boolean;
@@ -86,8 +87,7 @@ export function ManageSubscriptionModal({
       if (error) throw error;
 
       if (data?.url) {
-        const topWindow = window.top ?? window;
-        topWindow.location.href = data.url as string;
+        redirectToCheckout(data.url);
         toast.success(au('Redirecting to checkout...'));
       }
     } catch (error) {
