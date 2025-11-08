@@ -57,15 +57,23 @@ serve(async (req) => {
   try {
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabaseClient.auth.getUser(token);
+    const { data, error: authError } = await supabaseClient.auth.getUser(token);
     const user = data.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
+    
+    console.log('[CREATE-CHECKOUT] User:', user?.id, user?.email);
+    
+    if (!user?.email) {
+      console.error('[CREATE-CHECKOUT] Auth error:', authError);
+      throw new Error("User not authenticated or email not available");
+    }
 
     const body = await req.json().catch(() => ({}));
     let priceId: string | undefined = body?.priceId;
     const tier = body?.tier;
     const billingPeriod = body?.billingPeriod || 'monthly';
     const withTrial = body?.withTrial === true;
+    
+    console.log('[CREATE-CHECKOUT] Request:', { tier, billingPeriod, withTrial, priceId });
 
     // PRO tier price IDs - these are the hardcoded Stripe price IDs for your PRO plan
     const PRO_PRICE_MONTHLY = 'price_1SMaydEhyEZfSSpNTP4b7ISS'; // Pro monthly A$2.99
@@ -83,10 +91,25 @@ serve(async (req) => {
       apiVersion: "2024-06-20" 
     });
 
+    // Always check/create customer with metadata
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId;
+    let customerId: string;
+    
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
+      console.log('[CREATE-CHECKOUT] Found existing customer:', customerId);
+      
+      // Update metadata to ensure user_id is set
+      await stripe.customers.update(customerId, {
+        metadata: { user_id: user.id }
+      });
+    } else {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        metadata: { user_id: user.id }
+      });
+      customerId = customer.id;
+      console.log('[CREATE-CHECKOUT] Created new customer:', customerId);
     }
 
     // Build session config
@@ -120,6 +143,8 @@ serve(async (req) => {
     }
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
+    
+    console.log('[CREATE-CHECKOUT] Session created:', session.id, '→', session.url);
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...c.headers, "Content-Type": "application/json" },

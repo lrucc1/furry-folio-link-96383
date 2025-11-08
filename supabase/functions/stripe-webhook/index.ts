@@ -91,61 +91,58 @@ serve(async (req) => {
 
     // Process event based on type
     switch (event.type) {
-      case 'customer.subscription.created':
-      case 'customer.subscription.updated': {
-        const subscription = event.data.object as Stripe.Subscription;
-        logStep("Processing subscription event", { 
-          subscriptionId: subscription.id, 
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session;
+        logStep("Processing checkout completion", { 
+          sessionId: session.id,
+          customer: session.customer,
+          subscription: session.subscription 
+        });
+
+        // Get user_id from metadata or client_reference_id
+        const userId = session.client_reference_id || session.metadata?.user_id;
+        
+        if (!userId) {
+          logStep("❌ No user_id in session", { session });
+          break;
+        }
+
+        if (!session.subscription) {
+          logStep("❌ No subscription in session");
+          break;
+        }
+
+        // Fetch the subscription
+        const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+        logStep("Retrieved subscription", { 
+          subscriptionId: subscription.id,
           status: subscription.status 
         });
 
-        // Get customer email
-        const customer = await stripe.customers.retrieve(subscription.customer as string) as Stripe.Customer;
-        if (!customer.email) {
-          logStep("No email found for customer", { customerId: subscription.customer });
-          break;
-        }
-
-        // Find user by email
-        const { data: userData } = await supabaseClient.auth.admin.listUsers();
-        const user = userData.users.find(u => u.email === customer.email);
-
-        if (!user) {
-          logStep("User not found for email", { email: customer.email });
-          break;
-        }
-
-        // Check if profile exists (Issue 4: Handle deleted users)
+        // Check if profile exists
         const { data: profile } = await supabaseClient
           .from('profiles')
           .select('id, deletion_scheduled')
-          .eq('id', user.id)
+          .eq('id', userId)
           .maybeSingle();
 
         if (!profile) {
-          logStep("Profile not found (possibly deleted), skipping webhook", { userId: user.id });
+          logStep("❌ Profile not found", { userId });
           break;
         }
 
         if (profile.deletion_scheduled) {
-          logStep("Profile scheduled for deletion, skipping webhook", { userId: user.id });
+          logStep("Profile scheduled for deletion, skipping", { userId });
           break;
         }
 
-        // Determine tier from product - map to new plan_v2
-        const priceId = subscription.items.data[0]?.price.id;
-        const productId = subscription.items.data[0]?.price.product as string;
-        
-        // Map to new plan_v2: PRO or TRIAL
+        // Determine plan
         let plan_v2 = 'PRO';
-        let subscription_status = subscription.status;
-        
-        // If it's a trialing subscription, set plan to TRIAL
         if (subscription.status === 'trialing') {
           plan_v2 = 'TRIAL';
         }
 
-        // Update profile with subscription data using new plan_v2 fields
+        // Update profile
         const { error: updateError } = await supabaseClient
           .from('profiles')
           .update({
@@ -154,20 +151,96 @@ serve(async (req) => {
             stripe_status: subscription.status,
             stripe_tier: plan_v2.toLowerCase(),
             stripe_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            // New plan_v2 fields only (avoid legacy CHECK constraint on plan_tier)
             plan_v2: plan_v2,
-            subscription_status: subscription_status,
+            subscription_status: subscription.status,
             next_billing_at: new Date(subscription.current_period_end * 1000).toISOString(),
             trial_end_at: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
           })
-          .eq('id', user.id);
+          .eq('id', userId);
 
         if (updateError) {
-          logStep("Error updating profile", { error: updateError });
+          logStep("❌ Error updating profile", { error: updateError });
           throw updateError;
         }
 
-        logStep("Subscription updated successfully", { userId: user.id, plan_v2, status: subscription.status });
+        logStep("✅ Checkout complete - user upgraded", { userId, plan_v2, status: subscription.status });
+        break;
+      }
+      
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated': {
+        const subscription = event.data.object as Stripe.Subscription;
+        logStep("Processing subscription event", { 
+          subscriptionId: subscription.id, 
+          status: subscription.status 
+        });
+
+        // Try to get user_id from metadata first
+        let userId = subscription.metadata?.user_id;
+        
+        // If not in metadata, try to find by customer
+        if (!userId) {
+          const customer = await stripe.customers.retrieve(subscription.customer as string) as Stripe.Customer;
+          userId = customer.metadata?.user_id;
+          
+          if (!userId && customer.email) {
+            // Last resort: find by email
+            const { data: userData } = await supabaseClient.auth.admin.listUsers();
+            const user = userData.users.find(u => u.email === customer.email);
+            userId = user?.id;
+          }
+        }
+
+        if (!userId) {
+          logStep("❌ User not found");
+          break;
+        }
+
+        // Check if profile exists
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('id, deletion_scheduled')
+          .eq('id', userId)
+          .maybeSingle();
+
+        if (!profile) {
+          logStep("❌ Profile not found", { userId });
+          break;
+        }
+
+        if (profile.deletion_scheduled) {
+          logStep("Profile scheduled for deletion, skipping", { userId });
+          break;
+        }
+
+        // Determine plan
+        let plan_v2 = 'PRO';
+        if (subscription.status === 'trialing') {
+          plan_v2 = 'TRIAL';
+        }
+
+        // Update profile
+        const { error: updateError } = await supabaseClient
+          .from('profiles')
+          .update({
+            stripe_customer_id: subscription.customer as string,
+            stripe_subscription_id: subscription.id,
+            stripe_status: subscription.status,
+            stripe_tier: plan_v2.toLowerCase(),
+            stripe_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            plan_v2: plan_v2,
+            subscription_status: subscription.status,
+            next_billing_at: new Date(subscription.current_period_end * 1000).toISOString(),
+            trial_end_at: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
+          })
+          .eq('id', userId);
+
+        if (updateError) {
+          logStep("❌ Error updating profile", { error: updateError });
+          throw updateError;
+        }
+
+        logStep("✅ Subscription updated", { userId, plan_v2, status: subscription.status });
         break;
       }
 

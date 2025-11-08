@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { PlanProvider } from "./lib/plan/PlanContext";
+import DevSubscriptionDebug from "./pages/DevSubscriptionDebug";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ProfileSetupDialog } from "./components/ProfileSetupDialog";
 import { DowngradeHelper } from "./components/DowngradeHelper";
@@ -156,6 +157,9 @@ const App = () => (
                 } 
               />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+              <Route path="/admin/plan-debug" element={<AdminRoute><PlanDebug /></AdminRoute>} />
+              <Route path="/dev/subscription-debug" element={<DevSubscriptionDebug />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
