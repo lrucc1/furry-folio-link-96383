@@ -230,6 +230,7 @@ const Index = () => {
                       className="w-full"
                       onClick={handleStartProTrial}
                       disabled={checkingOut}
+                      data-testid="hero-start-trial-cta"
                     >
                       {checkingOut ? 'Processing...' : plan.cta}
                     </Button>

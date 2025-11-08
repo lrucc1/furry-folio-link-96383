@@ -96,7 +96,7 @@ serve(async (req) => {
     const { error: updateError } = await supabaseClient
       .from('profiles')
       .update({
-        plan_v2: 'TRIAL',
+        plan_v2: 'PRO',
         subscription_status: 'trialing',
         trial_end_at: trialEndAt.toISOString(),
       })

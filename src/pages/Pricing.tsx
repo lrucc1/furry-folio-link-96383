@@ -20,10 +20,12 @@ export default function Pricing() {
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [checkingOut, setCheckingOut] = useState(false);
 
-  // Show trial button if user is on FREE plan and hasn't used trial yet
-  const canStartTrial = plan === 'FREE' && subscriptionStatus === 'none';
-  // Show subscribe button if on trial or if trial expired
-  const showSubscribe = subscriptionStatus === 'trialing' || (plan === 'FREE' && subscriptionStatus !== 'none');
+  // Show trial button if user hasn't started trial yet (FREE with no subscription history)
+  const canStartTrial = subscriptionStatus === 'none';
+  // Show subscribe button if on trial or past trial
+  const showSubscribe = subscriptionStatus === 'trialing' || subscriptionStatus === 'past_due' || subscriptionStatus === 'canceled';
+  // Already subscribed
+  const isActiveSubscriber = plan === 'PRO' && subscriptionStatus === 'active';
 
   const handleStartTrial = async () => {
     if (!user) {
@@ -251,12 +253,23 @@ export default function Pricing() {
                 </div>
 
                 {user ? (
-                  canStartTrial ? (
+                  isActiveSubscriber ? (
+                    <Button 
+                      onClick={() => navigate('/account')}
+                      variant="outline"
+                      size="lg"
+                      className="w-full"
+                      data-testid="manage-subscription-btn"
+                    >
+                      Manage Subscription
+                    </Button>
+                  ) : canStartTrial ? (
                     <Button 
                       onClick={handleStartTrial}
                       disabled={checkingOut}
                       size="lg"
                       className="w-full"
+                      data-testid="start-trial-cta"
                     >
                       <Sparkles className="w-4 h-4 mr-2" />
                       {checkingOut ? 'Processing...' : 'Start 7-Day Free Trial'}
@@ -267,6 +280,7 @@ export default function Pricing() {
                       disabled={checkingOut}
                       size="lg"
                       className="w-full"
+                      data-testid="subscribe-now-btn"
                     >
                       {checkingOut ? 'Processing...' : 'Subscribe Now'}
                     </Button>
@@ -277,7 +291,7 @@ export default function Pricing() {
                       size="lg"
                       className="w-full"
                     >
-                      Manage Subscription
+                      View Account
                     </Button>
                   )
                 ) : (
