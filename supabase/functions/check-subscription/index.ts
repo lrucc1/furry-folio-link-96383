@@ -22,7 +22,12 @@ serve(async (req) => {
     logStep("Function started");
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "No authorization header provided" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
     logStep("Authorization header found");
 
     // Create Supabase client with auth header for user context
@@ -52,10 +57,18 @@ serve(async (req) => {
 
     logStep("Authenticating user with token");
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseAuth.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
+    let { data: userData, error: userError } = await supabaseAuth.auth.getUser(token);
+    if (userError || !userData?.user) {
+      logStep("Primary getUser(token) failed, trying header-bound getUser()", { err: userError?.message });
+      ({ data: userData, error: userError } = await supabaseAuth.auth.getUser());
+    }
+    if (userError || !userData?.user?.email) {
+      return new Response(JSON.stringify({ error: userError?.message || "Authentication error" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
     const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
     // First check for manual tier assignment in database
