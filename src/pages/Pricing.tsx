@@ -45,7 +45,6 @@ export default function Pricing() {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         method: 'POST',
         headers: { Authorization: `Bearer ${session.access_token}` },
-        body: {},
       });
 
       if (error) throw error;

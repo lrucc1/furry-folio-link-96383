@@ -1,36 +1,31 @@
 // deno-lint-ignore-file no-explicit-any
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import Stripe from 'https://esm.sh/stripe@15.12.0?target=deno';
-import { corsHeaders, json } from '../_shared/cors.ts';
-import { makeServiceClient } from '../_shared/clients.ts';
-
-const must = (k: string) => {
-  const v = Deno.env.get(k);
-  if (!v) throw new Error(`Missing env: ${k}`);
-  return v;
-};
+import { buildCors, json } from '../_shared/cors.ts';
+import { makeAnonClient, makeServiceClient, must } from '../_shared/clients.ts';
 
 serve(async (req: Request) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: buildCors(req) });
+
   try {
-    const svc = makeServiceClient();
     const authHeader = req.headers.get('authorization') ?? req.headers.get('Authorization') ?? '';
-    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-    if (!token) return json({ error: 'Missing Authorization Bearer token' }, 401);
+    if (!authHeader.startsWith('Bearer ')) return json(req, { error: 'Missing Authorization Bearer token' }, 401);
 
-    const { data: { user }, error: userErr } = await svc.auth.getUser(token);
-    if (userErr || !user) return json({ error: 'User not authenticated' }, 401);
+    const sb = makeAnonClient(authHeader);
+    const { data: { user }, error: uerr } = await sb.auth.getUser();
+    if (uerr || !user) return json(req, { error: 'User not authenticated' }, 401);
 
+    const svc = makeServiceClient();
     const stripe = new Stripe(must('STRIPE_SECRET_KEY'), { apiVersion: '2023-10-16' });
+    const priceId = must('STRIPE_PRICE_ID_PRO_MONTHLY');
 
-    // Get profile and ensure Stripe customer
-    const { data: profile, error: pErr } = await svc
+    // ensure profile + customer
+    const { data: profile, error: perr } = await svc
       .from('profiles')
       .select('id,email,stripe_customer_id')
       .eq('id', user.id)
       .single();
-
-    if (pErr) return json({ error: `Profile fetch failed: ${pErr.message}` }, 500);
+    if (perr) return json(req, { error: `Profile fetch failed: ${perr.message}` }, 500);
 
     const email = profile?.email ?? user.email ?? undefined;
     let customerId = profile?.stripe_customer_id as string | undefined;
@@ -38,17 +33,14 @@ serve(async (req: Request) => {
     if (!customerId) {
       const customer = await stripe.customers.create({ email, metadata: { supabase_user_id: user.id } });
       customerId = customer.id;
-      const { error: upErr } = await svc.from('profiles').update({ stripe_customer_id: customerId }).eq('id', user.id);
-      if (upErr) return json({ error: `Profile update failed: ${upErr.message}` }, 500);
+      const { error: uperr } = await svc.from('profiles').update({ stripe_customer_id: customerId }).eq('id', user.id);
+      if (uperr) return json(req, { error: `Profile update failed: ${uperr.message}` }, 500);
     }
 
-    const priceId = must('STRIPE_PRICE_ID_PRO_MONTHLY');
-
-    // Derive origin safely
-    const referer = req.headers.get('referer') ?? '';
-    const origin = (() => {
-      try { return new URL(referer).origin; } catch { return 'https://petlinkid.com'; }
-    })();
+    // compute origin safely
+    let origin = 'https://petlinkid.com';
+    const ref = req.headers.get('origin') ?? req.headers.get('referer');
+    try { if (ref) origin = new URL(ref).origin; } catch {}
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
@@ -63,8 +55,9 @@ serve(async (req: Request) => {
       cancel_url: `${origin}/upgrade/cancelled`,
     });
 
-    return json({ url: session.url }, 200);
+    return json(req, { url: session.url });
   } catch (e: any) {
-    return json({ error: String(e?.message ?? e) }, 500);
+    console.error('create-checkout error', e);
+    return json(req, { error: String(e?.message ?? e) }, 500);
   }
 });

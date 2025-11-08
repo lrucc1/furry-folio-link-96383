@@ -49,13 +49,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   })
 
   const checkSubscription = async () => {
-    if (!session) return
+    if (!session?.access_token) return
 
     try {
       console.log('[AuthContext] Checking subscription for user')
       const { data, error } = await supabase.functions.invoke('check-subscription', {
-        method: 'POST',
-        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+        method: 'GET',
+        headers: { Authorization: `Bearer ${session.access_token}` },
       })
       
       if (error) {

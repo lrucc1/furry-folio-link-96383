@@ -1,6 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const must = (k: string) => {
+export const must = (k: string) => {
   const v = Deno.env.get(k);
   if (!v) throw new Error(`Missing env: ${k}`);
   return v;

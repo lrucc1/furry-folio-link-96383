@@ -73,10 +73,11 @@ export default function DevSubscriptionDebug() {
     setCheckingOut(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('No auth session');
+      
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         method: 'POST',
-        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
-        body: {},
+        headers: { Authorization: `Bearer ${session.access_token}` },
       });
       
       if (error) throw error;
