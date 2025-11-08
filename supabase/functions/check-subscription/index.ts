@@ -50,9 +50,9 @@ serve(async (req) => {
     }
 
 
-    logStep("Authenticating user");
-    
-    const { data: userData, error: userError } = await supabaseAuth.auth.getUser();
+    logStep("Authenticating user with token");
+    const token = authHeader.replace("Bearer ", "");
+    const { data: userData, error: userError } = await supabaseAuth.auth.getUser(token);
     if (userError) throw new Error(`Authentication error: ${userError.message}`);
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
