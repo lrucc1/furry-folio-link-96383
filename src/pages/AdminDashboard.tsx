@@ -29,12 +29,14 @@ import {
   RefreshCw,
   Search,
   Download,
-  Edit
+  Edit,
+  Mail
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { PendingDeletions } from '@/components/admin/PendingDeletions';
 import { Header } from '@/components/Header';
+import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import {
   Dialog,
@@ -114,6 +116,7 @@ interface SubscriptionTier {
 
 const AdminDashboard = () => {
   const { signOut, user } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [growthStats, setGrowthStats] = useState<GrowthStats | null>(null);
   const [systemActivity, setSystemActivity] = useState<SystemActivity | null>(null);
@@ -425,6 +428,10 @@ const AdminDashboard = () => {
               <Button onClick={handleRefresh} variant="outline" size="sm">
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Refresh
+              </Button>
+              <Button onClick={() => navigate('/admin/email-preview')} variant="outline" size="sm">
+                <Mail className="w-4 h-4 mr-2" />
+                Email Templates
               </Button>
               <Badge className="bg-primary/10 text-primary border-primary/20 px-3 py-2">
                 <Crown className="w-3 h-3 mr-1" />
