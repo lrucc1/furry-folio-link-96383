@@ -1,9 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { Resend } from "https://esm.sh/resend@4.0.0";
-import React from 'npm:react@18.3.1'
-import { renderAsync } from 'npm:@react-email/components@0.0.22'
-import { HealthReminderEmail } from './_templates/health-reminder.tsx'
-import { VaccinationReminderEmail } from './_templates/vaccination-reminder.tsx'
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -17,6 +13,126 @@ const log = (level: string, message: string, data?: any) => {
 };
 
 const APP_URL = Deno.env.get("APP_URL") || "https://petlinkid.io";
+
+// Helper function to generate health reminder HTML
+const generateHealthReminderHTML = (params: {
+  userName: string;
+  petName: string;
+  petSpecies: string;
+  reminderTitle: string;
+  reminderDescription?: string;
+  dueDate: string;
+  daysText: string;
+}) => `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+</head>
+<body style="font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Ubuntu,sans-serif; margin: 0; padding: 0; background-color: #f6f9fc;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; margin-bottom: 64px;">
+    <div style="padding: 32px 48px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px 12px 0 0;">
+      <h1 style="color: #ffffff; font-size: 28px; font-weight: bold; margin: 0;">🐾 Pet Health Reminder</h1>
+    </div>
+    
+    <div style="padding: 24px 48px;">
+      <p style="font-size: 18px; font-weight: 600; color: #333333; margin: 0 0 16px;">Hi ${params.userName},</p>
+      
+      <p style="font-size: 16px; line-height: 24px; color: #525f7f; margin: 16px 0;">
+        This is a friendly reminder that <strong>${params.reminderTitle}</strong> for your ${params.petSpecies}, <strong>${params.petName}</strong>, is due <strong>${params.daysText}</strong>.
+      </p>
+      
+      ${params.reminderDescription ? `
+      <div style="background-color: #f8f9fa; border-left: 4px solid #667eea; padding: 16px 20px; margin: 24px 0; border-radius: 4px;">
+        <p style="font-size: 14px; font-weight: 600; color: #667eea; margin: 0 0 8px;">Details:</p>
+        <p style="font-size: 15px; line-height: 22px; color: #525f7f; margin: 0;">${params.reminderDescription}</p>
+      </div>
+      ` : ''}
+      
+      <div style="background-color: #fff9e6; border: 1px solid #ffe066; padding: 16px 20px; margin: 16px 0; border-radius: 6px;">
+        <p style="font-size: 15px; color: #333333; margin: 0;"><strong>Due Date:</strong> ${params.dueDate}</p>
+      </div>
+      
+      <div style="text-align: center; margin: 32px 0;">
+        <a href="${APP_URL}/reminders" style="background-color: #667eea; border-radius: 8px; color: #fff; font-size: 16px; font-weight: 600; text-decoration: none; display: inline-block; padding: 14px 32px; box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);">
+          View All Reminders
+        </a>
+      </div>
+      
+      <p style="font-size: 16px; line-height: 24px; color: #525f7f; margin: 16px 0;">
+        Log in to your PetLink ID account to manage your reminders and keep your pet's health on track.
+      </p>
+    </div>
+    
+    <div style="border-top: 1px solid #e6ebf1; padding: 20px 48px; text-align: center;">
+      <p style="font-size: 14px; color: #525f7f; margin: 8px 0;"><strong>PetLink ID</strong> - Keep your pet's health on track</p>
+      <p style="font-size: 14px; margin: 4px 0;"><a href="${APP_URL}" style="color: #667eea; text-decoration: none;">petlinkid.io</a></p>
+      <p style="font-size: 12px; color: #8898aa; margin: 16px 0 0;">You're receiving this because you have health reminders enabled for your pets.</p>
+    </div>
+  </div>
+</body>
+</html>
+`;
+
+// Helper function to generate vaccination reminder HTML
+const generateVaccinationReminderHTML = (params: {
+  userName: string;
+  petName: string;
+  petSpecies: string;
+  vaccineName: string;
+  notes?: string;
+  dueDate: string;
+  daysText: string;
+}) => `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+</head>
+<body style="font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Ubuntu,sans-serif; margin: 0; padding: 0; background-color: #f6f9fc;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; margin-bottom: 64px;">
+    <div style="padding: 32px 48px; text-align: center; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 12px 12px 0 0;">
+      <h1 style="color: #ffffff; font-size: 28px; font-weight: bold; margin: 0;">💉 Vaccination Reminder</h1>
+    </div>
+    
+    <div style="padding: 24px 48px;">
+      <p style="font-size: 18px; font-weight: 600; color: #333333; margin: 0 0 16px;">Hi ${params.userName},</p>
+      
+      <p style="font-size: 16px; line-height: 24px; color: #525f7f; margin: 16px 0;">
+        This is a friendly reminder that the <strong>${params.vaccineName}</strong> vaccination for your ${params.petSpecies}, <strong>${params.petName}</strong>, is due <strong>${params.daysText}</strong>.
+      </p>
+      
+      ${params.notes ? `
+      <div style="background-color: #f8f9fa; border-left: 4px solid #f5576c; padding: 16px 20px; margin: 24px 0; border-radius: 4px;">
+        <p style="font-size: 14px; font-weight: 600; color: #f5576c; margin: 0 0 8px;">Notes:</p>
+        <p style="font-size: 15px; line-height: 22px; color: #525f7f; margin: 0;">${params.notes}</p>
+      </div>
+      ` : ''}
+      
+      <div style="background-color: #fff9e6; border: 1px solid #ffe066; padding: 16px 20px; margin: 16px 0; border-radius: 6px;">
+        <p style="font-size: 15px; color: #333333; margin: 0;"><strong>Due Date:</strong> ${params.dueDate}</p>
+      </div>
+      
+      <div style="text-align: center; margin: 32px 0;">
+        <a href="${APP_URL}/reminders" style="background-color: #f5576c; border-radius: 8px; color: #fff; font-size: 16px; font-weight: 600; text-decoration: none; display: inline-block; padding: 14px 32px; box-shadow: 0 4px 6px rgba(245, 87, 108, 0.3);">
+          View Vaccination Records
+        </a>
+      </div>
+      
+      <p style="font-size: 16px; line-height: 24px; color: #525f7f; margin: 16px 0;">
+        Keeping vaccinations up to date is crucial for your pet's health and wellbeing. Log in to your PetLink ID account to manage your vaccination records.
+      </p>
+    </div>
+    
+    <div style="border-top: 1px solid #e6ebf1; padding: 20px 48px; text-align: center;">
+      <p style="font-size: 14px; color: #525f7f; margin: 8px 0;"><strong>PetLink ID</strong> - Keep your pet's health on track</p>
+      <p style="font-size: 14px; margin: 4px 0;"><a href="${APP_URL}" style="color: #f5576c; text-decoration: none;">petlinkid.io</a></p>
+      <p style="font-size: 12px; color: #8898aa; margin: 16px 0 0;">You're receiving this because you have vaccination reminders enabled for your pets.</p>
+    </div>
+  </div>
+</body>
+</html>
+`;
 
 Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -177,19 +293,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
         const daysText = reminder.days_before === 1 ? 'tomorrow' : `in ${reminder.days_before} days`;
         const dueDate = new Date(reminder.reminder_date).toLocaleDateString();
 
-        // Render React email template
-        const html = await renderAsync(
-          React.createElement(HealthReminderEmail, {
-            userName,
-            petName,
-            petSpecies,
-            reminderTitle: reminder.title,
-            reminderDescription: reminder.description,
-            dueDate,
-            daysText,
-            appUrl: APP_URL,
-          })
-        );
+        // Generate HTML email
+        const html = generateHealthReminderHTML({
+          userName,
+          petName,
+          petSpecies,
+          reminderTitle: reminder.title,
+          reminderDescription: reminder.description || undefined,
+          dueDate,
+          daysText,
+        });
         
         const emailResponse = await resend.emails.send({
           from: "PetLink ID <reminders@petlinkid.io>",
@@ -250,19 +363,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
         const daysText = vaccination.days_before === 1 ? 'tomorrow' : `in ${vaccination.days_before} days`;
         const dueDate = new Date(vaccination.next_due_date).toLocaleDateString();
 
-        // Render React email template
-        const html = await renderAsync(
-          React.createElement(VaccinationReminderEmail, {
-            userName,
-            petName,
-            petSpecies,
-            vaccineName: vaccination.vaccine_name,
-            notes: vaccination.notes,
-            dueDate,
-            daysText,
-            appUrl: APP_URL,
-          })
-        );
+        // Generate HTML email
+        const html = generateVaccinationReminderHTML({
+          userName,
+          petName,
+          petSpecies,
+          vaccineName: vaccination.vaccine_name,
+          notes: vaccination.notes || undefined,
+          dueDate,
+          daysText,
+        });
         
         const emailResponse = await resend.emails.send({
           from: "PetLink ID <reminders@petlinkid.io>",
