@@ -18,6 +18,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { normalizeTier } from '@/lib/plan/effectivePlan';
+import { PendingDeletions } from '@/components/admin/PendingDeletions';
 
 interface UserData {
   user_id: string;
@@ -213,6 +214,9 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Pending Deletions */}
+      <PendingDeletions />
 
       {/* Users Table */}
       <Card>

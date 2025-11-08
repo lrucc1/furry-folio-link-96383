@@ -806,6 +806,17 @@ export type Database = {
         }[]
       }
       get_database_stats: { Args: never; Returns: Json }
+      get_pending_deletions: {
+        Args: never
+        Returns: {
+          days_remaining: number
+          deleted_at: string
+          display_name: string
+          email: string
+          hard_delete_date: string
+          user_id: string
+        }[]
+      }
       get_system_activity_stats: { Args: never; Returns: Json }
       get_user_growth_stats: { Args: never; Returns: Json }
       get_user_plan: { Args: { p_user_id: string }; Returns: string }
