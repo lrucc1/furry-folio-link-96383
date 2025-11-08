@@ -16,9 +16,14 @@ import { getPriceId, isCheckoutAvailable } from '@/lib/stripeConfig';
 export default function Pricing() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { plan, isTrialActive, daysUntilTrialEnd } = usePlanV2();
+  const { plan, subscriptionStatus, isTrialActive, daysUntilTrialEnd } = usePlanV2();
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [checkingOut, setCheckingOut] = useState(false);
+
+  // Show trial button if user is on FREE plan and hasn't used trial yet
+  const canStartTrial = plan === 'FREE' && subscriptionStatus === 'none';
+  // Show subscribe button if on trial or if trial expired
+  const showSubscribe = subscriptionStatus === 'trialing' || (plan === 'FREE' && subscriptionStatus !== 'none');
 
   const handleStartTrial = async () => {
     if (!user) {
@@ -246,7 +251,7 @@ export default function Pricing() {
                 </div>
 
                 {user ? (
-                  plan === 'FREE' ? (
+                  canStartTrial ? (
                     <Button 
                       onClick={handleStartTrial}
                       disabled={checkingOut}
@@ -255,6 +260,15 @@ export default function Pricing() {
                     >
                       <Sparkles className="w-4 h-4 mr-2" />
                       {checkingOut ? 'Processing...' : 'Start 7-Day Free Trial'}
+                    </Button>
+                  ) : showSubscribe ? (
+                    <Button 
+                      onClick={handleSubscribe}
+                      disabled={checkingOut}
+                      size="lg"
+                      className="w-full"
+                    >
+                      {checkingOut ? 'Processing...' : 'Subscribe Now'}
                     </Button>
                   ) : (
                     <Button 
