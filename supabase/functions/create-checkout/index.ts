@@ -55,7 +55,13 @@ serve(async (req) => {
   );
 
   try {
-    const authHeader = req.headers.get("Authorization")!;
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthenticated: missing Authorization header" }), {
+        headers: { ...c.headers, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
     const token = authHeader.replace("Bearer ", "");
     const { data, error: authError } = await supabaseClient.auth.getUser(token);
     const user = data.user;
@@ -64,7 +70,10 @@ serve(async (req) => {
     
     if (!user?.email) {
       console.error('[CREATE-CHECKOUT] Auth error:', authError);
-      throw new Error("User not authenticated or email not available");
+      return new Response(JSON.stringify({ error: "User not authenticated or email not available" }), {
+        headers: { ...c.headers, "Content-Type": "application/json" },
+        status: 401,
+      });
     }
 
     const body = await req.json().catch(() => ({}));

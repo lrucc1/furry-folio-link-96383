@@ -44,10 +44,9 @@ serve(async (req) => {
     if (!authHeader) throw new Error("No authorization header provided");
     logStep("Authorization header found");
 
-    logStep("Authenticating user");
-    
-    // Use ANON_KEY client to validate user JWT
-    const { data: userData, error: userError } = await supabaseAuth.auth.getUser();
+    logStep("Authenticating user with token");
+    const token = authHeader.replace("Bearer ", "");
+    const { data: userData, error: userError } = await supabaseAuth.auth.getUser(token);
     if (userError) throw new Error(`Authentication error: ${userError.message}`);
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
