@@ -6,6 +6,7 @@ import { CheckCircle, Loader2 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { usePlanV2 } from '@/hooks/usePlanV2';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function BillingSuccess() {
   const navigate = useNavigate();
@@ -23,8 +24,13 @@ export default function BillingSuccess() {
     // Refresh plan data to get updated subscription status
     const verifySubscription = async () => {
       setVerifying(true);
-      // Wait a bit for webhook to process
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      try {
+        // Force a server-side sync from Stripe as a fallback in case webhooks aren't configured
+        await supabase.functions.invoke('sync-subscription');
+      } catch (e) {
+        console.warn('sync-subscription failed (will still refresh profile):', e);
+      }
+      // Refresh local plan data
       await refresh();
       setVerifying(false);
     };
