@@ -81,7 +81,7 @@ function normalizePlan(plan: string | null | undefined): PlanType {
   return "FREE";
 }
 
-async function getUsage(supabaseClient: ReturnType<typeof createClient>, userId: string): Promise<UsageSnapshot> {
+async function getUsage(supabaseClient: any, userId: string): Promise<UsageSnapshot> {
   const usage: UsageSnapshot = {
     pets_count: 0,
     caregivers_count: 0,
@@ -137,8 +137,8 @@ async function getUsage(supabaseClient: ReturnType<typeof createClient>, userId:
     console.error("[entitlement-check] Failed to fetch storage usage", storageError);
   }
 
-  if (storageData?.total_bytes) {
-    usage.storage_used_mb = storageData.total_bytes / (1024 * 1024);
+  if (storageData && typeof storageData === 'object' && 'total_bytes' in storageData) {
+    usage.storage_used_mb = (storageData as any).total_bytes / (1024 * 1024);
   }
 
   return usage;
