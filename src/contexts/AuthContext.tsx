@@ -53,7 +53,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     try {
       console.log('[AuthContext] Checking subscription for user')
-      const { data, error } = await supabase.functions.invoke('check-subscription')
+      const { data, error } = await supabase.functions.invoke('check-subscription', {
+        method: 'POST',
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+      })
       
       if (error) {
         console.error('[AuthContext] Error checking subscription:', error)

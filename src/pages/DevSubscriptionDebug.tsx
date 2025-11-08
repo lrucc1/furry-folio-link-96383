@@ -72,8 +72,11 @@ export default function DevSubscriptionDebug() {
   const handleStartCheckout = async () => {
     setCheckingOut(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { tier: 'PRO', billingPeriod: 'monthly' }
+        method: 'POST',
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+        body: {},
       });
       
       if (error) throw error;

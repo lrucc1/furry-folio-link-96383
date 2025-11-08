@@ -90,7 +90,11 @@ export default function Account() {
 
   const checkSubscription = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('check-subscription');
+      const { data: { session } } = await supabase.auth.getSession();
+      const { data, error } = await supabase.functions.invoke('check-subscription', {
+        method: 'POST',
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+      });
       if (error) throw error;
       console.log('Subscription data:', data);
       setSubscription(data);

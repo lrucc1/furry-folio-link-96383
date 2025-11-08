@@ -74,7 +74,10 @@ export function ManageSubscriptionModal({
       const priceId = TIER_INFO[targetTier].priceId as string | null;
       if (!priceId) throw new Error('Missing priceId for target tier');
 
+      const { data: { session } } = await supabase.auth.getSession();
       const { data, error } = await supabase.functions.invoke('create-checkout', {
+        method: 'POST',
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
         body: { priceId }
       });
 
