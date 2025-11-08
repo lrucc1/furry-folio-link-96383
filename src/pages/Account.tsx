@@ -53,7 +53,7 @@ interface Invoice {
   invoice_pdf: string | null;
 }
 
-const phoneSchema = z.string().trim().regex(/^[\d\s\-\+\(\)]+$/, 'Please enter a valid phone number').min(8, 'Phone number too short').max(20, 'Phone number too long').optional().or(z.literal(''));
+const phoneSchema = z.string().trim().regex(/^[\d\s()+-]+$/, 'Please enter a valid phone number').min(8, 'Phone number too short').max(20, 'Phone number too long').optional().or(z.literal(''));
 
 export default function Account() {
   const { user, signOut } = useAuth();
