@@ -21,6 +21,7 @@ import FoundPet from "./pages/FoundPet";
 import PublicPetProfile from "./pages/PublicPetProfile";
 import AdminDashboard from "./pages/AdminDashboard";
 import PlanDebug from "./pages/admin/PlanDebug";
+import TestEmails from "./pages/admin/TestEmails";
 import HelpCentre from "./pages/HelpCentre";
 import FAQ from "./pages/FAQ";
 import Contact from "./pages/Contact";
@@ -160,10 +161,9 @@ const App = () => (
                   </ProtectedRoute>
                 } 
               />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-              <Route path="/admin/plan-debug" element={<AdminRoute><PlanDebug /></AdminRoute>} />
+              <Route path="/admin/test-emails" element={<AdminRoute><TestEmails /></AdminRoute>} />
               <Route path="/dev/subscription-debug" element={<DevSubscriptionDebug />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

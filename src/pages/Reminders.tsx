@@ -12,6 +12,7 @@ import { Footer } from '@/components/Footer';
 import { toast } from 'sonner';
 import { EditVaccinationModal } from '@/components/EditVaccinationModal';
 import { EditHealthReminderModal } from '@/components/EditHealthReminderModal';
+import { ReminderNotifications } from '@/components/ReminderNotifications';
 
 interface Vaccination {
   id: string;
@@ -243,12 +244,15 @@ export default function Reminders() {
             </Card>
           ) : (
             <Tabs defaultValue="active" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="active">
                   Active ({activeReminders.length})
                 </TabsTrigger>
                 <TabsTrigger value="completed">
                   Completed ({completedReminders.length})
+                </TabsTrigger>
+                <TabsTrigger value="notifications">
+                  Email History
                 </TabsTrigger>
               </TabsList>
 
@@ -453,6 +457,10 @@ export default function Reminders() {
                     );
                   })
                 )}
+              </TabsContent>
+              
+              <TabsContent value="notifications" className="space-y-6">
+                <ReminderNotifications />
               </TabsContent>
             </Tabs>
           )}

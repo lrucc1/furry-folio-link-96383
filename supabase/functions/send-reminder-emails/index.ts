@@ -1,5 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import React from 'npm:react@18.3.1'
+import { renderAsync } from 'npm:@react-email/components@0.0.22'
+import { HealthReminderEmail } from './_templates/health-reminder.tsx'
+import { VaccinationReminderEmail } from './_templates/vaccination-reminder.tsx'
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -11,6 +15,8 @@ const corsHeaders = {
 const log = (level: string, message: string, data?: any) => {
   console.log(JSON.stringify({ level, message, data, timestamp: new Date().toISOString() }));
 };
+
+const APP_URL = Deno.env.get("APP_URL") || "https://petlinkid.io";
 
 Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -25,10 +31,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     log("info", "Starting reminder email send process");
 
-    // Get health reminders due in 7, 3, and 1 day(s)
     const daysToCheck = [7, 3, 1];
     const healthRemindersToNotify = [];
 
+    // Get health reminders due in 7, 3, and 1 day(s)
     for (const days of daysToCheck) {
       const targetDate = new Date();
       targetDate.setDate(targetDate.getDate() + days);
@@ -47,7 +53,22 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
       if (reminders && reminders.length > 0) {
         for (const reminder of reminders) {
-          // Fetch pet and profile data separately
+          // Check if notification already sent for this days_before value
+          const { data: existingNotification } = await supabase
+            .from('reminder_notifications')
+            .select('id')
+            .eq('reminder_id', reminder.id)
+            .eq('days_before', days)
+            .eq('reminder_type', 'health_reminder')
+            .single();
+
+          // Skip if already notified for this time period
+          if (existingNotification) {
+            log("info", "Notification already sent", { reminder_id: reminder.id, days_before: days });
+            continue;
+          }
+
+          // Fetch pet and profile data
           const { data: pet } = await supabase
             .from('pets')
             .select('name, species')
@@ -92,7 +113,22 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
       if (vaccinations && vaccinations.length > 0) {
         for (const vaccination of vaccinations) {
-          // Fetch pet and profile data separately
+          // Check if notification already sent for this days_before value
+          const { data: existingNotification } = await supabase
+            .from('reminder_notifications')
+            .select('id')
+            .eq('reminder_id', vaccination.id)
+            .eq('days_before', days)
+            .eq('reminder_type', 'vaccination')
+            .single();
+
+          // Skip if already notified for this time period
+          if (existingNotification) {
+            log("info", "Notification already sent", { vaccination_id: vaccination.id, days_before: days });
+            continue;
+          }
+
+          // Fetch pet and profile data
           const { data: pet } = await supabase
             .from('pets')
             .select('name, species')
@@ -125,7 +161,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     let emailsSent = 0;
     let notificationsCreated = 0;
 
-    // Send emails for health reminders
+    // Send emails for health reminders with branded templates
     for (const reminder of healthRemindersToNotify) {
       try {
         const userEmail = reminder.user_email;
@@ -139,26 +175,27 @@ Deno.serve(async (req: Request): Promise<Response> => {
         }
 
         const daysText = reminder.days_before === 1 ? 'tomorrow' : `in ${reminder.days_before} days`;
+        const dueDate = new Date(reminder.reminder_date).toLocaleDateString();
+
+        // Render React email template
+        const html = await renderAsync(
+          React.createElement(HealthReminderEmail, {
+            userName,
+            petName,
+            petSpecies,
+            reminderTitle: reminder.title,
+            reminderDescription: reminder.description,
+            dueDate,
+            daysText,
+            appUrl: APP_URL,
+          })
+        );
         
         const emailResponse = await resend.emails.send({
           from: "PetLink ID <reminders@petlinkid.io>",
           to: [userEmail],
           subject: `Reminder: ${reminder.title} for ${petName} is due ${daysText}`,
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #333;">Pet Health Reminder</h2>
-              <p>Hi ${userName},</p>
-              <p>This is a friendly reminder that <strong>${reminder.title}</strong> for your ${petSpecies}, <strong>${petName}</strong>, is due <strong>${daysText}</strong>.</p>
-              ${reminder.description ? `<p><strong>Details:</strong> ${reminder.description}</p>` : ''}
-              <p><strong>Due Date:</strong> ${new Date(reminder.reminder_date).toLocaleDateString()}</p>
-              <p>Log in to your PetLink ID account to manage your reminders.</p>
-              <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
-              <p style="color: #666; font-size: 12px;">
-                PetLink ID - Keep your pet's health on track<br>
-                <a href="https://petlinkid.io">petlinkid.io</a>
-              </p>
-            </div>
-          `,
+          html,
         });
 
         log("info", "Health reminder email sent", { reminder_id: reminder.id, email: userEmail });
@@ -197,7 +234,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       }
     }
 
-    // Send emails for vaccinations
+    // Send emails for vaccinations with branded templates
     for (const vaccination of vaccinationsToNotify) {
       try {
         const userEmail = vaccination.user_email;
@@ -211,26 +248,27 @@ Deno.serve(async (req: Request): Promise<Response> => {
         }
 
         const daysText = vaccination.days_before === 1 ? 'tomorrow' : `in ${vaccination.days_before} days`;
+        const dueDate = new Date(vaccination.next_due_date).toLocaleDateString();
+
+        // Render React email template
+        const html = await renderAsync(
+          React.createElement(VaccinationReminderEmail, {
+            userName,
+            petName,
+            petSpecies,
+            vaccineName: vaccination.vaccine_name,
+            notes: vaccination.notes,
+            dueDate,
+            daysText,
+            appUrl: APP_URL,
+          })
+        );
         
         const emailResponse = await resend.emails.send({
           from: "PetLink ID <reminders@petlinkid.io>",
           to: [userEmail],
           subject: `Reminder: ${vaccination.vaccine_name} vaccination for ${petName} is due ${daysText}`,
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #333;">Vaccination Reminder</h2>
-              <p>Hi ${userName},</p>
-              <p>This is a friendly reminder that the <strong>${vaccination.vaccine_name}</strong> vaccination for your ${petSpecies}, <strong>${petName}</strong>, is due <strong>${daysText}</strong>.</p>
-              ${vaccination.notes ? `<p><strong>Notes:</strong> ${vaccination.notes}</p>` : ''}
-              <p><strong>Due Date:</strong> ${new Date(vaccination.next_due_date).toLocaleDateString()}</p>
-              <p>Log in to your PetLink ID account to manage your vaccination records.</p>
-              <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
-              <p style="color: #666; font-size: 12px;">
-                PetLink ID - Keep your pet's health on track<br>
-                <a href="https://petlinkid.io">petlinkid.io</a>
-              </p>
-            </div>
-          `,
+          html,
         });
 
         log("info", "Vaccination email sent", { vaccination_id: vaccination.id, email: userEmail });
