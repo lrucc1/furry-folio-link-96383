@@ -2,7 +2,7 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import Stripe from 'https://esm.sh/stripe@15.12.0?target=deno';
 import { corsHeaders, json } from '../_shared/cors.ts';
-import { makeAnonClient, makeServiceClient } from '../_shared/clients.ts';
+import { makeServiceClient } from '../_shared/clients.ts';
 
 const must = (k: string) => {
   const v = Deno.env.get(k);
@@ -13,15 +13,15 @@ const must = (k: string) => {
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   try {
+    const svc = makeServiceClient();
     const authHeader = req.headers.get('authorization') ?? req.headers.get('Authorization') ?? '';
-    if (!authHeader.startsWith('Bearer ')) return json({ error: 'Missing Authorization Bearer token' }, 401);
+    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+    if (!token) return json({ error: 'Missing Authorization Bearer token' }, 401);
 
-    const sb = makeAnonClient(authHeader);
-    const { data: { user }, error: userErr } = await sb.auth.getUser();
+    const { data: { user }, error: userErr } = await svc.auth.getUser(token);
     if (userErr || !user) return json({ error: 'User not authenticated' }, 401);
 
     const stripe = new Stripe(must('STRIPE_SECRET_KEY'), { apiVersion: '2023-10-16' });
-    const svc = makeServiceClient();
 
     // Get profile and ensure Stripe customer
     const { data: profile, error: pErr } = await svc

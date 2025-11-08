@@ -142,7 +142,7 @@ export function SharingTab({ petId }: SharingTabProps) {
     } else {
       // 2) Fetch profiles for those users in a separate query (no FK required)
       const userIds = Array.from(new Set((memberData || []).map((m: any) => m.user_id)));
-      let profilesById: Record<string, { email?: string; display_name?: string }> = {};
+      const profilesById: Record<string, { email?: string; display_name?: string }> = {};
 
       if (userIds.length > 0) {
         const { data: profilesData, error: profilesError } = await supabase
