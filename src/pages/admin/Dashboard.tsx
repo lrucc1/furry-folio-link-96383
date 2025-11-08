@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ChangeTierModal } from '@/components/admin/ChangeTierModal';
 import { toast } from 'sonner';
-import { Users, Crown, TrendingUp, DollarSign, Search, Edit } from 'lucide-react';
+import { Users, Crown, TrendingUp, DollarSign, Search, Edit, Mail } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/table';
 import { normalizeTier } from '@/lib/plan/effectivePlan';
 import { PendingDeletions } from '@/components/admin/PendingDeletions';
+import { useNavigate } from 'react-router-dom';
 
 interface UserData {
   user_id: string;
@@ -43,6 +44,7 @@ interface PlanAudit {
 
 export default function AdminDashboard() {
   const { isAdmin, loading: adminLoading } = useAdmin();
+  const navigate = useNavigate();
   const [users, setUsers] = useState<UserData[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserData[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -170,7 +172,13 @@ export default function AdminDashboard() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <Button onClick={() => navigate('/admin/email-preview')} variant="outline">
+          <Mail className="mr-2 h-4 w-4" />
+          Email Templates
+        </Button>
+      </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

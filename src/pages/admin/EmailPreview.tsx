@@ -5,28 +5,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Mail, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAdmin } from "@/hooks/useAdmin";
 
 export default function EmailPreview() {
   const navigate = useNavigate();
-  const { isAdmin, loading: adminLoading } = useAdmin();
   const [activeTab, setActiveTab] = useState("health");
 
-  if (adminLoading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="container mx-auto px-4 py-8 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    navigate("/");
-    return null;
-  }
+  // AdminRoute handles auth/admin checks - no need for duplicate logic here
 
   // Sample email HTML for Health Reminder
   const healthReminderHTML = `
