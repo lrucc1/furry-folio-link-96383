@@ -8,12 +8,18 @@ serve(async (req: Request) => {
 
   try {
     const authHeader = req.headers.get('authorization') ?? req.headers.get('Authorization') ?? '';
-    if (!authHeader.startsWith('Bearer ')) return json(req, { error: 'Auth session missing!' }, 401);
+    if (!authHeader) return json(req, { error: 'Auth session missing!' }, 401);
 
-    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+    // Use anon client with the auth header to get the authenticated user
+    const anonClient = makeAnonClient(authHeader);
+    const { data: { user }, error: uerr } = await anonClient.auth.getUser();
+    if (uerr || !user) {
+      console.error('Auth error:', uerr);
+      return json(req, { error: 'Auth session missing!' }, 401);
+    }
+
+    // Use service client for database operations
     const svc = makeServiceClient();
-    const { data: { user }, error: uerr } = await svc.auth.getUser(token);
-    if (uerr || !user) return json(req, { error: 'Auth session missing!' }, 401);
 
     const { data: profile, error } = await svc
       .from('profiles')
