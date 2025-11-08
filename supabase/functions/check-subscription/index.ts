@@ -18,6 +18,13 @@ serve(async (req) => {
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 
+  // Use ANON_KEY for user auth, then create SERVICE_ROLE client for DB operations
+  const supabaseAuth = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+    { auth: { persistSession: false } }
+  );
+
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -37,10 +44,10 @@ serve(async (req) => {
     if (!authHeader) throw new Error("No authorization header provided");
     logStep("Authorization header found");
 
-    const token = authHeader.replace("Bearer ", "");
-    logStep("Authenticating user with token");
+    logStep("Authenticating user");
     
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    // Use ANON_KEY client to validate user JWT
+    const { data: userData, error: userError } = await supabaseAuth.auth.getUser();
     if (userError) throw new Error(`Authentication error: ${userError.message}`);
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
