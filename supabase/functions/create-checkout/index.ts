@@ -1,174 +1,70 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+// deno-lint-ignore-file no-explicit-any
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
+import Stripe from 'https://esm.sh/stripe@15.12.0?target=deno';
+import { corsHeaders, json } from '../_shared/cors.ts';
+import { makeAnonClient, makeServiceClient } from '../_shared/clients.ts';
 
-const ALLOWED_ORIGINS = new Set([
-  'https://petlinkid.com',
-  'https://www.petlinkid.com',
-  'https://petlinkid.lovable.app',
-  'https://furry-folio-link-96383.lovable.app',
-  'http://localhost:5173',
-  'http://localhost:8080'
-]);
+const must = (k: string) => {
+  const v = Deno.env.get(k);
+  if (!v) throw new Error(`Missing env: ${k}`);
+  return v;
+};
 
-function isAllowedOrigin(origin: string) {
-  if (!origin) return false;
+serve(async (req: Request) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   try {
-    const url = new URL(origin);
-    const host = url.hostname;
-    if (ALLOWED_ORIGINS.has(origin)) return true;
-    if (host.endsWith('.lovable.app')) return true;
-    if (host.endsWith('.lovableproject.com')) return true;
-    return false;
-  } catch {
-    return false;
-  }
-}
+    const authHeader = req.headers.get('authorization') ?? req.headers.get('Authorization') ?? '';
+    if (!authHeader.startsWith('Bearer ')) return json({ error: 'Missing Authorization Bearer token' }, 401);
 
-function cors(origin: string) {
-  const allowed = isAllowedOrigin(origin);
-  return {
-    allowed,
-    headers: {
-      'Access-Control-Allow-Origin': allowed ? origin : 'https://petlinkid.com',
-      'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-      'Access-Control-Allow-Methods': 'GET,POST,OPTIONS'
-    }
-  };
-}
+    const sb = makeAnonClient(authHeader);
+    const { data: { user }, error: userErr } = await sb.auth.getUser();
+    if (userErr || !user) return json({ error: 'User not authenticated' }, 401);
 
-serve(async (req) => {
-  const origin = req.headers.get('origin') ?? '';
-  const c = cors(origin);
-  
-  if (req.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: c.headers });
-  }
-  
-  if (!c.allowed) {
-    return new Response('Forbidden', { status: 403, headers: c.headers });
-  }
+    const stripe = new Stripe(must('STRIPE_SECRET_KEY'), { apiVersion: '2023-10-16' });
+    const svc = makeServiceClient();
 
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader) {
-    return new Response(JSON.stringify({ error: "Unauthenticated: missing Authorization header" }), {
-      headers: { ...c.headers, "Content-Type": "application/json" },
-      status: 401,
-    });
-  }
+    // Get profile and ensure Stripe customer
+    const { data: profile, error: pErr } = await svc
+      .from('profiles')
+      .select('id,email,stripe_customer_id')
+      .eq('id', user.id)
+      .single();
 
-  // Create Supabase client with auth header for user context
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-    {
-      global: {
-        headers: { Authorization: authHeader }
-      }
-    }
-  );
+    if (pErr) return json({ error: `Profile fetch failed: ${pErr.message}` }, 500);
 
-  try {
-    const { data, error: authError } = await supabaseClient.auth.getUser();
-    const user = data.user;
-    
-    console.log('[CREATE-CHECKOUT] User:', user?.id, user?.email);
-    
-    if (!user?.email) {
-      console.error('[CREATE-CHECKOUT] Auth error:', authError);
-      return new Response(JSON.stringify({ error: "User not authenticated or email not available" }), {
-        headers: { ...c.headers, "Content-Type": "application/json" },
-        status: 401,
-      });
-    }
+    const email = profile?.email ?? user.email ?? undefined;
+    let customerId = profile?.stripe_customer_id as string | undefined;
 
-    const body = await req.json().catch(() => ({}));
-    let priceId: string | undefined = body?.priceId;
-    const tier = body?.tier;
-    const billingPeriod = body?.billingPeriod || 'monthly';
-    const withTrial = body?.withTrial === true;
-    
-    console.log('[CREATE-CHECKOUT] Request:', { tier, billingPeriod, withTrial, priceId });
-
-    // PRO tier price IDs - these are the hardcoded Stripe price IDs for your PRO plan
-    const PRO_PRICE_MONTHLY = 'price_1SMaydEhyEZfSSpNTP4b7ISS'; // Pro monthly A$2.99
-    const PRO_PRICE_YEARLY = 'price_1SPU5YEhyEZfSSpN3vGN7WGC';  // Pro yearly A$28.99
-
-    // If priceId not provided, determine from tier and billing period
-    if (!priceId && tier === 'PRO') {
-      priceId = billingPeriod === 'yearly' ? PRO_PRICE_YEARLY : PRO_PRICE_MONTHLY;
-    }
-
-    if (!priceId) throw new Error("Price ID is required");
-
-
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
-      apiVersion: "2024-06-20" 
-    });
-
-    // Always check/create customer with metadata
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId: string;
-    
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-      console.log('[CREATE-CHECKOUT] Found existing customer:', customerId);
-      
-      // Update metadata to ensure user_id is set
-      await stripe.customers.update(customerId, {
-        metadata: { user_id: user.id }
-      });
-    } else {
-      const customer = await stripe.customers.create({
-        email: user.email,
-        metadata: { user_id: user.id }
-      });
+    if (!customerId) {
+      const customer = await stripe.customers.create({ email, metadata: { supabase_user_id: user.id } });
       customerId = customer.id;
-      console.log('[CREATE-CHECKOUT] Created new customer:', customerId);
+      const { error: upErr } = await svc.from('profiles').update({ stripe_customer_id: customerId }).eq('id', user.id);
+      if (upErr) return json({ error: `Profile update failed: ${upErr.message}` }, 500);
     }
 
-    // Build session config
-    const sessionConfig: any = {
+    const priceId = must('STRIPE_PRICE_ID_PRO_MONTHLY');
+
+    // Derive origin safely
+    const referer = req.headers.get('referer') ?? '';
+    const origin = (() => {
+      try { return new URL(referer).origin; } catch { return 'https://petlinkid.com'; }
+    })();
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
       customer: customerId,
-      customer_email: customerId ? undefined : user.email,
-      client_reference_id: user.id,
-      metadata: { user_id: user.id },
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      mode: "subscription",
-      success_url: `${origin}/account?success=true`,
-      cancel_url: `${origin}/pricing?canceled=true`,
+      allow_promotion_codes: true,
+      line_items: [{ price: priceId, quantity: 1 }],
       subscription_data: {
-        description: 'Full features for pet families',
-        metadata: {
-          plan: 'Pro',
-          user_id: user.id,
-          features: 'Unlimited Pet Profiles, Full Caregiver Access (read & write), Unlimited Health Reminders, 200MB Document Storage, Data Export Capability, Priority Support'
-        }
-      }
-    };
-
-    // Add 7-day trial if requested
-    if (withTrial) {
-      sessionConfig.subscription_data.trial_period_days = 7;
-    }
-
-    const session = await stripe.checkout.sessions.create(sessionConfig);
-    
-    console.log('[CREATE-CHECKOUT] Session created:', session.id, '→', session.url);
-
-    return new Response(JSON.stringify({ url: session.url }), {
-      headers: { ...c.headers, "Content-Type": "application/json" },
-      status: 200,
+        trial_period_days: 7,
+        trial_settings: { end_behavior: { missing_payment_method: 'cancel' } },
+      },
+      success_url: `${origin}/upgrade/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/upgrade/cancelled`,
     });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
-      headers: { ...c.headers, "Content-Type": "application/json" },
-      status: 500,
-    });
+
+    return json({ url: session.url }, 200);
+  } catch (e: any) {
+    return json({ error: String(e?.message ?? e) }, 500);
   }
 });

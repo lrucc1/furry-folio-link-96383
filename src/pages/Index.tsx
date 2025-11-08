@@ -95,16 +95,19 @@ const Index = () => {
     }
     setCheckingOut(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        navigate('/auth');
+        return;
+      }
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: {
-          tier: 'PRO',
-          billingPeriod: 'monthly',
-          withTrial: true,
-        },
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: {},
       });
       if (error) throw error;
       if (data?.url) {
-        window.open(data.url, '_blank', 'noopener,noreferrer');
+        window.location.href = data.url as string;
       }
     } catch (e) {
       console.error('Frontpage trial checkout error:', e);
@@ -230,7 +233,7 @@ const Index = () => {
                       className="w-full"
                       onClick={handleStartProTrial}
                       disabled={checkingOut}
-                      data-testid="hero-start-trial-cta"
+                      data-testid="start-trial-cta"
                     >
                       {checkingOut ? 'Processing...' : plan.cta}
                     </Button>

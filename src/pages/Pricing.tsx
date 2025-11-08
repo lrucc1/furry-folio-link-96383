@@ -36,18 +36,22 @@ export default function Pricing() {
     setCheckingOut(true);
     
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        navigate('/auth');
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { 
-          tier: 'PRO',
-          billingPeriod: billingPeriod,
-          withTrial: true
-        },
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: {},
       });
 
       if (error) throw error;
 
       if (data?.url) {
-        window.open(data.url, '_blank', 'noopener,noreferrer');
+        window.location.href = data.url as string;
       }
     } catch (error: any) {
       console.error('Trial checkout error:', error);
