@@ -1,40 +1,27 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.2'
 
-const allowedOrigins = (Deno.env.get('ALLOWED_ORIGINS') ?? '*')
-  .split(',')
-  .map((origin) => origin.trim())
-  .filter((origin) => origin.length > 0)
-
-const resolveOrigin = (requestOrigin?: string) => {
-  if (!allowedOrigins.length || allowedOrigins.includes('*')) {
-    return '*'
-  }
-
-  if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
-    return requestOrigin
-  }
-
-  return allowedOrigins[0]
-}
-
-const getCorsHeaders = (origin?: string) => ({
-  'Access-Control-Allow-Origin': resolveOrigin(origin),
+const corsHeaders = {
+  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGINS') ?? '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
-})
+  'Vary': 'Origin',
+}
 
-function json(body: Record<string, unknown>, status = 200, origin?: string) {
+function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json', ...getCorsHeaders(origin) },
+    headers: { 'Content-Type': 'application/json', ...corsHeaders },
   })
 }
 
 Deno.serve(async (req) => {
-  const origin = req.headers.get('Origin') ?? undefined
-
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: getCorsHeaders(origin) })
+    return new Response('ok', { headers: corsHeaders })
+  }
+
+  if (req.method !== 'POST') {
+    return json({ error: 'Method not allowed' }, 405)
   }
 
   try {
@@ -43,18 +30,21 @@ Deno.serve(async (req) => {
 
     if (!supabaseUrl || !serviceKey) {
       console.error('[create-pet] Missing Supabase environment variables')
-      return json({ error: 'server_error', message: 'Configuration error.' }, 500, origin)
+      return json({ error: 'Configuration error' }, 500)
     }
 
+    // Use SERVICE_ROLE_KEY to bypass RLS
     const supabase = createClient(supabaseUrl, serviceKey, {
       auth: { persistSession: false },
     })
 
+    // Verify user from JWT
     const authHeader = req.headers.get('Authorization') ?? ''
     const jwt = authHeader.replace('Bearer ', '').trim()
 
     if (!jwt) {
-      return json({ error: 'Unauthenticated' }, 401, origin)
+      console.error('[create-pet] No JWT provided')
+      return json({ error: 'Unauthenticated' }, 401)
     }
 
     const {
@@ -64,115 +54,65 @@ Deno.serve(async (req) => {
 
     if (userErr || !user) {
       console.error('[create-pet] Auth error:', userErr)
-      return json({ error: 'Unauthenticated' }, 401, origin)
+      return json({ error: 'Unauthenticated' }, 401)
     }
 
-    let rawBody: unknown
+    // Parse and validate body
+    let body: any
     try {
-      rawBody = await req.json()
-    } catch (error) {
-      console.error('[create-pet] Invalid JSON:', error)
-      return json({ error: 'Invalid JSON' }, 400, origin)
+      body = await req.json()
+    } catch {
+      console.error('[create-pet] Invalid JSON')
+      return json({ error: 'Invalid JSON' }, 400)
     }
 
-    if (!rawBody || typeof rawBody !== 'object' || Array.isArray(rawBody)) {
-      return json({ error: 'Invalid JSON' }, 400, origin)
+    // Validate required fields
+    const required = ['name', 'species']
+    for (const k of required) {
+      if (!body[k] || typeof body[k] !== 'string' || !body[k].trim()) {
+        console.error(`[create-pet] Missing required field: ${k}`)
+        return json({ error: `Missing field: ${k}` }, 400)
+      }
     }
 
-    const payload = rawBody as Record<string, unknown>
-    const fromPayload = (key: string) => payload[key]
-
-    const str = (value: unknown, max?: number) => {
-      if (value === undefined || value === null) return null
-      const s = String(value).trim()
-      if (!s) return null
-      return max ? s.slice(0, max) : s
-    }
-    const num = (value: unknown) => {
-      if (value === undefined || value === null || value === '') return null
-      const n = Number(value)
-      return Number.isFinite(n) ? n : null
-    }
-    const int = (value: unknown) => {
-      if (value === undefined || value === null || value === '') return null
-      const n = parseInt(String(value), 10)
-      return Number.isFinite(n) ? n : null
-    }
-    const date = (value: unknown) => {
-      if (value === undefined || value === null) return null
-      const s = String(value).trim()
-      return s ? s : null
-    }
-    const bool = (value: unknown) => (typeof value === 'boolean' ? value : null)
-
-    const name = str(fromPayload('name'), 100)
-    const species = str(fromPayload('species'), 50)
-
-    if (!name || !species) {
-      const missing = !name ? 'name' : 'species'
-      return json({ error: `Missing field: ${missing}` }, 400, origin)
-    }
-
-    const insertData: Record<string, unknown> = {
-      user_id: user.id,
-      name,
-      species,
-      breed: str(fromPayload('breed')),
-      color: str(fromPayload('color')),
-      gender: str(fromPayload('gender') ?? fromPayload('sex')),
-      date_of_birth: date(fromPayload('date_of_birth') ?? fromPayload('dob')),
-      microchip_number: str(fromPayload('microchip_number') ?? fromPayload('microchip')),
-      notes: str(fromPayload('notes'), 10000),
-      age_years: int(fromPayload('age_years')),
-      age_months: int(fromPayload('age_months')),
-      weight_kg: num(fromPayload('weight_kg')),
-      desexed: bool(fromPayload('desexed')),
-      is_lost: bool(fromPayload('is_lost')),
-      clinic_lat: num(fromPayload('clinic_lat')),
-      clinic_lng: num(fromPayload('clinic_lng')),
-      medical_conditions: str(fromPayload('medical_conditions')),
-      medications: str(fromPayload('medications')),
-      allergies: str(fromPayload('allergies')),
-      photo_url: str(fromPayload('photo_url')),
-      status: str(fromPayload('status')),
-      vet_name: str(fromPayload('vet_name') ?? fromPayload('clinic_name')),
-      vet_phone: str(fromPayload('vet_phone')),
-      vet_email: str(fromPayload('vet_email')),
-      emergency_contact_name: str(fromPayload('emergency_contact_name')),
-      emergency_contact_phone: str(fromPayload('emergency_contact_phone')),
-      registry_name: str(fromPayload('registry_name')),
-      registry_link: str(fromPayload('registry_link')),
-      insurance_provider: str(fromPayload('insurance_provider')),
-      insurance_policy: str(fromPayload('insurance_policy')),
-      clinic_name: str(fromPayload('clinic_name')),
-      clinic_address: str(fromPayload('clinic_address')),
-      clinic_suburb: str(fromPayload('clinic_suburb')),
-      clinic_state: str(fromPayload('clinic_state')),
-      clinic_postcode: str(fromPayload('clinic_postcode')),
-    }
-
-    console.log('[create-pet] user:', user.id)
-    console.log('[create-pet] payload keys:', Object.keys(payload))
-
-    const { data: inserted, error: dbErr } = await supabase
+    // Insert into database (service role bypasses RLS)
+    const { data, error: dbErr } = await supabase
       .from('pets')
-      .insert([insertData])
+      .insert({
+        user_id: user.id,
+        name: body.name.trim(),
+        species: body.species.trim(),
+        breed: body.breed?.trim() || null,
+        color: body.color?.trim() || null,
+        gender: body.sex?.trim() || body.gender?.trim() || null,
+        date_of_birth: body.dob || body.date_of_birth || null,
+        microchip_number: body.microchip || body.microchip_number || null,
+        notes: body.notes?.trim() || null,
+        registry_name: body.registry_name?.trim() || null,
+        registry_link: body.registry_link?.trim() || null,
+        clinic_name: body.clinic_name?.trim() || null,
+        clinic_address: body.clinic_address?.trim() || null,
+        insurance_provider: body.insurance_provider?.trim() || null,
+        insurance_policy: body.insurance_policy?.trim() || null,
+        desexed: body.desexed || false,
+      })
       .select('id')
       .single()
 
     if (dbErr) {
-      console.error('[create-pet] insert error:', dbErr)
-      return json({ error: dbErr.message ?? 'Insert failed.' }, 400, origin)
+      console.error('[create-pet] Database error:', dbErr)
+      return json({ error: dbErr.message || 'Failed to create pet' }, 400)
     }
 
-    if (!inserted) {
-      console.error('[create-pet] Insert returned no data')
-      return json({ error: 'Insert failed.' }, 500, origin)
+    if (!data?.id) {
+      console.error('[create-pet] No ID returned')
+      return json({ error: 'Pet creation failed' }, 500)
     }
 
-    return json({ id: inserted.id }, 201, origin)
+    console.log('[create-pet] Success - pet ID:', data.id)
+    return json({ id: data.id }, 201)
   } catch (error) {
     console.error('[create-pet] Unexpected error:', error)
-    return json({ error: 'server_error', message: 'Unexpected error.' }, 500, origin)
+    return json({ error: 'Unexpected server error' }, 500)
   }
 })
