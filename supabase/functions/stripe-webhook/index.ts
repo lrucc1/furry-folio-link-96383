@@ -154,13 +154,11 @@ serve(async (req) => {
             stripe_status: subscription.status,
             stripe_tier: plan_v2.toLowerCase(),
             stripe_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            // New plan_v2 fields
+            // New plan_v2 fields only (avoid legacy CHECK constraint on plan_tier)
             plan_v2: plan_v2,
             subscription_status: subscription_status,
             next_billing_at: new Date(subscription.current_period_end * 1000).toISOString(),
             trial_end_at: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
-            // Keep old fields for backwards compatibility
-            plan_tier: plan_v2.toLowerCase(),
           })
           .eq('id', user.id);
 

@@ -95,13 +95,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         setSubscriptionInfo(newSubInfo)
 
-        // Update profile with tier
-        if (user && tier !== 'free') {
-          await supabase
-            .from('profiles')
-            .update({ plan_tier: tier })
-            .eq('id', user.id)
-        }
+        // Do not write legacy plan_tier here. Webhooks manage plan_v2/subscription_status.
+        // Rely on server-side updates to avoid violating legacy CHECK constraints.
+
       }
     } catch (error) {
       console.error('[AuthContext] Subscription check failed:', error)

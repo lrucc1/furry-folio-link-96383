@@ -93,6 +93,8 @@ serve(async (req) => {
     const sessionConfig: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
+      client_reference_id: user.id,
+      metadata: { user_id: user.id },
       line_items: [
         {
           price: priceId,
@@ -106,6 +108,7 @@ serve(async (req) => {
         description: 'Full features for pet families',
         metadata: {
           plan: 'Pro',
+          user_id: user.id,
           features: 'Unlimited Pet Profiles, Full Caregiver Access (read & write), Unlimited Health Reminders, 200MB Document Storage, Data Export Capability, Priority Support'
         }
       }

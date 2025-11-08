@@ -32,7 +32,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('plan_tier, manual_override, plan_source')
+        .select('plan_tier, manual_override, plan_source, plan_v2, subscription_status, stripe_status, stripe_tier')
         .eq('id', user.id)
         .maybeSingle();
 
@@ -46,6 +46,12 @@ export function PlanProvider({ children }: { children: ReactNode }) {
           plan_tier: data.plan_tier as Tier | undefined,
           manual_override: data.manual_override,
           plan_source: data.plan_source as PlanSource | undefined,
+          // v2 fields
+          plan_v2: (data as any).plan_v2,
+          subscription_status: (data as any).subscription_status,
+          // legacy stripe-derived fields
+          stripe_tier: (data as any).stripe_tier,
+          stripe_status: (data as any).stripe_status,
         };
         setProfile(profileData);
         setTier(computeEffectiveTier(profileData));
