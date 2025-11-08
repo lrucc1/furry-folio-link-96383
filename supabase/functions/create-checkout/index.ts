@@ -49,21 +49,27 @@ serve(async (req) => {
     return new Response('Forbidden', { status: 403, headers: c.headers });
   }
 
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader) {
+    return new Response(JSON.stringify({ error: "Unauthenticated: missing Authorization header" }), {
+      headers: { ...c.headers, "Content-Type": "application/json" },
+      status: 401,
+    });
+  }
+
+  // Create Supabase client with auth header for user context
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+    {
+      global: {
+        headers: { Authorization: authHeader }
+      }
+    }
   );
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthenticated: missing Authorization header" }), {
-        headers: { ...c.headers, "Content-Type": "application/json" },
-        status: 401,
-      });
-    }
-    const token = authHeader.replace("Bearer ", "");
-    const { data, error: authError } = await supabaseClient.auth.getUser(token);
+    const { data, error: authError } = await supabaseClient.auth.getUser();
     const user = data.user;
     
     console.log('[CREATE-CHECKOUT] User:', user?.id, user?.email);
