@@ -80,12 +80,14 @@ export function ManageSubscriptionModal({
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         method: 'POST',
         headers: { Authorization: `Bearer ${session.access_token}` },
+        body: { priceId },
       });
 
       if (error) throw error;
 
       if (data?.url) {
-        window.open(data.url, '_blank', 'noopener,noreferrer');
+        const topWindow = window.top ?? window;
+        topWindow.location.href = data.url as string;
         toast.success(au('Redirecting to checkout...'));
       }
     } catch (error) {

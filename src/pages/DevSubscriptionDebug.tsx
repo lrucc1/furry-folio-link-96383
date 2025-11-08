@@ -83,7 +83,8 @@ export default function DevSubscriptionDebug() {
       if (error) throw error;
       
       if (data?.url) {
-        window.location.href = data.url;
+        const topWindow = window.top ?? window;
+        topWindow.location.href = data.url as string;
       } else {
         throw new Error('No checkout URL returned');
       }

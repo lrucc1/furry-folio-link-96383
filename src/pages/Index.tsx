@@ -106,7 +106,8 @@ const Index = () => {
       });
       if (error) throw error;
       if (data?.url) {
-        window.location.href = data.url as string;
+        const topWindow = window.top ?? window;
+        topWindow.location.href = data.url as string;
       }
     } catch (e) {
       console.error('Frontpage trial checkout error:', e);

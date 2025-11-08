@@ -41,18 +41,13 @@ serve(async (req: Request) => {
       if (uperr) return json(req, { error: `Profile update failed: ${uperr.message}` }, 500);
     }
 
-    // compute origin safely - support both production and Lovable preview
+    // compute origin safely - accept any provided origin/referer (preview or prod)
     let origin = 'https://petlinkid.com';
     const ref = req.headers.get('origin') ?? req.headers.get('referer');
     try { 
-      if (ref) {
-        const refUrl = new URL(ref);
-        // Accept both production domain and lovable.dev
-        if (refUrl.hostname.endsWith('lovable.dev') || refUrl.hostname === 'petlinkid.com') {
-          origin = refUrl.origin;
-        }
-      }
+      if (ref) origin = new URL(ref).origin;
     } catch {}
+
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
