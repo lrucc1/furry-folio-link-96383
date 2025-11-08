@@ -17,16 +17,18 @@ serve(async (req: Request) => {
 
     const { data: profile, error } = await svc
       .from('profiles')
-      .select('is_pro, plan, trial_ends_at, stripe_subscription_id')
+      .select('plan_v2, subscription_status, trial_end_at, stripe_subscription_id')
       .eq('id', user.id)
       .single();
     if (error) return json(req, { error: `Profile fetch failed: ${error.message}` }, 500);
 
+    const isPro = profile?.plan_v2 === 'PRO' || profile?.subscription_status === 'active';
+
     return json(req, {
       ok: true,
-      is_pro: !!profile?.is_pro,
-      plan: profile?.plan ?? 'free',
-      trial_ends_at: profile?.trial_ends_at ?? null,
+      is_pro: isPro,
+      plan: profile?.plan_v2 ?? 'FREE',
+      trial_ends_at: profile?.trial_end_at ?? null,
       stripe_subscription_id: profile?.stripe_subscription_id ?? null,
     });
   } catch (e: any) {
