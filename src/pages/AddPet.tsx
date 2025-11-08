@@ -144,11 +144,15 @@ const AddPet = () => {
 
     setLoading(true)
     try {
-      // Build insert payload to match backend schema columns only
-      const insertData = {
+      // Build payload for the create-pet edge function
+      const payload = {
         name: formData.name.trim(),
         species: formData.species.trim(),
         breed: formData.breed || null,
+        sex: (formData.sex as string) || null,
+        dob: formData.date_of_birth || null,
+        microchip: formData.microchip_number || null,
+        photo_url: null,
         color: formData.color || null,
         gender: (formData.sex as string) || null,
         date_of_birth: formData.date_of_birth || null,
@@ -165,7 +169,7 @@ const AddPet = () => {
       console.log('[AddPet] Calling create-pet edge function')
 
       const { data, error } = await supabase.functions.invoke('create-pet', {
-        body: insertData,
+        body: payload,
       })
 
       console.log('[AddPet] Edge function response:', { data, error })
