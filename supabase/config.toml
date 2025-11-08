@@ -3,6 +3,9 @@ project_id = "yyuvupjbvjpbouxuzdye"
 [functions.accept-invite]
 verify_jwt = true
 
+[functions.entitlement-check]
+verify_jwt = true
+
 [functions.get-entitlements]
 verify_jwt = true
 

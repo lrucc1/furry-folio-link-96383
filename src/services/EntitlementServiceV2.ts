@@ -54,11 +54,15 @@ export class EntitlementServiceV2 {
       .eq('user_id', userId);
 
     const petIds = userPets?.map(p => p.id) || [];
-    
-    const { count: caregiversCount } = await supabase
-      .from('pet_memberships')
-      .select('*', { count: 'exact', head: true })
-      .in('pet_id', petIds.length > 0 ? petIds : ['']);
+
+    let caregiversCount = 0;
+    if (petIds.length > 0) {
+      const { count } = await supabase
+        .from('pet_memberships')
+        .select('*', { count: 'exact', head: true })
+        .in('pet_id', petIds);
+      caregiversCount = count || 0;
+    }
 
     // Get active reminders count
     const { count: remindersCount } = await supabase
@@ -78,7 +82,7 @@ export class EntitlementServiceV2 {
 
     return {
       pets_count: petsCount || 0,
-      caregivers_count: caregiversCount || 0,
+      caregivers_count: caregiversCount,
       reminders_active_count: remindersCount || 0,
       storage_used_mb: storageMb,
     };
