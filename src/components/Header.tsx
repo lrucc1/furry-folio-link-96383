@@ -124,8 +124,8 @@ export const Header = ({}: HeaderProps) => {
       </Sheet>
 
       <header className="border-b border-border bg-white/95 backdrop-blur-sm sticky top-0 z-50 shadow-soft">
-      <div className="container mx-auto px-3 sm:px-4 h-16 flex items-center justify-between gap-4 md:gap-8">
-        <div className="flex items-center gap-2 min-w-0 mr-4">
+      <div className="container mx-auto px-3 sm:px-4 h-16 flex items-center justify-between gap-2 md:gap-8">
+        <div className="flex items-center gap-2 min-w-0 md:mr-4">
           <Button
             variant="ghost"
             size="icon"
@@ -196,27 +196,6 @@ export const Header = ({}: HeaderProps) => {
               <NotificationsDropdown />
 
               <UserMenu />
-              
-              {/* Mobile: Icon-only button */}
-              <Button 
-                variant="hero" 
-                size="icon"
-                className="md:hidden"
-                onClick={() => navigate('/pets/new')}
-                title={au('Add Pet')}
-              >
-                <Plus className="w-5 h-5 block" />
-              </Button>
-
-              {/* Desktop: Button with text */}
-              <Button 
-                variant="hero" 
-                className="hidden md:inline-flex h-10"
-                onClick={() => navigate('/pets/new')}
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                {au('Add Pet')}
-              </Button>
             </>
           ) : (
             <>
