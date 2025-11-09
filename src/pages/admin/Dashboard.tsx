@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { normalizeTier } from '@/lib/plan/effectivePlan';
+import { normalizeTier, computeEffectiveTier } from '@/lib/plan/effectivePlan';
 import { PendingDeletions } from '@/components/admin/PendingDeletions';
 import { useNavigate } from 'react-router-dom';
 
@@ -26,6 +26,11 @@ interface UserData {
   email: string;
   display_name: string | null;
   plan_tier?: string;
+  plan_v2?: string;
+  subscription_status?: string;
+  stripe_status?: string;
+  stripe_tier?: string;
+  manual_override?: boolean;
   plan_source?: string;
   plan_expires_at?: string | null;
   plan_updated_at?: string | null;
@@ -59,10 +64,19 @@ export default function AdminDashboard() {
   const [proPercentage, setProPercentage] = useState(0);
   const [estimatedMRR, setEstimatedMRR] = useState(0);
 
-  const getTierDisplay = (tier?: string) => {
-    const normalized = (tier || 'free').toLowerCase();
+  const getTierDisplay = (user: UserData) => {
+    // Compute effective tier using the same logic as frontend
+    const effectiveTier = computeEffectiveTier({
+      plan_tier: user.plan_tier as any,
+      plan_v2: user.plan_v2 as any,
+      subscription_status: user.subscription_status as any,
+      stripe_status: user.stripe_status,
+      stripe_tier: user.stripe_tier as any,
+      manual_override: user.manual_override,
+      plan_source: user.plan_source as any,
+    });
 
-    if (['pro', 'family', 'fire', 'premium', 'trial'].includes(normalized)) {
+    if (effectiveTier === 'pro') {
       return { label: 'Pro', variant: 'default' as const, Icon: Crown };
     }
 
@@ -89,7 +103,7 @@ export default function AdminDashboard() {
       setLoading(true);
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, display_name, plan_tier, plan_source, plan_expires_at, plan_updated_at, created_at')
+        .select('id, email, display_name, plan_tier, plan_v2, subscription_status, stripe_status, stripe_tier, manual_override, plan_source, plan_expires_at, plan_updated_at, created_at')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -100,6 +114,11 @@ export default function AdminDashboard() {
           email: profile.email || 'No email',
           display_name: profile.display_name,
           plan_tier: profile.plan_tier || 'free',
+          plan_v2: profile.plan_v2,
+          subscription_status: profile.subscription_status,
+          stripe_status: profile.stripe_status,
+          stripe_tier: profile.stripe_tier,
+          manual_override: profile.manual_override,
           plan_source: profile.plan_source || 'stripe',
           plan_expires_at: profile.plan_expires_at,
           plan_updated_at: profile.plan_updated_at,
@@ -112,8 +131,16 @@ export default function AdminDashboard() {
       // Calculate KPIs
       setTotalUsers(userData.length);
       const pro = userData.filter((u) => {
-        const normalized = (u.plan_tier || 'free').toLowerCase();
-        return ['pro', 'family', 'fire', 'premium', 'trial'].includes(normalized);
+        const effectiveTier = computeEffectiveTier({
+          plan_tier: u.plan_tier as any,
+          plan_v2: u.plan_v2 as any,
+          subscription_status: u.subscription_status as any,
+          stripe_status: u.stripe_status,
+          stripe_tier: u.stripe_tier as any,
+          manual_override: u.manual_override,
+          plan_source: u.plan_source as any,
+        });
+        return effectiveTier === 'pro';
       }).length;
       setProUsers(pro);
       setProPercentage(userData.length > 0 ? (pro / userData.length) * 100 : 0);
@@ -271,7 +298,7 @@ export default function AdminDashboard() {
                         </TableCell>
                         <TableCell>
                           {(() => {
-                            const { label, variant, Icon } = getTierDisplay(user.plan_tier);
+                            const { label, variant, Icon } = getTierDisplay(user);
                             return (
                               <Badge variant={variant}>
                                 {Icon ? (
