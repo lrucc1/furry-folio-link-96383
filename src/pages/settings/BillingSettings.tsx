@@ -34,10 +34,19 @@ export default function BillingSettings() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Portal error:", error);
+        toast.error("Failed to open billing portal. Please try again.");
+        return;
+      }
+
+      if (data?.error) {
+        console.error("Portal error:", data.error);
+        toast.error(data.error);
+        return;
+      }
 
       if (data?.url) {
-        // Open in new tab
         window.open(data.url, '_blank');
         toast.success("Opening billing portal...");
       } else {
@@ -45,7 +54,7 @@ export default function BillingSettings() {
       }
     } catch (error: any) {
       console.error("Portal error:", error);
-      toast.error(error.message || "Failed to open billing portal. Please try again.");
+      toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
