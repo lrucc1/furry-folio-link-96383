@@ -6,13 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, Calendar, CheckCircle, Heart, Syringe, Clock, Pill } from 'lucide-react';
+import { AlertTriangle, Calendar, CheckCircle, Heart, Syringe, Clock, Pill, RefreshCw } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { toast } from 'sonner';
 import { EditVaccinationModal } from '@/components/EditVaccinationModal';
 import { EditHealthReminderModal } from '@/components/EditHealthReminderModal';
 import { ReminderNotifications } from '@/components/ReminderNotifications';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 
 interface Vaccination {
   id: string;
@@ -198,6 +199,22 @@ export default function Reminders() {
     }
   };
 
+  const handleRefresh = async () => {
+    await fetchAllReminders();
+    toast.success('Reminders refreshed');
+  };
+
+  const {
+    containerRef,
+    isRefreshing,
+    pullDistance,
+    shouldShowLoader,
+    loaderOpacity,
+    loaderRotation,
+  } = usePullToRefresh({
+    onRefresh: handleRefresh,
+  });
+
   const getStatusText = (daysUntil: number, isOverdue: boolean, completed?: boolean) => {
     if (completed) return 'Completed';
     if (isOverdue) {
@@ -220,7 +237,18 @@ export default function Reminders() {
   const upcomingReminders = activeReminders.filter(r => !r.isOverdue && r.daysUntil > 7);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div ref={containerRef} className="min-h-screen flex flex-col" style={{ transform: `translateY(${pullDistance}px)`, transition: isRefreshing ? 'transform 0.3s ease-out' : 'none' }}>
+      {shouldShowLoader && (
+        <div 
+          className="fixed top-0 left-1/2 -translate-x-1/2 z-40 flex items-center justify-center pt-4"
+          style={{ opacity: loaderOpacity }}
+        >
+          <RefreshCw 
+            className="w-6 h-6 text-primary" 
+            style={{ transform: `rotate(${loaderRotation}deg)` }}
+          />
+        </div>
+      )}
       <Header />
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-6">

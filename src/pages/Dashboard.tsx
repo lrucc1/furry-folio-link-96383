@@ -12,10 +12,12 @@ import { HealthReminders } from '@/components/HealthReminders'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { PendingInvitesModal } from '@/components/PendingInvitesModal'
-import { Plus, Crown, Heart } from 'lucide-react'
+import { Plus, Crown, Heart, RefreshCw } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { calculateAge } from '@/lib/age-utils'
 import { au } from '@/lib/auEnglish'
+import { usePullToRefresh } from '@/hooks/usePullToRefresh'
+import { toast } from 'sonner'
 
 interface Pet {
   id: string
@@ -116,6 +118,22 @@ const Dashboard = () => {
     }
   }
 
+  const handleRefresh = async () => {
+    await fetchPets();
+    toast.success('Dashboard refreshed');
+  };
+
+  const {
+    containerRef,
+    isRefreshing,
+    pullDistance,
+    shouldShowLoader,
+    loaderOpacity,
+    loaderRotation,
+  } = usePullToRefresh({
+    onRefresh: handleRefresh,
+  });
+
   const handleViewPetDetails = (pet: any) => {
     // Navigate to pet details
     navigate(`/pets/${pet.id}`)
@@ -153,7 +171,18 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div ref={containerRef} className="min-h-screen bg-background" style={{ transform: `translateY(${pullDistance}px)`, transition: isRefreshing ? 'transform 0.3s ease-out' : 'none' }}>
+      {shouldShowLoader && (
+        <div 
+          className="fixed top-0 left-1/2 -translate-x-1/2 z-40 flex items-center justify-center pt-4"
+          style={{ opacity: loaderOpacity }}
+        >
+          <RefreshCw 
+            className="w-6 h-6 text-primary" 
+            style={{ transform: `rotate(${loaderRotation}deg)` }}
+          />
+        </div>
+      )}
       <Header />
       
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
