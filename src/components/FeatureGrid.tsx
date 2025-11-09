@@ -97,28 +97,28 @@ export const FeatureGrid = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {features.map((feature, index) => (
             <Link key={index} to={`/faq#${feature.faqId}`} className="block">
               <Card className="bg-gradient-card border-0 shadow-medium hover:shadow-strong transition-spring group cursor-pointer">
-                <CardHeader className="pb-4">
+                <CardHeader className="pb-3 sm:pb-4">
                   <div className="flex items-center justify-between mb-3">
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-primary/10 flex items-center justify-center group-hover:scale-110 transition-spring ${feature.color}`}>
-                      <feature.icon className="w-6 h-6" />
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-primary/10 flex items-center justify-center group-hover:scale-110 transition-spring ${feature.color}`}>
+                      <feature.icon className="w-5 h-5 sm:w-6 sm:h-6" />
                     </div>
                     <Badge 
                       variant={feature.badge === "Pro" ? "default" : "secondary"}
-                      className="text-xs"
+                      className="text-[10px] sm:text-xs"
                     >
                       {feature.badge}
                     </Badge>
                   </div>
-                  <CardTitle className="text-lg font-semibold text-foreground">
+                  <CardTitle className="text-base sm:text-lg font-semibold text-foreground">
                     {feature.title}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0">
-                  <p className="text-muted-foreground text-sm leading-relaxed">
+                <CardContent className="pt-0 px-4 pb-4 sm:px-6 sm:pb-6">
+                  <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed">
                     {feature.description}
                   </p>
                 </CardContent>
