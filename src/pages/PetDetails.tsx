@@ -393,7 +393,7 @@ const PetDetails = () => {
         </Card>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="health">Health & Docs</TabsTrigger>
             <TabsTrigger value="lost">Lost Mode</TabsTrigger>
