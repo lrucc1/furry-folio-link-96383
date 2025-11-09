@@ -160,18 +160,18 @@ export const HealthReminders = () => {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="px-4 sm:px-6">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Heart className="w-5 h-5" />
+          <CardTitle className="flex items-center gap-2 text-lg md:text-xl lg:text-2xl">
+            <Heart className="w-4 h-4 sm:w-5 sm:h-5" />
             Health Reminders
           </CardTitle>
-          <Button variant="ghost" size="sm" asChild>
+          <Button variant="ghost" size="sm" className="text-xs sm:text-sm" asChild>
             <Link to="/reminders">View All</Link>
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-2 sm:space-y-4 px-4 sm:px-6">
         {displayedReminders.length === 0 ? (
           <Alert>
             <CheckCircle className="h-4 w-4" />
@@ -182,9 +182,9 @@ export const HealthReminders = () => {
         ) : (
           <>
             {urgentReminders.length > 0 && (
-              <div className="space-y-3">
-                <h4 className="font-semibold text-red-600 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4" />
+              <div className="space-y-2 sm:space-y-3">
+                <h4 className="font-semibold text-red-600 flex items-center gap-2 text-sm sm:text-base">
+                  <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4" />
                   Urgent ({urgentReminders.length})
                 </h4>
                 {urgentReminders.map((reminder) => {
@@ -192,20 +192,20 @@ export const HealthReminders = () => {
                   return (
                     <div
                       key={reminder.id}
-                      className="flex items-center justify-between p-3 border rounded-lg bg-red-50 border-red-200"
+                      className="flex items-center justify-between p-2 sm:p-3 border rounded-lg bg-red-50 border-red-200 gap-2"
                     >
-                      <div className="flex items-center gap-3">
-                        <Icon className="w-5 h-5 text-red-600" />
-                        <div>
-                          <p className="font-medium text-sm">{reminder.title}</p>
-                          <p className="text-xs text-muted-foreground">
+                      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                        <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 flex-shrink-0" />
+                        <div className="min-w-0">
+                          <p className="font-medium text-xs sm:text-sm truncate">{reminder.title}</p>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
                             {reminder.petName} • {format(reminder.dueDate, 'MMM dd, yyyy')}
                           </p>
                         </div>
                       </div>
                       <Badge 
                         variant={reminder.isOverdue ? "destructive" : "secondary"}
-                        className="flex-shrink-0"
+                        className="flex-shrink-0 text-[10px] sm:text-xs"
                       >
                         {getStatusText(reminder.daysUntil, reminder.isOverdue)}
                       </Badge>
@@ -216,28 +216,28 @@ export const HealthReminders = () => {
             )}
 
             {upcomingReminders.length > 0 && (
-              <div className="space-y-3">
-                <h4 className="font-semibold text-muted-foreground flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
+              <div className="space-y-2 sm:space-y-3">
+                <h4 className="font-semibold text-muted-foreground flex items-center gap-2 text-sm sm:text-base">
+                  <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
                   Upcoming ({upcomingReminders.length})
                 </h4>
                 {upcomingReminders.slice(0, 3).map((reminder) => (
                   <div
                     key={reminder.id}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                    className="flex items-center justify-between p-2 sm:p-3 border rounded-lg hover:bg-muted/50 transition-colors gap-2"
                   >
-                    <div className="flex items-center gap-3">
-                      <Syringe className="w-4 h-4 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium text-sm">{reminder.title}</p>
-                        <p className="text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                      <Syringe className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="font-medium text-xs sm:text-sm truncate">{reminder.title}</p>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
                           {reminder.petName} • {format(reminder.dueDate, 'MMM dd, yyyy')}
                         </p>
                         </div>
                       </div>
                       <Badge 
                         variant="outline"
-                        className="flex-shrink-0 text-muted-foreground"
+                        className="flex-shrink-0 text-muted-foreground text-[10px] sm:text-xs"
                       >
                         {getStatusText(reminder.daysUntil, false)}
                       </Badge>

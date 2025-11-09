@@ -134,22 +134,22 @@ const Index = () => {
         <FeatureGrid />
         
         {/* Demo Pet Dashboard */}
-        <section className="py-20 bg-background">
+        <section className="py-12 sm:py-16 md:py-20 bg-background">
           <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
+            <div className="text-center mb-8 sm:mb-12">
               <Badge className="bg-primary/10 text-primary border-primary/20 mb-4">
                 <Heart className="w-3 h-3 mr-1" />
                 Live Demo
               </Badge>
-              <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-4">
                 Your Pet Dashboard
               </h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
                 See how easy it is to manage your pets with our intuitive interface.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto">
               {mockPets.map((pet) => (
                 <PetCard 
                   key={pet.id}
@@ -172,26 +172,26 @@ const Index = () => {
         </section>
 
         {/* Pricing Section */}
-        <section className="py-20 bg-muted/30">
+        <section className="py-12 sm:py-16 md:py-20 bg-muted/30">
           <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
+            <div className="text-center mb-8 sm:mb-12">
               <Badge className="bg-accent/10 text-accent border-accent/20 mb-4">
                 <Crown className="w-3 h-3 mr-1" />
                 Simple Pricing
               </Badge>
-              <h2 className="text-3xl lg:text-5xl font-bold text-foreground mb-6">
+              <h2 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground mb-4 sm:mb-6">
                 Choose Your Plan
               </h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
                 Start free and upgrade when you need more features. No lock-in contracts, cancel anytime.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
               {pricingPlans.map((plan, index) => (
                 <Card 
                   key={index} 
-                  className={`p-8 relative ${
+                  className={`p-4 sm:p-6 md:p-8 relative ${
                     plan.popular
                       ? 'border-primary shadow-lg scale-105'
                       : 'border-border'
@@ -254,12 +254,12 @@ const Index = () => {
         </section>
 
         {/* Final CTA */}
-        <section className="py-20 bg-gradient-hero text-white">
+        <section className="py-12 sm:py-16 md:py-20 bg-gradient-hero text-white">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl lg:text-5xl font-bold mb-6">
+            <h2 className="text-2xl sm:text-3xl lg:text-5xl font-bold mb-4 sm:mb-6">
               Ready to Protect Your Pets?
             </h2>
-            <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+            <p className="text-base sm:text-xl text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto">
               Join thousands of Australian pet owners who trust PetLinkID to keep their furry family members safe and healthy.
             </p>
             

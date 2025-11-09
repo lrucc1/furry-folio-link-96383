@@ -156,11 +156,11 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
+        <div className="flex items-center justify-between mb-6 sm:mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">{au('My Pets')}</h1>
-            <p className="text-muted-foreground mt-1">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{au('My Pets')}</h1>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base">
               {au('Manage your furry family members')}
             </p>
           </div>
@@ -191,13 +191,13 @@ const Dashboard = () => {
           </Card>
         ) : (
           <>
-            <div className="grid lg:grid-cols-4 gap-6 mb-8">
-              <div className="lg:col-span-1">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+              <div className="lg:col-span-1 order-2 lg:order-1">
                 <HealthReminders />
               </div>
               
-              <div className="lg:col-span-3">
-                <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+              <div className="lg:col-span-3 order-1 lg:order-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
                   {pets.map((pet) => (
                     <PetCard
                       key={pet.id}
