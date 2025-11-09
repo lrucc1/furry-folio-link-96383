@@ -35,6 +35,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { PendingDeletions } from '@/components/admin/PendingDeletions';
+import { computeEffectiveTier } from '@/lib/plan/effectivePlan';
 import { Header } from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
@@ -74,6 +75,14 @@ interface UserDetails {
   created_at: string;
   display_name: string | null;
   plan_tier: string;
+  plan_v2?: string | null;
+  subscription_status?: string | null;
+  stripe_status?: string | null;
+  stripe_tier?: string | null;
+  manual_override?: boolean | null;
+  plan_source?: string | null;
+  plan_expires_at?: string | null;
+  plan_updated_at?: string | null;
   pet_count: number;
   roles: string[];
 }
@@ -205,8 +214,39 @@ const AdminDashboard = () => {
       }
 
       if (!usersRes.error && usersRes.data) {
-        setAllUsers(usersRes.data as UserDetails[]);
-        setFilteredUsers(usersRes.data as UserDetails[]);
+        const users = usersRes.data as UserDetails[];
+        
+        // Fetch v2 plan fields for all users
+        if (users.length > 0) {
+          const userIds = users.map(u => u.user_id);
+          const { data: profileRows } = await supabase
+            .from('profiles')
+            .select('id, plan_tier, plan_v2, subscription_status, stripe_status, stripe_tier, manual_override, plan_source, plan_expires_at, plan_updated_at')
+            .in('id', userIds);
+          
+          if (profileRows) {
+            // Create a map for quick lookup
+            const profileMap = new Map(profileRows.map(p => [p.id, p]));
+            
+            // Merge v2 fields into user data
+            users.forEach(user => {
+              const profile = profileMap.get(user.user_id);
+              if (profile) {
+                user.plan_v2 = profile.plan_v2;
+                user.subscription_status = profile.subscription_status;
+                user.stripe_status = profile.stripe_status;
+                user.stripe_tier = profile.stripe_tier;
+                user.manual_override = profile.manual_override;
+                user.plan_source = profile.plan_source;
+                user.plan_expires_at = profile.plan_expires_at;
+                user.plan_updated_at = profile.plan_updated_at;
+              }
+            });
+          }
+        }
+        
+        setAllUsers(users);
+        setFilteredUsers(users);
       }
 
       if (!tiersRes.error && tiersRes.data) {
@@ -228,14 +268,25 @@ const AdminDashboard = () => {
   const exportUsers = () => {
     const csv = [
       ['Email', 'Name', 'Tier', 'Pets', 'Roles', 'Created'],
-      ...filteredUsers.map((u) => [
-        u.email,
-        u.display_name || 'N/A',
-        u.plan_tier,
-        u.pet_count,
-        u.roles.join(', '),
-        new Date(u.created_at).toLocaleDateString(),
-      ]),
+      ...filteredUsers.map((u) => {
+        const effectiveTier = computeEffectiveTier({
+          plan_tier: u.plan_tier as any,
+          plan_v2: u.plan_v2 as any,
+          subscription_status: u.subscription_status as any,
+          stripe_status: u.stripe_status,
+          stripe_tier: u.stripe_tier as any,
+          manual_override: u.manual_override,
+          plan_source: u.plan_source as any,
+        });
+        return [
+          u.email,
+          u.display_name || 'N/A',
+          effectiveTier === 'pro' ? 'Pro' : 'Free',
+          u.pet_count,
+          u.roles.join(', '),
+          new Date(u.created_at).toLocaleDateString(),
+        ];
+      }),
     ]
       .map((row) => row.join(','))
       .join('\n');
@@ -621,9 +672,29 @@ const AdminDashboard = () => {
                             <TableCell className="font-medium">{user.email}</TableCell>
                             <TableCell>{user.display_name || '-'}</TableCell>
                             <TableCell>
-                              <Badge variant={user.plan_tier === 'free' ? 'outline' : 'secondary'}>
-                                {user.plan_tier}
-                              </Badge>
+                              {(() => {
+                                const effectiveTier = computeEffectiveTier({
+                                  plan_tier: user.plan_tier as any,
+                                  plan_v2: user.plan_v2 as any,
+                                  subscription_status: user.subscription_status as any,
+                                  stripe_status: user.stripe_status,
+                                  stripe_tier: user.stripe_tier as any,
+                                  manual_override: user.manual_override,
+                                  plan_source: user.plan_source as any,
+                                });
+                                return (
+                                  <Badge variant={effectiveTier === 'pro' ? 'secondary' : 'outline'}>
+                                    {effectiveTier === 'pro' ? (
+                                      <span className="flex items-center gap-1">
+                                        <Crown className="w-3 h-3" />
+                                        Pro
+                                      </span>
+                                    ) : (
+                                      'Free'
+                                    )}
+                                  </Badge>
+                                );
+                              })()}
                             </TableCell>
                             <TableCell>{user.pet_count}</TableCell>
                             <TableCell>
@@ -792,7 +863,17 @@ const AdminDashboard = () => {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Current Tier</label>
-              <p className="text-sm text-muted-foreground">{editingUser?.plan_tier}</p>
+              <p className="text-sm text-muted-foreground">
+                {editingUser && computeEffectiveTier({
+                  plan_tier: editingUser.plan_tier as any,
+                  plan_v2: editingUser.plan_v2 as any,
+                  subscription_status: editingUser.subscription_status as any,
+                  stripe_status: editingUser.stripe_status,
+                  stripe_tier: editingUser.stripe_tier as any,
+                  manual_override: editingUser.manual_override,
+                  plan_source: editingUser.plan_source as any,
+                }) === 'pro' ? 'Pro' : 'Free'}
+              </p>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">New Tier</label>
