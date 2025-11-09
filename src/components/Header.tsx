@@ -190,7 +190,7 @@ export const Header = ({}: HeaderProps) => {
                 onClick={() => navigate('/invite/status')}
                 title={au('View invitations')}
               >
-                <Mail className="w-5 h-5" />
+                <Mail className="w-5 h-5 block" />
               </Button>
 
               <NotificationsDropdown />
@@ -205,7 +205,7 @@ export const Header = ({}: HeaderProps) => {
                 onClick={() => navigate('/pets/new')}
                 title={au('Add Pet')}
               >
-                <Plus className="w-5 h-5" />
+                <Plus className="w-5 h-5 block" />
               </Button>
 
               {/* Desktop: Button with text */}
