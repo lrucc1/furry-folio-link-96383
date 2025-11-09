@@ -59,30 +59,6 @@ serve(async (req) => {
       logStep("Found Stripe customer", { customerId });
     }
 
-    // Check user's current usage to prevent downgrade if over FREE plan limits
-    const { data: profile } = await supabaseClient
-      .from('profiles')
-      .select('plan_v2')
-      .eq('id', user.id)
-      .single();
-    
-    if (profile?.plan_v2 === 'PRO') {
-      // Check if user has more than 1 pet (FREE plan limit)
-      const { count: petCount } = await supabaseClient
-        .from('pets')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
-      
-      logStep("Checking pet count for potential downgrade", { petCount });
-      
-      if (petCount && petCount > 1) {
-        logStep("User has too many pets to downgrade", { petCount, limit: 1 });
-        throw new Error(
-          `You must reduce to 1 pet before downgrading. You currently have ${petCount} pets. ` +
-          `Please download your pet data from Settings > Export Data, then delete ${petCount - 1} pet(s) before canceling.`
-        );
-      }
-    }
 
     const origin = req.headers.get('origin') || 'https://petlinkid.com';
     const portalSession = await stripe.billingPortal.sessions.create({
