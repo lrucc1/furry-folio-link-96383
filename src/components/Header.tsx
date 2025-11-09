@@ -124,8 +124,8 @@ export const Header = ({}: HeaderProps) => {
       </Sheet>
 
       <header className="border-b border-border bg-white/95 backdrop-blur-sm sticky top-0 z-50 shadow-soft">
-      <div className="container mx-auto px-3 sm:px-4 h-16 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
+      <div className="container mx-auto px-3 sm:px-4 h-16 flex items-center justify-between gap-4 md:gap-8">
+        <div className="flex items-center gap-2 min-w-0 mr-4">
           <Button
             variant="ghost"
             size="icon"
@@ -140,7 +140,7 @@ export const Header = ({}: HeaderProps) => {
           </Link>
         </div>
 
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-6 flex-1 justify-center">
           <Button
             variant="ghost"
             className="text-foreground hover:text-primary"
