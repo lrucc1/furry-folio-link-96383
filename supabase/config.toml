@@ -1,5 +1,8 @@
 project_id = "yyuvupjbvjpbouxuzdye"
 
+[functions.restore-account]
+verify_jwt = true
+
 [functions.accept-invite]
 verify_jwt = true
 
