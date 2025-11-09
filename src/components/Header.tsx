@@ -173,8 +173,8 @@ export const Header = ({}: HeaderProps) => {
               <Badge
                 className={
                   tier === 'pro'
-                    ? 'hidden xs:flex bg-gradient-to-r from-amber-500 to-yellow-600 text-white border-0 text-xs sm:text-sm'
-                    : 'hidden xs:flex bg-muted text-muted-foreground text-xs sm:text-sm'
+                    ? 'hidden sm:flex bg-gradient-to-r from-amber-500 to-yellow-600 text-white border-0 text-xs sm:text-sm'
+                    : 'hidden sm:flex bg-muted text-muted-foreground text-xs sm:text-sm'
                 }
               >
                 {tier === 'pro' && <Crown className="w-3 h-3 mr-1" />}
@@ -186,11 +186,11 @@ export const Header = ({}: HeaderProps) => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="shrink-0 h-9 w-9 sm:h-10 sm:w-10"
+                className="shrink-0"
                 onClick={() => navigate('/invite/status')}
                 title={au('View invitations')}
               >
-                <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
+                <Mail className="w-5 h-5" />
               </Button>
 
               <NotificationsDropdown />
@@ -201,18 +201,17 @@ export const Header = ({}: HeaderProps) => {
               <Button 
                 variant="hero" 
                 size="icon"
-                className="md:hidden h-9 w-9"
+                className="md:hidden"
                 onClick={() => navigate('/pets/new')}
                 title={au('Add Pet')}
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-5 h-5" />
               </Button>
 
               {/* Desktop: Button with text */}
               <Button 
                 variant="hero" 
-                size="sm"
-                className="hidden md:flex"
+                className="hidden md:inline-flex h-10"
                 onClick={() => navigate('/pets/new')}
               >
                 <Plus className="w-4 h-4 mr-1" />
