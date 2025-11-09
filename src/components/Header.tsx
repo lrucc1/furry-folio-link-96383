@@ -60,23 +60,23 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
           </Button>
         </nav>
 
-        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {user ? (
             <>
               {loading ? (
                 <Skeleton className="h-6 w-16 sm:w-20" />
               ) : (
-                <Badge
-                  className={
-                    tier === 'pro'
-                      ? 'bg-gradient-to-r from-amber-500 to-yellow-600 text-white border-0 text-xs sm:text-sm'
-                      : 'bg-muted text-muted-foreground text-xs sm:text-sm'
-                  }
-                >
-                  {tier === 'pro' && <Crown className="w-3 h-3 mr-1" />}
-                  <span className="hidden sm:inline">{tier === 'pro' ? au('Pro') : au('Free')}</span>
-                  <span className="sm:hidden">{tier === 'pro' ? 'Pro' : 'Free'}</span>
-                </Badge>
+              <Badge
+                className={
+                  tier === 'pro'
+                    ? 'hidden xs:flex bg-gradient-to-r from-amber-500 to-yellow-600 text-white border-0 text-xs sm:text-sm'
+                    : 'hidden xs:flex bg-muted text-muted-foreground text-xs sm:text-sm'
+                }
+              >
+                {tier === 'pro' && <Crown className="w-3 h-3 mr-1" />}
+                <span className="hidden sm:inline">{tier === 'pro' ? au('Pro') : au('Free')}</span>
+                <span className="sm:hidden">{tier === 'pro' ? 'Pro' : 'Free'}</span>
+              </Badge>
               )}
 
               <Button
@@ -93,9 +93,22 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
 
               <UserMenu />
               
+              {/* Mobile: Icon-only button */}
+              <Button 
+                variant="hero" 
+                size="icon"
+                className="md:hidden h-9 w-9"
+                onClick={() => navigate('/pets/new')}
+                title={au('Add Pet')}
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
+
+              {/* Desktop: Button with text */}
               <Button 
                 variant="hero" 
                 size="sm"
+                className="hidden md:flex"
                 onClick={() => navigate('/pets/new')}
               >
                 <Plus className="w-4 h-4 mr-1" />
