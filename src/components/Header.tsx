@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Logo } from "./Logo";
 import { Menu, Plus, Crown, Mail, Home, Tag, Bell, DollarSign, User, Settings, CreditCard, HelpCircle, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,47 +36,80 @@ export const Header = ({}: HeaderProps) => {
   return (
     <>
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-        <SheetContent side="left" className="w-[280px] sm:w-[320px]">
-          <SheetHeader>
-            <SheetTitle>
-              <Logo />
-            </SheetTitle>
-          </SheetHeader>
+        <SheetContent side="left" className="w-[280px] sm:w-[320px] flex flex-col p-0">
+          {user ? (
+            <div className="p-6 pb-4 bg-gradient-to-br from-primary/5 to-primary/10 border-b">
+              <div className="flex items-center gap-3 mb-3">
+                <Avatar className="h-12 w-12 border-2 border-primary/20">
+                  <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-lg">
+                    {user.email?.[0]?.toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-foreground truncate">
+                    {user.email?.split('@')[0] || 'User'}
+                  </p>
+                  <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                </div>
+              </div>
+              {loading ? (
+                <Skeleton className="h-6 w-20" />
+              ) : (
+                <Badge
+                  className={
+                    tier === 'pro'
+                      ? 'bg-gradient-to-r from-amber-500 to-yellow-600 text-white border-0'
+                      : 'bg-muted text-muted-foreground'
+                  }
+                >
+                  {tier === 'pro' && <Crown className="w-3 h-3 mr-1" />}
+                  {tier === 'pro' ? au('Pro') : au('Free')}
+                </Badge>
+              )}
+            </div>
+          ) : (
+            <SheetHeader className="p-6 pb-4 border-b">
+              <SheetTitle>
+                <Logo />
+              </SheetTitle>
+            </SheetHeader>
+          )}
           
-          <div className="flex flex-col gap-4 mt-6">
+          <div className="flex-1 overflow-y-auto">
+            <div className="flex flex-col gap-1 p-4">
             <Link 
               to={user ? '/dashboard' : '/auth'} 
-              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
               onClick={() => setMobileMenuOpen(false)}
             >
-              <Home className="w-5 h-5 text-primary" />
+              <Home className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
               <span className="text-foreground font-medium">My Pets</span>
             </Link>
 
             <Link 
               to="/smart-tags" 
-              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
               onClick={() => setMobileMenuOpen(false)}
             >
-              <Tag className="w-5 h-5 text-primary" />
+              <Tag className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
               <span className="text-foreground font-medium">Smart Tags</span>
             </Link>
 
             <Link 
               to={user ? '/reminders' : '/auth'} 
-              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
               onClick={() => setMobileMenuOpen(false)}
             >
-              <Bell className="w-5 h-5 text-primary" />
+              <Bell className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
               <span className="text-foreground font-medium">Reminders</span>
             </Link>
 
             <Link 
               to="/pricing" 
-              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
               onClick={() => setMobileMenuOpen(false)}
             >
-              <DollarSign className="w-5 h-5 text-primary" />
+              <DollarSign className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
               <span className="text-foreground font-medium">Pricing</span>
             </Link>
 
@@ -85,40 +119,41 @@ export const Header = ({}: HeaderProps) => {
                 
                 <Link 
                   to="/account" 
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <User className="w-5 h-5 text-primary" />
+                  <User className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
                   <span className="text-foreground font-medium">Account</span>
                 </Link>
 
                 <Link 
                   to="/settings/billing" 
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <CreditCard className="w-5 h-5 text-primary" />
+                  <CreditCard className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
                   <span className="text-foreground font-medium">Billing Settings</span>
                 </Link>
 
                 <Link 
                   to="/help" 
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <HelpCircle className="w-5 h-5 text-primary" />
+                  <HelpCircle className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
                   <span className="text-foreground font-medium">Help Centre</span>
                 </Link>
 
                 <button
                   onClick={handleSignOut}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors text-left w-full"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors text-left w-full group"
                 >
-                  <LogOut className="w-5 h-5 text-primary" />
+                  <LogOut className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
                   <span className="text-foreground font-medium">Sign Out</span>
                 </button>
               </>
             )}
+            </div>
           </div>
         </SheetContent>
       </Sheet>
