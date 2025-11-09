@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { User, Settings, LogOut } from 'lucide-react';
+import { User, Settings, LogOut, CreditCard, HelpCircle } from 'lucide-react';
 
 export const UserMenu = () => {
   const { user, signOut } = useAuth();
@@ -55,6 +55,18 @@ export const UserMenu = () => {
           <Link to="/account">
             <Settings className="mr-2 h-4 w-4" />
             <span>{au('Account')}</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/settings/billing">
+            <CreditCard className="mr-2 h-4 w-4" />
+            <span>{au('Billing Settings')}</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/help">
+            <HelpCircle className="mr-2 h-4 w-4" />
+            <span>{au('Help Centre')}</span>
           </Link>
         </DropdownMenuItem>
         {isAdmin && (
