@@ -1,32 +1,136 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Logo } from "./Logo";
-import { Menu, Plus, Crown, Mail } from "lucide-react";
+import { Menu, Plus, Crown, Mail, Home, Tag, Bell, DollarSign, User, Settings, CreditCard, HelpCircle, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 import { UserMenu } from "@/components/UserMenu";
 import { usePlan } from "@/lib/plan/PlanContext";
 import { au } from "@/lib/auEnglish";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
 
-interface HeaderProps {
-  onMenuClick?: () => void;
-}
+interface HeaderProps {}
 
-export const Header = ({ onMenuClick }: HeaderProps) => {
-  const { user } = useAuth();
+export const Header = ({}: HeaderProps) => {
+  const { user, signOut } = useAuth();
   const { tier, loading } = usePlan();
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleSignOut = async () => {
+    await signOut();
+    setMobileMenuOpen(false);
+    navigate('/');
+  };
+
   return (
-    <header className="border-b border-border bg-white/95 backdrop-blur-sm sticky top-0 z-50 shadow-soft">
+    <>
+      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <SheetContent side="left" className="w-[280px] sm:w-[320px]">
+          <SheetHeader>
+            <SheetTitle>
+              <Logo />
+            </SheetTitle>
+          </SheetHeader>
+          
+          <div className="flex flex-col gap-4 mt-6">
+            <Link 
+              to={user ? '/dashboard' : '/auth'} 
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Home className="w-5 h-5 text-primary" />
+              <span className="text-foreground font-medium">My Pets</span>
+            </Link>
+
+            <Link 
+              to="/smart-tags" 
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Tag className="w-5 h-5 text-primary" />
+              <span className="text-foreground font-medium">Smart Tags</span>
+            </Link>
+
+            <Link 
+              to={user ? '/reminders' : '/auth'} 
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Bell className="w-5 h-5 text-primary" />
+              <span className="text-foreground font-medium">Reminders</span>
+            </Link>
+
+            <Link 
+              to="/pricing" 
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <DollarSign className="w-5 h-5 text-primary" />
+              <span className="text-foreground font-medium">Pricing</span>
+            </Link>
+
+            {user && (
+              <>
+                <Separator className="my-2" />
+                
+                <Link 
+                  to="/account" 
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <User className="w-5 h-5 text-primary" />
+                  <span className="text-foreground font-medium">Account</span>
+                </Link>
+
+                <Link 
+                  to="/settings/billing" 
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <CreditCard className="w-5 h-5 text-primary" />
+                  <span className="text-foreground font-medium">Billing Settings</span>
+                </Link>
+
+                <Link 
+                  to="/help" 
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <HelpCircle className="w-5 h-5 text-primary" />
+                  <span className="text-foreground font-medium">Help Centre</span>
+                </Link>
+
+                <button
+                  onClick={handleSignOut}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors text-left w-full"
+                >
+                  <LogOut className="w-5 h-5 text-primary" />
+                  <span className="text-foreground font-medium">Sign Out</span>
+                </button>
+              </>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      <header className="border-b border-border bg-white/95 backdrop-blur-sm sticky top-0 z-50 shadow-soft">
       <div className="container mx-auto px-3 sm:px-4 h-16 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <Button
             variant="ghost"
             size="icon"
             className="md:hidden shrink-0"
-            onClick={onMenuClick}
+            onClick={() => setMobileMenuOpen(true)}
           >
             <Menu className="w-5 h-5" />
           </Button>
@@ -138,5 +242,6 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
         </div>
       </div>
     </header>
+    </>
   );
 };
