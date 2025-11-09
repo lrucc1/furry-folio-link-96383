@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,6 +18,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
+import { supabase } from "@/integrations/supabase/client";
 
 interface HeaderProps {}
 
@@ -26,6 +27,21 @@ export const Header = ({}: HeaderProps) => {
   const { tier, loading } = usePlan();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [invitesCount, setInvitesCount] = useState(0);
+
+  useEffect(() => {
+    if (user?.email) {
+      const fetchInvites = async () => {
+        const { count } = await supabase
+          .from('pet_invites')
+          .select('id', { count: 'exact', head: true })
+          .eq('email', user.email.toLowerCase())
+          .eq('status', 'pending');
+        setInvitesCount(count || 0);
+      };
+      fetchInvites();
+    }
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -221,11 +237,16 @@ export const Header = ({}: HeaderProps) => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="shrink-0"
+                className="relative shrink-0"
                 onClick={() => navigate('/invite/status')}
                 title={au('View invitations')}
               >
                 <Mail className="w-5 h-5 block" />
+                {invitesCount > 0 && (
+                  <Badge className="absolute -top-1 -right-1 w-5 h-5 text-xs p-0 flex items-center justify-center bg-red-600 text-white border-2 border-background">
+                    {invitesCount > 9 ? '9+' : invitesCount}
+                  </Badge>
+                )}
               </Button>
 
               <NotificationsDropdown />

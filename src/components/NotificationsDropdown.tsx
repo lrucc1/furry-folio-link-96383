@@ -267,7 +267,7 @@ export const NotificationsDropdown = () => {
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="w-5 h-5 block" />
           {badgeCount > 0 && (
-            <Badge className="absolute -top-1 -right-1 w-5 h-5 text-xs p-0 flex items-center justify-center bg-destructive text-destructive-foreground">
+            <Badge className="absolute -top-1 -right-1 w-5 h-5 text-xs p-0 flex items-center justify-center bg-red-600 text-white border-2 border-background">
               {badgeCount > 9 ? '9+' : badgeCount}
             </Badge>
           )}
