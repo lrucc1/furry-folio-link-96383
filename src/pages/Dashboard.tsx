@@ -192,11 +192,11 @@ const Dashboard = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
-              <div className="lg:col-span-1 order-2 lg:order-1">
+              <div className="lg:col-span-1 order-1 lg:order-1">
                 <HealthReminders />
               </div>
               
-              <div className="lg:col-span-3 order-1 lg:order-2">
+              <div className="lg:col-span-3 order-2 lg:order-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
                   {pets.map((pet) => (
                     <PetCard
