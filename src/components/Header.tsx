@@ -186,7 +186,7 @@ export const Header = ({}: HeaderProps) => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="shrink-0 h-9 w-9 sm:h-10 sm:w-10"
+                className="shrink-0 h-9 w-9 sm:h-10 sm:w-10 mr-1"
                 onClick={() => navigate('/invite/status')}
                 title={au('View invitations')}
               >

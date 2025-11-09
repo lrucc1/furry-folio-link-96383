@@ -507,7 +507,104 @@ const PetDetails = () => {
 
           {/* Health & Documents Tab */}
           <TabsContent value="health" className="space-y-6">
-            <PetDocuments petId={id!} />
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="w-5 h-5" />
+                  Health Reminders
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {healthReminders.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {healthReminders.map((reminder) => {
+                      const dueDate = new Date(reminder.reminder_date)
+                      const today = new Date()
+                      const daysUntilDue = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+                      
+                      let dueDateColor = 'text-muted-foreground'
+                      let dueDateBg = 'bg-muted/50'
+                      let iconColor = 'text-muted-foreground'
+                      
+                      if (!reminder.completed) {
+                        if (daysUntilDue < 0 || daysUntilDue <= 7) {
+                          dueDateColor = 'text-destructive'
+                          dueDateBg = 'bg-destructive/10'
+                          iconColor = 'text-destructive'
+                        } else if (daysUntilDue <= 30) {
+                          dueDateColor = 'text-yellow-600 dark:text-yellow-500'
+                          dueDateBg = 'bg-yellow-50 dark:bg-yellow-950/30'
+                          iconColor = 'text-yellow-600 dark:text-yellow-500'
+                        }
+                      }
+                      
+                      const ReminderIcon = reminder.completed ? CheckCircle : Bell
+                      
+                      return (
+                        <div 
+                          key={reminder.id} 
+                          className={`group relative flex items-center gap-3 p-3 border rounded-lg hover:border-primary/50 hover:bg-accent/50 transition-all cursor-pointer ${
+                            reminder.completed ? 'opacity-60' : ''
+                          }`}
+                          onClick={() => handleEditReminder(reminder)}
+                        >
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              toggleReminderComplete(reminder.id, reminder.completed)
+                            }}
+                            className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${dueDateBg} hover:scale-105 transition-transform`}
+                          >
+                            <ReminderIcon className={`w-5 h-5 ${reminder.completed ? 'text-primary' : iconColor}`} />
+                          </button>
+                          <div className="flex-1 min-w-0">
+                            <h4 className={`font-medium text-sm truncate ${reminder.completed ? 'line-through' : ''}`}>
+                              {reminder.title}
+                            </h4>
+                            <p className="text-xs text-muted-foreground">
+                              {reminder.reminder_type && (
+                                <span className="capitalize">{reminder.reminder_type.replace('_', ' ')} • </span>
+                              )}
+                              {new Date(reminder.reminder_date).toLocaleDateString()}
+                            </p>
+                            {!reminder.completed && (
+                              <p className={`text-xs font-medium ${dueDateColor} mt-1`}>
+                                {daysUntilDue < 0 
+                                  ? `Overdue ${Math.abs(daysUntilDue)}d` 
+                                  : daysUntilDue === 0
+                                  ? 'Due today'
+                                  : `Due in ${daysUntilDue}d`}
+                              </p>
+                            )}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleEditReminder(reminder)
+                            }}
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Bell className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                    <p className="text-muted-foreground mb-4">No health reminders set</p>
+                  </div>
+                )}
+                <Button onClick={() => setHealthReminderModalOpen(true)} className="w-full mt-4">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Health Reminder
+                </Button>
+              </CardContent>
+            </Card>
+            
             
             <Card>
               <CardHeader>
@@ -685,6 +782,8 @@ const PetDetails = () => {
                 </Button>
               </CardContent>
             </Card>
+
+            <PetDocuments petId={id!} />
           </TabsContent>
 
           {/* Lost Mode Tab */}
