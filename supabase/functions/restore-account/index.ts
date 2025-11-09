@@ -1,19 +1,16 @@
-import { corsHeaders } from '../_shared/cors.ts';
+import { json, buildCors } from '../_shared/cors.ts';
 import { makeAnonClient } from '../_shared/clients.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCors(req) });
   }
 
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       console.error('[restore-account] Missing Authorization header');
-      return new Response(
-        JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return json(req, { error: 'Missing authorization header' }, 401);
     }
 
     const client = makeAnonClient(authHeader);
@@ -22,10 +19,7 @@ Deno.serve(async (req) => {
     const { data: { user }, error: authError } = await client.auth.getUser();
     if (authError || !user) {
       console.error('[restore-account] Auth error:', authError);
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return json(req, { error: 'Unauthorized' }, 401);
     }
 
     // Verify admin role
@@ -36,19 +30,12 @@ Deno.serve(async (req) => {
 
     if (roleError || !isAdmin) {
       console.error('[restore-account] Admin check failed:', roleError);
-      return new Response(
-        JSON.stringify({ error: 'Admin access required' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return json(req, { error: 'Admin access required' }, 403);
     }
 
-    // Parse request body
     const { user_id } = await req.json();
     if (!user_id) {
-      return new Response(
-        JSON.stringify({ error: 'user_id is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return json(req, { error: 'user_id is required' }, 400);
     }
 
     console.log(`[restore-account] Admin ${user.id} restoring account ${user_id}`);
@@ -62,17 +49,11 @@ Deno.serve(async (req) => {
 
     if (profileError || !profile) {
       console.error('[restore-account] Profile not found:', profileError);
-      return new Response(
-        JSON.stringify({ error: 'Account not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return json(req, { error: 'Account not found' }, 404);
     }
 
     if (!profile.deletion_scheduled) {
-      return new Response(
-        JSON.stringify({ error: 'Account is not scheduled for deletion' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return json(req, { error: 'Account is not scheduled for deletion' }, 400);
     }
 
     // Restore the account
@@ -86,31 +67,22 @@ Deno.serve(async (req) => {
 
     if (updateError) {
       console.error('[restore-account] Update failed:', updateError);
-      return new Response(
-        JSON.stringify({ error: 'Failed to restore account' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return json(req, { error: 'Failed to restore account' }, 500);
     }
 
     console.log(`[restore-account] Successfully restored account ${user_id}`);
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: 'Account restored successfully',
-        user: {
-          id: profile.id,
-          email: profile.email,
-          display_name: profile.display_name,
-        },
-      }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return json(req, {
+      success: true,
+      message: 'Account restored successfully',
+      user: {
+        id: profile.id,
+        email: profile.email,
+        display_name: profile.display_name,
+      },
+    });
   } catch (error) {
     console.error('[restore-account] Unexpected error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return json(req, { error: 'Internal server error' }, 500);
   }
 });
