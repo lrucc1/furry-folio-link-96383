@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { DashboardHeader } from '@/components/DashboardHeader'
+import { Header } from '@/components/Header'
 import { PaywallModal } from '@/components/PaywallModal'
 import { VetClinicAutocomplete, VetClinicData } from '@/components/VetClinicAutocomplete'
 import { ArrowLeft, Upload } from 'lucide-react'
@@ -215,7 +215,7 @@ const AddPet = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <DashboardHeader />
+      <Header />
       
       <main className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="flex items-center gap-4 mb-8">

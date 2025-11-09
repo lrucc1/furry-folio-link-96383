@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertTriangle, Calendar, CheckCircle, Heart, Syringe, Clock, Pill } from 'lucide-react';
-import { DashboardHeader } from '@/components/DashboardHeader';
+import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { toast } from 'sonner';
 import { EditVaccinationModal } from '@/components/EditVaccinationModal';
@@ -221,7 +221,7 @@ export default function Reminders() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <DashboardHeader />
+      <Header />
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-6">
           <div>

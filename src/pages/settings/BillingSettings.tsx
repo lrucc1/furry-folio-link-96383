@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePlanV2 } from "@/hooks/usePlanV2";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Link } from "react-router-dom";
-import { DashboardHeader } from "@/components/DashboardHeader";
+import { Header } from "@/components/Header";
 import { formatPrice } from "@/config/pricing";
 
 export default function BillingSettings() {
@@ -56,7 +56,7 @@ export default function BillingSettings() {
 
   return (
     <div className="min-h-screen bg-background">
-      <DashboardHeader />
+      <Header />
       
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto space-y-6">

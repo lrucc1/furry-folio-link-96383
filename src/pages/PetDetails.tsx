@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { DashboardHeader } from '@/components/DashboardHeader'
+import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download, Upload, Scan, ExternalLink, Bell, CheckCircle, Trash2, Plus, Eye, Edit2, Syringe, AlertCircle } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -270,7 +270,7 @@ const PetDetails = () => {
   if (!pet) {
     return (
       <div className="min-h-screen bg-background">
-        <DashboardHeader />
+        <Header />
         <div className="container mx-auto px-4 py-8 text-center">
           <h1 className="text-2xl font-bold text-foreground mb-4">Pet not found</h1>
           <Button asChild>
@@ -285,7 +285,7 @@ const PetDetails = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <DashboardHeader />
+      <Header />
       
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center justify-between mb-8">

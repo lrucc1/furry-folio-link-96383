@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { PetCard } from '@/components/PetCard'
 import { AddPetCard } from '@/components/AddPetCard'
 import { HealthReminders } from '@/components/HealthReminders'
-import { DashboardHeader } from '@/components/DashboardHeader'
+import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { PendingInvitesModal } from '@/components/PendingInvitesModal'
 import { Plus, Crown, Heart } from 'lucide-react'
@@ -154,7 +154,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <DashboardHeader />
+      <Header />
       
       <main className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">

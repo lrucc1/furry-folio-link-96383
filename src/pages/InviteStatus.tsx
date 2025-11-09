@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, Clock, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { DashboardHeader } from '@/components/DashboardHeader';
+import { Header } from '@/components/Header';
 import { toast } from 'sonner';
 import { au } from '@/lib/auEnglish';
 
@@ -191,7 +191,7 @@ export default function InviteStatus() {
 
   return (
     <div className="min-h-screen bg-background">
-      <DashboardHeader />
+      <Header />
       
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
