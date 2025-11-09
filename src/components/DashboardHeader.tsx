@@ -4,11 +4,12 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Logo } from '@/components/Logo'
-import { Bell, Crown, Mail, Menu } from 'lucide-react'
+import { Crown, Mail, Menu } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAdmin } from '@/hooks/useAdmin'
 import { UserMenu } from '@/components/UserMenu'
 import { PendingInvitesModal } from '@/components/PendingInvitesModal'
+import { NotificationsDropdown } from '@/components/NotificationsDropdown'
 import { usePlan } from '@/lib/plan/PlanContext'
 import { au } from '@/lib/auEnglish'
 
@@ -88,11 +89,7 @@ export const DashboardHeader = () => {
               <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
 
-            <Button variant="ghost" size="icon" className="shrink-0 h-9 w-9 sm:h-10 sm:w-10" asChild>
-              <Link to="/dashboard">
-                <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
-              </Link>
-            </Button>
+            <NotificationsDropdown />
 
             <UserMenu />
           </div>
