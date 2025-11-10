@@ -12,7 +12,11 @@ import { Switch } from '@/components/ui/switch'
 import { Header } from '@/components/Header'
 import { ImageCropDialog } from '@/components/ImageCropDialog'
 import { VetClinicAutocomplete, VetClinicData } from '@/components/VetClinicAutocomplete'
-import { ArrowLeft, Upload, X, Trash2 } from 'lucide-react'
+import { ArrowLeft, Upload, X, Trash2, CalendarIcon } from 'lucide-react'
+import { format } from 'date-fns'
+import { Calendar } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/use-toast'
 import { useRole } from '@/rbac/useRole'
 import { canDeletePets } from '@/rbac/guards'
@@ -457,12 +461,40 @@ const EditPet = () => {
                   
                   <div className="space-y-2">
                     <Label htmlFor="date_of_birth">Date of Birth</Label>
-                    <Input
-                      id="date_of_birth"
-                      type="date"
-                      value={formData.date_of_birth}
-                      onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
-                    />
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !formData.date_of_birth && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {formData.date_of_birth ? (
+                            format(new Date(formData.date_of_birth), "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={formData.date_of_birth ? new Date(formData.date_of_birth) : undefined}
+                          onSelect={(date) => {
+                            if (date) {
+                              handleInputChange('date_of_birth', format(date, 'yyyy-MM-dd'))
+                            }
+                          }}
+                          disabled={(date) =>
+                            date > new Date() || date < new Date("1900-01-01")
+                          }
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
 
