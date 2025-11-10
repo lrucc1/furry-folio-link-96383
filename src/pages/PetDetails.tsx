@@ -394,20 +394,20 @@ const PetDetails = () => {
 
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="w-full grid grid-cols-2 gap-2 h-auto p-2 md:inline-flex md:h-10 md:p-1 md:gap-0">
-            <TabsTrigger value="overview" className="flex-col h-16 md:flex-row md:h-auto">
-              <Home className="w-4 h-4 mb-1 md:mb-0 md:mr-2" />
+            <TabsTrigger value="overview" className="flex-col h-16 md:flex-row md:h-auto group">
+              <Home className="w-4 h-4 mb-1 md:mb-0 md:mr-2 text-muted-foreground group-data-[state=active]:text-primary transition-all group-data-[state=active]:scale-110" />
               <span>Overview</span>
             </TabsTrigger>
-            <TabsTrigger value="health" className="flex-col h-16 md:flex-row md:h-auto">
-              <Heart className="w-4 h-4 mb-1 md:mb-0 md:mr-2" />
+            <TabsTrigger value="health" className="flex-col h-16 md:flex-row md:h-auto group">
+              <Heart className="w-4 h-4 mb-1 md:mb-0 md:mr-2 text-muted-foreground group-data-[state=active]:text-primary transition-all group-data-[state=active]:scale-110" />
               <span>Health & Docs</span>
             </TabsTrigger>
-            <TabsTrigger value="lost" className="flex-col h-16 md:flex-row md:h-auto">
-              <AlertCircle className="w-4 h-4 mb-1 md:mb-0 md:mr-2" />
+            <TabsTrigger value="lost" className="flex-col h-16 md:flex-row md:h-auto group">
+              <AlertCircle className="w-4 h-4 mb-1 md:mb-0 md:mr-2 text-muted-foreground group-data-[state=active]:text-primary transition-all group-data-[state=active]:scale-110" />
               <span>Lost Mode</span>
             </TabsTrigger>
-            <TabsTrigger value="sharing" className="flex-col h-16 md:flex-row md:h-auto">
-              <Users className="w-4 h-4 mb-1 md:mb-0 md:mr-2" />
+            <TabsTrigger value="sharing" className="flex-col h-16 md:flex-row md:h-auto group">
+              <Users className="w-4 h-4 mb-1 md:mb-0 md:mr-2 text-muted-foreground group-data-[state=active]:text-primary transition-all group-data-[state=active]:scale-110" />
               <span>Sharing</span>
             </TabsTrigger>
           </TabsList>
