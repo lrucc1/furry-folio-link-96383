@@ -751,6 +751,7 @@ const PetDetails = () => {
                         petPhoto={pet.photo_url}
                         publicId={pet.public_id}
                         publicUrl={publicUrl}
+                        dateOfBirth={pet.date_of_birth}
                       />
                       <Button onClick={generatePoster} className="flex-1">
                         <Download className="w-4 h-4 mr-2" />
@@ -782,6 +783,7 @@ const PetDetails = () => {
                     petPhoto={pet.photo_url}
                     publicId={pet.public_id}
                     publicUrl={publicUrl}
+                    dateOfBirth={pet.date_of_birth}
                   />
                   <p className="text-sm text-muted-foreground">
                     Create a beautiful Instagram-ready card to share {pet.name}&apos;s profile and help PetLinkID grow! 🚀
