@@ -65,6 +65,54 @@ export const InstagramShareCard = ({
     }
   }
 
+  const drawPetLinkIDLogo = (
+    ctx: CanvasRenderingContext2D, 
+    x: number, 
+    y: number, 
+    scale: number = 1,
+    color: string = '#9b87f5'
+  ) => {
+    ctx.save()
+    ctx.translate(x, y)
+    ctx.scale(scale, scale)
+    
+    // Draw Link2 icon (rotated 45 degrees chain link)
+    ctx.save()
+    ctx.rotate(Math.PI / 4) // 45 degrees
+    
+    // Chain link shape
+    ctx.strokeStyle = color
+    ctx.lineWidth = 3
+    ctx.lineCap = 'round'
+    
+    // Left link
+    ctx.beginPath()
+    ctx.arc(-8, 0, 6, 0, Math.PI * 2)
+    ctx.stroke()
+    
+    // Right link
+    ctx.beginPath()
+    ctx.arc(8, 0, 6, 0, Math.PI * 2)
+    ctx.stroke()
+    
+    // Connecting bar
+    ctx.beginPath()
+    ctx.moveTo(-4, -4)
+    ctx.lineTo(4, 4)
+    ctx.stroke()
+    
+    ctx.restore()
+    
+    // Draw "PetLinkID" text next to icon
+    ctx.fillStyle = color
+    ctx.font = `bold ${24}px Arial`
+    ctx.textAlign = 'left'
+    ctx.textBaseline = 'middle'
+    ctx.fillText('PetLinkID', 25, 0)
+    
+    ctx.restore()
+  }
+
   const generateCard = async () => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -107,6 +155,9 @@ export const InstagramShareCard = ({
     ctx.strokeStyle = '#C4B89B'
     ctx.lineWidth = 2
     ctx.strokeRect(borderSize + 10, borderSize + 10, width - (borderSize + 10) * 2, height - (borderSize + 10) * 2)
+
+    // PetLinkID Logo Header
+    drawPetLinkIDLogo(ctx, width / 2 - 70, borderSize + 35, 1.2, '#9b87f5')
 
     const contentTop = borderSize + 80
     const photoHeight = Math.floor(height * 0.45)
@@ -252,11 +303,8 @@ export const InstagramShareCard = ({
     ctx.fillText('✓', 0, 25)
     ctx.restore()
 
-    // Watermark
-    ctx.fillStyle = '#00000010'
-    ctx.font = '20px Arial'
-    ctx.textAlign = 'center'
-    ctx.fillText('PetLinkID.com', width / 2, height - borderSize - 30)
+    // Bottom branding with logo
+    drawPetLinkIDLogo(ctx, width / 2 - 60, height - borderSize - 35, 0.8, '#00000030')
   }
 
   const generateGradientTheme = async (ctx: CanvasRenderingContext2D, width: number, height: number) => {
@@ -292,7 +340,10 @@ export const InstagramShareCard = ({
     ctx.fill()
     ctx.shadowBlur = 0
 
-    const photoTop = cardY + 60
+    // PetLinkID Logo at top
+    drawPetLinkIDLogo(ctx, width / 2 - 70, cardY + 40, 1, '#9b87f5')
+
+    const photoTop = cardY + 120
     const photoHeight = Math.floor(cardHeight * 0.5)
 
     // Pet photo
@@ -378,10 +429,8 @@ export const InstagramShareCard = ({
     })
     ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize)
 
-    // Branding
-    ctx.fillStyle = '#00000030'
-    ctx.font = '22px Arial'
-    ctx.fillText('PetLinkID.com', width / 2, height - 120)
+    // Subtle logo at bottom
+    drawPetLinkIDLogo(ctx, width / 2 - 60, height - 80, 0.8, '#00000030')
   }
 
   const generatePlayfulTheme = async (ctx: CanvasRenderingContext2D, width: number, height: number) => {
@@ -391,6 +440,9 @@ export const InstagramShareCard = ({
     gradient.addColorStop(1, '#fed7aa')
     ctx.fillStyle = gradient
     ctx.fillRect(0, 0, width, height)
+
+    // Fun logo with playful color
+    drawPetLinkIDLogo(ctx, width / 2 - 70, 100, 1.2, '#f59e0b')
 
     // Decorative paw prints
     ctx.fillStyle = 'rgba(251, 191, 36, 0.2)'
@@ -513,10 +565,8 @@ export const InstagramShareCard = ({
     
     ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize)
 
-    // Branding
-    ctx.fillStyle = '#78350f'
-    ctx.font = 'bold 24px Arial'
-    ctx.fillText('PetLinkID.com', width / 2, height - 140)
+    // Logo at bottom
+    drawPetLinkIDLogo(ctx, width / 2 - 60, height - 100, 0.8, '#78350f')
   }
 
   const handleShare = async () => {
