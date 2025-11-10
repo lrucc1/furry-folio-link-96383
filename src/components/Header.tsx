@@ -176,7 +176,7 @@ export const Header = ({}: HeaderProps) => {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden shrink-0"
+            className="shrink-0"
             onClick={() => setMobileMenuOpen(true)}
           >
             <Menu className="w-5 h-5" />
