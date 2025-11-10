@@ -15,7 +15,7 @@ import { Switch } from '@/components/ui/switch'
 import { Header } from '@/components/Header'
 import { PaywallModal } from '@/components/PaywallModal'
 import { VetClinicAutocomplete, VetClinicData } from '@/components/VetClinicAutocomplete'
-import { ArrowLeft, Upload } from 'lucide-react'
+import { ArrowLeft, Upload, MapPin } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from '@/hooks/use-toast'
 import { au } from '@/lib/auEnglish'
@@ -428,17 +428,43 @@ const AddPet = () => {
                     }}
                     placeholder="Start typing vet clinic name…"
                   />
+                  {formData.clinic_address && (
+                    <div className="flex items-start gap-2 text-xs text-muted-foreground mt-2 p-2 bg-muted/30 rounded-md">
+                      <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                      <span>{formData.clinic_address}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="insurance_provider">Insurance Provider</Label>
-                    <Input
-                      id="insurance_provider"
-                      value={formData.insurance_provider}
-                      onChange={(e) => handleInputChange('insurance_provider', e.target.value)}
-                      placeholder="e.g., Petplan"
-                    />
+                    <Select 
+                      value={formData.insurance_provider} 
+                      onValueChange={(value) => handleInputChange('insurance_provider', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select provider" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="AAMI Pet Insurance">AAMI Pet Insurance</SelectItem>
+                        <SelectItem value="Australian Seniors Pet Insurance">Australian Seniors Pet Insurance</SelectItem>
+                        <SelectItem value="Bow Wow Meow">Bow Wow Meow</SelectItem>
+                        <SelectItem value="Budget Direct Pet Insurance">Budget Direct Pet Insurance</SelectItem>
+                        <SelectItem value="Choosi Pet Insurance">Choosi Pet Insurance</SelectItem>
+                        <SelectItem value="GMHBA Pet Insurance">GMHBA Pet Insurance</SelectItem>
+                        <SelectItem value="Guide Dogs Pet Insurance">Guide Dogs Pet Insurance</SelectItem>
+                        <SelectItem value="Knose Pet Insurance">Knose Pet Insurance</SelectItem>
+                        <SelectItem value="Medibank Pet Insurance">Medibank Pet Insurance</SelectItem>
+                        <SelectItem value="Pet Insurance Australia">Pet Insurance Australia</SelectItem>
+                        <SelectItem value="Petplan">Petplan</SelectItem>
+                        <SelectItem value="Petsy Pet Insurance">Petsy Pet Insurance</SelectItem>
+                        <SelectItem value="PIA Pet Insurance">PIA Pet Insurance</SelectItem>
+                        <SelectItem value="RSPCA Pet Insurance">RSPCA Pet Insurance</SelectItem>
+                        <SelectItem value="Woolworths Pet Insurance">Woolworths Pet Insurance</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   
                   <div className="space-y-2">
