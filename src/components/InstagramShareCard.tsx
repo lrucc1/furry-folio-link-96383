@@ -581,7 +581,7 @@ export const InstagramShareCard = ({
         await shareToInstagram({ imageBlob: blob, petName, publicUrl })
         toast({
           title: 'Opening Instagram...',
-          description: 'Share your pet passport on your story! 🚀',
+          description: 'Share your PetLinkID card on your story! 🚀',
         })
       } catch (error) {
         if ((error as Error).name !== 'AbortError') {
@@ -605,7 +605,7 @@ export const InstagramShareCard = ({
       downloadImage(blob, petName)
       toast({
         title: 'Card downloaded!',
-        description: 'Share it on Instagram to go viral! 🚀',
+        description: 'Share your PetLinkID card on Instagram! 🚀',
       })
     })
   }
@@ -615,14 +615,14 @@ export const InstagramShareCard = ({
       <DialogTrigger asChild>
         <Button variant="outline" className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 hover:from-purple-600 hover:to-pink-600">
           <Instagram className="w-4 h-4 mr-2" />
-          Create Viral Card
+          Create PetLinkID Card
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Instagram className="w-5 h-5 text-purple-500" />
-            {petName}&apos;s Viral Passport
+            {petName}&apos;s PetLinkID Card
           </DialogTitle>
         </DialogHeader>
         
@@ -694,7 +694,7 @@ export const InstagramShareCard = ({
           </div>
 
           <p className="text-xs text-muted-foreground text-center">
-            💡 Pro tip: Use <strong>Stories</strong> format for max virality! Post to your story and watch the engagement roll in.
+            💡 Pro tip: Use <strong>Stories</strong> format to showcase your pet&apos;s PetLinkID card! Share to your story and help others discover PetLinkID.
           </p>
         </div>
       </DialogContent>
