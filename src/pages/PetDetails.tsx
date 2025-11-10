@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
-import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download, Upload, Scan, ExternalLink, Bell, CheckCircle, Trash2, Plus, Eye, Edit2, Syringe, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download, Upload, Scan, ExternalLink, Bell, CheckCircle, Trash2, Plus, Eye, Edit2, Syringe, AlertCircle, Home } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from '@/hooks/use-toast'
 import { PetDocuments } from '@/components/PetDocuments'
@@ -393,11 +393,23 @@ const PetDetails = () => {
         </Card>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="w-full inline-flex md:grid md:grid-cols-4 overflow-x-auto scrollbar-hide">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="health">Health & Docs</TabsTrigger>
-            <TabsTrigger value="lost">Lost Mode</TabsTrigger>
-            <TabsTrigger value="sharing">Sharing</TabsTrigger>
+          <TabsList className="w-full grid grid-cols-2 gap-2 h-auto p-2 md:inline-flex md:h-10 md:p-1 md:gap-0">
+            <TabsTrigger value="overview" className="flex-col h-16 md:flex-row md:h-auto">
+              <Home className="w-4 h-4 mb-1 md:mb-0 md:mr-2" />
+              <span>Overview</span>
+            </TabsTrigger>
+            <TabsTrigger value="health" className="flex-col h-16 md:flex-row md:h-auto">
+              <Heart className="w-4 h-4 mb-1 md:mb-0 md:mr-2" />
+              <span>Health & Docs</span>
+            </TabsTrigger>
+            <TabsTrigger value="lost" className="flex-col h-16 md:flex-row md:h-auto">
+              <AlertCircle className="w-4 h-4 mb-1 md:mb-0 md:mr-2" />
+              <span>Lost Mode</span>
+            </TabsTrigger>
+            <TabsTrigger value="sharing" className="flex-col h-16 md:flex-row md:h-auto">
+              <Users className="w-4 h-4 mb-1 md:mb-0 md:mr-2" />
+              <span>Sharing</span>
+            </TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
