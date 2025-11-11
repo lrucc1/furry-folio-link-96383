@@ -2,6 +2,17 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Users, UserPlus, Copy, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -269,10 +280,10 @@ export function SharingTab({ petId }: SharingTabProps) {
                 const isRevoked = invite.status === 'revoked';
                 
                 return (
-                  <div key={invite.id} className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{invite.email}</p>
+                  <div key={invite.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg bg-muted/30">
+                    <div className="flex-1 space-y-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-medium truncate max-w-[250px] sm:max-w-none" title={invite.email}>{invite.email}</p>
                         {isRevoked && (
                           <Badge variant="destructive" className="text-xs">
                             {au('revoked')}
@@ -326,33 +337,56 @@ export function SharingTab({ petId }: SharingTabProps) {
                       </Button>
                     ) : isSentByMe && !isForMe ? (
                       // Sent by current user to someone else - show copy/revoke
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => copyInviteLink(invite.token)}
+                          className="w-full sm:w-auto"
                         >
                           <Copy className="w-4 h-4 mr-2" />
                           {au('Copy Link')}
                         </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => revokeInvite(invite.id)}
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          {au('Revoke')}
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full sm:w-auto text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              {au('Revoke')}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>{au('Revoke invitation?')}</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                {au('This will cancel the invitation sent to')} <strong>{invite.email}</strong>. {au('They will not be able to use this link to accept.')}
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>{au('Cancel')}</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => revokeInvite(invite.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                {au('Revoke Invite')}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     ) : isForMe ? (
                       // Sent to current user - show accept/decline
-                      <div className="flex flex-col gap-2">
+                      <div className="flex flex-col gap-2 w-full sm:w-auto">
                         <Button
                           size="sm"
                           onClick={() => {
                             const acceptUrl = `/invite/accept?token=${invite.token}`;
                             navigate(acceptUrl);
                           }}
+                          className="w-full"
                         >
                           <CheckCircle className="w-4 h-4 mr-2" />
                           {au('Accept')}
@@ -361,6 +395,7 @@ export function SharingTab({ petId }: SharingTabProps) {
                           variant="outline"
                           size="sm"
                           onClick={() => revokeInvite(invite.id)}
+                          className="w-full"
                         >
                           <XCircle className="w-4 h-4 mr-2" />
                           {au('Decline')}
@@ -383,10 +418,20 @@ export function SharingTab({ petId }: SharingTabProps) {
                 {au('Active Shares')}
               </h3>
               {members.map((member) => (
-                <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex-1 space-y-1">
-                    <p className="font-medium">{member.display_name || member.email || member.user_id}</p>
-                    <p className="text-sm text-muted-foreground">
+                <div key={member.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg">
+                  <div className="flex-1 space-y-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-medium truncate max-w-[200px] sm:max-w-none" 
+                         title={member.display_name || member.email || undefined}>
+                        {member.display_name || member.email || `${member.role.charAt(0).toUpperCase() + member.role.slice(1)} ${au('Member')}`}
+                      </p>
+                      {!member.display_name && !member.email && (
+                        <span className="text-xs text-muted-foreground">
+                          (ID: {member.user_id.substring(0, 8)}...)
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground break-words">
                       {member.role === 'vet' && au('Veterinarian - Read-only medical access')}
                       {member.role === 'family' && au('Family - Can view and edit')}
                       {member.role === 'caregiver' && au('Caregiver - Read-only access')}
@@ -395,7 +440,7 @@ export function SharingTab({ petId }: SharingTabProps) {
                       {au('For')}: {petsById[member.pet_id]?.name || au('This pet')}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:ml-4">
                     <Badge variant={member.role === 'owner' ? 'default' : 'secondary'}>
                       {member.role === 'vet' ? au('Veterinarian') : 
                        member.role === 'family' ? au('Family') :
@@ -403,14 +448,36 @@ export function SharingTab({ petId }: SharingTabProps) {
                        au('Owner')}
                     </Badge>
                     {member.role !== 'owner' && (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => removeMember(member.id)}
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        {au('Remove')}
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            {au('Remove')}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>{au('Remove access?')}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              {au('This will remove')} <strong>{member.display_name || member.email || 'this member'}</strong> 
+                              {au("'s access to")} <strong>{petsById[member.pet_id]?.name || 'this pet'}</strong>. {au('They will no longer be able to view or edit this pet.')}
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>{au('Cancel')}</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => removeMember(member.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              {au('Remove Access')}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     )}
                   </div>
                 </div>
