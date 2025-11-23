@@ -8,6 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useEntitlementCheck } from '@/hooks/useEntitlementCheck';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface HealthReminderModalProps {
   open: boolean;
@@ -17,6 +21,7 @@ interface HealthReminderModalProps {
 }
 
 export function HealthReminderModal({ open, onClose, petId, onSuccess }: HealthReminderModalProps) {
+  const { canCreate, message } = useEntitlementCheck('reminders_active_max');
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -29,6 +34,12 @@ export function HealthReminderModal({ open, onClose, petId, onSuccess }: HealthR
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check entitlement BEFORE creating
+    if (!canCreate) {
+      toast.error(message || 'Reminder limit reached. Upgrade to Pro for unlimited reminders.');
+      return;
+    }
     
     if (!formData.title || !formData.reminder_date) {
       toast.error('Please fill in all required fields');
@@ -81,6 +92,19 @@ export function HealthReminderModal({ open, onClose, petId, onSuccess }: HealthR
         <DialogHeader>
           <DialogTitle>Add Health Reminder</DialogTitle>
         </DialogHeader>
+        
+        {!canCreate && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="flex items-center justify-between gap-2">
+              <span>{message || 'Reminder limit reached.'}</span>
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/pricing">Upgrade</Link>
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="title">Reminder Title *</Label>
@@ -171,7 +195,7 @@ export function HealthReminderModal({ open, onClose, petId, onSuccess }: HealthR
             <Button type="button" variant="outline" onClick={onClose} disabled={saving}>
               Cancel
             </Button>
-            <Button type="submit" disabled={saving}>
+            <Button type="submit" disabled={saving || !canCreate}>
               {saving ? 'Saving...' : 'Add Reminder'}
             </Button>
           </DialogFooter>
