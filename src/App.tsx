@@ -10,6 +10,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ProfileSetupDialog } from "./components/ProfileSetupDialog";
 import { DowngradeHelper } from "./components/DowngradeHelper";
 import { AdminRoute } from "./components/AdminRoute";
+import { IOSAppRouter } from "./components/IOSAppRouter";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -58,9 +59,10 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <ProfileSetupDialog />
-            <DowngradeHelper />
-            <Routes>
+            <IOSAppRouter>
+              <ProfileSetupDialog />
+              <DowngradeHelper />
+              <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/found/:publicId" element={<FoundPet />} />
@@ -170,6 +172,7 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </IOSAppRouter>
           </BrowserRouter>
         </TooltipProvider>
       </PlanProvider>
