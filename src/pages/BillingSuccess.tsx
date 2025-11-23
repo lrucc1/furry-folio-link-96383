@@ -7,6 +7,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { usePlanV2 } from '@/hooks/usePlanV2';
 import { supabase } from '@/integrations/supabase/client';
+import { isNativeApp, returnToIOSApp, isReturningFromWebCheckout } from '@/lib/iosPaymentFlow';
 
 export default function BillingSuccess() {
   const navigate = useNavigate();
@@ -38,6 +39,14 @@ export default function BillingSuccess() {
     verifySubscription();
   }, [searchParams, navigate, refresh]);
 
+  // Handle iOS app deep link redirect after payment
+  useEffect(() => {
+    if (!verifying && isNativeApp() && isReturningFromWebCheckout()) {
+      // Redirect back to iOS app after showing success message
+      returnToIOSApp('/dashboard');
+    }
+  }, [verifying]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -59,7 +68,9 @@ export default function BillingSuccess() {
               <CardDescription className="text-lg mt-2">
                 {verifying 
                   ? 'Please wait while we confirm your subscription'
-                  : 'Your subscription has been activated successfully'
+                  : isNativeApp() 
+                    ? 'Your subscription has been activated. Returning to app...'
+                    : 'Your subscription has been activated successfully'
                 }
               </CardDescription>
             </CardHeader>

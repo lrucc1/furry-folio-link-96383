@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePlan } from '@/lib/plan/PlanContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Crown } from 'lucide-react';
 import { au } from '@/lib/auEnglish';
 import { getEnvironmentConfig } from '@/config/environment';
+import { isIOSApp, openWebCheckout } from '@/lib/iosPaymentFlow';
+import { PaidPlanInfoSheet } from '@/components/PaidPlanInfoSheet';
 
 const ENV_CONFIG = getEnvironmentConfig();
-import { PaidPlanInfoSheet } from '@/components/PaidPlanInfoSheet';
 
 interface UpgradeInlineProps {
   feature: string;
@@ -15,6 +17,7 @@ interface UpgradeInlineProps {
 
 export function UpgradeInline({ feature }: UpgradeInlineProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [busy, setBusy] = useState(false);
   const [showInfoSheet, setShowInfoSheet] = useState(false);
   const { tier } = usePlan();
@@ -24,13 +27,23 @@ export function UpgradeInline({ feature }: UpgradeInlineProps) {
     return null;
   }
 
-  const handleUpgrade = () => {
-    if (!ENV_CONFIG.useInAppPurchases) {
-      setShowInfoSheet(true);
+  const handleUpgrade = async () => {
+    setBusy(true);
+    
+    // iOS app: Open web checkout in Safari
+    if (isIOSApp()) {
+      await openWebCheckout(user?.id);
+      setBusy(false);
       return;
     }
     
-    setBusy(true);
+    // Web: Show info sheet if IAPs disabled, otherwise navigate to pricing
+    if (!ENV_CONFIG.useInAppPurchases) {
+      setShowInfoSheet(true);
+      setBusy(false);
+      return;
+    }
+    
     navigate('/pricing');
   };
 
