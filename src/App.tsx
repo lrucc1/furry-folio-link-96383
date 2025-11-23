@@ -23,6 +23,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import PlanDebug from "./pages/admin/PlanDebug";
 import TestEmails from "./pages/admin/TestEmails";
 import EmailPreview from "./pages/admin/EmailPreview";
+import LimitAudit from "./pages/admin/LimitAudit";
 import HelpCentre from "./pages/HelpCentre";
 import FAQ from "./pages/FAQ";
 import Contact from "./pages/Contact";
@@ -164,6 +165,7 @@ const App = () => (
               />
               <Route path="/admin/test-emails" element={<AdminRoute><TestEmails /></AdminRoute>} />
               <Route path="/admin/email-preview" element={<AdminRoute><EmailPreview /></AdminRoute>} />
+              <Route path="/admin/limit-audit" element={<AdminRoute><LimitAudit /></AdminRoute>} />
               <Route path="/dev/subscription-debug" element={<DevSubscriptionDebug />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
