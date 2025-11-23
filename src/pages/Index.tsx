@@ -58,7 +58,7 @@ const pricingPlans = [
       "1 Pet Profile",
       "1 Read-only Caregiver",
       "2 Active Health Reminders",
-      "50MB Document Storage",
+      "QR Code Pet Profile",
       "Basic Support"
     ],
     cta: "Get Started Free",
@@ -73,7 +73,7 @@ const pricingPlans = [
       "Unlimited Pet Profiles",
       "Full Caregiver Access (read & write)",
       "Unlimited Health Reminders",
-      "200MB Document Storage",
+      "Store Vaccination Certificates & Medical Records",
       "Data Export Capability",
       "Priority Support",
       "7-Day Free Trial"
