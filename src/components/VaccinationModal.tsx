@@ -10,6 +10,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { au } from '@/lib/auEnglish';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { useEntitlementCheck } from '@/hooks/useEntitlementCheck';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface VaccinationModalProps {
   open: boolean;
@@ -28,6 +32,7 @@ export function VaccinationModal({
   defaultClinicAddress = '',
   onSuccess 
 }: VaccinationModalProps) {
+  const { canCreate, message } = useEntitlementCheck('reminders_active_max');
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     vaccine_name: '',
@@ -42,6 +47,12 @@ export function VaccinationModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check entitlement BEFORE creating
+    if (!canCreate) {
+      toast.error(message || au('Reminder limit reached. Upgrade to Pro for unlimited reminders.'));
+      return;
+    }
     
     if (!formData.vaccine_name || !formData.vaccine_date) {
       toast.error(au('Please fill in all required fields'));
@@ -109,6 +120,19 @@ export function VaccinationModal({
         <DialogHeader>
           <DialogTitle>{au('Add vaccination')}</DialogTitle>
         </DialogHeader>
+        
+        {!canCreate && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="flex items-center justify-between gap-2">
+              <span>{message || au('Reminder limit reached.')}</span>
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/pricing">{au('Upgrade')}</Link>
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="vaccine_name">{au('Vaccine name')} *</Label>
@@ -198,7 +222,7 @@ export function VaccinationModal({
             <Button type="button" variant="outline" onClick={onClose} disabled={saving}>
               {au('Cancel')}
             </Button>
-            <Button type="submit" disabled={saving}>
+            <Button type="submit" disabled={saving || !canCreate}>
               {saving ? au('Saving...') : au('Add vaccination')}
             </Button>
           </DialogFooter>

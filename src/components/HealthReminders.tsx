@@ -157,6 +157,7 @@ export const HealthReminders = () => {
   const displayedReminders = entitlement?.reminders_active_max === null 
     ? reminders 
     : reminders.slice(0, maxReminders);
+  const isLimited = entitlement?.reminders_active_max !== null && reminders.length > maxReminders;
 
   return (
     <Card>
@@ -172,6 +173,19 @@ export const HealthReminders = () => {
         </div>
       </CardHeader>
       <CardContent className="space-y-2 sm:space-y-4 px-4 sm:px-6">
+        {isLimited && (
+          <Alert>
+            <AlertDescription className="flex items-center justify-between gap-2">
+              <span className="text-xs sm:text-sm">
+                Showing {displayedReminders.length} of {reminders.length} reminders (Free plan limit)
+              </span>
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/pricing">Upgrade</Link>
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+        
         {displayedReminders.length === 0 ? (
           <Alert>
             <CheckCircle className="h-4 w-4" />
