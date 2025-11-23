@@ -10,8 +10,8 @@ import { CapacitorConfig } from '@capacitor/cli';
  */
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.a2e9460fc39147688955cf1b862df298',
-  appName: 'furry-folio-link-96383',
+  appId: 'com.petlinkid.app',
+  appName: 'PetLinkID',
   webDir: 'dist',
   
   // PRODUCTION: Commented out for App Store builds (uses bundled assets)
