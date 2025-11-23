@@ -201,10 +201,16 @@ export default function AdminDashboard() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <Button onClick={() => navigate('/admin/email-preview')} variant="outline">
-          <Mail className="mr-2 h-4 w-4" />
-          Email Templates
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => navigate('/admin/email-preview')} variant="outline">
+            <Mail className="mr-2 h-4 w-4" />
+            Email Templates
+          </Button>
+          <Button onClick={() => navigate('/admin/limit-audit')} variant="outline">
+            <TrendingUp className="mr-2 h-4 w-4" />
+            Limit Audit
+          </Button>
+        </div>
       </div>
 
       {/* KPIs */}
