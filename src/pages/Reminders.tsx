@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, Calendar, CheckCircle, Heart, Syringe, Clock, Pill, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Calendar, CheckCircle, Heart, Syringe, Clock, Pill, RefreshCw, Plus } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { toast } from 'sonner';
@@ -14,6 +14,14 @@ import { EditVaccinationModal } from '@/components/EditVaccinationModal';
 import { EditHealthReminderModal } from '@/components/EditHealthReminderModal';
 import { ReminderNotifications } from '@/components/ReminderNotifications';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import { HealthReminderModal } from '@/components/HealthReminderModal';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+} from '@/components/ui/alert-dialog';
 
 interface Vaccination {
   id: string;
@@ -67,12 +75,31 @@ export default function Reminders() {
   const [loading, setLoading] = useState(true);
   const [editingVaccination, setEditingVaccination] = useState<Vaccination | null>(null);
   const [editingHealthReminder, setEditingHealthReminder] = useState<HealthReminder | null>(null);
+  const [pets, setPets] = useState<Array<{id: string, name: string, photo_url: string | null}>>([]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedPetForReminder, setSelectedPetForReminder] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
       fetchAllReminders();
+      fetchUserPets();
     }
   }, [user]);
+
+  const fetchUserPets = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('pets')
+        .select('id, name, photo_url')
+        .eq('user_id', user?.id)
+        .order('name');
+      
+      if (error) throw error;
+      setPets(data || []);
+    } catch (error) {
+      console.error('Error fetching pets:', error);
+    }
+  };
 
   const fetchAllReminders = async () => {
     try {
@@ -199,6 +226,26 @@ export default function Reminders() {
     }
   };
 
+  const handleAddReminder = () => {
+    if (pets.length === 0) {
+      toast.error('Please add a pet first before creating reminders');
+      return;
+    }
+    
+    if (pets.length === 1) {
+      setSelectedPetForReminder(pets[0].id);
+      setShowAddModal(true);
+    } else {
+      setShowAddModal(true);
+    }
+  };
+
+  const handleReminderSuccess = () => {
+    fetchAllReminders();
+    setShowAddModal(false);
+    setSelectedPetForReminder(null);
+  };
+
   const handleRefresh = async () => {
     await fetchAllReminders();
     toast.success('Reminders refreshed');
@@ -252,14 +299,24 @@ export default function Reminders() {
       <Header />
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2 mb-2">
-              <Heart className="w-8 h-8" />
-              Health Reminders
-            </h1>
-            <p className="text-muted-foreground">
-              Keep track of all vaccinations and health reminders for your pets
-            </p>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold flex items-center gap-2 mb-2">
+                <Heart className="w-8 h-8" />
+                Health Reminders
+              </h1>
+              <p className="text-muted-foreground">
+                Keep track of all vaccinations and health reminders for your pets
+              </p>
+            </div>
+            <Button 
+              onClick={handleAddReminder}
+              size="lg"
+              className="gap-2 hidden sm:flex"
+            >
+              <Plus className="w-5 h-5" />
+              Add Reminder
+            </Button>
           </div>
 
           {loading ? (
@@ -495,6 +552,64 @@ export default function Reminders() {
         </div>
       </main>
       <Footer />
+
+      {/* Floating Action Button for Mobile */}
+      <Button
+        onClick={handleAddReminder}
+        size="lg"
+        className="fixed bottom-20 right-4 sm:hidden rounded-full shadow-lg w-14 h-14 z-50"
+        aria-label="Add health reminder"
+      >
+        <Plus className="w-6 h-6" />
+      </Button>
+
+      {/* Pet Selection Dialog for Multiple Pets */}
+      {showAddModal && !selectedPetForReminder && pets.length > 1 && (
+        <AlertDialog open={true} onOpenChange={(open) => !open && setShowAddModal(false)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Select a Pet</AlertDialogTitle>
+              <AlertDialogDescription>
+                Which pet would you like to add a health reminder for?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="grid gap-2 py-4">
+              {pets.map(pet => (
+                <Button
+                  key={pet.id}
+                  variant="outline"
+                  className="justify-start gap-3 h-auto py-3"
+                  onClick={() => {
+                    setSelectedPetForReminder(pet.id);
+                  }}
+                >
+                  {pet.photo_url && (
+                    <img 
+                      src={pet.photo_url} 
+                      alt={pet.name}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                  )}
+                  <span className="font-medium">{pet.name}</span>
+                </Button>
+              ))}
+            </div>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+
+      {/* Add Health Reminder Modal */}
+      {selectedPetForReminder && (
+        <HealthReminderModal
+          open={showAddModal}
+          onClose={() => {
+            setShowAddModal(false);
+            setSelectedPetForReminder(null);
+          }}
+          petId={selectedPetForReminder}
+          onSuccess={handleReminderSuccess}
+        />
+      )}
 
       {editingVaccination && (
         <EditVaccinationModal
