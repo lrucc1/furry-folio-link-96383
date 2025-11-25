@@ -20,7 +20,7 @@ import PetDetails from "./pages/PetDetails";
 import Reminders from "./pages/Reminders";
 import FoundPet from "./pages/FoundPet";
 import PublicPetProfile from "./pages/PublicPetProfile";
-import AdminDashboard from "./pages/AdminDashboard";
+import AdminDashboard from "./pages/admin/Dashboard";
 import DeletionHistory from "./pages/admin/DeletionHistory";
 import PlanDebug from "./pages/admin/PlanDebug";
 import TestEmails from "./pages/admin/TestEmails";
