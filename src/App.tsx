@@ -21,6 +21,7 @@ import Reminders from "./pages/Reminders";
 import FoundPet from "./pages/FoundPet";
 import PublicPetProfile from "./pages/PublicPetProfile";
 import AdminDashboard from "./pages/AdminDashboard";
+import DeletionHistory from "./pages/admin/DeletionHistory";
 import PlanDebug from "./pages/admin/PlanDebug";
 import TestEmails from "./pages/admin/TestEmails";
 import EmailPreview from "./pages/admin/EmailPreview";
@@ -168,6 +169,7 @@ const App = () => (
               <Route path="/admin/test-emails" element={<AdminRoute><TestEmails /></AdminRoute>} />
               <Route path="/admin/email-preview" element={<AdminRoute><EmailPreview /></AdminRoute>} />
               <Route path="/admin/limit-audit" element={<AdminRoute><LimitAudit /></AdminRoute>} />
+              <Route path="/admin/deletion-history" element={<AdminRoute><DeletionHistory /></AdminRoute>} />
               <Route path="/dev/subscription-debug" element={<DevSubscriptionDebug />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
