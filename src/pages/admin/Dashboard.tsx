@@ -412,24 +412,27 @@ export default function AdminDashboard() {
           {loading ? (
             <div className="text-center py-8">Loading...</div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-12">
-                        <Checkbox
-                          checked={selectedUsers.size === filteredUsers.length && filteredUsers.length > 0}
-                          onCheckedChange={toggleSelectAll}
-                        />
-                      </TableHead>
-                      <TableHead>User</TableHead>
-                      <TableHead>Tier</TableHead>
-                      <TableHead>Source</TableHead>
-                      <TableHead>Expires</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
+            <div className={selectedUser 
+              ? "grid grid-cols-1 lg:grid-cols-3 gap-6 transition-all duration-300" 
+              : "w-full"}>
+              <div className={selectedUser ? "lg:col-span-2" : "w-full"}>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12">
+                          <Checkbox
+                            checked={selectedUsers.size === filteredUsers.length && filteredUsers.length > 0}
+                            onCheckedChange={toggleSelectAll}
+                          />
+                        </TableHead>
+                        <TableHead className="min-w-[250px]">User</TableHead>
+                        <TableHead className="w-28">Tier</TableHead>
+                        <TableHead className="w-28">Source</TableHead>
+                        <TableHead className="w-32">Expires</TableHead>
+                        <TableHead className="w-24">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
                   <TableBody>
                     {filteredUsers.map((user) => (
                       <TableRow
@@ -503,6 +506,7 @@ export default function AdminDashboard() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               </div>
 
               {/* Audit Log Panel */}
