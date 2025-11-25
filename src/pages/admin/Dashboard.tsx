@@ -8,7 +8,20 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ChangeTierModal } from '@/components/admin/ChangeTierModal';
 import { toast } from 'sonner';
-import { Users, Crown, TrendingUp, DollarSign, Search, Edit, Mail } from 'lucide-react';
+import { Users, Crown, TrendingUp, DollarSign, Search, Edit, Mail, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { invokeWithAuth } from '@/lib/invokeWithAuth';
 import {
   Table,
   TableBody,
@@ -57,6 +70,9 @@ export default function AdminDashboard() {
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [selectedUserAudit, setSelectedUserAudit] = useState<PlanAudit[]>([]);
   const [showChangeTierModal, setShowChangeTierModal] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [immediateDelete, setImmediateDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // KPI states
   const [totalUsers, setTotalUsers] = useState(0);
@@ -182,6 +198,38 @@ export default function AdminDashboard() {
     fetchUsers();
     if (selectedUser) {
       fetchAuditLog(selectedUser.user_id);
+    }
+  };
+
+  const handleDeleteUser = async (user: UserData) => {
+    try {
+      setDeleting(true);
+      const result = await invokeWithAuth<{ success: boolean; message: string }>('admin-delete-account', {
+        body: {
+          user_id: user.user_id,
+          immediate: immediateDelete,
+          reason: immediateDelete
+            ? 'Admin requested immediate deletion from user management'
+            : 'Admin initiated soft deletion from user management',
+        },
+      });
+
+      if (result.success) {
+        toast.success(
+          immediateDelete
+            ? 'User account deleted immediately'
+            : 'User account scheduled for deletion'
+        );
+        fetchUsers();
+        setShowDeleteDialog(false);
+        setImmediateDelete(false);
+        setSelectedUser(null);
+      }
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      toast.error(error.message || 'Failed to delete user');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -328,17 +376,30 @@ export default function AdminDashboard() {
                             : '-'}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleSelectUser(user);
-                              handleChangeTier();
-                            }}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
+                          <div className="flex gap-1">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSelectUser(user);
+                                handleChangeTier();
+                              }}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedUser(user);
+                                setShowDeleteDialog(true);
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -387,6 +448,62 @@ export default function AdminDashboard() {
           onSaved={handleTierSaved}
         />
       )}
+
+      {/* Delete User Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={(open) => {
+        setShowDeleteDialog(open);
+        if (!open) {
+          setImmediateDelete(false);
+          setSelectedUser(null);
+        }
+      }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              {selectedUser && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div><strong>User:</strong> {selectedUser.display_name || 'No name'}</div>
+                    <div><strong>Email:</strong> {selectedUser.email}</div>
+                    <div><strong>Current Tier:</strong> {getTierDisplay(selectedUser).label}</div>
+                  </div>
+
+                  <div className="flex items-center space-x-2 p-3 border rounded-lg bg-muted">
+                    <Checkbox
+                      id="immediate-delete"
+                      checked={immediateDelete}
+                      onCheckedChange={(checked) => setImmediateDelete(checked === true)}
+                    />
+                    <Label htmlFor="immediate-delete" className="cursor-pointer">
+                      <div className="font-medium">Immediate deletion (skip 30-day grace period)</div>
+                      <div className="text-xs text-muted-foreground">
+                        Permanently delete all data now. This cannot be undone.
+                      </div>
+                    </Label>
+                  </div>
+
+                  <div className="text-sm text-destructive font-medium">
+                    {immediateDelete
+                      ? '⚠️ All user data will be permanently deleted immediately.'
+                      : 'User will have 30 days to restore their account. Stripe subscriptions will be canceled.'}
+                  </div>
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => selectedUser && handleDeleteUser(selectedUser)}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? 'Deleting...' : immediateDelete ? 'Delete Immediately' : 'Schedule Deletion'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
