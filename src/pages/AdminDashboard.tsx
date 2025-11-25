@@ -30,7 +30,12 @@ import {
   Search,
   Download,
   Edit,
-  Mail
+  Mail,
+  Filter,
+  X,
+  Trash2,
+  History,
+  DollarSign
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -55,6 +60,19 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { invokeWithAuth } from '@/lib/invokeWithAuth';
 
 interface AdminStats {
   total_users: number;
@@ -83,6 +101,11 @@ interface UserDetails {
   plan_source?: string | null;
   plan_expires_at?: string | null;
   plan_updated_at?: string | null;
+  next_billing_at?: string | null;
+  stripe_current_period_end?: string | null;
+  billing_interval?: string | null;
+  deleted_at?: string | null;
+  deletion_scheduled?: boolean;
   pet_count: number;
   roles: string[];
 }
@@ -140,26 +163,73 @@ const AdminDashboard = () => {
   const [newTier, setNewTier] = useState<string>('');
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [availableTiers, setAvailableTiers] = useState<SubscriptionTier[]>([]);
+  
+  // New filter states
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [tierFilter, setTierFilter] = useState<string>('all');
+  const [sourceFilter, setSourceFilter] = useState<string>('all');
+  const [deletionFilter, setDeletionFilter] = useState<string>('active');
+  
+  // Bulk actions
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [bulkImmediateDelete, setBulkImmediateDelete] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<UserDetails | null>(null);
+  const [immediateDelete, setImmediateDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchAllData();
   }, []);
 
   useEffect(() => {
-    if (searchQuery.trim() === '') {
-      setFilteredUsers(allUsers);
-    } else {
+    // Apply search and filters
+    const filtered = allUsers.filter((user) => {
+      // Search filter
       const query = searchQuery.toLowerCase();
-      setFilteredUsers(
-        allUsers.filter(
-          (u) =>
-            u.email?.toLowerCase().includes(query) ||
-            u.display_name?.toLowerCase().includes(query) ||
-            u.user_id?.toLowerCase().includes(query)
-        )
+      const matchesSearch = !searchQuery.trim() || 
+        user.email?.toLowerCase().includes(query) ||
+        user.display_name?.toLowerCase().includes(query) ||
+        user.user_id?.toLowerCase().includes(query);
+      
+      // Status filter
+      const matchesStatus = statusFilter === 'all' || (
+        (statusFilter === 'active' && (user.stripe_status === 'active' || user.subscription_status === 'active')) ||
+        (statusFilter === 'trialing' && (user.stripe_status === 'trialing' || user.subscription_status === 'trialing')) ||
+        (statusFilter === 'canceled' && (user.stripe_status === 'canceled' || user.subscription_status === 'canceled')) ||
+        (statusFilter === 'past_due' && (user.stripe_status === 'past_due' || user.subscription_status === 'past_due'))
       );
-    }
-  }, [searchQuery, allUsers]);
+
+      // Tier filter
+      const effectiveTier = computeEffectiveTier({
+        plan_tier: user.plan_tier as any,
+        plan_v2: user.plan_v2 as any,
+        subscription_status: user.subscription_status as any,
+        stripe_status: user.stripe_status,
+        stripe_tier: user.stripe_tier as any,
+        manual_override: user.manual_override,
+        plan_source: user.plan_source as any,
+      });
+      const matchesTier = tierFilter === 'all' || 
+        (tierFilter === 'pro' && effectiveTier === 'pro') ||
+        (tierFilter === 'free' && effectiveTier === 'free');
+
+      // Source filter
+      const matchesSource = sourceFilter === 'all' || user.plan_source === sourceFilter;
+
+      // Deletion filter
+      const matchesDeletion = 
+        (deletionFilter === 'active' && !user.deleted_at && !user.deletion_scheduled) ||
+        (deletionFilter === 'scheduled' && user.deletion_scheduled) ||
+        (deletionFilter === 'deleted' && user.deleted_at);
+
+      return matchesSearch && matchesStatus && matchesTier && matchesSource && matchesDeletion;
+    });
+    
+    setFilteredUsers(filtered);
+  }, [searchQuery, allUsers, statusFilter, tierFilter, sourceFilter, deletionFilter]);
 
   // Refresh subscription tiers when opening the edit-tier dialog
   useEffect(() => {
@@ -221,7 +291,7 @@ const AdminDashboard = () => {
           const userIds = users.map(u => u.user_id);
           const { data: profileRows } = await supabase
             .from('profiles')
-            .select('id, plan_tier, plan_v2, subscription_status, stripe_status, stripe_tier, manual_override, plan_source, plan_expires_at, plan_updated_at')
+            .select('id, plan_tier, plan_v2, subscription_status, stripe_status, stripe_tier, manual_override, plan_source, plan_expires_at, plan_updated_at, next_billing_at, stripe_current_period_end, billing_interval, deleted_at, deletion_scheduled')
             .in('id', userIds);
           
           if (profileRows) {
@@ -240,6 +310,11 @@ const AdminDashboard = () => {
                 user.plan_source = profile.plan_source;
                 user.plan_expires_at = profile.plan_expires_at;
                 user.plan_updated_at = profile.plan_updated_at;
+                user.next_billing_at = profile.next_billing_at;
+                user.stripe_current_period_end = profile.stripe_current_period_end;
+                user.billing_interval = profile.billing_interval;
+                user.deleted_at = profile.deleted_at;
+                user.deletion_scheduled = profile.deletion_scheduled;
               }
             });
           }
@@ -368,6 +443,154 @@ const AdminDashboard = () => {
     setNewTier(editingUser?.plan_tier || '');
   };
 
+  const getActiveFilterCount = () => {
+    let count = 0;
+    if (statusFilter !== 'all') count++;
+    if (tierFilter !== 'all') count++;
+    if (sourceFilter !== 'all') count++;
+    if (deletionFilter !== 'active') count++;
+    return count;
+  };
+
+  const clearFilters = () => {
+    setStatusFilter('all');
+    setTierFilter('all');
+    setSourceFilter('all');
+    setDeletionFilter('active');
+  };
+
+  const getExpiryDisplay = (user: UserDetails) => {
+    const hasActiveSubscription = user.stripe_status === 'active' || user.subscription_status === 'active';
+    
+    if (hasActiveSubscription) {
+      const renewalDate = user.next_billing_at || user.stripe_current_period_end;
+      if (renewalDate) {
+        const cycle = user.billing_interval === 'year' ? 'Yearly' : user.billing_interval === 'month' ? 'Monthly' : '';
+        return {
+          date: new Date(renewalDate).toLocaleDateString(),
+          label: cycle ? `Renews • ${cycle}` : 'Renews',
+          variant: 'default' as const
+        };
+      }
+    }
+    
+    if (user.plan_expires_at) {
+      return {
+        date: new Date(user.plan_expires_at).toLocaleDateString(),
+        label: 'Expires',
+        variant: 'secondary' as const
+      };
+    }
+    
+    return { date: '-', label: '', variant: 'secondary' as const };
+  };
+
+  const toggleUserSelection = (userId: string) => {
+    const newSelected = new Set(selectedUsers);
+    if (newSelected.has(userId)) {
+      newSelected.delete(userId);
+    } else {
+      newSelected.add(userId);
+    }
+    setSelectedUsers(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedUsers.size === filteredUsers.length) {
+      setSelectedUsers(new Set());
+    } else {
+      setSelectedUsers(new Set(filteredUsers.map(u => u.user_id)));
+    }
+  };
+
+  const handleDeleteUser = async (user: UserDetails) => {
+    setDeleteTarget(user);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    
+    try {
+      setDeleting(true);
+      const result = await invokeWithAuth<{ success: boolean; message: string }>('admin-delete-account', {
+        body: {
+          user_id: deleteTarget.user_id,
+          immediate: immediateDelete,
+          reason: immediateDelete
+            ? 'Admin requested immediate deletion from user management'
+            : 'Admin initiated soft deletion from user management',
+        },
+      });
+
+      if (result.success) {
+        toast.success(
+          immediateDelete
+            ? 'User account deleted immediately'
+            : 'User account scheduled for deletion'
+        );
+        fetchAllData();
+        setShowDeleteDialog(false);
+        setImmediateDelete(false);
+        setDeleteTarget(null);
+      }
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      toast.error(error.message || 'Failed to delete user');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      setBulkDeleting(true);
+      const userIds = Array.from(selectedUsers);
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const userId of userIds) {
+        try {
+          const result = await invokeWithAuth<{ success: boolean }>('admin-delete-account', {
+            body: {
+              user_id: userId,
+              immediate: bulkImmediateDelete,
+              reason: bulkImmediateDelete
+                ? 'Admin bulk immediate deletion'
+                : 'Admin bulk soft deletion',
+            },
+          });
+
+          if (result.success) {
+            successCount++;
+          } else {
+            failCount++;
+          }
+        } catch (error) {
+          console.error(`Error deleting user ${userId}:`, error);
+          failCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`Successfully deleted ${successCount} user(s)`);
+      }
+      if (failCount > 0) {
+        toast.error(`Failed to delete ${failCount} user(s)`);
+      }
+
+      fetchAllData();
+      setShowBulkDeleteDialog(false);
+      setBulkImmediateDelete(false);
+      setSelectedUsers(new Set());
+    } catch (error: any) {
+      console.error('Error bulk deleting users:', error);
+      toast.error('Failed to delete users');
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -480,9 +703,17 @@ const AdminDashboard = () => {
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Refresh
               </Button>
+              <Button onClick={() => navigate('/admin/deletion-history')} variant="outline" size="sm">
+                <History className="w-4 h-4 mr-2" />
+                Deletion History
+              </Button>
               <Button onClick={() => navigate('/admin/email-preview')} variant="outline" size="sm">
                 <Mail className="w-4 h-4 mr-2" />
                 Email Templates
+              </Button>
+              <Button onClick={() => navigate('/admin/limit-audit')} variant="outline" size="sm">
+                <TrendingUp className="w-4 h-4 mr-2" />
+                Limit Audit
               </Button>
               <Badge className="bg-primary/10 text-primary border-primary/20 px-3 py-2">
                 <Crown className="w-3 h-3 mr-1" />
@@ -627,14 +858,27 @@ const AdminDashboard = () => {
                       View and manage all registered users
                     </p>
                   </div>
-                  <Button onClick={exportUsers} variant="outline" size="sm">
-                    <Download className="w-4 h-4 mr-2" />
-                    Export CSV
-                  </Button>
+                  <div className="flex gap-2">
+                    {selectedUsers.size > 0 && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setShowBulkDeleteDialog(true)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete Selected ({selectedUsers.size})
+                      </Button>
+                    )}
+                    <Button onClick={exportUsers} variant="outline" size="sm">
+                      <Download className="w-4 h-4 mr-2" />
+                      Export CSV
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="mb-4">
+                {/* Search and Filters */}
+                <div className="space-y-4 mb-4">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
@@ -644,15 +888,95 @@ const AdminDashboard = () => {
                       className="pl-10"
                     />
                   </div>
+
+                  {/* Filter Row */}
+                  <div className="flex flex-wrap gap-2 items-center">
+                    <div className="flex items-center gap-2">
+                      <Filter className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Filters:</span>
+                    </div>
+                    
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="w-[140px]">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="trialing">Trialing</SelectItem>
+                        <SelectItem value="canceled">Canceled</SelectItem>
+                        <SelectItem value="past_due">Past Due</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Select value={tierFilter} onValueChange={setTierFilter}>
+                      <SelectTrigger className="w-[130px]">
+                        <SelectValue placeholder="Tier" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Tiers</SelectItem>
+                        <SelectItem value="pro">Pro</SelectItem>
+                        <SelectItem value="free">Free</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                      <SelectTrigger className="w-[140px]">
+                        <SelectValue placeholder="Source" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Sources</SelectItem>
+                        <SelectItem value="stripe">Stripe</SelectItem>
+                        <SelectItem value="manual">Manual</SelectItem>
+                        <SelectItem value="ios">iOS</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Select value={deletionFilter} onValueChange={setDeletionFilter}>
+                      <SelectTrigger className="w-[140px]">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="scheduled">Scheduled</SelectItem>
+                        <SelectItem value="deleted">Deleted</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    {getActiveFilterCount() > 0 && (
+                      <>
+                        <Badge variant="secondary" className="ml-2">
+                          {getActiveFilterCount()} active
+                        </Badge>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={clearFilters}
+                          className="h-8 px-2"
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          Clear
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
 
+                {/* Users Table */}
                 <div className="rounded-md border">
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="w-[40px]">
+                          <Checkbox
+                            checked={selectedUsers.size === filteredUsers.length && filteredUsers.length > 0}
+                            onCheckedChange={toggleSelectAll}
+                          />
+                        </TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Name</TableHead>
                         <TableHead>Tier</TableHead>
+                        <TableHead>Renewal / Expiry</TableHead>
                         <TableHead>Pets</TableHead>
                         <TableHead>Roles</TableHead>
                         <TableHead>Created</TableHead>
@@ -662,66 +986,91 @@ const AdminDashboard = () => {
                     <TableBody>
                       {filteredUsers.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={6} className="text-center text-muted-foreground">
+                          <TableCell colSpan={9} className="text-center text-muted-foreground">
                             No users found
                           </TableCell>
                         </TableRow>
                       ) : (
-                        filteredUsers.map((user) => (
-                          <TableRow key={user.user_id}>
-                            <TableCell className="font-medium">{user.email}</TableCell>
-                            <TableCell>{user.display_name || '-'}</TableCell>
-                            <TableCell>
-                              {(() => {
-                                const effectiveTier = computeEffectiveTier({
-                                  plan_tier: user.plan_tier as any,
-                                  plan_v2: user.plan_v2 as any,
-                                  subscription_status: user.subscription_status as any,
-                                  stripe_status: user.stripe_status,
-                                  stripe_tier: user.stripe_tier as any,
-                                  manual_override: user.manual_override,
-                                  plan_source: user.plan_source as any,
-                                });
-                                return (
-                                  <Badge variant={effectiveTier === 'pro' ? 'secondary' : 'outline'}>
-                                    {effectiveTier === 'pro' ? (
-                                      <span className="flex items-center gap-1">
-                                        <Crown className="w-3 h-3" />
-                                        Pro
-                                      </span>
-                                    ) : (
-                                      'Free'
-                                    )}
-                                  </Badge>
-                                );
-                              })()}
-                            </TableCell>
-                            <TableCell>{user.pet_count}</TableCell>
-                            <TableCell>
-                              {user.roles.length > 0 ? (
-                                user.roles.map((role) => (
-                                  <Badge key={role} variant="secondary" className="mr-1">
-                                    {role}
-                                  </Badge>
-                                ))
-                              ) : (
-                                <span className="text-muted-foreground text-sm">-</span>
-                              )}
-                            </TableCell>
-                            <TableCell className="text-sm text-muted-foreground">
-                              {new Date(user.created_at).toLocaleDateString()}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleEditTier(user)}
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))
+                        filteredUsers.map((user) => {
+                          const effectiveTier = computeEffectiveTier({
+                            plan_tier: user.plan_tier as any,
+                            plan_v2: user.plan_v2 as any,
+                            subscription_status: user.subscription_status as any,
+                            stripe_status: user.stripe_status,
+                            stripe_tier: user.stripe_tier as any,
+                            manual_override: user.manual_override,
+                            plan_source: user.plan_source as any,
+                          });
+                          const expiryInfo = getExpiryDisplay(user);
+                          
+                          return (
+                            <TableRow key={user.user_id}>
+                              <TableCell>
+                                <Checkbox
+                                  checked={selectedUsers.has(user.user_id)}
+                                  onCheckedChange={() => toggleUserSelection(user.user_id)}
+                                />
+                              </TableCell>
+                              <TableCell className="font-medium">{user.email}</TableCell>
+                              <TableCell>{user.display_name || '-'}</TableCell>
+                              <TableCell>
+                                <Badge variant={effectiveTier === 'pro' ? 'secondary' : 'outline'}>
+                                  {effectiveTier === 'pro' ? (
+                                    <span className="flex items-center gap-1">
+                                      <Crown className="w-3 h-3" />
+                                      Pro
+                                    </span>
+                                  ) : (
+                                    'Free'
+                                  )}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-col gap-0.5">
+                                  <span className="text-sm">{expiryInfo.date}</span>
+                                  {expiryInfo.label && (
+                                    <Badge variant={expiryInfo.variant} className="text-xs w-fit">
+                                      {expiryInfo.label}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>{user.pet_count}</TableCell>
+                              <TableCell>
+                                {user.roles.length > 0 ? (
+                                  user.roles.map((role) => (
+                                    <Badge key={role} variant="secondary" className="mr-1">
+                                      {role}
+                                    </Badge>
+                                  ))
+                                ) : (
+                                  <span className="text-muted-foreground text-sm">-</span>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-sm text-muted-foreground">
+                                {new Date(user.created_at).toLocaleDateString()}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex gap-1 justify-end">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleEditTier(user)}
+                                  >
+                                    <Edit className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDeleteUser(user)}
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
                       )}
                     </TableBody>
                   </Table>
@@ -920,6 +1269,80 @@ const AdminDashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete User Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {deleteTarget?.email}?
+              <div className="mt-4 space-y-2">
+                <div className="flex items-start gap-2">
+                  <Checkbox
+                    id="immediate-delete"
+                    checked={immediateDelete}
+                    onCheckedChange={(checked) => setImmediateDelete(checked as boolean)}
+                  />
+                  <Label htmlFor="immediate-delete" className="text-sm font-normal cursor-pointer">
+                    <span className="font-medium text-destructive">Immediate deletion</span>
+                    <p className="text-muted-foreground">
+                      Delete immediately (default: 30-day grace period)
+                    </p>
+                  </Label>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setImmediateDelete(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? 'Deleting...' : immediateDelete ? 'Delete Immediately' : 'Schedule Deletion'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Delete Dialog */}
+      <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Bulk Delete Users</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {selectedUsers.size} selected user(s)?
+              <div className="mt-4 space-y-2">
+                <div className="flex items-start gap-2">
+                  <Checkbox
+                    id="bulk-immediate-delete"
+                    checked={bulkImmediateDelete}
+                    onCheckedChange={(checked) => setBulkImmediateDelete(checked as boolean)}
+                  />
+                  <Label htmlFor="bulk-immediate-delete" className="text-sm font-normal cursor-pointer">
+                    <span className="font-medium text-destructive">Immediate deletion</span>
+                    <p className="text-muted-foreground">
+                      Delete immediately (default: 30-day grace period)
+                    </p>
+                  </Label>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setBulkImmediateDelete(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={bulkDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {bulkDeleting ? 'Deleting...' : bulkImmediateDelete ? 'Delete Immediately' : 'Schedule Deletion'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
