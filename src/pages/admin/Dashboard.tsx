@@ -47,6 +47,8 @@ interface UserData {
   plan_source?: string;
   plan_expires_at?: string | null;
   plan_updated_at?: string | null;
+  next_billing_at?: string | null;
+  stripe_current_period_end?: string | null;
   created_at: string;
 }
 
@@ -103,6 +105,34 @@ export default function AdminDashboard() {
     return { label: 'Free', variant: 'secondary' as const, Icon: null };
   };
 
+  const getExpiryDisplay = (user: UserData) => {
+    // Check if user has active Stripe subscription
+    const hasActiveSubscription = user.stripe_status === 'active' || user.subscription_status === 'active';
+    
+    if (hasActiveSubscription) {
+      // Show renewal date for subscription users
+      const renewalDate = user.next_billing_at || user.stripe_current_period_end;
+      if (renewalDate) {
+        return {
+          date: new Date(renewalDate).toLocaleDateString(),
+          label: 'Renews',
+          variant: 'default' as const
+        };
+      }
+    }
+    
+    // Show expiry date for trial/manual users
+    if (user.plan_expires_at) {
+      return {
+        date: new Date(user.plan_expires_at).toLocaleDateString(),
+        label: 'Expires',
+        variant: 'secondary' as const
+      };
+    }
+    
+    return { date: '-', label: '', variant: 'secondary' as const };
+  };
+
   useEffect(() => {
     if (isAdmin) {
       fetchUsers();
@@ -123,7 +153,7 @@ export default function AdminDashboard() {
       setLoading(true);
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, display_name, plan_tier, plan_v2, subscription_status, stripe_status, stripe_tier, manual_override, plan_source, plan_expires_at, plan_updated_at, created_at')
+        .select('id, email, display_name, plan_tier, plan_v2, subscription_status, stripe_status, stripe_tier, manual_override, plan_source, plan_expires_at, plan_updated_at, created_at, next_billing_at, stripe_current_period_end')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -142,6 +172,8 @@ export default function AdminDashboard() {
           plan_source: profile.plan_source || 'stripe',
           plan_expires_at: profile.plan_expires_at,
           plan_updated_at: profile.plan_updated_at,
+          next_billing_at: profile.next_billing_at,
+          stripe_current_period_end: profile.stripe_current_period_end,
           created_at: profile.created_at,
         })) || [];
 
@@ -429,7 +461,7 @@ export default function AdminDashboard() {
                         <TableHead className="min-w-[250px]">User</TableHead>
                         <TableHead className="w-28">Tier</TableHead>
                         <TableHead className="w-28">Source</TableHead>
-                        <TableHead className="w-32">Expires</TableHead>
+                        <TableHead className="w-36">Expires/Renewal</TableHead>
                         <TableHead className="w-24">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -472,9 +504,19 @@ export default function AdminDashboard() {
                           <Badge variant="outline">{user.plan_source || 'stripe'}</Badge>
                         </TableCell>
                         <TableCell className="text-sm" onClick={() => handleSelectUser(user)}>
-                          {user.plan_expires_at
-                            ? new Date(user.plan_expires_at).toLocaleDateString()
-                            : '-'}
+                          {(() => {
+                            const { date, label, variant } = getExpiryDisplay(user);
+                            return (
+                              <div className="flex flex-col">
+                                <span className="font-medium">{date}</span>
+                                {label && (
+                                  <span className={`text-xs ${variant === 'default' ? 'text-primary' : 'text-muted-foreground'}`}>
+                                    {label}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-1">
