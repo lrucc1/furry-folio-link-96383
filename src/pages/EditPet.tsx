@@ -106,7 +106,6 @@ const EditPet = () => {
       
       setPhotoPreview(data.photo_url)
     } catch (error) {
-      console.error('Error fetching pet details:', error)
       toast({
         title: "Error",
         description: "Failed to load pet details.",
@@ -144,10 +143,9 @@ const EditPet = () => {
             await supabase.storage
               .from('pet-documents')
               .remove([fullPath])
-            console.log('Old photo deleted:', fullPath)
           }
         } catch (deleteError) {
-          console.error('Error deleting old photo:', deleteError)
+          // Continue with upload even if delete fails
           // Continue with upload even if delete fails
         }
       }
@@ -172,7 +170,6 @@ const EditPet = () => {
         description: "Profile picture uploaded successfully!",
       })
     } catch (error) {
-      console.error('Error uploading photo:', error)
       toast({
         title: "Upload failed",
         description: "Failed to upload photo. Please try again.",
@@ -197,10 +194,9 @@ const EditPet = () => {
         await supabase.storage
           .from('pet-documents')
           .remove([fullPath])
-        console.log('Photo removed from storage:', fullPath)
       }
     } catch (error) {
-      console.error('Error removing photo:', error)
+      // Error handled silently
     }
 
     setPhotoPreview(null)
@@ -249,7 +245,6 @@ const EditPet = () => {
 
       navigate(`/pets/${id}`)
     } catch (error) {
-      console.error('Error updating pet:', error)
       toast({
         title: "Error",
         description: "Failed to update pet. Please try again.",
@@ -285,7 +280,7 @@ const EditPet = () => {
             await supabase.storage.from('pet-documents').remove([fullPath])
           }
         } catch (error) {
-          console.error('Error deleting photo:', error)
+          // Error handled silently
         }
       }
 
@@ -305,7 +300,6 @@ const EditPet = () => {
 
       navigate('/dashboard')
     } catch (error) {
-      console.error('Error deleting pet:', error)
       toast({
         title: "Error",
         description: "Failed to delete pet. Please try again.",

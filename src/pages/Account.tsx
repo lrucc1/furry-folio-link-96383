@@ -98,15 +98,15 @@ export default function Account() {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       if (error) throw error;
-      console.log('Subscription data:', data);
+      log.debug('Subscription data:', data);
       setSubscription(data);
       
       // Fetch invoices if user has a subscription
       if (data?.subscribed) {
-        console.log('Fetching invoices...');
+        log.debug('Fetching invoices...');
         await fetchInvoices();
       } else {
-        console.log('No active subscription, skipping invoice fetch');
+        log.debug('No active subscription, skipping invoice fetch');
       }
     } catch (error) {
       console.error('Error checking subscription:', error);
@@ -119,14 +119,14 @@ export default function Account() {
   const fetchInvoices = async () => {
     setLoadingInvoices(true);
     try {
-      console.log('Calling get-invoices function...');
+      log.debug('Calling get-invoices function...');
       const { data, error } = await supabase.functions.invoke('get-invoices');
-      console.log('Invoice response:', { data, error });
+      log.debug('Invoice response:', { data, error });
       if (error) throw error;
       setInvoices(data?.invoices || []);
-      console.log('Invoices set:', data?.invoices);
+      log.debug('Invoices set:', data?.invoices);
     } catch (error) {
-      console.error('Error fetching invoices:', error);
+      log.error('Error fetching invoices:', error);
       toast.error('Failed to load invoice history');
     } finally {
       setLoadingInvoices(false);
@@ -149,7 +149,7 @@ export default function Account() {
       
       setStorageUsedMB(parseFloat(totalMB.toFixed(2)));
     } catch (error) {
-      console.error('Error calculating storage:', error);
+      log.error('Error calculating storage:', error);
     } finally {
       setLoadingStorage(false);
     }
@@ -286,7 +286,7 @@ export default function Account() {
       if (error) throw error;
       toast.success('Profile updated successfully');
     } catch (error) {
-      console.error('Error updating profile:', error);
+      log.error('Error updating profile:', error);
       toast.error('Failed to update profile');
     } finally {
       setSavingProfile(false);

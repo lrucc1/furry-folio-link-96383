@@ -37,7 +37,6 @@ export function PlanProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       if (error) {
-        console.error('[PlanProvider] Error fetching profile:', error);
         setTier('free');
         setSource('system');
         setProfile(null);
@@ -63,7 +62,6 @@ export function PlanProvider({ children }: { children: ReactNode }) {
         setProfile(null);
       }
     } catch (error) {
-      console.error('[PlanProvider] Unexpected error:', error);
       setTier('free');
       setSource('system');
       setProfile(null);
@@ -100,7 +98,6 @@ export function PlanProvider({ children }: { children: ReactNode }) {
           filter: `id=eq.${user.id}`
         },
         (payload) => {
-          console.log('[PlanProvider] Profile updated via realtime:', payload);
           const newProfile = payload.new as ProfilePlanData;
           setProfile(newProfile);
           setTier(computeEffectiveTier(newProfile));

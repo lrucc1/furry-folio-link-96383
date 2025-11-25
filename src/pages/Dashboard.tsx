@@ -69,7 +69,7 @@ const Dashboard = () => {
       
       setHasCheckedInvites(true);
     } catch (error) {
-      console.error('Error checking pending invites:', error);
+      // Error handled silently
     }
   };
 
@@ -112,7 +112,7 @@ const Dashboard = () => {
 
       setPets(allPets)
     } catch (error) {
-      console.error('Error fetching pets:', error)
+      // Error handled silently
     } finally {
       setLoading(false)
     }
@@ -155,7 +155,7 @@ const Dashboard = () => {
         p.id === petId ? { ...p, is_lost: !p.is_lost } : p
       ))
     } catch (error) {
-      console.error('Error toggling lost status:', error)
+      // Error handled silently
     }
   }
 

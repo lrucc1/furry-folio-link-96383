@@ -52,18 +52,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!session?.access_token) return
 
     try {
-      console.log('[AuthContext] Checking subscription for user')
       const { data, error } = await supabase.functions.invoke('check-subscription', {
         method: 'GET',
         headers: { Authorization: `Bearer ${session.access_token}` },
       })
       
       if (error) {
-        console.error('[AuthContext] Error checking subscription:', error)
         return
       }
-
-      console.log('[AuthContext] Subscription response:', data)
 
       if (data) {
         // Check if this is a manual subscription (from database)
@@ -93,8 +89,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           maxPets,
           subscription_end: data.subscription_end,
         }
-
-        console.log('[AuthContext] Setting subscription info:', newSubInfo)
         
         setSubscriptionInfo(newSubInfo)
 
@@ -103,7 +97,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       }
     } catch (error) {
-      console.error('[AuthContext] Subscription check failed:', error)
+      // Error handled silently
     }
   }
 
@@ -152,7 +146,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           filter: `id=eq.${user.id}`
         },
         () => {
-          console.log('[AuthContext] Profile updated, refreshing subscription')
           setTimeout(() => checkSubscription(), 100)
         }
       )

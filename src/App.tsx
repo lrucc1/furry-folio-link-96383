@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { PlanProvider } from "./lib/plan/PlanContext";
-import DevSubscriptionDebug from "./pages/DevSubscriptionDebug";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ProfileSetupDialog } from "./components/ProfileSetupDialog";
 import { DowngradeHelper } from "./components/DowngradeHelper";
@@ -170,7 +169,6 @@ const App = () => (
               <Route path="/admin/email-preview" element={<AdminRoute><EmailPreview /></AdminRoute>} />
               <Route path="/admin/limit-audit" element={<AdminRoute><LimitAudit /></AdminRoute>} />
               <Route path="/admin/deletion-history" element={<AdminRoute><DeletionHistory /></AdminRoute>} />
-              <Route path="/dev/subscription-debug" element={<DevSubscriptionDebug />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
