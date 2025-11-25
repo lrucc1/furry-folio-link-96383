@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ChangeTierModal } from '@/components/admin/ChangeTierModal';
 import { toast } from 'sonner';
-import { Users, Crown, TrendingUp, DollarSign, Search, Edit, Mail, Trash2 } from 'lucide-react';
+import { Users, Crown, TrendingUp, DollarSign, Search, Edit, Mail, Trash2, History } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -73,6 +73,10 @@ export default function AdminDashboard() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [immediateDelete, setImmediateDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [bulkImmediateDelete, setBulkImmediateDelete] = useState(false);
 
   // KPI states
   const [totalUsers, setTotalUsers] = useState(0);
@@ -233,6 +237,74 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleBulkDelete = async () => {
+    try {
+      setBulkDeleting(true);
+      const userIds = Array.from(selectedUsers);
+      let successCount = 0;
+      let failCount = 0;
+
+      // Delete users one by one
+      for (const userId of userIds) {
+        try {
+          const result = await invokeWithAuth<{ success: boolean }>('admin-delete-account', {
+            body: {
+              user_id: userId,
+              immediate: bulkImmediateDelete,
+              reason: bulkImmediateDelete
+                ? 'Admin bulk immediate deletion'
+                : 'Admin bulk soft deletion',
+            },
+          });
+
+          if (result.success) {
+            successCount++;
+          } else {
+            failCount++;
+          }
+        } catch (error) {
+          console.error(`Error deleting user ${userId}:`, error);
+          failCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`Successfully deleted ${successCount} user(s)`);
+      }
+      if (failCount > 0) {
+        toast.error(`Failed to delete ${failCount} user(s)`);
+      }
+
+      fetchUsers();
+      setShowBulkDeleteDialog(false);
+      setBulkImmediateDelete(false);
+      setSelectedUsers(new Set());
+    } catch (error: any) {
+      console.error('Error bulk deleting users:', error);
+      toast.error('Failed to delete users');
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
+  const toggleUserSelection = (userId: string) => {
+    const newSelected = new Set(selectedUsers);
+    if (newSelected.has(userId)) {
+      newSelected.delete(userId);
+    } else {
+      newSelected.add(userId);
+    }
+    setSelectedUsers(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedUsers.size === filteredUsers.length) {
+      setSelectedUsers(new Set());
+    } else {
+      setSelectedUsers(new Set(filteredUsers.map(u => u.user_id)));
+    }
+  };
+
   if (adminLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -250,6 +322,10 @@ export default function AdminDashboard() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         <div className="flex gap-2">
+          <Button onClick={() => navigate('/admin/deletion-history')} variant="outline">
+            <History className="mr-2 h-4 w-4" />
+            Deletion History
+          </Button>
           <Button onClick={() => navigate('/admin/email-preview')} variant="outline">
             <Mail className="mr-2 h-4 w-4" />
             Email Templates
@@ -310,7 +386,18 @@ export default function AdminDashboard() {
       {/* Users Table */}
       <Card>
         <CardHeader>
-          <CardTitle>User Management</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>User Management</CardTitle>
+            {selectedUsers.size > 0 && (
+              <Button
+                variant="destructive"
+                onClick={() => setShowBulkDeleteDialog(true)}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Selected ({selectedUsers.size})
+              </Button>
+            )}
+          </div>
           <div className="relative mt-4">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
@@ -330,6 +417,12 @@ export default function AdminDashboard() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        <Checkbox
+                          checked={selectedUsers.size === filteredUsers.length && filteredUsers.length > 0}
+                          onCheckedChange={toggleSelectAll}
+                        />
+                      </TableHead>
                       <TableHead>User</TableHead>
                       <TableHead>Tier</TableHead>
                       <TableHead>Source</TableHead>
@@ -342,15 +435,20 @@ export default function AdminDashboard() {
                       <TableRow
                         key={user.user_id}
                         className={selectedUser?.user_id === user.user_id ? 'bg-muted' : ''}
-                        onClick={() => handleSelectUser(user)}
                       >
-                        <TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={selectedUsers.has(user.user_id)}
+                            onCheckedChange={() => toggleUserSelection(user.user_id)}
+                          />
+                        </TableCell>
+                        <TableCell onClick={() => handleSelectUser(user)}>
                           <div>
                             <div className="font-medium">{user.display_name || 'No name'}</div>
                             <div className="text-sm text-muted-foreground">{user.email}</div>
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell onClick={() => handleSelectUser(user)}>
                           {(() => {
                             const { label, variant, Icon } = getTierDisplay(user);
                             return (
@@ -367,10 +465,10 @@ export default function AdminDashboard() {
                             );
                           })()}
                         </TableCell>
-                        <TableCell>
+                        <TableCell onClick={() => handleSelectUser(user)}>
                           <Badge variant="outline">{user.plan_source || 'stripe'}</Badge>
                         </TableCell>
-                        <TableCell className="text-sm">
+                        <TableCell className="text-sm" onClick={() => handleSelectUser(user)}>
                           {user.plan_expires_at
                             ? new Date(user.plan_expires_at).toLocaleDateString()
                             : '-'}
@@ -500,6 +598,55 @@ export default function AdminDashboard() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {deleting ? 'Deleting...' : immediateDelete ? 'Delete Immediately' : 'Schedule Deletion'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <AlertDialog open={showBulkDeleteDialog} onOpenChange={(open) => {
+        setShowBulkDeleteDialog(open);
+        if (!open) setBulkImmediateDelete(false);
+      }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Bulk Delete Accounts</AlertDialogTitle>
+            <AlertDialogDescription>
+              <div className="space-y-4">
+                <div className="text-sm">
+                  You are about to delete <strong>{selectedUsers.size}</strong> user account(s).
+                </div>
+
+                <div className="flex items-center space-x-2 p-3 border rounded-lg bg-muted">
+                  <Checkbox
+                    id="bulk-immediate-delete"
+                    checked={bulkImmediateDelete}
+                    onCheckedChange={(checked) => setBulkImmediateDelete(checked === true)}
+                  />
+                  <Label htmlFor="bulk-immediate-delete" className="cursor-pointer">
+                    <div className="font-medium">Immediate deletion (skip 30-day grace period)</div>
+                    <div className="text-xs text-muted-foreground">
+                      Permanently delete all data now. This cannot be undone.
+                    </div>
+                  </Label>
+                </div>
+
+                <div className="text-sm text-destructive font-medium">
+                  {bulkImmediateDelete
+                    ? '⚠️ All selected user data will be permanently deleted immediately.'
+                    : 'Selected users will have 30 days to restore their accounts. Stripe subscriptions will be canceled.'}
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={bulkDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {bulkDeleting ? 'Deleting...' : bulkImmediateDelete ? 'Delete Immediately' : 'Schedule Deletion'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
