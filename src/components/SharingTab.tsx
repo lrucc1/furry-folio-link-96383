@@ -60,7 +60,6 @@ export function SharingTab({ petId }: SharingTabProps) {
   const [loading, setLoading] = useState(true);
   const [petsById, setPetsById] = useState<Record<string, PetInfo>>({});
   useEffect(() => {
-    console.log('[SharingTab] useEffect triggered with:', { user: !!user, petId });
     if (user) {
       fetchSharingData();
     }
@@ -68,21 +67,14 @@ export function SharingTab({ petId }: SharingTabProps) {
 
   const fetchSharingData = async () => {
     if (!user) {
-      console.log('[SharingTab] No user');
       setLoading(false);
       return;
     }
 
-    console.log('[SharingTab] Starting fetch with user:', {
-      id: user.id,
-      email: user.email,
-      petId: petId
-    });
     setLoading(true);
 
     // Fetch ALL invites (both sent by user and sent to user) - including pending and revoked
     try {
-      console.log('[SharingTab] Building query...');
       const query = supabase
         .from('pet_invites')
         .select('*')
@@ -90,41 +82,27 @@ export function SharingTab({ petId }: SharingTabProps) {
         .in('status', ['pending', 'revoked'])
         .order('created_at', { ascending: false });
 
-      console.log('[SharingTab] Executing query...');
       const { data: inviteData, error: inviteError } = await query;
 
-      console.log('[SharingTab] Query completed:', {
-        data: inviteData,
-        error: inviteError,
-        dataLength: inviteData?.length || 0
-      });
-
       if (inviteError) {
-        console.error('[SharingTab] Error fetching invites:', inviteError);
         setInvites([]);
       } else {
-        console.log('[SharingTab] Setting invites:', inviteData?.length || 0, 'items');
         setInvites(inviteData || []);
 
         // Fetch pet names for these invites
         const petIds = Array.from(new Set((inviteData || []).map((i) => i.pet_id)));
-        console.log('[SharingTab] Fetching pet info for IDs:', petIds);
         
         if (petIds.length > 0) {
           const { data: petsData, error: petsError } = await supabase
             .from('pets')
             .select('id, name, species')
             .in('id', petIds);
-            
-          console.log('[SharingTab] Pet info query result:', { data: petsData, error: petsError });
           
           if (petsError) {
-            console.error('[SharingTab] Error fetching pet info:', petsError);
             setPetsById({});
           } else {
             const map: Record<string, PetInfo> = {};
             (petsData || []).forEach((p: any) => { map[p.id] = p as PetInfo; });
-            console.log('[SharingTab] Setting pets map:', map);
             setPetsById(map);
           }
         } else {
@@ -132,7 +110,6 @@ export function SharingTab({ petId }: SharingTabProps) {
         }
       }
     } catch (e) {
-      console.error('[SharingTab] Unexpected error fetching invites:', e);
       setInvites([]);
       setPetsById({});
     }
@@ -145,10 +122,7 @@ export function SharingTab({ petId }: SharingTabProps) {
       .select('*')
       .eq('pet_id', petId);
 
-    console.log('[SharingTab] Members raw for petId', petId, ':', { data: memberData, error: memberError });
-
     if (memberError) {
-      console.error('[SharingTab] Error fetching members:', memberError);
       setMembers([]);
     } else {
       // 2) Fetch profiles for those users in a separate query (no FK required)
@@ -161,14 +135,10 @@ export function SharingTab({ petId }: SharingTabProps) {
           .select('id, email, display_name')
           .in('id', userIds);
 
-        console.log('[SharingTab] Profiles query result:', { data: profilesData, error: profilesError });
-
         if (!profilesError && profilesData) {
           profilesData.forEach((p: any) => {
             profilesById[p.id] = { email: p.email, display_name: p.display_name };
           });
-        } else if (profilesError) {
-          console.error('[SharingTab] Error fetching profiles for members:', profilesError);
         }
       }
 
@@ -182,7 +152,6 @@ export function SharingTab({ petId }: SharingTabProps) {
       setMembers(membersWithProfiles);
     }
   } catch (e) {
-    console.error('[SharingTab] Unexpected error fetching members:', e);
     setMembers([]);
   }
 
@@ -216,7 +185,6 @@ export function SharingTab({ petId }: SharingTabProps) {
       toast.success(au('Invite revoked'));
       fetchSharingData();
     } catch (error) {
-      console.error('Error revoking invite:', error);
       toast.error(au('Failed to revoke invite'));
     }
   };
@@ -232,24 +200,13 @@ export function SharingTab({ petId }: SharingTabProps) {
       toast.success(au('Member removed'));
       fetchSharingData();
     } catch (error) {
-      console.error('Error removing member:', error);
       toast.error(au('Failed to remove member'));
     }
   };
 
   if (loading) {
-    console.log('[SharingTab] Still loading...');
     return <div className="text-center py-8">{au('Loading...')}</div>;
   }
-
-  console.log('[SharingTab] Rendering component with state:', {
-    invites: invites.length,
-    members: members.length,
-    user: !!user,
-    petId,
-    invitesData: invites,
-    membersData: members
-  });
 
   return (
     <div className="space-y-6">
@@ -327,7 +284,6 @@ export function SharingTab({ petId }: SharingTabProps) {
                             toast.success(au('Invite removed'));
                             fetchSharingData();
                           } catch (error) {
-                            console.error('Error removing invite:', error);
                             toast.error(au('Failed to remove invite'));
                           }
                         }}

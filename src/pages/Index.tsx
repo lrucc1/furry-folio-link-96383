@@ -111,7 +111,7 @@ const Index = () => {
         redirectToCheckout(data.url);
       }
     } catch (e) {
-      console.error('Frontpage trial checkout error:', e);
+      // Error handled silently in production
       toast.error('Could not start trial. Please try again.');
     } finally {
       setCheckingOut(false);
@@ -119,11 +119,11 @@ const Index = () => {
   };
 
   const handleViewPetDetails = (pet: any) => {
-    console.log("Viewing details for:", pet.name);
+    // Demo only - no action needed
   };
 
   const handleToggleLost = (petId: string) => {
-    console.log("Toggling lost status for pet:", petId);
+    // Demo only - no action needed
   };
   return (
     <div className="min-h-screen bg-background">

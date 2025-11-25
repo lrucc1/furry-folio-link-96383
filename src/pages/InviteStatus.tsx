@@ -109,7 +109,6 @@ export default function InviteStatus() {
 
       setMemberships(membershipsWithPets);
     } catch (error) {
-      console.error('Error fetching invites:', error);
       toast.error(au('Failed to load invites'));
     } finally {
       setLoading(false);
@@ -135,7 +134,6 @@ export default function InviteStatus() {
         throw new Error('Failed to accept invite');
       }
     } catch (error: any) {
-      console.error('Error accepting invite:', error);
       toast.error(error.message || au('Failed to accept invite'));
     }
   };
@@ -152,7 +150,6 @@ export default function InviteStatus() {
       toast.success(au('Invite declined'));
       fetchInvites(); // Refresh the list
     } catch (error) {
-      console.error('Error declining invite:', error);
       toast.error(au('Failed to decline invite'));
     }
   };
@@ -339,10 +336,7 @@ export default function InviteStatus() {
 
                     {invite.status === 'accepted' && invite.pet_id && (
                       <Button
-                        onClick={() => {
-                          console.log('Navigating to pet:', invite.pet_id);
-                          navigate(`/pets/${invite.pet_id}`);
-                        }}
+                        onClick={() => navigate(`/pets/${invite.pet_id}`)}
                         className="w-full mt-4"
                       >
                         {au('View Pet Profile')}

@@ -8,10 +8,14 @@ import { CapacitorConfig } from '@capacitor/cli';
  * - Changes reflect instantly in app without rebuilding
  * 
  * PRODUCTION MODE (App Store Builds):
- * - Comment out the entire "server" block below
- * - Run: npm run build && npx cap sync ios
- * - Open in Xcode and build for release
- * - App will use bundled assets from dist/ folder
+ * CRITICAL: Follow these exact steps for production builds:
+ * 1. Comment out the entire "server" block below (lines 24-27)
+ * 2. Run: npm run build
+ * 3. Run: npx cap sync ios (or android)
+ * 4. Open in Xcode/Android Studio and build for release
+ * 5. App will use bundled assets from dist/ folder (no remote URL)
+ * 
+ * IMPORTANT: Never submit to App Store with server.url enabled!
  */
 
 const config: CapacitorConfig = {
