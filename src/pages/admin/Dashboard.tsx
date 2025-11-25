@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ChangeTierModal } from '@/components/admin/ChangeTierModal';
 import { toast } from 'sonner';
-import { Users, Crown, TrendingUp, DollarSign, Search, Edit, Mail, Trash2, History } from 'lucide-react';
+import { Users, Crown, TrendingUp, DollarSign, Search, Edit, Mail, Trash2, History, Filter, X } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,6 +33,13 @@ import {
 import { normalizeTier, computeEffectiveTier } from '@/lib/plan/effectivePlan';
 import { PendingDeletions } from '@/components/admin/PendingDeletions';
 import { useNavigate } from 'react-router-dom';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface UserData {
   user_id: string;
@@ -49,6 +56,9 @@ interface UserData {
   plan_updated_at?: string | null;
   next_billing_at?: string | null;
   stripe_current_period_end?: string | null;
+  billing_interval?: string | null;
+  deleted_at?: string | null;
+  deletion_scheduled?: boolean;
   created_at: string;
 }
 
@@ -80,6 +90,12 @@ export default function AdminDashboard() {
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [bulkImmediateDelete, setBulkImmediateDelete] = useState(false);
 
+  // Filter states
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [tierFilter, setTierFilter] = useState<string>('all');
+  const [sourceFilter, setSourceFilter] = useState<string>('all');
+  const [deletionFilter, setDeletionFilter] = useState<string>('active');
+
   // KPI states
   const [totalUsers, setTotalUsers] = useState(0);
   const [proUsers, setProUsers] = useState(0);
@@ -110,12 +126,13 @@ export default function AdminDashboard() {
     const hasActiveSubscription = user.stripe_status === 'active' || user.subscription_status === 'active';
     
     if (hasActiveSubscription) {
-      // Show renewal date for subscription users
+      // Show renewal date with billing cycle for subscription users
       const renewalDate = user.next_billing_at || user.stripe_current_period_end;
       if (renewalDate) {
+        const cycle = user.billing_interval === 'year' ? 'Yearly' : user.billing_interval === 'month' ? 'Monthly' : '';
         return {
           date: new Date(renewalDate).toLocaleDateString(),
-          label: 'Renews',
+          label: cycle ? `Renews • ${cycle}` : 'Renews',
           variant: 'default' as const
         };
       }
@@ -140,20 +157,71 @@ export default function AdminDashboard() {
   }, [isAdmin]);
 
   useEffect(() => {
-    const filtered = users.filter(
-      (user) =>
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.display_name?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Filter users based on search term and filters
+    const filtered = users.filter((user) => {
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch = 
+        user.email.toLowerCase().includes(searchLower) ||
+        user.display_name?.toLowerCase().includes(searchLower);
+
+      // Status filter
+      const matchesStatus = statusFilter === 'all' || (
+        (statusFilter === 'active' && (user.stripe_status === 'active' || user.subscription_status === 'active')) ||
+        (statusFilter === 'trialing' && (user.stripe_status === 'trialing' || user.subscription_status === 'trialing')) ||
+        (statusFilter === 'canceled' && (user.stripe_status === 'canceled' || user.subscription_status === 'canceled')) ||
+        (statusFilter === 'past_due' && (user.stripe_status === 'past_due' || user.subscription_status === 'past_due'))
+      );
+
+      // Tier filter
+      const effectiveTier = computeEffectiveTier({
+        plan_tier: user.plan_tier as any,
+        plan_v2: user.plan_v2 as any,
+        subscription_status: user.subscription_status as any,
+        stripe_status: user.stripe_status,
+        stripe_tier: user.stripe_tier as any,
+        manual_override: user.manual_override,
+        plan_source: user.plan_source as any,
+      });
+      const matchesTier = tierFilter === 'all' || 
+        (tierFilter === 'pro' && effectiveTier === 'pro') ||
+        (tierFilter === 'free' && effectiveTier === 'free');
+
+      // Source filter
+      const matchesSource = sourceFilter === 'all' || user.plan_source === sourceFilter;
+
+      // Deletion filter
+      const matchesDeletion = 
+        (deletionFilter === 'active' && !user.deleted_at && !user.deletion_scheduled) ||
+        (deletionFilter === 'scheduled' && user.deletion_scheduled) ||
+        (deletionFilter === 'deleted' && user.deleted_at);
+
+      return matchesSearch && matchesStatus && matchesTier && matchesSource && matchesDeletion;
+    });
     setFilteredUsers(filtered);
-  }, [searchTerm, users]);
+  }, [searchTerm, users, statusFilter, tierFilter, sourceFilter, deletionFilter]);
+
+  const getActiveFilterCount = () => {
+    let count = 0;
+    if (statusFilter !== 'all') count++;
+    if (tierFilter !== 'all') count++;
+    if (sourceFilter !== 'all') count++;
+    if (deletionFilter !== 'active') count++;
+    return count;
+  };
+
+  const clearFilters = () => {
+    setStatusFilter('all');
+    setTierFilter('all');
+    setSourceFilter('all');
+    setDeletionFilter('active');
+  };
 
   const fetchUsers = async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, display_name, plan_tier, plan_v2, subscription_status, stripe_status, stripe_tier, manual_override, plan_source, plan_expires_at, plan_updated_at, created_at, next_billing_at, stripe_current_period_end')
+        .select('id, email, display_name, plan_tier, plan_v2, subscription_status, stripe_status, stripe_tier, manual_override, plan_source, plan_expires_at, plan_updated_at, created_at, next_billing_at, stripe_current_period_end, billing_interval, deleted_at, deletion_scheduled')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -174,6 +242,9 @@ export default function AdminDashboard() {
           plan_updated_at: profile.plan_updated_at,
           next_billing_at: profile.next_billing_at,
           stripe_current_period_end: profile.stripe_current_period_end,
+          billing_interval: profile.billing_interval,
+          deleted_at: profile.deleted_at,
+          deletion_scheduled: profile.deletion_scheduled,
           created_at: profile.created_at,
         })) || [];
 
@@ -430,14 +501,78 @@ export default function AdminDashboard() {
               </Button>
             )}
           </div>
-          <div className="relative mt-4">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by email or name..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+          <div className="mt-4 space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by email or name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-wrap gap-3">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Subscription Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="trialing">Trialing</SelectItem>
+                  <SelectItem value="canceled">Canceled</SelectItem>
+                  <SelectItem value="past_due">Past Due</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={tierFilter} onValueChange={setTierFilter}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="Tier" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Tiers</SelectItem>
+                  <SelectItem value="pro">Pro Users</SelectItem>
+                  <SelectItem value="free">Free Users</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Source" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sources</SelectItem>
+                  <SelectItem value="stripe">Stripe</SelectItem>
+                  <SelectItem value="manual">Manual</SelectItem>
+                  <SelectItem value="ios">iOS</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={deletionFilter} onValueChange={setDeletionFilter}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Account Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active Accounts</SelectItem>
+                  <SelectItem value="scheduled">Scheduled Deletion</SelectItem>
+                  <SelectItem value="deleted">Deleted</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {getActiveFilterCount() > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="gap-1"
+                >
+                  <X className="h-4 w-4" />
+                  Clear Filters ({getActiveFilterCount()})
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent>

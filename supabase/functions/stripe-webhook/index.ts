@@ -142,6 +142,10 @@ serve(async (req) => {
           plan_v2 = 'TRIAL';
         }
 
+        // Extract billing interval
+        const billingInterval = subscription.items.data[0]?.price?.recurring?.interval || null;
+        logStep("Billing interval extracted", { billingInterval });
+
         // Update profile
         const { error: updateError } = await supabaseClient
           .from('profiles')
@@ -155,6 +159,7 @@ serve(async (req) => {
             subscription_status: subscription.status,
             next_billing_at: new Date(subscription.current_period_end * 1000).toISOString(),
             trial_end_at: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
+            billing_interval: billingInterval,
           })
           .eq('id', userId);
 
@@ -219,6 +224,10 @@ serve(async (req) => {
           plan_v2 = 'TRIAL';
         }
 
+        // Extract billing interval
+        const billingInterval = subscription.items.data[0]?.price?.recurring?.interval || null;
+        logStep("Billing interval extracted", { billingInterval });
+
         // Update profile
         const { error: updateError } = await supabaseClient
           .from('profiles')
@@ -232,6 +241,7 @@ serve(async (req) => {
             subscription_status: subscription.status,
             next_billing_at: new Date(subscription.current_period_end * 1000).toISOString(),
             trial_end_at: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
+            billing_interval: billingInterval,
           })
           .eq('id', userId);
 
