@@ -1,5 +1,8 @@
 project_id = "yyuvupjbvjpbouxuzdye"
 
+[functions.admin-delete-account]
+verify_jwt = true
+
 [functions.restore-account]
 verify_jwt = true
 

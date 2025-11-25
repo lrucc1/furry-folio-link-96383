@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, Clock, Trash2, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Clock, Trash2, RefreshCw, UserX } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +22,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
 interface PendingDeletion {
@@ -37,7 +39,10 @@ export function PendingDeletions() {
   const [deletions, setDeletions] = useState<PendingDeletion[]>([]);
   const [loading, setLoading] = useState(true);
   const [restoring, setRestoring] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const [confirmRestore, setConfirmRestore] = useState<PendingDeletion | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<PendingDeletion | null>(null);
+  const [immediateDelete, setImmediateDelete] = useState(false);
 
   const fetchPendingDeletions = async () => {
     try {
@@ -76,6 +81,36 @@ export function PendingDeletions() {
       toast.error('Failed to restore account');
     } finally {
       setRestoring(null);
+    }
+  };
+
+  const handleDelete = async (deletion: PendingDeletion) => {
+    try {
+      setDeleting(deletion.user_id);
+      
+      const { data, error } = await supabase.functions.invoke('admin-delete-account', {
+        body: {
+          user_id: deletion.user_id,
+          immediate: immediateDelete,
+          reason: immediateDelete ? 'Admin requested immediate deletion' : 'Admin accelerated deletion',
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success(
+        immediateDelete
+          ? `Account deleted immediately for ${deletion.email}`
+          : `Deletion initiated for ${deletion.email}`
+      );
+      setConfirmDelete(null);
+      setImmediateDelete(false);
+      await fetchPendingDeletions();
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      toast.error('Failed to delete account');
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -169,21 +204,38 @@ export function PendingDeletions() {
                     {new Date(deletion.hard_delete_date).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setConfirmRestore(deletion)}
-                      disabled={restoring === deletion.user_id}
-                    >
-                      {restoring === deletion.user_id ? (
-                        <RefreshCw className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <>
-                          <RefreshCw className="h-4 w-4 mr-2" />
-                          Restore
-                        </>
-                      )}
-                    </Button>
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setConfirmRestore(deletion)}
+                        disabled={restoring === deletion.user_id || deleting === deletion.user_id}
+                      >
+                        {restoring === deletion.user_id ? (
+                          <RefreshCw className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <>
+                            <RefreshCw className="h-4 w-4 mr-2" />
+                            Restore
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setConfirmDelete(deletion)}
+                        disabled={restoring === deletion.user_id || deleting === deletion.user_id}
+                      >
+                        {deleting === deletion.user_id ? (
+                          <UserX className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <>
+                            <UserX className="h-4 w-4 mr-2" />
+                            Delete
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -192,6 +244,7 @@ export function PendingDeletions() {
         )}
       </CardContent>
 
+      {/* Restore Confirmation Dialog */}
       <AlertDialog open={!!confirmRestore} onOpenChange={(open) => !open && setConfirmRestore(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -208,6 +261,60 @@ export function PendingDeletions() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={() => confirmRestore && handleRestore(confirmRestore)}>
               Restore Account
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!confirmDelete} onOpenChange={(open) => {
+        if (!open) {
+          setConfirmDelete(null);
+          setImmediateDelete(false);
+        }
+      }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmDelete && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div><strong>User:</strong> {confirmDelete.display_name || 'No name'}</div>
+                    <div><strong>Email:</strong> {confirmDelete.email}</div>
+                    <div><strong>Days remaining:</strong> {confirmDelete.days_remaining}</div>
+                  </div>
+
+                  <div className="flex items-center space-x-2 p-3 border rounded-lg bg-muted">
+                    <Checkbox
+                      id="immediate"
+                      checked={immediateDelete}
+                      onCheckedChange={(checked) => setImmediateDelete(checked === true)}
+                    />
+                    <Label htmlFor="immediate" className="cursor-pointer text-sm">
+                      <div className="font-medium">Skip grace period (immediate deletion)</div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        This will permanently delete all data immediately. This action cannot be undone.
+                      </div>
+                    </Label>
+                  </div>
+
+                  <div className="text-sm text-destructive font-medium">
+                    {immediateDelete
+                      ? '⚠️ Account will be deleted immediately and cannot be recovered.'
+                      : 'Stripe subscriptions will be canceled. Account remains scheduled for deletion.'}
+                  </div>
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => confirmDelete && handleDelete(confirmDelete)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {immediateDelete ? 'Delete Immediately' : 'Cancel Subscription'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
