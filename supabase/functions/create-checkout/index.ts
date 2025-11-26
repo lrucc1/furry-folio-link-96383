@@ -44,9 +44,21 @@ serve(async (req: Request) => {
     const email = profile?.email ?? user.email ?? undefined;
     let customerId = profile?.stripe_customer_id as string | undefined;
 
+    // Verify customer exists in Stripe (defensive check for test/live mode mismatches)
+    if (customerId) {
+      try {
+        await stripe.customers.retrieve(customerId);
+        console.log('Existing customer verified:', customerId);
+      } catch (err: any) {
+        console.log('Customer verification failed:', err.message, '- creating new customer');
+        customerId = undefined; // Force creation of new customer
+      }
+    }
+
     if (!customerId) {
       const customer = await stripe.customers.create({ email, metadata: { supabase_user_id: user.id } });
       customerId = customer.id;
+      console.log('Created new customer:', customerId);
       const { error: uperr } = await svc.from('profiles').update({ stripe_customer_id: customerId }).eq('id', user.id);
       if (uperr) return json(req, { error: `Profile update failed: ${uperr.message}` }, 500);
     }
