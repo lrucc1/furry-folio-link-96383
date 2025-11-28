@@ -1,7 +1,6 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
-import { toast } from 'sonner'
 import { normalizeTier, Tier } from '@/lib/plan/effectivePlan'
 
 interface SubscriptionInfo {
@@ -26,6 +25,14 @@ const SUBSCRIPTION_TIERS = {
   'prod_TGGcY3nKNalPuA': { tier: 'pro' as Tier, maxPets: -1 },
 }
 
+const DEFAULT_SUBSCRIPTION: SubscriptionInfo = {
+  subscribed: false,
+  product_id: null,
+  tier: 'free',
+  maxPets: 1,
+  subscription_end: null,
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const useAuth = () => {
@@ -40,16 +47,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
-  const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo>({
-    subscribed: false,
-    product_id: null,
-    tier: 'free',
-    maxPets: 1,
-    subscription_end: null,
-  })
+  const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo>(DEFAULT_SUBSCRIPTION)
+  
+  // Debounce mechanism to prevent duplicate calls
+  const lastCheckRef = useRef<number>(0)
+  const checkInProgressRef = useRef<boolean>(false)
+  const MIN_CHECK_INTERVAL = 5000 // 5 seconds minimum between checks
 
-  const checkSubscription = async () => {
+  const checkSubscription = useCallback(async () => {
     if (!session?.access_token) return
+    
+    // Prevent duplicate concurrent calls
+    if (checkInProgressRef.current) return
+    
+    // Throttle calls
+    const now = Date.now()
+    if (now - lastCheckRef.current < MIN_CHECK_INTERVAL) return
+    
+    checkInProgressRef.current = true
+    lastCheckRef.current = now
 
     try {
       const { data, error } = await supabase.functions.invoke('check-subscription', {
@@ -57,86 +73,76 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         headers: { Authorization: `Bearer ${session.access_token}` },
       })
       
-      if (error) {
+      if (error || !data) {
+        checkInProgressRef.current = false
         return
       }
 
-      if (data) {
-        // Check if this is a manual subscription (from database)
-        const isManualSub = data.manual === true
-        const tierInfo = data.product_id && SUBSCRIPTION_TIERS[data.product_id as keyof typeof SUBSCRIPTION_TIERS]
-        
-        // For manual subscriptions, use the tier directly
-        let tier: Tier = 'free'
-        let maxPets = 1
-        const apiEffectiveTier = data.effective_tier as string | undefined;
+      const tierInfo = data.product_id && SUBSCRIPTION_TIERS[data.product_id as keyof typeof SUBSCRIPTION_TIERS]
+      
+      let tier: Tier = 'free'
+      let maxPets = 1
+      const apiEffectiveTier = data.effective_tier as string | undefined
 
-        if (apiEffectiveTier) {
-          tier = normalizeTier(apiEffectiveTier)
-          maxPets = tier === 'pro' ? -1 : 1
-        } else if (isManualSub && tierInfo) {
-          tier = tierInfo.tier
-          maxPets = tierInfo.maxPets
-        } else if (data.subscribed && tierInfo) {
-          tier = tierInfo.tier
-          maxPets = tierInfo.maxPets
-        }
-        
-        const newSubInfo: SubscriptionInfo = {
-          subscribed: data.subscribed || false,
-          product_id: data.product_id,
-          tier,
-          maxPets,
-          subscription_end: data.subscription_end,
-        }
-        
-        setSubscriptionInfo(newSubInfo)
-
-        // Do not write legacy plan_tier here. Webhooks manage plan_v2/subscription_status.
-        // Rely on server-side updates to avoid violating legacy CHECK constraints.
-
+      if (apiEffectiveTier) {
+        tier = normalizeTier(apiEffectiveTier)
+        maxPets = tier === 'pro' ? -1 : 1
+      } else if (data.subscribed && tierInfo) {
+        tier = tierInfo.tier
+        maxPets = tierInfo.maxPets
       }
-    } catch (error) {
+      
+      setSubscriptionInfo({
+        subscribed: data.subscribed || false,
+        product_id: data.product_id,
+        tier,
+        maxPets,
+        subscription_end: data.subscription_end,
+      })
+    } catch {
       // Error handled silently
+    } finally {
+      checkInProgressRef.current = false
     }
-  }
+  }, [session?.access_token])
 
+  // Initial auth setup - runs once
   useEffect(() => {
-    // Listen for auth changes FIRST to avoid missing events
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
+    let mounted = true
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      if (!mounted) return
+      setSession(newSession)
+      setUser(newSession?.user ?? null)
       setLoading(false)
-      
-      // Check subscription after auth state changes
-      if (session?.user) {
-        setTimeout(() => checkSubscription(), 0)
-      }
     })
 
-    // Then get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      if (!mounted) return
+      setSession(initialSession)
+      setUser(initialSession?.user ?? null)
       setLoading(false)
-      
-      // Check subscription for initial session
-      if (session?.user) {
-        setTimeout(() => checkSubscription(), 0)
-      }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
   }, [])
 
-  // Auto-refresh subscription when profiles table changes
+  // Check subscription when session changes
+  useEffect(() => {
+    if (session?.user) {
+      checkSubscription()
+    }
+  }, [session?.user?.id, checkSubscription])
+
+  // Single realtime subscription for profile changes
   useEffect(() => {
     if (!user) return
 
     const channel = supabase
-      .channel('profile-changes')
+      .channel(`auth-profile-${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -146,7 +152,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           filter: `id=eq.${user.id}`
         },
         () => {
-          setTimeout(() => checkSubscription(), 100)
+          // Reset throttle on realtime update to allow immediate check
+          lastCheckRef.current = 0
+          checkSubscription()
         }
       )
       .subscribe()
@@ -154,53 +162,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [user])
+  }, [user?.id, checkSubscription])
 
-// Periodic subscription check every minute
-useEffect(() => {
-  if (!user) return
+  // Single visibility handler - only check on tab becoming visible after being hidden
+  useEffect(() => {
+    if (!user) return
 
-  const interval = setInterval(() => {
-    checkSubscription()
-  }, 60000)
-
-  return () => clearInterval(interval)
-}, [user, session])
-
-// Refresh on window focus or when tab becomes visible for instant updates
-useEffect(() => {
-  if (!user) return
-
-  const onFocus = () => checkSubscription()
-  const onVisibilityChange = () => {
-    if (document.visibilityState === 'visible') {
-      checkSubscription()
+    let wasHidden = false
+    
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        wasHidden = true
+      } else if (document.visibilityState === 'visible' && wasHidden) {
+        wasHidden = false
+        checkSubscription()
+      }
     }
-  }
 
-  window.addEventListener('focus', onFocus)
-  document.addEventListener('visibilitychange', onVisibilityChange)
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange)
+  }, [user?.id, checkSubscription])
 
-  return () => {
-    window.removeEventListener('focus', onFocus)
-    document.removeEventListener('visibilitychange', onVisibilityChange)
-  }
-}, [user, session])
-
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     await supabase.auth.signOut()
-    setSubscriptionInfo({
-      subscribed: false,
-      product_id: null,
-      tier: 'free',
-      maxPets: 1,
-      subscription_end: null,
-    })
-  }
+    setSubscriptionInfo(DEFAULT_SUBSCRIPTION)
+  }, [])
 
-  const refreshSubscription = async () => {
+  const refreshSubscription = useCallback(async () => {
+    lastCheckRef.current = 0 // Reset throttle for manual refresh
     await checkSubscription()
-  }
+  }, [checkSubscription])
 
   const value = {
     user,

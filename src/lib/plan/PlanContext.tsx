@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { computeEffectiveTier, Tier, PlanSource, ProfilePlanData } from './effectivePlan';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,13 +19,22 @@ export function PlanProvider({ children }: { children: ReactNode }) {
   const [source, setSource] = useState<PlanSource>('system');
   const [profile, setProfile] = useState<ProfilePlanData | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Cache to prevent redundant fetches
+  const cacheRef = useRef<{ data: ProfilePlanData | null; timestamp: number } | null>(null);
+  const CACHE_DURATION = 10000; // 10 seconds
 
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async (force = false) => {
     if (!user?.id) {
       setTier('free');
       setSource('system');
       setProfile(null);
       setLoading(false);
+      return;
+    }
+
+    // Check cache
+    if (!force && cacheRef.current && Date.now() - cacheRef.current.timestamp < CACHE_DURATION) {
       return;
     }
 
@@ -45,34 +54,34 @@ export function PlanProvider({ children }: { children: ReactNode }) {
           plan_tier: data.plan_tier as Tier | undefined,
           manual_override: data.manual_override,
           plan_source: data.plan_source as PlanSource | undefined,
-          // v2 fields
           plan_v2: (data as any).plan_v2,
           subscription_status: (data as any).subscription_status,
-          // legacy stripe-derived fields
           stripe_tier: (data as any).stripe_tier,
           stripe_status: (data as any).stripe_status,
         };
+        
+        cacheRef.current = { data: profileData, timestamp: Date.now() };
         setProfile(profileData);
         setTier(computeEffectiveTier(profileData));
         setSource((data.plan_source as PlanSource) || 'stripe');
       } else {
-        // No profile found - set defaults
         setTier('free');
         setSource('system');
         setProfile(null);
       }
-    } catch (error) {
+    } catch {
       setTier('free');
       setSource('system');
       setProfile(null);
     }
     setLoading(false);
-  };
+  }, [user?.id]);
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     setLoading(true);
-    await fetchProfile();
-  };
+    cacheRef.current = null; // Clear cache for manual refresh
+    await fetchProfile(true);
+  }, [fetchProfile]);
 
   useEffect(() => {
     if (!user?.id) {
@@ -80,15 +89,15 @@ export function PlanProvider({ children }: { children: ReactNode }) {
       setSource('system');
       setProfile(null);
       setLoading(false);
+      cacheRef.current = null;
       return;
     }
 
-    // Initial fetch
     fetchProfile();
 
-    // Subscribe to realtime changes
+    // Single realtime subscription
     const channel = supabase
-      .channel(`profile-plan-${user.id}`)
+      .channel(`plan-profile-${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -98,27 +107,22 @@ export function PlanProvider({ children }: { children: ReactNode }) {
           filter: `id=eq.${user.id}`
         },
         (payload) => {
+          // Update directly from payload to avoid extra fetch
           const newProfile = payload.new as ProfilePlanData;
-          setProfile(newProfile);
-          setTier(computeEffectiveTier(newProfile));
-          setSource((newProfile.plan_source as PlanSource) || 'stripe');
+          if (newProfile) {
+            cacheRef.current = { data: newProfile, timestamp: Date.now() };
+            setProfile(newProfile);
+            setTier(computeEffectiveTier(newProfile));
+            setSource((newProfile.plan_source as PlanSource) || 'stripe');
+          }
         }
       )
       .subscribe();
 
-    // Refresh on visibility change
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        fetchProfile();
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
     return () => {
       supabase.removeChannel(channel);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [user?.id]);
+  }, [user?.id, fetchProfile]);
 
   return (
     <PlanContext.Provider value={{ tier, source, profile, loading, refresh }}>

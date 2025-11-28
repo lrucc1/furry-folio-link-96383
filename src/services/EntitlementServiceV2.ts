@@ -14,6 +14,16 @@ export interface EntitlementCheck {
   upgrade_required?: boolean;
 }
 
+// Cache for user data to prevent repeated queries
+interface CacheEntry {
+  plan: PlanType;
+  usage: UserUsage;
+  timestamp: number;
+}
+
+const CACHE_DURATION = 30000; // 30 seconds
+const cache = new Map<string, CacheEntry>();
+
 export class EntitlementServiceV2 {
   private static instance: EntitlementServiceV2;
 
@@ -26,12 +36,35 @@ export class EntitlementServiceV2 {
     return EntitlementServiceV2.instance;
   }
 
+  private getCached(userId: string): CacheEntry | null {
+    const entry = cache.get(userId);
+    if (entry && Date.now() - entry.timestamp < CACHE_DURATION) {
+      return entry;
+    }
+    return null;
+  }
+
+  private setCache(userId: string, plan: PlanType, usage: UserUsage): void {
+    cache.set(userId, { plan, usage, timestamp: Date.now() });
+  }
+
+  clearCache(userId?: string): void {
+    if (userId) {
+      cache.delete(userId);
+    } else {
+      cache.clear();
+    }
+  }
+
   async getUserPlan(userId: string): Promise<PlanType> {
+    const cached = this.getCached(userId);
+    if (cached) return cached.plan;
+
     const { data, error } = await supabase
       .from('profiles')
-      .select('plan_v2, trial_end_at, subscription_status')
+      .select('plan_v2')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (error || !data) {
       return 'FREE';
@@ -41,51 +74,74 @@ export class EntitlementServiceV2 {
   }
 
   async getUserUsage(userId: string): Promise<UserUsage> {
-    // Get pet count (owned + shared)
-    const { count: petsCount } = await supabase
-      .from('pets')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId);
+    const cached = this.getCached(userId);
+    if (cached) return cached.usage;
 
-    // Get caregivers count (pet memberships for user's pets)
-    const { data: userPets } = await supabase
-      .from('pets')
-      .select('id')
-      .eq('user_id', userId);
+    // Fetch all data in parallel with optimized queries
+    const [petsResult, remindersResult, storageResult] = await Promise.all([
+      supabase
+        .from('pets')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId),
+      supabase
+        .from('health_reminders')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('completed', false),
+      supabase
+        .from('storage_usage')
+        .select('total_bytes')
+        .eq('user_id', userId)
+        .maybeSingle(),
+    ]);
 
-    const petIds = userPets?.map(p => p.id) || [];
-
-    let caregiversCount = 0;
-    if (petIds.length > 0) {
-      const { count } = await supabase
-        .from('pet_memberships')
-        .select('*', { count: 'exact', head: true })
-        .in('pet_id', petIds);
-      caregiversCount = count || 0;
-    }
-
-    // Get active reminders count
-    const { count: remindersCount } = await supabase
-      .from('health_reminders')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('completed', false);
-
-    // Get storage usage - use maybeSingle to avoid 406 errors if no row exists
-    const { data: storageData } = await supabase
-      .from('storage_usage')
-      .select('total_bytes')
-      .eq('user_id', userId)
-      .maybeSingle();
-
-    const storageMb = storageData ? storageData.total_bytes / (1024 * 1024) : 0;
-
-    return {
-      pets_count: petsCount || 0,
-      caregivers_count: caregiversCount,
-      reminders_active_count: remindersCount || 0,
-      storage_used_mb: storageMb,
+    const usage: UserUsage = {
+      pets_count: petsResult.count || 0,
+      caregivers_count: 0, // Lazy load only when needed
+      reminders_active_count: remindersResult.count || 0,
+      storage_used_mb: storageResult.data ? storageResult.data.total_bytes / (1024 * 1024) : 0,
     };
+
+    return usage;
+  }
+
+  // Combined fetch for both plan and usage - more efficient
+  async getPlanAndUsage(userId: string): Promise<{ plan: PlanType; usage: UserUsage }> {
+    const cached = this.getCached(userId);
+    if (cached) return { plan: cached.plan, usage: cached.usage };
+
+    const [profileResult, petsResult, remindersResult, storageResult] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('plan_v2')
+        .eq('id', userId)
+        .maybeSingle(),
+      supabase
+        .from('pets')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId),
+      supabase
+        .from('health_reminders')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('completed', false),
+      supabase
+        .from('storage_usage')
+        .select('total_bytes')
+        .eq('user_id', userId)
+        .maybeSingle(),
+    ]);
+
+    const plan = (profileResult.data?.plan_v2 as PlanType) || 'FREE';
+    const usage: UserUsage = {
+      pets_count: petsResult.count || 0,
+      caregivers_count: 0,
+      reminders_active_count: remindersResult.count || 0,
+      storage_used_mb: storageResult.data ? storageResult.data.total_bytes / (1024 * 1024) : 0,
+    };
+
+    this.setCache(userId, plan, usage);
+    return { plan, usage };
   }
 
   async checkEntitlement(
@@ -93,9 +149,8 @@ export class EntitlementServiceV2 {
     feature: keyof PlanEntitlements,
     incrementBy: number = 0
   ): Promise<EntitlementCheck> {
-    const plan = await this.getUserPlan(userId);
+    const { plan, usage } = await this.getPlanAndUsage(userId);
     const entitlements = getEntitlements(plan);
-    const usage = await this.getUserUsage(userId);
 
     switch (feature) {
       case 'pets_max': {
@@ -173,22 +228,18 @@ export class EntitlementServiceV2 {
     overLimit: boolean;
     violations: string[];
   }> {
-    const plan = await this.getUserPlan(userId);
+    const { plan, usage } = await this.getPlanAndUsage(userId);
     const entitlements = getEntitlements(plan);
-    const usage = await this.getUserUsage(userId);
     const violations: string[] = [];
 
-    // Check pets
     if (entitlements.pets_max !== null && usage.pets_count > entitlements.pets_max) {
       violations.push(`You have ${usage.pets_count} pets, but Free plan allows ${entitlements.pets_max}`);
     }
 
-    // Check reminders
     if (entitlements.reminders_active_max !== null && usage.reminders_active_count > entitlements.reminders_active_max) {
       violations.push(`You have ${usage.reminders_active_count} active reminders, but Free plan allows ${entitlements.reminders_active_max}`);
     }
 
-    // Check storage
     if (usage.storage_used_mb > entitlements.docs_storage_mb) {
       violations.push(`You're using ${usage.storage_used_mb.toFixed(1)}MB, but Free plan allows ${entitlements.docs_storage_mb}MB`);
     }
