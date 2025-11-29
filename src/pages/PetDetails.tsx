@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
-import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download, Upload, Scan, ExternalLink, Bell, CheckCircle, Trash2, Plus, Eye, Edit2, Syringe, AlertCircle, Home } from 'lucide-react'
+import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download, Upload, Scan, ExternalLink, Bell, CheckCircle, Trash2, Plus, Eye, Edit2, Syringe, AlertCircle, Home, ChevronLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from '@/hooks/use-toast'
 import { PetDocuments } from '@/components/PetDocuments'
@@ -20,6 +20,8 @@ import { HealthReminderModal } from '@/components/HealthReminderModal'
 import { EditHealthReminderModal } from '@/components/EditHealthReminderModal'
 import { InstagramShareCard } from '@/components/InstagramShareCard'
 import { au } from '@/lib/auEnglish'
+import { IOSPageLayout } from '@/components/ios/IOSPageLayout'
+import { useIsNativeApp } from '@/hooks/useIsNativeApp'
 
 interface Pet {
   id: string
@@ -67,6 +69,7 @@ const PetDetails = () => {
   const { id } = useParams<{ id: string }>()
   const { user } = useAuth()
   const navigate = useNavigate()
+  const isNative = useIsNativeApp()
   const [pet, setPet] = useState<Pet | null>(null)
   const [vaccinations, setVaccinations] = useState<Vaccination[]>([])
   const [healthReminders, setHealthReminders] = useState<HealthReminder[]>([])
@@ -268,6 +271,18 @@ const PetDetails = () => {
   }
 
   if (!pet) {
+    if (isNative) {
+      return (
+        <IOSPageLayout title="Pet Details">
+          <div className="container mx-auto px-4 py-8 text-center">
+            <h1 className="text-2xl font-bold text-foreground mb-4">Pet not found</h1>
+            <Button asChild>
+              <Link to="/dashboard">Back to Dashboard</Link>
+            </Button>
+          </div>
+        </IOSPageLayout>
+      )
+    }
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -283,11 +298,33 @@ const PetDetails = () => {
 
   const publicUrl = `${window.location.origin}/found/${pet.public_id}`
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+  // iOS Header with back and edit buttons
+  const iosHeaderRight = (
+    <Button variant="ghost" size="sm" asChild className="h-9 px-3">
+      <Link to={`/pets/${pet.id}/edit`}>
+        <Edit className="w-4 h-4" />
+      </Link>
+    </Button>
+  )
+
+  // Pet content shared between iOS and Web
+  const petContent = (
+    <>
+      {/* iOS: Compact back button */}
+      {isNative && (
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => navigate('/dashboard')}
+          className="mb-4 -ml-2 h-10 touch-manipulation"
+        >
+          <ChevronLeft className="w-5 h-5 mr-1" />
+          Dashboard
+        </Button>
+      )}
+
+      {/* Web: Full navigation bar */}
+      {!isNative && (
         <div className="flex items-center justify-between mb-8">
           <Button variant="ghost" size="sm" asChild>
             <Link to="/dashboard">
@@ -303,6 +340,7 @@ const PetDetails = () => {
             </Link>
           </Button>
         </div>
+      )}
 
         {/* Pet Header */}
         <Card className="mb-8">
@@ -794,8 +832,12 @@ const PetDetails = () => {
             <SharingTab petId={id!} />
           </TabsContent>
         </Tabs>
-      </main>
-      
+    </>
+  )
+
+  // Modals shared between iOS and Web
+  const modals = (
+    <>
       <VaccinationModal
         open={vaccinationModalOpen}
         onClose={() => setVaccinationModalOpen(false)}
@@ -835,7 +877,29 @@ const PetDetails = () => {
         petId={id!}
         onSuccess={fetchHealthReminders}
       />
-      
+    </>
+  )
+
+  // iOS Layout
+  if (isNative) {
+    return (
+      <IOSPageLayout title={pet.name} headerRight={iosHeaderRight}>
+        <div className="px-4 py-4">
+          {petContent}
+        </div>
+        {modals}
+      </IOSPageLayout>
+    )
+  }
+
+  // Web Layout
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="container mx-auto px-4 py-8 max-w-4xl">
+        {petContent}
+      </main>
+      {modals}
       <Footer />
     </div>
   )

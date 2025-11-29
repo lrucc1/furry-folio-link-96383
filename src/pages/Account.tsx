@@ -27,6 +27,8 @@ import { DeleteAccount } from '@/pages/settings/DeleteAccount';
 import { getEnvironmentConfig } from '@/config/environment';
 import { CountrySelector } from '@/components/CountrySelector';
 import { TimezoneSelector } from '@/components/TimezoneSelector';
+import { IOSPageLayout } from '@/components/ios/IOSPageLayout';
+import { useIsNativeApp } from '@/hooks/useIsNativeApp';
 
 const ENV_CONFIG = getEnvironmentConfig();
 
@@ -61,6 +63,7 @@ export default function Account() {
   const { user, signOut } = useAuth();
   const { tier, loading: planLoading } = usePlan();
   const navigate = useNavigate();
+  const isNative = useIsNativeApp();
   const [loading, setLoading] = useState(true);
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -309,29 +312,22 @@ export default function Account() {
 
   const maxPets = TierFeatures[tier].maxPets as number;
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8">{au('Account Settings')}</h1>
-
-          <Tabs defaultValue="subscription" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="subscription">
-                <Crown className="w-4 h-4 mr-2" />
-                {au('Subscription')}
-              </TabsTrigger>
-              <TabsTrigger value="profile">
-                <Settings className="w-4 h-4 mr-2" />
-                {au('Profile')}
-              </TabsTrigger>
-              <TabsTrigger value="privacy">
-                <Shield className="w-4 h-4 mr-2" />
-                {au('Privacy')}
-              </TabsTrigger>
-            </TabsList>
+  const accountContent = (
+    <Tabs defaultValue="subscription" className="w-full">
+      <TabsList className={`grid w-full grid-cols-3 ${isNative ? 'h-12' : ''}`}>
+        <TabsTrigger value="subscription" className={isNative ? 'h-10 text-sm' : ''}>
+          <Crown className="w-4 h-4 mr-2" />
+          {au('Subscription')}
+        </TabsTrigger>
+        <TabsTrigger value="profile" className={isNative ? 'h-10 text-sm' : ''}>
+          <Settings className="w-4 h-4 mr-2" />
+          {au('Profile')}
+        </TabsTrigger>
+        <TabsTrigger value="privacy" className={isNative ? 'h-10 text-sm' : ''}>
+          <Shield className="w-4 h-4 mr-2" />
+          {au('Privacy')}
+        </TabsTrigger>
+      </TabsList>
 
             <TabsContent value="subscription" className="space-y-6">
               {/* Current Plan Card */}
@@ -649,14 +645,45 @@ export default function Account() {
 
             </TabsContent>
 
-            <TabsContent value="privacy" className="space-y-6">
-              <ExportData />
-              <DeleteAccount />
-            </TabsContent>
-          </Tabs>
+      <TabsContent value="privacy" className="space-y-6">
+        <ExportData />
+        <DeleteAccount />
+      </TabsContent>
+    </Tabs>
+  );
+
+  // iOS Layout
+  if (isNative) {
+    return (
+      <IOSPageLayout title="Account">
+        <div className="px-4 py-6 max-w-4xl mx-auto">
+          {accountContent}
+        </div>
+        <ManageSubscriptionModal
+          open={manageModalOpen}
+          onOpenChange={setManageModalOpen}
+          currentTier={tier}
+          currentPetCount={petCount}
+          currentStorageMB={storageUsedMB}
+          onPlanChange={() => {
+            checkSubscription();
+            setManageModalOpen(false);
+          }}
+        />
+      </IOSPageLayout>
+    );
+  }
+
+  // Web Layout
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold mb-8">{au('Account Settings')}</h1>
+          {accountContent}
         </div>
       </main>
-
       <ManageSubscriptionModal
         open={manageModalOpen}
         onOpenChange={setManageModalOpen}
