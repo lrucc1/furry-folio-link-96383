@@ -1,7 +1,11 @@
 // deno-lint-ignore-file no-explicit-any
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { buildCors, json } from '../_shared/cors.ts';
-import { makeServiceClient } from '../_shared/clients.ts';
+
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: buildCors(req) });
@@ -10,20 +14,23 @@ serve(async (req: Request) => {
     const authHeader = req.headers.get('authorization') ?? req.headers.get('Authorization') ?? '';
     if (!authHeader) return json(req, { error: 'Auth session missing!' }, 401);
 
-    // Extract JWT token from Bearer header
-    const token = authHeader.replace('Bearer ', '');
-    if (!token) return json(req, { error: 'Auth session missing!' }, 401);
+    // Create client with user's auth header to validate their JWT
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+    });
 
-    // Use service client to validate the JWT and get user
-    const svc = makeServiceClient();
-    const { data: { user }, error: userError } = await svc.auth.getUser(token);
+    // Get the user from their JWT token
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
     
     if (userError || !user) {
-      console.error('Auth validation error:', userError?.message);
+      console.error('Auth validation error:', userError?.message ?? 'No user found');
       return json(req, { error: 'Auth session missing!' }, 401);
     }
 
-    const { data: profile, error } = await svc
+    // Use service client for database queries (bypasses RLS)
+    const serviceClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    const { data: profile, error } = await serviceClient
       .from('profiles')
       .select('plan_v2, subscription_status, trial_end_at, stripe_subscription_id')
       .eq('id', user.id)
