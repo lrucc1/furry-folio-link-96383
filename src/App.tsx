@@ -17,6 +17,7 @@ import Dashboard from "./pages/Dashboard";
 import AddPet from "./pages/AddPet";
 import EditPet from "./pages/EditPet";
 import PetDetails from "./pages/PetDetails";
+import PetWeightTracker from "./pages/PetWeightTracker";
 import Reminders from "./pages/Reminders";
 import FoundPet from "./pages/FoundPet";
 import PublicPetProfile from "./pages/PublicPetProfile";
@@ -128,6 +129,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <PetDetails />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/pets/:id/weight" 
+                element={
+                  <ProtectedRoute>
+                    <PetWeightTracker />
                   </ProtectedRoute>
                 } 
               />

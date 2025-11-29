@@ -322,22 +322,10 @@ const EditPet = () => {
     )
   }
 
-  // Web Layout (iOS support will be added in next iteration)
-  return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
-      <main className="container mx-auto px-4 py-8 max-w-2xl">
-        <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" size="sm" asChild>
-            <Link to={`/pets/${id}`}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Pet Details
-            </Link>
-          </Button>
-        </div>
-
-        <Card>
+  // Shared form content
+  const FormContent = () => (
+    <>
+      <Card>
           <CardHeader>
             <CardTitle className="text-2xl">Edit {formData.name}</CardTitle>
             <p className="text-muted-foreground">
@@ -668,75 +656,114 @@ const EditPet = () => {
           </CardContent>
         </Card>
 
-        {/* Delete Pet Section - Only visible to owners */}
-        {canDeletePets(role) && (
-          <div className="mt-8 pt-6 border-t">
-            <div className="flex items-start justify-between">
-              <div>
-                <h3 className="text-sm font-medium">Delete Pet Profile</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Remove this pet and all associated records from your account
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setDeleteDialogOpen(true)}
-                disabled={deleting}
-                className="text-destructive hover:text-destructive"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete
-              </Button>
+      {/* Delete Pet Section - Only visible to owners */}
+      {canDeletePets(role) && (
+        <div className="mt-8 pt-6 border-t">
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="text-sm font-medium">Delete Pet Profile</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Remove this pet and all associated records from your account
+              </p>
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setDeleteDialogOpen(true)}
+              disabled={deleting}
+              className="text-destructive hover:text-destructive"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete
+            </Button>
           </div>
-        )}
+        </div>
+      )}
 
-        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will permanently delete <strong>{formData.name}</strong> and all associated data including:
-                <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li>Health records and vaccinations</li>
-                  <li>Health reminders</li>
-                  <li>Documents and photos</li>
-                  <li>Family member access</li>
-                </ul>
-                <p className="mt-3 font-semibold text-destructive">This action cannot be undone.</p>
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDelete}
-                disabled={deleting}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                {deleting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                    Deleting...
-                  </>
-                ) : (
-                  'Delete Forever'
-                )}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete <strong>{formData.name}</strong> and all associated data including:
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>Health records and vaccinations</li>
+                <li>Health reminders</li>
+                <li>Documents and photos</li>
+                <li>Family member access</li>
+              </ul>
+              <p className="mt-3 font-semibold text-destructive">This action cannot be undone.</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete Forever'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-        <ImageCropDialog
-          open={cropDialogOpen}
-          onClose={() => {
-            setCropDialogOpen(false)
-            setImageToCrop(null)
-          }}
-          image={imageToCrop}
-          onCropComplete={handleCroppedImage}
-          aspectRatio={1}
-        />
+      <ImageCropDialog
+        open={cropDialogOpen}
+        onClose={() => {
+          setCropDialogOpen(false)
+          setImageToCrop(null)
+        }}
+        image={imageToCrop}
+        onCropComplete={handleCroppedImage}
+        aspectRatio={1}
+      />
+    </>
+  )
+
+  // iOS Layout
+  if (isNative) {
+    return (
+      <IOSPageLayout title={`Edit ${formData.name}`} showTabBar={false}>
+        <div className="px-4 py-6 max-w-2xl mx-auto pb-24">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => navigate(`/pets/${id}`)}
+            className="mb-4 -ml-2 h-10 touch-manipulation"
+          >
+            <ArrowLeft className="w-5 h-5 mr-1" />
+            Back
+          </Button>
+          <FormContent />
+        </div>
+      </IOSPageLayout>
+    )
+  }
+
+  // Web Layout
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      
+      <main className="container mx-auto px-4 py-8 max-w-2xl">
+        <div className="flex items-center gap-4 mb-8">
+          <Button variant="ghost" size="sm" asChild>
+            <Link to={`/pets/${id}`}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Pet Details
+            </Link>
+          </Button>
+        </div>
+
+        <FormContent />
       </main>
     </div>
   )
