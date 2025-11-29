@@ -56,56 +56,66 @@ export default function InviteStatus() {
     if (!user?.email) return;
 
     try {
+      // Fetch invites with limit
       const { data, error } = await supabase
         .from('pet_invites')
         .select('*')
         .eq('email', user.email.toLowerCase())
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50);
 
       if (error) throw error;
 
-      // Fetch pet details for each invite
-      const invitesWithPets = await Promise.all(
-        (data || []).map(async (invite) => {
-          const { data: pet } = await supabase
-            .from('pets')
-            .select('name, species, photo_url')
-            .eq('id', invite.pet_id)
-            .single();
+      // Batch fetch pet details (fix N+1)
+      const invitePetIds = [...new Set((data || []).map(i => i.pet_id))];
+      const petsById: Record<string, { name: string; species: string; photo_url?: string }> = {};
 
-          return {
-            ...invite,
-            pet: pet || undefined
-          };
-        })
-      );
+      if (invitePetIds.length > 0) {
+        const { data: petsData } = await supabase
+          .from('pets')
+          .select('id, name, species, photo_url')
+          .in('id', invitePetIds);
+
+        (petsData || []).forEach((pet: any) => {
+          petsById[pet.id] = { name: pet.name, species: pet.species, photo_url: pet.photo_url };
+        });
+      }
+
+      const invitesWithPets = (data || []).map(invite => ({
+        ...invite,
+        pet: petsById[invite.pet_id] || undefined
+      }));
 
       setInvites(invitesWithPets);
 
-      // Fetch active memberships for this user
+      // Fetch active memberships for this user with limit
       const { data: membershipsData, error: membershipError } = await supabase
         .from('pet_memberships')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50);
 
       if (membershipError) throw membershipError;
 
-      // Fetch pet details for each membership
-      const membershipsWithPets = await Promise.all(
-        (membershipsData || []).map(async (membership) => {
-          const { data: pet } = await supabase
-            .from('pets')
-            .select('name, species, photo_url')
-            .eq('id', membership.pet_id)
-            .single();
+      // Batch fetch pet details for memberships (fix N+1)
+      const membershipPetIds = [...new Set((membershipsData || []).map(m => m.pet_id))];
 
-          return {
-            ...membership,
-            pet: pet || undefined
-          };
-        })
-      );
+      if (membershipPetIds.length > 0) {
+        const { data: memberPetsData } = await supabase
+          .from('pets')
+          .select('id, name, species, photo_url')
+          .in('id', membershipPetIds);
+
+        (memberPetsData || []).forEach((pet: any) => {
+          petsById[pet.id] = { name: pet.name, species: pet.species, photo_url: pet.photo_url };
+        });
+      }
+
+      const membershipsWithPets = (membershipsData || []).map(membership => ({
+        ...membership,
+        pet: petsById[membership.pet_id] || undefined
+      }));
 
       setMemberships(membershipsWithPets);
     } catch (error) {
