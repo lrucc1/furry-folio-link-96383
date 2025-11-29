@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { buildCors, json } from '../_shared/cors.ts';
-import { makeAnonClient, makeServiceClient } from '../_shared/clients.ts';
+import { makeServiceClient } from '../_shared/clients.ts';
 
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: buildCors(req) });
@@ -10,16 +10,18 @@ serve(async (req: Request) => {
     const authHeader = req.headers.get('authorization') ?? req.headers.get('Authorization') ?? '';
     if (!authHeader) return json(req, { error: 'Auth session missing!' }, 401);
 
-    // Use anon client with the auth header to get the authenticated user
-    const anonClient = makeAnonClient(authHeader);
-    const { data: { user }, error: uerr } = await anonClient.auth.getUser();
-    if (uerr || !user) {
-      console.error('Auth error:', uerr);
+    // Extract JWT token from Bearer header
+    const token = authHeader.replace('Bearer ', '');
+    if (!token) return json(req, { error: 'Auth session missing!' }, 401);
+
+    // Use service client to validate the JWT and get user
+    const svc = makeServiceClient();
+    const { data: { user }, error: userError } = await svc.auth.getUser(token);
+    
+    if (userError || !user) {
+      console.error('Auth validation error:', userError?.message);
       return json(req, { error: 'Auth session missing!' }, 401);
     }
-
-    // Use service client for database operations
-    const svc = makeServiceClient();
 
     const { data: profile, error } = await svc
       .from('profiles')
