@@ -11,9 +11,11 @@ import { Button } from '@/components/ui/button';
 import { 
   User, Bell, Shield, CreditCard, Globe, Moon, 
   LogOut, ChevronRight, HelpCircle, FileText, 
-  Trash2, Download, Crown, Mail, ChevronLeft
+  Trash2, Download, Crown, Mail, ChevronLeft, Smartphone
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { useIsNativeApp } from '@/hooks/useIsNativeApp';
 
 interface SettingsRowProps {
   icon: React.ReactNode;
@@ -83,6 +85,8 @@ export default function IOSSettings() {
   const { user, signOut } = useAuth();
   const { tier } = usePlan();
   const navigate = useNavigate();
+  const isNative = useIsNativeApp();
+  const { isSupported: pushSupported, isRegistered: pushRegistered, permissionStatus, register: registerPush, isLoading: pushLoading } = usePushNotifications();
   
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -132,6 +136,20 @@ export default function IOSSettings() {
       toast.success(value ? 'Reminder notifications enabled' : 'Reminder notifications disabled');
     }
     // TODO: Persist to database when notification preferences table is added
+  };
+
+  const handleEnablePushNotifications = async () => {
+    if (!pushSupported) {
+      toast.error('Push notifications are only available in the native app');
+      return;
+    }
+    
+    const success = await registerPush();
+    if (success) {
+      toast.success('Push notifications enabled');
+    } else {
+      toast.error('Failed to enable push notifications. Please check your device settings.');
+    }
   };
 
   const handleDarkModeToggle = (value: boolean) => {
@@ -217,6 +235,19 @@ export default function IOSSettings() {
             checked={reminderNotifications}
             onCheckedChange={(v) => handleToggleNotifications('reminder', v)}
           />
+          {isNative && (
+            <SettingsRow
+              icon={<Smartphone className="w-4 h-4" />}
+              label="Push Notifications"
+              value={
+                pushLoading ? 'Loading...' :
+                pushRegistered ? 'Enabled' :
+                permissionStatus === 'denied' ? 'Blocked' : 'Disabled'
+              }
+              onClick={!pushRegistered && permissionStatus !== 'denied' ? handleEnablePushNotifications : undefined}
+              showChevron={!pushRegistered && permissionStatus !== 'denied'}
+            />
+          )}
         </SettingsGroup>
 
         {/* Appearance */}

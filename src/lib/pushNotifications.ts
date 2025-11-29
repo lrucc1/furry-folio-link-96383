@@ -77,10 +77,11 @@ export const registerForPush = async (): Promise<string | null> => {
 
 /**
  * Save device token to the database for the current user
+ * Note: Using type assertion because device_tokens table types may not be synced yet
  */
 export const saveDeviceToken = async (token: string, userId: string): Promise<boolean> => {
   try {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('device_tokens')
       .upsert({
         user_id: userId,
@@ -108,7 +109,7 @@ export const saveDeviceToken = async (token: string, userId: string): Promise<bo
  */
 export const removeDeviceToken = async (token: string): Promise<boolean> => {
   try {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('device_tokens')
       .delete()
       .eq('token', token);
@@ -171,7 +172,10 @@ export const getPermissionStatus = async (): Promise<'granted' | 'denied' | 'pro
 
   try {
     const status = await PushNotifications.checkPermissions();
-    return status.receive;
+    // Map all possible states to our simplified type
+    if (status.receive === 'granted') return 'granted';
+    if (status.receive === 'denied') return 'denied';
+    return 'prompt';
   } catch (error) {
     console.error('Error checking push permission:', error);
     return 'denied';
