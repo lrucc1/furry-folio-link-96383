@@ -10,6 +10,7 @@ import { ProfileSetupDialog } from "./components/ProfileSetupDialog";
 import { DowngradeHelper } from "./components/DowngradeHelper";
 import { AdminRoute } from "./components/AdminRoute";
 import { IOSAppRouter } from "./components/IOSAppRouter";
+import { DevModeToggle } from "./components/DevModeToggle";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -182,6 +183,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
             </IOSAppRouter>
+            <DevModeToggle />
           </BrowserRouter>
         </TooltipProvider>
       </PlanProvider>
