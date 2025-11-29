@@ -149,7 +149,7 @@ const faqs = [
       },
       {
         q: "Do I need to install an app?",
-        a: "You can use PetLinkID directly in your web browser, or download our iOS app for a native experience with push notifications."
+        a: "You can use PetLinkID directly in your web browser, or download our iOS app for a native experience with push notifications. Note that Pro upgrades are only available through the iOS app."
       },
       {
         q: "Is my data synced between devices?",
@@ -158,28 +158,19 @@ const faqs = [
     ]
   },
   {
-    category: "Lost Pet Recovery",
-    questions: [
-      {
-        q: "What happens if my pet goes missing?",
-        a: "Anyone who finds your pet can scan their QR tag to instantly see your contact information and your pet's profile. You can also create shareable lost pet alerts and posters with your pet's digital ID, QR code, location, and contact information."
-      },
-      {
-        q: "Do I need to buy special tags?",
-        a: "Smart QR tags are coming soon! In the meantime, you can print your pet's QR code and attach it to their existing collar, or display it on your phone when needed."
-      },
-      {
-        q: "Can anyone access my personal information?",
-        a: "No. Only the contact information you choose to make public is shown on your pet's QR profile. You control what information is visible to help someone return your pet safely."
-      }
-    ]
-  },
-  {
     category: "Account & Billing",
     questions: [
       {
+        q: "How do I upgrade to Pro?",
+        a: "To upgrade to PetLinkID Pro: 1) Download the PetLinkID app on your iPhone. 2) Sign in or create your account. 3) Go to Settings → Plan & billing, then choose a Pro plan. 4) Confirm your subscription using your Apple ID. All payments are processed securely by Apple."
+      },
+      {
+        q: "Can I upgrade from the website?",
+        a: "Currently, Pro subscriptions are only available via the iOS app using Apple In-App Purchases. The web experience is designed for QR tag scanning, accessing pet profiles, and quick account management. Once you upgrade via the iOS app, your Pro features will be available when you sign in on the web."
+      },
+      {
         q: "Can I cancel my subscription anytime?",
-        a: "Yes, you can cancel your Pro subscription at any time from your billing settings. You'll continue to have Pro access until the end of your billing period, then automatically switch to the Free plan."
+        a: "Yes, you can cancel your Pro subscription at any time from your iPhone's Settings → Apple ID → Subscriptions. You'll continue to have Pro access until the end of your billing period, then automatically switch to the Free plan."
       },
       {
         q: "What happens if I downgrade to Free with multiple pets?",
@@ -187,11 +178,11 @@ const faqs = [
       },
       {
         q: "How do I update my billing information?",
-        a: "Go to Settings > Billing to access the Stripe Customer Portal where you can update payment methods, view invoices, and manage your subscription."
+        a: "Your subscription is managed by Apple. Go to Settings → Apple ID → Subscriptions on your iPhone to update payment methods or manage your subscription."
       },
       {
         q: "What is your refund policy?",
-        a: "We offer a 7-day free trial for Pro plan. If you're not satisfied, you can cancel during the trial with no charges. For refund requests after the trial, please contact our support team."
+        a: "We offer a 7-day free trial for the Pro plan. If you're not satisfied, you can cancel during the trial with no charges. For refund requests after the trial, please contact Apple Support through the App Store as they handle all billing for in-app purchases."
       }
     ]
   },

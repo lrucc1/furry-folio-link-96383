@@ -12,15 +12,10 @@ import {
   ArrowRight, 
   Heart,
   Shield,
-  Zap,
-  Users
+  Smartphone,
+  Apple
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { useState } from "react";
-import { redirectToCheckout } from "@/lib/safeRedirect";
+import { Link } from "react-router-dom";
 
 // Mock data for demonstration
 const mockPets = [
@@ -48,76 +43,9 @@ const mockPets = [
   }
 ];
 
-const pricingPlans = [
-  {
-    name: "Free",
-    price: "0",
-    period: "forever",
-    description: "Perfect for getting started with one pet",
-    features: [
-      "1 Pet Profile",
-      "1 Read-only Caregiver",
-      "2 Active Health Reminders",
-      "QR Code Pet Profile",
-      "Basic Support"
-    ],
-    cta: "Get Started Free",
-    variant: "outline" as const
-  },
-  {
-    name: "Pro",
-    price: "2.99",
-    period: "month",
-    description: "Full features for pet families",
-    features: [
-      "Unlimited Pet Profiles",
-      "Full Caregiver Access (read & write)",
-      "Unlimited Health Reminders",
-      "Store Vaccination Certificates & Medical Records",
-      "Data Export Capability",
-      "Priority Support",
-      "7-Day Free Trial"
-    ],
-    cta: "Start 7-Day Free Trial",
-    variant: "hero" as const,
-    popular: true
-  }
-];
+const APP_STORE_URL = import.meta.env.VITE_APP_STORE_URL || '#';
 
 const Index = () => {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const [checkingOut, setCheckingOut] = useState(false);
-
-  const handleStartProTrial = async () => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-    setCheckingOut(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        navigate('/auth');
-        return;
-      }
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${session.access_token}` },
-        body: { billingPeriod: 'monthly' },
-      });
-      if (error) throw error;
-      if (data?.url) {
-        redirectToCheckout(data.url);
-      }
-    } catch (e) {
-      // Error handled silently in production
-      toast.error('Could not start trial. Please try again.');
-    } finally {
-      setCheckingOut(false);
-    }
-  };
-
   const handleViewPetDetails = (pet: any) => {
     // Demo only - no action needed
   };
@@ -125,6 +53,7 @@ const Index = () => {
   const handleToggleLost = (petId: string) => {
     // Demo only - no action needed
   };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -171,7 +100,7 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Pricing Section */}
+        {/* Pricing Section - iOS First */}
         <section className="py-12 sm:py-16 md:py-20 bg-muted/30">
           <div className="container mx-auto px-4">
             <div className="text-center mb-8 sm:mb-12">
@@ -180,75 +109,110 @@ const Index = () => {
                 Simple Pricing
               </Badge>
               <h2 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground mb-4 sm:mb-6">
-                Choose Your Plan
+                Simple plans for every pet family
               </h2>
-              <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-                Start free and upgrade when you need more features. No lock-in contracts, cancel anytime.
+              <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-4">
+                Start free in minutes. Upgrade any time from the PetLinkID iOS app using secure Apple in-app purchases.
+              </p>
+              <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
+                PetLinkID is designed to be iOS-first, with a simple web experience to support QR tag scans and quick access to your pet's profile.
+                All plan upgrades and billing are handled safely through the App Store on your iPhone.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
-              {pricingPlans.map((plan, index) => (
-                <Card 
-                  key={index} 
-                  className={`p-4 sm:p-6 md:p-8 relative ${
-                    plan.popular
-                      ? 'border-primary shadow-lg scale-105'
-                      : 'border-border'
-                  }`}
-                >
-                  {plan.popular && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                      <div className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
-                        <Crown className="w-4 h-4" />
-                        Most Popular
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="text-center mb-6">
-                    <h2 className="text-2xl font-bold mb-2">{plan.name}</h2>
-                    <div className="mb-4">
-                      <span className="text-4xl font-bold">A${plan.price}</span>
-                      <span className="text-muted-foreground">
-                        {plan.price === '0' ? '' : `/${plan.period}`}
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {plan.description}
-                    </p>
+              {/* Free Plan Card */}
+              <Card className="p-4 sm:p-6 md:p-8 border-border">
+                <div className="text-center mb-6">
+                  <h2 className="text-2xl font-bold mb-2">Free</h2>
+                  <div className="mb-4">
+                    <span className="text-4xl font-bold">Always free</span>
                   </div>
+                  <p className="text-sm text-muted-foreground">
+                    Perfect for trying PetLinkID with your first pet.
+                  </p>
+                </div>
 
-                  <ul className="space-y-3 mb-8">
-                    {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                        <span className="text-sm">{feature}</span>
-                      </li>
-                    ))}
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">Create your PetLinkID account</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">Add 1 pet profile</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">Link QR tags to your pet</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">Lost & found profile page when someone scans the tag</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">Basic contact details and notes</span>
+                  </li>
+                </ul>
+
+                <Button variant="outline" className="w-full" asChild>
+                  <Link to="/auth">Get started free</Link>
+                </Button>
+              </Card>
+
+              {/* Pro Plan Card */}
+              <Card className="p-4 sm:p-6 md:p-8 relative border-primary shadow-lg scale-105">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                  <div className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
+                    <Crown className="w-4 h-4" />
+                    Most Popular
+                  </div>
+                </div>
+                
+                <div className="text-center mb-6">
+                  <h2 className="text-2xl font-bold mb-2">PetLinkID Pro</h2>
+                  <div className="mb-4">
+                    <span className="text-4xl font-bold">Pricing in iOS app</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Full features for pet families
+                  </p>
+                </div>
+
+                <div className="space-y-4 mb-6">
+                  <p className="text-sm font-medium">🔓 Unlock extra capacity and features:</p>
+                  <ul className="space-y-2">
+                    <li className="flex items-start gap-2">
+                      <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                      <span className="text-sm">More pets and QR tags</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                      <span className="text-sm">Extra contact options for emergencies</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                      <span className="text-sm">Richer notes and attachments (vet, behaviour, medications, etc.)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                      <span className="text-sm">Priority support for lost-pet incidents</span>
+                    </li>
                   </ul>
+                </div>
 
-                  {plan.name === 'Pro' ? (
-                    <Button 
-                      variant={plan.popular ? 'default' : 'outline'} 
-                      className="w-full"
-                      onClick={handleStartProTrial}
-                      disabled={checkingOut}
-                      data-testid="start-trial-cta"
-                    >
-                      {checkingOut ? 'Processing...' : plan.cta}
-                    </Button>
-                  ) : (
-                    <Button 
-                      variant={plan.popular ? 'default' : 'outline'} 
-                      className="w-full"
-                      asChild
-                    >
-                      <Link to="/auth">{plan.cta}</Link>
-                    </Button>
-                  )}
-                </Card>
-              ))}
+                <Button className="w-full" asChild>
+                  <Link to="/pricing">
+                    <Smartphone className="w-4 h-4 mr-2" />
+                    Learn how to upgrade
+                  </Link>
+                </Button>
+                
+                <p className="text-xs text-center text-muted-foreground mt-3">
+                  Upgrades available via the iOS app
+                </p>
+              </Card>
             </div>
           </div>
         </section>
@@ -273,7 +237,7 @@ const Index = () => {
               <Button size="lg" variant="secondary" className="text-lg px-8 py-4 bg-foreground text-background hover:bg-foreground/90" asChild>
                 <Link to="/downloads">
                   <Shield className="w-5 h-5 mr-2" />
-                  View Demo
+                  Get the iOS App
                 </Link>
               </Button>
             </div>

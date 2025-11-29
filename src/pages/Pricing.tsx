@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Check, Crown, Sparkles, Smartphone, Loader2 } from 'lucide-react';
+import { Check, Crown, Sparkles, Smartphone, Loader2, Apple, ExternalLink } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,6 +12,8 @@ import { usePlanV2 } from '@/hooks/usePlanV2';
 import { toast } from 'sonner';
 import { PLANS, formatPrice, getYearlySavings } from '@/config/pricing';
 import { isNativeApp, isIOSApp, isAppleIAPAvailable, purchasePro } from '@/lib/appleIap';
+
+const APP_STORE_URL = import.meta.env.VITE_APP_STORE_URL || '#';
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -62,6 +64,10 @@ export default function Pricing() {
     toast.info('Upgrades are currently available via the iOS app through Apple In-App Purchases.');
   };
 
+  const scrollToHowToUpgrade = () => {
+    document.getElementById('how-to-upgrade')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   const savings = getYearlySavings();
   const price = billingPeriod === 'monthly' 
     ? PLANS.PRO.price_monthly_aud 
@@ -75,12 +81,13 @@ export default function Pricing() {
         <div className="max-w-5xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold mb-4">Choose Your Plan</h1>
-            <p className="text-xl text-muted-foreground">
-              {isOnIOS 
-                ? 'Start with a 7-day free trial of Pro via the App Store.'
-                : 'Start with a 7-day free trial of Pro. Available via the iOS app.'
-              }
+            <h1 className="text-4xl font-bold mb-4">Simple plans for every pet family</h1>
+            <p className="text-xl text-muted-foreground mb-4">
+              Start free in minutes. Upgrade any time from the PetLinkID iOS app using secure Apple in-app purchases.
+            </p>
+            <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
+              PetLinkID is designed to be iOS-first, with a simple web experience to support QR tag scans and quick access to your pet's profile.
+              All plan upgrades and billing are handled safely through the App Store on your iPhone.
             </p>
             
             {isTrialActive && (
@@ -92,10 +99,13 @@ export default function Pricing() {
 
             {/* iOS-only notice for web users */}
             {!isOnIOS && (
-              <Alert className="mt-6 max-w-md mx-auto">
+              <Alert className="mt-6 max-w-lg mx-auto">
                 <Smartphone className="h-4 w-4" />
                 <AlertDescription>
                   Subscriptions are available via the iOS app through Apple In-App Purchases.
+                  <Button variant="link" className="h-auto p-0 ml-1" onClick={scrollToHowToUpgrade}>
+                    Learn how to upgrade →
+                  </Button>
                 </AlertDescription>
               </Alert>
             )}
@@ -141,35 +151,44 @@ export default function Pricing() {
                     <Badge>Current Plan</Badge>
                   )}
                 </div>
-                <CardDescription>Perfect for getting started</CardDescription>
+                <CardDescription>Perfect for trying PetLinkID with your first pet.</CardDescription>
                 <div className="mt-4">
-                  <div className="text-4xl font-bold">A$0</div>
-                  <div className="text-muted-foreground">Forever free</div>
+                  <div className="text-4xl font-bold">Always free</div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span>1 Pet Profile</span>
+                    <span>Create your PetLinkID account</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span>1 Read-only Caregiver</span>
+                    <span>Add 1 pet profile</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span>2 Active Health Reminders</span>
+                    <span>Link QR tags to your pet</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span>QR Code Pet Profile</span>
+                    <span>Lost & found profile page when someone scans the tag</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span>Basic Support</span>
+                    <span>Basic contact details and notes</span>
                   </div>
                 </div>
+
+                {!user ? (
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link to="/auth">Get started free</Link>
+                  </Button>
+                ) : plan === 'FREE' ? (
+                  <Button variant="outline" className="w-full" disabled>
+                    Current Plan
+                  </Button>
+                ) : null}
               </CardContent>
             </Card>
 
@@ -187,7 +206,7 @@ export default function Pricing() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <Crown className="w-5 h-5 text-primary" />
-                    Pro
+                    PetLinkID Pro
                   </CardTitle>
                   {plan === 'PRO' && (
                     <Badge>Current Plan</Badge>
@@ -195,42 +214,46 @@ export default function Pricing() {
                 </div>
                 <CardDescription>Full features for pet families</CardDescription>
                 <div className="mt-4">
-                  <div className="text-4xl font-bold">{formatPrice(price)}</div>
-                  <div className="text-muted-foreground">
-                    per {billingPeriod === 'monthly' ? 'month' : 'year'}
-                  </div>
-                  {billingPeriod === 'yearly' && (
-                    <div className="text-sm text-primary mt-1">
-                      Just {formatPrice(price / 12)}/month
-                    </div>
+                  {isOnIOS ? (
+                    <>
+                      <div className="text-4xl font-bold">{formatPrice(price)}</div>
+                      <div className="text-muted-foreground">
+                        per {billingPeriod === 'monthly' ? 'month' : 'year'}
+                      </div>
+                      {billingPeriod === 'yearly' && (
+                        <div className="text-sm text-primary mt-1">
+                          Just {formatPrice(price / 12)}/month
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-4xl font-bold">Pricing shown in the iOS app</div>
+                      <div className="text-muted-foreground text-sm mt-1">
+                        Monthly and yearly options available
+                      </div>
+                    </>
                   )}
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
+                <p className="text-sm font-medium">🔓 Unlock extra capacity and features:</p>
                 <div className="space-y-2">
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span>Unlimited Pet Profiles</span>
+                    <span>More pets and QR tags</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span>Full Caregiver Access (read & write)</span>
+                    <span>Extra contact options for emergencies</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span>Unlimited Health Reminders</span>
+                    <span>Richer notes and attachments (vet, behaviour, medications, etc.)</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span>Store Vaccination Certificates & Medical Records</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span>Data Export Capability</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <span>Priority Support</span>
+                    <span>Priority support for lost-pet incidents</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
@@ -273,13 +296,13 @@ export default function Pricing() {
                     </Button>
                   ) : !isOnIOS ? (
                     <Button 
-                      onClick={() => toast.info('Please use the iOS app to upgrade to Pro.')}
-                      variant="outline"
+                      onClick={scrollToHowToUpgrade}
+                      variant="default"
                       size="lg"
                       className="w-full"
                     >
                       <Smartphone className="w-4 h-4 mr-2" />
-                      Use iOS App to Upgrade
+                      Upgrade in the iOS app
                     </Button>
                   ) : (
                     <Button 
@@ -297,7 +320,7 @@ export default function Pricing() {
                     size="lg"
                     className="w-full"
                   >
-                    Sign Up for Free Trial
+                    Sign Up to Get Started
                   </Button>
                 )}
 
@@ -310,6 +333,53 @@ export default function Pricing() {
               </CardContent>
             </Card>
           </div>
+
+          {/* How to Upgrade Section - for web users */}
+          {!isOnIOS && (
+            <Card id="how-to-upgrade" className="mb-12 scroll-mt-8 border-primary/20 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Smartphone className="w-5 h-5 text-primary" />
+                  How to upgrade to Pro
+                </CardTitle>
+                <CardDescription>
+                  All payments are processed securely by Apple. You can manage or cancel your subscription any time from your iPhone's Settings → Subscriptions.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <ol className="space-y-3">
+                  <li className="flex items-start gap-3">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm font-bold shrink-0">1</span>
+                    <span>Download the PetLinkID app on your iPhone from the App Store.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm font-bold shrink-0">2</span>
+                    <span>Sign in or create your account using the same email.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm font-bold shrink-0">3</span>
+                    <span>Go to <strong>Settings → Plan & billing</strong>, then choose a Pro plan.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm font-bold shrink-0">4</span>
+                    <span>Confirm your subscription using your Apple ID.</span>
+                  </li>
+                </ol>
+
+                <div className="pt-4 border-t">
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Don't have the app yet?
+                  </p>
+                  <Button variant="outline" asChild>
+                    <Link to="/downloads">
+                      <Apple className="w-4 h-4 mr-2" />
+                      Download from App Store
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* FAQ or Additional Info */}
           <div className="text-center text-sm text-muted-foreground">
