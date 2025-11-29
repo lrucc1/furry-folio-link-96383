@@ -316,6 +316,11 @@ export default function Account() {
     }
   };
 
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([checkSubscription(), fetchProfile(), fetchPetCount(), calculateStorageUsage()]);
+    toast.success('Refreshed');
+  }, [user]);
+
   if (loading || planLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -666,10 +671,6 @@ export default function Account() {
     </Tabs>
   );
 
-  const handleRefresh = useCallback(async () => {
-    await Promise.all([checkSubscription(), fetchProfile(), fetchPetCount(), calculateStorageUsage()]);
-    toast.success('Refreshed');
-  }, [user]);
 
   // iOS Layout
   if (isNative) {
