@@ -547,6 +547,8 @@ const PetDetails = () => {
                   <SwipeableItem 
                     key={vac.id}
                     onDelete={() => deleteVaccination(vac.id)}
+                    deleteConfirmTitle="Delete vaccination?"
+                    deleteConfirmDescription={`Are you sure you want to delete "${vac.vaccine_name}"? This cannot be undone.`}
                   >
                     <div 
                       className="flex items-center justify-between p-3 bg-muted/50 rounded-xl touch-manipulation active:bg-muted"
@@ -596,28 +598,21 @@ const PetDetails = () => {
                   <SwipeableItem
                     key={reminder.id}
                     onDelete={() => deleteReminder(reminder.id)}
+                    onComplete={() => toggleReminderComplete(reminder.id, reminder.completed)}
+                    deleteConfirmTitle="Delete reminder?"
+                    deleteConfirmDescription={`Are you sure you want to delete "${reminder.title}"? This cannot be undone.`}
                   >
                     <div 
                       className="flex items-center justify-between p-3 bg-muted/50 rounded-xl touch-manipulation active:bg-muted"
                       onClick={() => handleEditReminder(reminder)}
                     >
-                      <div>
+                      <div className="flex-1">
                         <p className="font-medium text-sm">{reminder.title}</p>
                         <p className="text-xs text-muted-foreground">
                           {new Date(reminder.reminder_date).toLocaleDateString()}
                         </p>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 touch-manipulation"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleReminderComplete(reminder.id, reminder.completed);
-                        }}
-                      >
-                        <CheckCircle className="w-5 h-5" />
-                      </Button>
+                      <span className="text-xs text-muted-foreground">← complete | delete →</span>
                     </div>
                   </SwipeableItem>
                 ))}
