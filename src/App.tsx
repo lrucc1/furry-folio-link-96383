@@ -53,6 +53,7 @@ import BillingCancel from "./pages/BillingCancel";
 import AcceptInvite from "./pages/invite/AcceptInvite";
 import InviteStatus from "./pages/InviteStatus";
 import IOSHome from "./pages/ios/IOSHome";
+import IOSSettings from "./pages/ios/IOSSettings";
 
 const queryClient = new QueryClient();
 
@@ -78,6 +79,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <IOSHome />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/ios-settings" 
+            element={
+              <ProtectedRoute>
+                <IOSSettings />
               </ProtectedRoute>
             } 
           />

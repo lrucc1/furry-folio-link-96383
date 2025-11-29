@@ -1,4 +1,4 @@
-import { Home, PawPrint, Bell, User } from 'lucide-react';
+import { Home, PawPrint, Bell, Settings } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
@@ -12,7 +12,7 @@ const tabs: TabItem[] = [
   { icon: Home, label: 'Home', path: '/ios-home' },
   { icon: PawPrint, label: 'Pets', path: '/dashboard' },
   { icon: Bell, label: 'Reminders', path: '/reminders' },
-  { icon: User, label: 'Account', path: '/account' },
+  { icon: Settings, label: 'Settings', path: '/ios-settings' },
 ];
 
 export function IOSTabBar() {
