@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlan } from '@/lib/plan/PlanContext';
@@ -17,16 +17,13 @@ import {
   HelpCircle, 
   Tag, 
   Crown,
-  RefreshCw,
   Scale,
   Heart,
   FileText,
   Plus,
   Syringe,
-  Settings
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { toast } from 'sonner';
 import { au } from '@/lib/auEnglish';
 
@@ -97,21 +94,10 @@ export default function IOSHome() {
     fetchData();
   }, [user]);
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     await fetchData();
     toast.success('Refreshed');
-  };
-
-  const {
-    containerRef,
-    isRefreshing,
-    pullDistance,
-    shouldShowLoader,
-    loaderOpacity,
-    loaderRotation,
-  } = usePullToRefresh({
-    onRefresh: handleRefresh,
-  });
+  }, [user]);
 
   const selectedPet = pets.find(p => p.id === selectedPetId);
   const lostPetCount = pets.filter(p => p.is_lost).length;
@@ -128,27 +114,8 @@ export default function IOSHome() {
   }
 
   return (
-    <IOSPageLayout>
-      <div 
-        ref={containerRef}
-        className="px-4 py-6 space-y-6 pb-8"
-        style={{ 
-          transform: `translateY(${pullDistance}px)`, 
-          transition: isRefreshing ? 'transform 0.3s ease-out' : 'none' 
-        }}
-      >
-        {shouldShowLoader && (
-          <div 
-            className="fixed top-20 left-1/2 -translate-x-1/2 z-40"
-            style={{ opacity: loaderOpacity }}
-          >
-            <RefreshCw 
-              className="w-6 h-6 text-primary" 
-              style={{ transform: `rotate(${loaderRotation}deg)` }}
-            />
-          </div>
-        )}
-
+    <IOSPageLayout onRefresh={handleRefresh}>
+      <div className="px-4 py-6 space-y-6 pb-8">
         {/* Welcome Card */}
         <MobileCard className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
           <div className="flex items-center justify-between">

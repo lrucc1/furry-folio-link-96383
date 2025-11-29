@@ -405,7 +405,7 @@ export default function BillingSettings() {
   // iOS Layout
   if (isNative) {
     return (
-      <IOSPageLayout title="Billing">
+      <IOSPageLayout title="Billing" onRefresh={refresh}>
         <div className="px-4 py-6 max-w-3xl mx-auto">
           <BillingContent />
         </div>

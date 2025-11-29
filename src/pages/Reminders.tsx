@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format, differenceInDays, isBefore } from 'date-fns';
@@ -6,14 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, Calendar, CheckCircle, Heart, Syringe, Clock, Pill, RefreshCw, Plus } from 'lucide-react';
+import { AlertTriangle, Calendar, CheckCircle, Heart, Syringe, Clock, Pill, Plus } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { toast } from 'sonner';
 import { EditVaccinationModal } from '@/components/EditVaccinationModal';
 import { EditHealthReminderModal } from '@/components/EditHealthReminderModal';
 import { ReminderNotifications } from '@/components/ReminderNotifications';
-import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { HealthReminderModal } from '@/components/HealthReminderModal';
 import { IOSPageLayout } from '@/components/ios/IOSPageLayout';
 import { useIsNativeApp } from '@/hooks/useIsNativeApp';
@@ -249,21 +248,10 @@ export default function Reminders() {
     setSelectedPetForReminder(null);
   };
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     await fetchAllReminders();
     toast.success('Reminders refreshed');
-  };
-
-  const {
-    containerRef,
-    isRefreshing,
-    pullDistance,
-    shouldShowLoader,
-    loaderOpacity,
-    loaderRotation,
-  } = usePullToRefresh({
-    onRefresh: handleRefresh,
-  });
+  }, [user]);
 
   const getStatusText = (daysUntil: number, isOverdue: boolean, completed?: boolean) => {
     if (completed) return 'Completed';
@@ -549,27 +537,8 @@ export default function Reminders() {
   // iOS Native Layout
   if (isNative) {
     return (
-      <IOSPageLayout title="Reminders" headerRight={addButton}>
-        <div 
-          ref={containerRef}
-          className="px-4 py-4"
-          style={{ 
-            transform: `translateY(${pullDistance}px)`, 
-            transition: isRefreshing ? 'transform 0.3s ease-out' : 'none' 
-          }}
-        >
-          {shouldShowLoader && (
-            <div 
-              className="fixed top-20 left-1/2 -translate-x-1/2 z-40"
-              style={{ opacity: loaderOpacity }}
-            >
-              <RefreshCw 
-                className="w-6 h-6 text-primary" 
-                style={{ transform: `rotate(${loaderRotation}deg)` }}
-              />
-            </div>
-          )}
-          
+      <IOSPageLayout title="Reminders" headerRight={addButton} onRefresh={handleRefresh}>
+        <div className="px-4 py-4">
           <RemindersContent />
         </div>
 
@@ -652,18 +621,7 @@ export default function Reminders() {
 
   // Web Layout
   return (
-    <div ref={containerRef} className="min-h-screen flex flex-col" style={{ transform: `translateY(${pullDistance}px)`, transition: isRefreshing ? 'transform 0.3s ease-out' : 'none' }}>
-      {shouldShowLoader && (
-        <div 
-          className="fixed top-0 left-1/2 -translate-x-1/2 z-40 flex items-center justify-center pt-4"
-          style={{ opacity: loaderOpacity }}
-        >
-          <RefreshCw 
-            className="w-6 h-6 text-primary" 
-            style={{ transform: `rotate(${loaderRotation}deg)` }}
-          />
-        </div>
-      )}
+    <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
