@@ -15,9 +15,7 @@ import { Drawer } from "vaul";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 
-interface HeaderProps {}
-
-export const Header = ({}: HeaderProps) => {
+export const Header = () => {
   const { user, signOut } = useAuth();
   const { tier, loading } = usePlan();
   const navigate = useNavigate();

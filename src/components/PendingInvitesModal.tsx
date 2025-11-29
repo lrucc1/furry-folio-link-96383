@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -35,13 +35,7 @@ export function PendingInvitesModal({ open, onClose }: PendingInvitesModalProps)
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (open && user) {
-      fetchPendingInvites();
-    }
-  }, [open, user]);
-
-  const fetchPendingInvites = async () => {
+  const fetchPendingInvites = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -81,7 +75,13 @@ export function PendingInvitesModal({ open, onClose }: PendingInvitesModalProps)
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (open && user) {
+      fetchPendingInvites();
+    }
+  }, [open, user, fetchPendingInvites]);
 
   const handleAccept = async (token: string, petId: string) => {
     setProcessing(token);

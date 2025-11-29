@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePlanV2 } from '@/hooks/usePlanV2'
@@ -30,9 +30,9 @@ const AddPet = () => {
   // Check entitlement when component loads
   useEffect(() => {
     checkCanAddPet()
-  }, [user, usage])
+  }, [user, usage, checkCanAddPet])
 
-  const checkCanAddPet = async () => {
+  const checkCanAddPet = useCallback(async () => {
     if (!user || !entitlement) return
 
     const service = EntitlementServiceV2.getInstance()
@@ -47,7 +47,7 @@ const AddPet = () => {
       }
       setShowPaywall(true)
     }
-  }
+  }, [user, entitlement, usage])
 
   const currentPets = usage.pets_count
   const isProPlan = plan === 'PRO'

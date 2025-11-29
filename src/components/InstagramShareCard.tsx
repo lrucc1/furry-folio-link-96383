@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -48,12 +48,6 @@ export const InstagramShareCard = ({
   const [generating, setGenerating] = useState(false)
 
   const petAge = dateOfBirth ? calculateAge(dateOfBirth) : null
-
-  useEffect(() => {
-    if (isOpen && canvasRef.current) {
-      generateCard()
-    }
-  }, [isOpen, theme, format])
 
   const getCanvasDimensions = (format: Format) => {
     switch (format) {
@@ -113,7 +107,7 @@ export const InstagramShareCard = ({
     ctx.restore()
   }
 
-  const generateCard = async () => {
+  const generateCard = useCallback(async () => {
     const canvas = canvasRef.current
     if (!canvas) return
 
@@ -139,7 +133,13 @@ export const InstagramShareCard = ({
     }
 
     setGenerating(false)
-  }
+  }, [format, theme, petAge, petBreed, petName, petPhoto, petSpecies, publicId, publicUrl])
+
+  useEffect(() => {
+    if (isOpen && canvasRef.current) {
+      generateCard()
+    }
+  }, [isOpen, generateCard])
 
   const generatePassportTheme = async (ctx: CanvasRenderingContext2D, width: number, height: number) => {
     // Background - cream paper texture

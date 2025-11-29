@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlanV2 } from '@/hooks/usePlanV2';
@@ -63,11 +63,7 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
   const [newFileName, setNewFileName] = useState('');
   const [isDragging, setIsDragging] = useState(false);
 
-  useEffect(() => {
-    fetchDocuments();
-  }, [petId]);
-
-  const fetchDocuments = async () => {
+  const fetchDocuments = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -88,7 +84,11 @@ export const PetDocuments = ({ petId }: PetDocumentsProps) => {
       console.error('Error fetching documents:', error);
       toast.error('Failed to load documents');
     }
-  };
+  }, [petId, user]);
+
+  useEffect(() => {
+    fetchDocuments();
+  }, [petId, fetchDocuments]);
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
