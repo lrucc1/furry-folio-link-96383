@@ -12,6 +12,7 @@ import { Footer } from '@/components/Footer'
 import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download, Upload, Scan, ExternalLink, Bell, CheckCircle, Trash2, Plus, Eye, Edit2, Syringe, AlertCircle, Home, ChevronLeft, Scale } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from '@/hooks/use-toast'
+import { ToastAction } from '@/components/ui/toast'
 import { PetDocuments } from '@/components/PetDocuments'
 import { VaccinationModal } from '@/components/VaccinationModal'
 import { EditVaccinationModal } from '@/components/EditVaccinationModal'
@@ -146,22 +147,46 @@ const PetDetails = () => {
   }
 
   const toggleReminderComplete = async (reminderId: string, currentStatus: boolean) => {
+    const reminder = healthReminders.find(r => r.id === reminderId);
+    const newStatus = !currentStatus;
+    
+    // Optimistically update UI
+    setHealthReminders(healthReminders.map(r => 
+      r.id === reminderId ? { ...r, completed: newStatus } : r
+    ));
+
     try {
       const { error } = await (supabase as any)
         .from('health_reminders')
-        .update({ completed: !currentStatus })
+        .update({ completed: newStatus })
         .eq('id', reminderId)
 
       if (error) throw error
 
-      setHealthReminders(healthReminders.map(r => 
-        r.id === reminderId ? { ...r, completed: !currentStatus } : r
-      ))
-
-      toast({
-        title: !currentStatus ? "Reminder completed" : "Reminder reopened",
-      })
+      // Show undo toast when completing (not when reopening)
+      if (newStatus && reminder) {
+        toast({
+          title: "Reminder completed",
+          description: reminder.title,
+          action: (
+            <ToastAction 
+              altText="Undo"
+              onClick={() => toggleReminderComplete(reminderId, true)}
+            >
+              Undo
+            </ToastAction>
+          ),
+        })
+      } else {
+        toast({
+          title: "Reminder reopened",
+        })
+      }
     } catch (error) {
+      // Revert on error
+      setHealthReminders(healthReminders.map(r => 
+        r.id === reminderId ? { ...r, completed: currentStatus } : r
+      ));
       console.error('Error updating reminder:', error)
       toast({
         title: "Error",
