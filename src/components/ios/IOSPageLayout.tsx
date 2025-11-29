@@ -2,6 +2,8 @@ import { ReactNode, useRef, useState, useEffect, useCallback } from 'react';
 import { IOSTabBar } from './IOSTabBar';
 import { IOSHeader } from './IOSHeader';
 import { PullToRefreshIndicator } from './PullToRefreshIndicator';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { Capacitor } from '@capacitor/core';
 
 interface IOSPageLayoutProps {
   children: ReactNode;
@@ -11,6 +13,16 @@ interface IOSPageLayoutProps {
   headerRight?: ReactNode;
   onRefresh?: () => Promise<void>;
 }
+
+const triggerHaptic = async () => {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      await Haptics.impact({ style: ImpactStyle.Medium });
+    } catch (e) {
+      // Haptics not available
+    }
+  }
+};
 
 export function IOSPageLayout({ 
   children, 
@@ -25,6 +37,7 @@ export function IOSPageLayout({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const touchStartY = useRef(0);
   const isPulling = useRef(false);
+  const hasTriggeredHaptic = useRef(false);
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
     const main = mainRef.current;
@@ -34,6 +47,7 @@ export function IOSPageLayout({
     if (main.scrollTop <= 0) {
       touchStartY.current = e.touches[0].clientY;
       isPulling.current = true;
+      hasTriggeredHaptic.current = false;
     }
   }, [onRefresh]);
 
@@ -47,6 +61,12 @@ export function IOSPageLayout({
       const resistance = 0.5;
       const distance = Math.min(pullDown * resistance, 120);
       setPullDistance(distance);
+      
+      // Trigger haptic when crossing threshold
+      if (distance >= 80 && !hasTriggeredHaptic.current) {
+        hasTriggeredHaptic.current = true;
+        triggerHaptic();
+      }
     }
   }, [isRefreshing, onRefresh]);
 
@@ -57,6 +77,9 @@ export function IOSPageLayout({
     if (pullDistance >= 80 && !isRefreshing) {
       setIsRefreshing(true);
       setPullDistance(60);
+      
+      // Trigger haptic on refresh start
+      triggerHaptic();
 
       try {
         await Promise.race([

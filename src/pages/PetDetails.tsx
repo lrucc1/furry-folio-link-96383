@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
-import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download, Upload, Scan, ExternalLink, Bell, CheckCircle, Trash2, Plus, Eye, Edit2, Syringe, AlertCircle, Home, ChevronLeft } from 'lucide-react'
+import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download, Upload, Scan, ExternalLink, Bell, CheckCircle, Trash2, Plus, Eye, Edit2, Syringe, AlertCircle, Home, ChevronLeft, Scale } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from '@/hooks/use-toast'
 import { PetDocuments } from '@/components/PetDocuments'
@@ -22,6 +22,7 @@ import { InstagramShareCard } from '@/components/InstagramShareCard'
 import { au } from '@/lib/auEnglish'
 import { IOSPageLayout } from '@/components/ios/IOSPageLayout'
 import { useIsNativeApp } from '@/hooks/useIsNativeApp'
+import { MobileCard } from '@/components/ios/MobileCard'
 
 interface Pet {
   id: string
@@ -298,14 +299,380 @@ const PetDetails = () => {
 
   const publicUrl = `${window.location.origin}/found/${pet.public_id}`
 
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([fetchPetDetails(), fetchVaccinations(), fetchHealthReminders()]);
+  }, [id, user]);
+
   // iOS Header with back and edit buttons
   const iosHeaderRight = (
-    <Button variant="ghost" size="sm" asChild className="h-9 px-3">
-      <Link to={`/pets/${pet.id}/edit`}>
-        <Edit className="w-4 h-4" />
-      </Link>
-    </Button>
+    <div className="flex items-center gap-1">
+      <Button variant="ghost" size="sm" asChild className="h-10 w-10 p-0 touch-manipulation">
+        <Link to={`/pets/${pet.id}/weight`}>
+          <Scale className="w-5 h-5" />
+        </Link>
+      </Button>
+      <Button variant="ghost" size="sm" asChild className="h-10 w-10 p-0 touch-manipulation">
+        <Link to={`/pets/${pet.id}/edit`}>
+          <Edit className="w-5 h-5" />
+        </Link>
+      </Button>
+    </div>
   )
+
+  // iOS-optimized pet content
+  const iosPetContent = (
+    <div className="space-y-4">
+      {/* Pet Header Card - Compact for iOS */}
+      <MobileCard className="overflow-hidden">
+        <div className="flex gap-4">
+          <div className="w-20 h-20 rounded-xl overflow-hidden bg-muted flex-shrink-0">
+            {pet.photo_url ? (
+              <img src={pet.photo_url} alt={pet.name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <Heart className="w-8 h-8 text-muted-foreground" />
+              </div>
+            )}
+          </div>
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between">
+              <div>
+                <h1 className="text-xl font-bold text-foreground truncate">{pet.name}</h1>
+                <p className="text-sm text-muted-foreground">
+                  {pet.breed ? `${pet.breed} ${pet.species}` : pet.species}
+                </p>
+              </div>
+              {pet.is_lost && (
+                <Badge variant="destructive" className="text-xs flex-shrink-0">
+                  <MapPin className="w-3 h-3 mr-1" />
+                  Lost
+                </Badge>
+              )}
+            </div>
+            
+            <div className="flex flex-wrap gap-2 mt-2">
+              {pet.date_of_birth && (
+                <Badge variant="secondary" className="text-xs">
+                  {calculateAge(pet.date_of_birth)}
+                </Badge>
+              )}
+              {pet.weight_kg && (
+                <Badge variant="secondary" className="text-xs">
+                  {pet.weight_kg} kg
+                </Badge>
+              )}
+              {pet.sex && (
+                <Badge variant="outline" className="text-xs">
+                  {pet.sex}
+                </Badge>
+              )}
+            </div>
+          </div>
+        </div>
+      </MobileCard>
+
+      {/* Quick Actions Grid */}
+      <div className="grid grid-cols-4 gap-2">
+        <Button 
+          variant="outline" 
+          className="h-16 flex-col gap-1 rounded-xl touch-manipulation"
+          onClick={() => navigate(`/pets/${pet.id}/edit`)}
+        >
+          <Edit2 className="w-5 h-5" />
+          <span className="text-xs">Edit</span>
+        </Button>
+        <Button 
+          variant="outline" 
+          className="h-16 flex-col gap-1 rounded-xl touch-manipulation"
+          onClick={() => navigate(`/pets/${pet.id}/weight`)}
+        >
+          <Scale className="w-5 h-5" />
+          <span className="text-xs">Weight</span>
+        </Button>
+        <Button 
+          variant="outline" 
+          className="h-16 flex-col gap-1 rounded-xl touch-manipulation"
+          onClick={shareRecoveryLink}
+        >
+          <QrCode className="w-5 h-5" />
+          <span className="text-xs">QR</span>
+        </Button>
+        <Button 
+          variant={pet.is_lost ? "destructive" : "outline"}
+          className="h-16 flex-col gap-1 rounded-xl touch-manipulation"
+          onClick={toggleLostStatus}
+        >
+          <MapPin className="w-5 h-5" />
+          <span className="text-xs">{pet.is_lost ? 'Found' : 'Lost'}</span>
+        </Button>
+      </div>
+
+      {/* iOS Tabs with larger touch targets */}
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList className="w-full grid grid-cols-4 h-12 p-1 rounded-xl">
+          <TabsTrigger value="overview" className="rounded-lg h-10 text-xs touch-manipulation">
+            <Home className="w-4 h-4 mr-1" />
+            Info
+          </TabsTrigger>
+          <TabsTrigger value="health" className="rounded-lg h-10 text-xs touch-manipulation">
+            <Heart className="w-4 h-4 mr-1" />
+            Health
+          </TabsTrigger>
+          <TabsTrigger value="lost" className="rounded-lg h-10 text-xs touch-manipulation">
+            <AlertCircle className="w-4 h-4 mr-1" />
+            Lost
+          </TabsTrigger>
+          <TabsTrigger value="sharing" className="rounded-lg h-10 text-xs touch-manipulation">
+            <Users className="w-4 h-4 mr-1" />
+            Share
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Overview Tab - iOS optimized */}
+        <TabsContent value="overview" className="space-y-4 mt-4">
+          {/* Microchip Info */}
+          <MobileCard>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Scan className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold">Microchip</h3>
+                <p className="text-sm text-muted-foreground">
+                  {pet.microchip_number ? pet.microchip_number.replace(/(.{3})/g, '$1 ') : 'Not registered'}
+                </p>
+              </div>
+            </div>
+            {pet.registry_name && (
+              <div className="pt-3 border-t">
+                <p className="text-sm text-muted-foreground">Registry: {pet.registry_name}</p>
+              </div>
+            )}
+          </MobileCard>
+
+          {/* Vet Info */}
+          {(pet.clinic_name || pet.clinic_address) && (
+            <MobileCard>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
+                  <Heart className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">{pet.clinic_name || 'Vet Clinic'}</h3>
+                  {pet.clinic_address && (
+                    <p className="text-sm text-muted-foreground">{pet.clinic_address}</p>
+                  )}
+                </div>
+              </div>
+            </MobileCard>
+          )}
+
+          {/* Insurance */}
+          {pet.insurance_provider && (
+            <MobileCard>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">{pet.insurance_provider}</h3>
+                  {pet.insurance_policy && (
+                    <p className="text-sm text-muted-foreground">Policy: {pet.insurance_policy}</p>
+                  )}
+                </div>
+              </div>
+            </MobileCard>
+          )}
+
+          {/* Notes */}
+          {pet.notes && (
+            <MobileCard>
+              <h3 className="font-semibold mb-2">Notes</h3>
+              <p className="text-sm text-muted-foreground">{pet.notes}</p>
+            </MobileCard>
+          )}
+        </TabsContent>
+
+        {/* Health Tab - iOS optimized */}
+        <TabsContent value="health" className="space-y-4 mt-4">
+          {/* Vaccinations */}
+          <MobileCard>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold flex items-center gap-2">
+                <Syringe className="w-4 h-4" />
+                Vaccinations
+              </h3>
+              <Button 
+                size="sm" 
+                variant="outline"
+                className="h-9 touch-manipulation"
+                onClick={() => setVaccinationModalOpen(true)}
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Add
+              </Button>
+            </div>
+            
+            {vaccinations.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">No vaccinations recorded</p>
+            ) : (
+              <div className="space-y-3">
+                {vaccinations.slice(0, 3).map((vac) => (
+                  <div 
+                    key={vac.id} 
+                    className="flex items-center justify-between p-3 bg-muted/50 rounded-xl touch-manipulation active:bg-muted"
+                    onClick={() => handleEditVaccination(vac)}
+                  >
+                    <div>
+                      <p className="font-medium text-sm">{vac.vaccine_name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(vac.vaccine_date).toLocaleDateString()}
+                      </p>
+                    </div>
+                    {vac.next_due_date && (
+                      <Badge variant="outline" className="text-xs">
+                        Due: {new Date(vac.next_due_date).toLocaleDateString()}
+                      </Badge>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </MobileCard>
+
+          {/* Health Reminders */}
+          <MobileCard>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold flex items-center gap-2">
+                <Bell className="w-4 h-4" />
+                Reminders
+              </h3>
+              <Button 
+                size="sm" 
+                variant="outline"
+                className="h-9 touch-manipulation"
+                onClick={() => setHealthReminderModalOpen(true)}
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Add
+              </Button>
+            </div>
+            
+            {healthReminders.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">No reminders</p>
+            ) : (
+              <div className="space-y-3">
+                {healthReminders.filter(r => !r.completed).slice(0, 3).map((reminder) => (
+                  <div 
+                    key={reminder.id} 
+                    className="flex items-center justify-between p-3 bg-muted/50 rounded-xl touch-manipulation active:bg-muted"
+                    onClick={() => handleEditReminder(reminder)}
+                  >
+                    <div>
+                      <p className="font-medium text-sm">{reminder.title}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(reminder.reminder_date).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0 touch-manipulation"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleReminderComplete(reminder.id, reminder.completed);
+                      }}
+                    >
+                      <CheckCircle className="w-5 h-5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </MobileCard>
+
+          {/* Documents */}
+          <MobileCard>
+            <h3 className="font-semibold flex items-center gap-2 mb-4">
+              <Download className="w-4 h-4" />
+              Documents
+            </h3>
+            <PetDocuments petId={pet.id} />
+          </MobileCard>
+        </TabsContent>
+
+        {/* Lost Tab - iOS optimized */}
+        <TabsContent value="lost" className="space-y-4 mt-4">
+          <MobileCard className={pet.is_lost ? 'border-destructive/50 bg-destructive/5' : ''}>
+            <div className="text-center py-4">
+              <MapPin className={`w-12 h-12 mx-auto mb-3 ${pet.is_lost ? 'text-destructive' : 'text-muted-foreground'}`} />
+              <h3 className="text-lg font-semibold mb-2">
+                {pet.is_lost ? `${pet.name} is marked as lost` : 'Lost Mode'}
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                {pet.is_lost 
+                  ? 'Share the recovery link to help bring them home'
+                  : 'If your pet goes missing, mark them as lost to enable recovery features'
+                }
+              </p>
+              <div className="space-y-2">
+                <Button 
+                  variant={pet.is_lost ? "outline" : "destructive"}
+                  className="w-full h-12 rounded-xl touch-manipulation"
+                  onClick={toggleLostStatus}
+                >
+                  {pet.is_lost ? 'Mark as Found' : 'Mark as Lost'}
+                </Button>
+                {pet.is_lost && (
+                  <Button 
+                    variant="default"
+                    className="w-full h-12 rounded-xl touch-manipulation"
+                    onClick={shareRecoveryLink}
+                  >
+                    <QrCode className="w-4 h-4 mr-2" />
+                    Share Recovery Link
+                  </Button>
+                )}
+              </div>
+            </div>
+          </MobileCard>
+
+          <MobileCard>
+            <h3 className="font-semibold mb-3">Public Profile</h3>
+            <p className="text-sm text-muted-foreground mb-3">
+              Anyone who scans your pet's QR tag will see this page
+            </p>
+            <Button 
+              variant="outline" 
+              className="w-full h-11 rounded-xl touch-manipulation"
+              asChild
+            >
+              <a href={publicUrl} target="_blank" rel="noopener noreferrer">
+                <Eye className="w-4 h-4 mr-2" />
+                Preview Public Profile
+              </a>
+            </Button>
+          </MobileCard>
+
+          <InstagramShareCard 
+            petName={pet.name}
+            petSpecies={pet.species}
+            petBreed={pet.breed}
+            petPhoto={pet.photo_url}
+            publicId={pet.public_id}
+            publicUrl={publicUrl}
+            dateOfBirth={pet.date_of_birth}
+          />
+        </TabsContent>
+
+        {/* Sharing Tab - iOS optimized */}
+        <TabsContent value="sharing" className="mt-4">
+          <SharingTab petId={pet.id} />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
 
   // Pet content shared between iOS and Web
   const petContent = (
@@ -883,9 +1250,9 @@ const PetDetails = () => {
   // iOS Layout
   if (isNative) {
     return (
-      <IOSPageLayout title={pet.name} headerRight={iosHeaderRight}>
+      <IOSPageLayout title={pet.name} headerRight={iosHeaderRight} onRefresh={handleRefresh}>
         <div className="px-4 py-4">
-          {petContent}
+          {iosPetContent}
         </div>
         {modals}
       </IOSPageLayout>
