@@ -295,23 +295,6 @@ export default function IOSHome() {
                 </div>
               </div>
             </MobileCard>
-
-            {tier === 'free' && (
-              <MobileCard 
-                className="bg-gradient-to-r from-primary to-primary/80 border-0"
-                onClick={() => navigate('/pricing')}
-              >
-                <div className="flex items-center gap-4 text-white">
-                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-                    <Crown className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium">Upgrade to Pro</h4>
-                    <p className="text-sm text-white/80">Unlimited pets & features</p>
-                  </div>
-                </div>
-              </MobileCard>
-            )}
           </div>
         </div>
       </div>
