@@ -7,6 +7,7 @@ import { MobileCard } from '@/components/ios/MobileCard';
 import { FormSection, FormRow } from '@/components/ios/FormSection';
 import { ImageCropDialog } from '@/components/ImageCropDialog';
 import { VetClinicAutocomplete, VetClinicData } from '@/components/VetClinicAutocomplete';
+import { RegistrySelect, InsuranceProviderSelect } from '@/components/RegionAwareSelect';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -443,17 +444,11 @@ export default function IOSEditPet() {
           </FormRow>
 
           <FormRow label="Registry Name">
-            <Select value={formData.registry_name} onValueChange={(value) => handleInputChange('registry_name', value)}>
-              <SelectTrigger className="bg-muted/50 border-0">
-                <SelectValue placeholder="Select registry" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Pet Address">Pet Address</SelectItem>
-                <SelectItem value="Central Animal Records">Central Animal Records</SelectItem>
-                <SelectItem value="National Pet Registry">National Pet Registry</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
-              </SelectContent>
-            </Select>
+            <RegistrySelect
+              value={formData.registry_name}
+              onChange={(value) => handleInputChange('registry_name', value)}
+              placeholder="Select registry"
+            />
           </FormRow>
 
           <FormRow label="Registry Website" error={errors.registry_link}>
@@ -490,20 +485,11 @@ export default function IOSEditPet() {
           </FormRow>
 
           <FormRow label="Insurance Provider">
-            <Select value={formData.insurance_provider} onValueChange={(value) => handleInputChange('insurance_provider', value)}>
-              <SelectTrigger className="bg-muted/50 border-0">
-                <SelectValue placeholder="Select provider" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="RSPCA">RSPCA Pet Insurance</SelectItem>
-                <SelectItem value="Pet Insurance Australia">Pet Insurance Australia</SelectItem>
-                <SelectItem value="Bow Wow Meow">Bow Wow Meow</SelectItem>
-                <SelectItem value="Woolworths Pet Insurance">Woolworths Pet Insurance</SelectItem>
-                <SelectItem value="Petplan">Petplan</SelectItem>
-                <SelectItem value="Healthy Paws">Healthy Paws</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
-              </SelectContent>
-            </Select>
+            <InsuranceProviderSelect
+              value={formData.insurance_provider}
+              onChange={(value) => handleInputChange('insurance_provider', value)}
+              placeholder="Select provider"
+            />
           </FormRow>
 
           <FormRow label="Policy Number">
