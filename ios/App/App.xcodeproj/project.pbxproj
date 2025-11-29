@@ -237,10 +237,10 @@
 /* Begin XCBuildConfiguration section */
 		504EC3141FED79650016851F /* Debug */ = {
 			isa = XCBuildConfiguration;
-buildSettings = {
-ALWAYS_SEARCH_USER_PATHS = NO;
-CLANG_ANALYZER_NONNULL = YES;
-CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -266,11 +266,11 @@ CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-DEBUG_INFORMATION_FORMAT = dwarf;
-ENABLE_STRICT_OBJC_MSGSEND = YES;
-ENABLE_USER_SCRIPT_SANDBOXING = NO;
-ENABLE_TESTABILITY = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
+                                DEBUG_INFORMATION_FORMAT = dwarf;
+                                ENABLE_STRICT_OBJC_MSGSEND = YES;
+                                ENABLE_USER_SCRIPT_SANDBOXING = NO;
+                                ENABLE_TESTABILITY = YES;
+                                GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -324,11 +324,11 @@ ENABLE_TESTABILITY = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-ENABLE_NS_ASSERTIONS = NO;
-ENABLE_STRICT_OBJC_MSGSEND = YES;
-ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+                                ENABLE_NS_ASSERTIONS = NO;
+                                ENABLE_STRICT_OBJC_MSGSEND = YES;
+                                ENABLE_USER_SCRIPT_SANDBOXING = NO;
+                                GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -344,47 +344,47 @@ ENABLE_USER_SCRIPT_SANDBOXING = NO;
 			};
 			name = Release;
 		};
-                504EC3171FED79650016851F /* Debug */ = {
-                        isa = XCBuildConfiguration;
-                        baseConfigurationReference = FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */;
-                        buildSettings = {
+		504EC3171FED79650016851F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */;
+			buildSettings = {
                                 ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
                                 CODE_SIGN_STYLE = Automatic;
                                 CURRENT_PROJECT_VERSION = 1;
                                 ENABLE_USER_SCRIPT_SANDBOXING = NO;
                                 INFOPLIST_FILE = App/Info.plist;
                                 IPHONEOS_DEPLOYMENT_TARGET = 14.0;
-                                LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-                                MARKETING_VERSION = 1.0;
-                                OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" \"-DDEBUG\"";
-                                PRODUCT_BUNDLE_IDENTIFIER = com.petlinkid.app;
-                                PRODUCT_NAME = "$(TARGET_NAME)";
-                                SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-                                SWIFT_VERSION = 5.0;
-                                TARGETED_DEVICE_FAMILY = "1,2";
-                        };
-                        name = Debug;
-                };
-                504EC3181FED79650016851F /* Release */ = {
-                        isa = XCBuildConfiguration;
-                        baseConfigurationReference = AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */;
-                        buildSettings = {
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.0;
+				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" \"-DDEBUG\"";
+				PRODUCT_BUNDLE_IDENTIFIER = com.petlinkid.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		504EC3181FED79650016851F /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */;
+			buildSettings = {
                                 ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
                                 CODE_SIGN_STYLE = Automatic;
                                 CURRENT_PROJECT_VERSION = 1;
                                 ENABLE_USER_SCRIPT_SANDBOXING = NO;
                                 INFOPLIST_FILE = App/Info.plist;
                                 IPHONEOS_DEPLOYMENT_TARGET = 14.0;
-                                LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-                                MARKETING_VERSION = 1.0;
-                                PRODUCT_BUNDLE_IDENTIFIER = com.petlinkid.app;
-                                PRODUCT_NAME = "$(TARGET_NAME)";
-                                SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
-                                SWIFT_VERSION = 5.0;
-                                TARGETED_DEVICE_FAMILY = "1,2";
-                        };
-                        name = Release;
-                };
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.petlinkid.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
