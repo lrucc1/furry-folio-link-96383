@@ -48,6 +48,7 @@ import BillingSuccess from "./pages/BillingSuccess";
 import BillingCancel from "./pages/BillingCancel";
 import AcceptInvite from "./pages/invite/AcceptInvite";
 import InviteStatus from "./pages/InviteStatus";
+import IOSHome from "./pages/ios/IOSHome";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,14 @@ const App = () => (
               <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
+              <Route 
+                path="/ios-home" 
+                element={
+                  <ProtectedRoute>
+                    <IOSHome />
+                  </ProtectedRoute>
+                } 
+              />
               <Route path="/found/:publicId" element={<FoundPet />} />
               <Route path="/pet/:publicId" element={<PublicPetProfile />} />
               <Route path="/help" element={<HelpCentre />} />

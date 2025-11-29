@@ -15,6 +15,8 @@ import { EditHealthReminderModal } from '@/components/EditHealthReminderModal';
 import { ReminderNotifications } from '@/components/ReminderNotifications';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { HealthReminderModal } from '@/components/HealthReminderModal';
+import { IOSPageLayout } from '@/components/ios/IOSPageLayout';
+import { useIsNativeApp } from '@/hooks/useIsNativeApp';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -71,6 +73,7 @@ interface ReminderItem {
 
 export default function Reminders() {
   const { user } = useAuth();
+  const isNative = useIsNativeApp();
   const [reminders, setReminders] = useState<ReminderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingVaccination, setEditingVaccination] = useState<Vaccination | null>(null);
@@ -283,6 +286,371 @@ export default function Reminders() {
   const urgentReminders = activeReminders.filter(r => r.isOverdue || r.daysUntil <= 7);
   const upcomingReminders = activeReminders.filter(r => !r.isOverdue && r.daysUntil > 7);
 
+  const addButton = (
+    <Button 
+      onClick={handleAddReminder}
+      size="sm"
+      className="gap-2"
+    >
+      <Plus className="w-4 h-4" />
+      Add
+    </Button>
+  );
+
+  const RemindersContent = () => (
+    <div className="space-y-6">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2 mb-2">
+            <Heart className="w-6 h-6 sm:w-8 sm:h-8" />
+            Health Reminders
+          </h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
+            Keep track of all vaccinations and health reminders for your pets
+          </p>
+        </div>
+        {!isNative && (
+          <Button 
+            onClick={handleAddReminder}
+            size="lg"
+            className="gap-2 hidden sm:flex"
+          >
+            <Plus className="w-5 h-5" />
+            Add Reminder
+          </Button>
+        )}
+      </div>
+
+      {loading ? (
+        <Card>
+          <CardContent className="py-12">
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Tabs defaultValue="active" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="active" className="text-xs sm:text-sm">
+              Active ({activeReminders.length})
+            </TabsTrigger>
+            <TabsTrigger value="completed" className="text-xs sm:text-sm">
+              Done ({completedReminders.length})
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="text-xs sm:text-sm">
+              Emails
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="active" className="space-y-6">
+            {activeReminders.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <CheckCircle className="w-12 h-12 mx-auto mb-4 text-green-600" />
+                  <p className="text-lg font-medium mb-2">All caught up!</p>
+                  <p className="text-muted-foreground">No active health reminders</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                {urgentReminders.length > 0 && (
+                  <div className="space-y-4">
+                    <h2 className="text-lg sm:text-xl font-semibold text-red-600 flex items-center gap-2">
+                      <AlertTriangle className="w-5 h-5" />
+                      Urgent ({urgentReminders.length})
+                    </h2>
+                    {urgentReminders.map((reminder) => {
+                      const Icon = getIcon(reminder.type);
+                      return (
+                        <Card 
+                          key={reminder.id} 
+                          className="border-red-200 bg-red-50 cursor-pointer hover:bg-red-100 transition-colors"
+                          onClick={() => {
+                            if (reminder.type === 'vaccination') {
+                              setEditingVaccination(reminder.originalData as Vaccination);
+                            } else {
+                              setEditingHealthReminder(reminder.originalData as HealthReminder);
+                            }
+                          }}
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex items-start gap-3 flex-1">
+                                <Icon className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                                 <div className="flex-1">
+                                   <h3 className="font-semibold">{reminder.title}</h3>
+                                   <p className="text-sm text-muted-foreground">
+                                     {reminder.petName} • {format(reminder.dueDate, 'MMM dd, yyyy')}
+                                   </p>
+                                   {(reminder.originalData as any).recurrence_enabled && (
+                                     <Badge variant="secondary" className="mt-1 text-xs">
+                                       Repeats {(reminder.originalData as any).recurrence_interval}
+                                     </Badge>
+                                   )}
+                                   {reminder.details && (
+                                     <p className="text-sm text-muted-foreground mt-2">{reminder.details}</p>
+                                   )}
+                                </div>
+                              </div>
+                              <div className="flex flex-col items-end gap-2">
+                                <Badge variant={reminder.isOverdue ? 'destructive' : 'secondary'}>
+                                  {getStatusText(reminder.daysUntil, reminder.isOverdue)}
+                                </Badge>
+                                {reminder.type === 'health' && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleComplete(reminder);
+                                    }}
+                                  >
+                                    <CheckCircle className="w-4 h-4 mr-1" />
+                                    Done
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {upcomingReminders.length > 0 && (
+                  <div className="space-y-4">
+                    <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+                      <Calendar className="w-5 h-5" />
+                      Upcoming ({upcomingReminders.length})
+                    </h2>
+                    {upcomingReminders.map((reminder) => {
+                      const Icon = getIcon(reminder.type);
+                      return (
+                        <Card 
+                          key={reminder.id}
+                          className="cursor-pointer hover:bg-muted/50 transition-colors"
+                          onClick={() => {
+                            if (reminder.type === 'vaccination') {
+                              setEditingVaccination(reminder.originalData as Vaccination);
+                            } else {
+                              setEditingHealthReminder(reminder.originalData as HealthReminder);
+                            }
+                          }}
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex items-start gap-3 flex-1">
+                                <Icon className="w-5 h-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                 <div className="flex-1">
+                                   <h3 className="font-semibold">{reminder.title}</h3>
+                                   <p className="text-sm text-muted-foreground">
+                                     {reminder.petName} • {format(reminder.dueDate, 'MMM dd, yyyy')}
+                                   </p>
+                                   {(reminder.originalData as any).recurrence_enabled && (
+                                     <Badge variant="secondary" className="mt-1 text-xs">
+                                       Repeats {(reminder.originalData as any).recurrence_interval}
+                                     </Badge>
+                                   )}
+                                   {reminder.details && (
+                                     <p className="text-sm text-muted-foreground mt-2">{reminder.details}</p>
+                                   )}
+                                </div>
+                              </div>
+                              <div className="flex flex-col items-end gap-2">
+                                <Badge variant="outline">
+                                  {getStatusText(reminder.daysUntil, reminder.isOverdue)}
+                                </Badge>
+                                {reminder.type === 'health' && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleComplete(reminder);
+                                    }}
+                                  >
+                                    <CheckCircle className="w-4 h-4 mr-1" />
+                                    Done
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            )}
+          </TabsContent>
+
+          <TabsContent value="completed" className="space-y-4">
+            {completedReminders.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                  <p className="text-lg font-medium mb-2">No completed reminders</p>
+                  <p className="text-muted-foreground">Completed health reminders will appear here</p>
+                </CardContent>
+              </Card>
+            ) : (
+              completedReminders.map((reminder) => {
+                const Icon = getIcon(reminder.type);
+                return (
+                  <Card 
+                    key={reminder.id} 
+                    className="opacity-60 cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => {
+                      if (reminder.type === 'health') {
+                        setEditingHealthReminder(reminder.originalData as HealthReminder);
+                      }
+                    }}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Icon className="w-5 h-5 text-muted-foreground" />
+                          <div>
+                            <h3 className="font-semibold line-through">{reminder.title}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              {reminder.petName} • {format(reminder.dueDate, 'MMM dd, yyyy')}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleComplete(reminder);
+                          }}
+                        >
+                          Undo
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
+          </TabsContent>
+
+          <TabsContent value="notifications">
+            <ReminderNotifications />
+          </TabsContent>
+        </Tabs>
+      )}
+    </div>
+  );
+
+  // iOS Native Layout
+  if (isNative) {
+    return (
+      <IOSPageLayout title="Reminders" headerRight={addButton}>
+        <div 
+          ref={containerRef}
+          className="px-4 py-6"
+          style={{ 
+            transform: `translateY(${pullDistance}px)`, 
+            transition: isRefreshing ? 'transform 0.3s ease-out' : 'none' 
+          }}
+        >
+          {shouldShowLoader && (
+            <div 
+              className="fixed top-20 left-1/2 -translate-x-1/2 z-40"
+              style={{ opacity: loaderOpacity }}
+            >
+              <RefreshCw 
+                className="w-6 h-6 text-primary" 
+                style={{ transform: `rotate(${loaderRotation}deg)` }}
+              />
+            </div>
+          )}
+          
+          <RemindersContent />
+        </div>
+
+        {/* Pet selection dialog */}
+        {showAddModal && pets.length > 1 && !selectedPetForReminder && (
+          <AlertDialog open={showAddModal && !selectedPetForReminder} onOpenChange={(open) => !open && setShowAddModal(false)}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Select a Pet</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Which pet would you like to add a health reminder for?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <div className="grid gap-2 py-4">
+                {pets.map(pet => (
+                  <Button
+                    key={pet.id}
+                    variant="outline"
+                    className="justify-start gap-3 h-auto py-3"
+                    onClick={() => {
+                      setSelectedPetForReminder(pet.id);
+                    }}
+                  >
+                    {pet.photo_url && (
+                      <img 
+                        src={pet.photo_url} 
+                        alt={pet.name}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    )}
+                    <span className="font-medium">{pet.name}</span>
+                  </Button>
+                ))}
+              </div>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+
+        {/* Add Health Reminder Modal */}
+        {selectedPetForReminder && (
+          <HealthReminderModal
+            open={showAddModal}
+            onClose={() => {
+              setShowAddModal(false);
+              setSelectedPetForReminder(null);
+            }}
+            petId={selectedPetForReminder}
+            onSuccess={handleReminderSuccess}
+          />
+        )}
+
+        {editingVaccination && (
+          <EditVaccinationModal
+            vaccination={editingVaccination}
+            petId={editingVaccination.pet_id}
+            open={!!editingVaccination}
+            onClose={() => setEditingVaccination(null)}
+            onSuccess={() => {
+              fetchAllReminders();
+              setEditingVaccination(null);
+            }}
+          />
+        )}
+
+        {editingHealthReminder && (
+          <EditHealthReminderModal
+            reminder={editingHealthReminder}
+            petId={editingHealthReminder.pet_id}
+            open={!!editingHealthReminder}
+            onClose={() => setEditingHealthReminder(null)}
+            onSuccess={() => {
+              fetchAllReminders();
+              setEditingHealthReminder(null);
+            }}
+          />
+        )}
+      </IOSPageLayout>
+    );
+  }
+
+  // Web Layout
   return (
     <div ref={containerRef} className="min-h-screen flex flex-col" style={{ transform: `translateY(${pullDistance}px)`, transition: isRefreshing ? 'transform 0.3s ease-out' : 'none' }}>
       {shouldShowLoader && (
@@ -298,274 +666,15 @@ export default function Reminders() {
       )}
       <Header />
       <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold flex items-center gap-2 mb-2">
-                <Heart className="w-8 h-8" />
-                Health Reminders
-              </h1>
-              <p className="text-muted-foreground">
-                Keep track of all vaccinations and health reminders for your pets
-              </p>
-            </div>
-            <Button 
-              onClick={handleAddReminder}
-              size="lg"
-              className="gap-2 hidden sm:flex"
-            >
-              <Plus className="w-5 h-5" />
-              Add Reminder
-            </Button>
-          </div>
-
-          {loading ? (
-            <Card>
-              <CardContent className="py-12">
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Tabs defaultValue="active" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="active">
-                  Active ({activeReminders.length})
-                </TabsTrigger>
-                <TabsTrigger value="completed">
-                  Completed ({completedReminders.length})
-                </TabsTrigger>
-                <TabsTrigger value="notifications">
-                  Email History
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="active" className="space-y-6">
-                {activeReminders.length === 0 ? (
-                  <Card>
-                    <CardContent className="py-12 text-center">
-                      <CheckCircle className="w-12 h-12 mx-auto mb-4 text-green-600" />
-                      <p className="text-lg font-medium mb-2">All caught up!</p>
-                      <p className="text-muted-foreground">No active health reminders</p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <>
-                    {urgentReminders.length > 0 && (
-                      <div className="space-y-4">
-                        <h2 className="text-xl font-semibold text-red-600 flex items-center gap-2">
-                          <AlertTriangle className="w-5 h-5" />
-                          Urgent ({urgentReminders.length})
-                        </h2>
-                        {urgentReminders.map((reminder) => {
-                          const Icon = getIcon(reminder.type);
-                          return (
-                            <Card 
-                              key={reminder.id} 
-                              className="border-red-200 bg-red-50 cursor-pointer hover:bg-red-100 transition-colors"
-                              onClick={() => {
-                                if (reminder.type === 'vaccination') {
-                                  setEditingVaccination(reminder.originalData as Vaccination);
-                                } else {
-                                  setEditingHealthReminder(reminder.originalData as HealthReminder);
-                                }
-                              }}
-                            >
-                              <CardContent className="p-4">
-                                <div className="flex items-start justify-between gap-4">
-                                  <div className="flex items-start gap-3 flex-1">
-                                    <Icon className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
-                                     <div className="flex-1">
-                                       <h3 className="font-semibold">{reminder.title}</h3>
-                                       <p className="text-sm text-muted-foreground">
-                                         {reminder.petName} • {format(reminder.dueDate, 'MMM dd, yyyy')}
-                                       </p>
-                                       {(reminder.originalData as any).recurrence_enabled && (
-                                         <Badge variant="secondary" className="mt-1 text-xs">
-                                           Repeats {(reminder.originalData as any).recurrence_interval}
-                                         </Badge>
-                                       )}
-                                       {reminder.details && (
-                                         <p className="text-sm text-muted-foreground mt-2">{reminder.details}</p>
-                                       )}
-                                    </div>
-                                  </div>
-                                  <div className="flex flex-col items-end gap-2">
-                                    <Badge variant={reminder.isOverdue ? 'destructive' : 'secondary'}>
-                                      {getStatusText(reminder.daysUntil, reminder.isOverdue)}
-                                    </Badge>
-                                    {reminder.type === 'health' && (
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          toggleComplete(reminder);
-                                        }}
-                                      >
-                                        <CheckCircle className="w-4 h-4 mr-1" />
-                                        Mark Complete
-                                      </Button>
-                                    )}
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {upcomingReminders.length > 0 && (
-                      <div className="space-y-4">
-                        <h2 className="text-xl font-semibold flex items-center gap-2">
-                          <Calendar className="w-5 h-5" />
-                          Upcoming ({upcomingReminders.length})
-                        </h2>
-                        {upcomingReminders.map((reminder) => {
-                          const Icon = getIcon(reminder.type);
-                          return (
-                            <Card 
-                              key={reminder.id}
-                              className="cursor-pointer hover:bg-muted/50 transition-colors"
-                              onClick={() => {
-                                if (reminder.type === 'vaccination') {
-                                  setEditingVaccination(reminder.originalData as Vaccination);
-                                } else {
-                                  setEditingHealthReminder(reminder.originalData as HealthReminder);
-                                }
-                              }}
-                            >
-                              <CardContent className="p-4">
-                                <div className="flex items-start justify-between gap-4">
-                                  <div className="flex items-start gap-3 flex-1">
-                                    <Icon className="w-5 h-5 text-muted-foreground mt-0.5 flex-shrink-0" />
-                                     <div className="flex-1">
-                                       <h3 className="font-semibold">{reminder.title}</h3>
-                                       <p className="text-sm text-muted-foreground">
-                                         {reminder.petName} • {format(reminder.dueDate, 'MMM dd, yyyy')}
-                                       </p>
-                                       {(reminder.originalData as any).recurrence_enabled && (
-                                         <Badge variant="secondary" className="mt-1 text-xs">
-                                           Repeats {(reminder.originalData as any).recurrence_interval}
-                                         </Badge>
-                                       )}
-                                       {reminder.details && (
-                                         <p className="text-sm text-muted-foreground mt-2">{reminder.details}</p>
-                                       )}
-                                    </div>
-                                  </div>
-                                  <div className="flex flex-col items-end gap-2">
-                                    <Badge variant="outline">
-                                      {getStatusText(reminder.daysUntil, false)}
-                                    </Badge>
-                                    {reminder.type === 'health' && (
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          toggleComplete(reminder);
-                                        }}
-                                      >
-                                        <CheckCircle className="w-4 h-4 mr-1" />
-                                        Mark Complete
-                                      </Button>
-                                    )}
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </>
-                )}
-              </TabsContent>
-
-              <TabsContent value="completed" className="space-y-4">
-                {completedReminders.length === 0 ? (
-                  <Card>
-                    <CardContent className="py-12 text-center">
-                      <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-lg font-medium mb-2">No completed reminders</p>
-                      <p className="text-muted-foreground">Completed reminders will appear here</p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  completedReminders.map((reminder) => {
-                    const Icon = getIcon(reminder.type);
-                    return (
-                      <Card 
-                        key={reminder.id}
-                        className="opacity-60 cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => {
-                          if (reminder.type === 'vaccination') {
-                            setEditingVaccination(reminder.originalData as Vaccination);
-                          } else {
-                            setEditingHealthReminder(reminder.originalData as HealthReminder);
-                          }
-                        }}
-                      >
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex items-start gap-3 flex-1">
-                              <Icon className="w-5 h-5 text-muted-foreground mt-0.5 flex-shrink-0" />
-                              <div className="flex-1">
-                                <h3 className="font-semibold line-through">{reminder.title}</h3>
-                                <p className="text-sm text-muted-foreground">
-                                  {reminder.petName} • {format(reminder.dueDate, 'MMM dd, yyyy')}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex flex-col items-end gap-2">
-                              <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
-                                <CheckCircle className="w-3 h-3 mr-1" />
-                                Completed
-                              </Badge>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleComplete(reminder);
-                                }}
-                              >
-                                Mark Incomplete
-                              </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })
-                )}
-              </TabsContent>
-              
-              <TabsContent value="notifications" className="space-y-6">
-                <ReminderNotifications />
-              </TabsContent>
-            </Tabs>
-          )}
+        <div className="max-w-4xl mx-auto">
+          <RemindersContent />
         </div>
       </main>
       <Footer />
 
-      {/* Floating Action Button for Mobile */}
-      <Button
-        onClick={handleAddReminder}
-        size="lg"
-        className="fixed bottom-20 right-4 sm:hidden rounded-full shadow-lg w-14 h-14 z-50"
-        aria-label="Add health reminder"
-      >
-        <Plus className="w-6 h-6" />
-      </Button>
-
-      {/* Pet Selection Dialog for Multiple Pets */}
-      {showAddModal && !selectedPetForReminder && pets.length > 1 && (
-        <AlertDialog open={true} onOpenChange={(open) => !open && setShowAddModal(false)}>
+      {/* Pet selection dialog */}
+      {showAddModal && pets.length > 1 && !selectedPetForReminder && (
+        <AlertDialog open={showAddModal && !selectedPetForReminder} onOpenChange={(open) => !open && setShowAddModal(false)}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Select a Pet</AlertDialogTitle>

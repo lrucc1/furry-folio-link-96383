@@ -12,6 +12,7 @@ import { HealthReminders } from '@/components/HealthReminders'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { PendingInvitesModal } from '@/components/PendingInvitesModal'
+import { IOSPageLayout } from '@/components/ios/IOSPageLayout'
 import { Plus, Crown, Heart, RefreshCw } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { calculateAge } from '@/lib/age-utils'
@@ -19,6 +20,7 @@ import { au } from '@/lib/auEnglish'
 import { usePullToRefresh } from '@/hooks/usePullToRefresh'
 import { toast } from 'sonner'
 import { useAutoTimezone } from '@/hooks/useAutoTimezone'
+import { useIsNativeApp } from '@/hooks/useIsNativeApp'
 
 interface Pet {
   id: string
@@ -37,6 +39,7 @@ const Dashboard = () => {
   const { user } = useAuth()
   const { tier } = usePlan()
   const navigate = useNavigate()
+  const isNative = useIsNativeApp()
   const [pets, setPets] = useState<Pet[]>([])
   const [loading, setLoading] = useState(true)
   const [showInvitesModal, setShowInvitesModal] = useState(false)
@@ -177,56 +180,69 @@ const Dashboard = () => {
     )
   }
 
-  return (
-    <div ref={containerRef} className="min-h-screen bg-background" style={{ transform: `translateY(${pullDistance}px)`, transition: isRefreshing ? 'transform 0.3s ease-out' : 'none' }}>
-      {shouldShowLoader && (
-        <div 
-          className="fixed top-0 left-1/2 -translate-x-1/2 z-40 flex items-center justify-center pt-4"
-          style={{ opacity: loaderOpacity }}
-        >
-          <RefreshCw 
-            className="w-6 h-6 text-primary" 
-            style={{ transform: `rotate(${loaderRotation}deg)` }}
-          />
+  const PetsContent = () => (
+    <>
+      <div className="flex items-center justify-between mb-6 sm:mb-8">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{au('My Pets')}</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+            {au('Manage your furry family members')}
+          </p>
         </div>
-      )}
-      <Header />
-      
-      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
-        <div className="flex items-center justify-between mb-6 sm:mb-8">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{au('My Pets')}</h1>
-            <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-              {au('Manage your furry family members')}
-            </p>
-          </div>
-          
-          {!canAddPet && tier === 'free' && (
-            <Badge className="bg-gradient-accent text-accent-foreground">
-              <Crown className="w-3 h-3 mr-1" />
-              {au('Upgrade for more pets')}
-            </Badge>
-          )}
-        </div>
+        
+        {!canAddPet && tier === 'free' && (
+          <Badge className="bg-gradient-accent text-accent-foreground">
+            <Crown className="w-3 h-3 mr-1" />
+            {au('Upgrade for more pets')}
+          </Badge>
+        )}
+      </div>
 
-        {pets.length === 0 ? (
-          <Card className="text-center py-12">
-            <CardContent>
-              <Heart className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-              <CardTitle className="text-xl mb-2">{au('No pets yet')}</CardTitle>
-              <p className="text-muted-foreground mb-6">
-                {au('Add your first pet to get started with PetLinkID')}
-              </p>
-              <Button asChild size="lg">
-                <Link to="/pets/new">
-                  <Plus className="w-4 h-4 mr-2" />
-                  {au('Add Your First Pet')}
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <>
+      {pets.length === 0 ? (
+        <Card className="text-center py-12">
+          <CardContent>
+            <Heart className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <CardTitle className="text-xl mb-2">{au('No pets yet')}</CardTitle>
+            <p className="text-muted-foreground mb-6">
+              {au('Add your first pet to get started with PetLinkID')}
+            </p>
+            <Button asChild size="lg">
+              <Link to="/pets/new">
+                <Plus className="w-4 h-4 mr-2" />
+                {au('Add Your First Pet')}
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          {/* iOS: Simple grid without health reminders sidebar */}
+          {isNative ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              {pets.map((pet) => (
+                <PetCard
+                  key={pet.id}
+                  pet={{
+                    id: pet.id,
+                    name: pet.name,
+                    species: pet.species,
+                    breed: pet.breed || '',
+                    age: calculateAge(pet.date_of_birth),
+                    photo: pet.photo_url || 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=300&fit=crop',
+                    isLost: pet.is_lost,
+                    microchipNumber: pet.microchip_number || '',
+                    lastVaccination: '2024-06-15',
+                    publicId: pet.public_id
+                  }}
+                  onViewDetails={handleViewPetDetails}
+                  onToggleLost={handleToggleLost}
+                />
+              ))}
+              
+              {canAddPet && <AddPetCard />}
+            </div>
+          ) : (
+            /* Web: Full layout with health reminders sidebar */
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
               <div className="lg:col-span-1 order-first lg:order-1">
                 <HealthReminders />
@@ -279,8 +295,87 @@ const Dashboard = () => {
                 )}
               </div>
             </div>
-          </>
-        )}
+          )}
+
+          {/* Upgrade card for iOS */}
+          {isNative && !canAddPet && tier === 'free' && (
+            <Card className="bg-gradient-card border-primary/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Crown className="w-5 h-5 text-primary" />
+                  {au('Upgrade to Add More Pets')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  {au(`You've reached the limit of ${maxPets} pet on the Free plan. Upgrade to Pro for unlimited pets.`)}
+                </p>
+                <Button asChild variant="hero">
+                  <Link to="/pricing">
+                    {au('Upgrade Now')}
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </>
+      )}
+    </>
+  )
+
+  // iOS Native Layout
+  if (isNative) {
+    return (
+      <IOSPageLayout title={au('My Pets')}>
+        <div 
+          ref={containerRef}
+          className="px-4 py-6"
+          style={{ 
+            transform: `translateY(${pullDistance}px)`, 
+            transition: isRefreshing ? 'transform 0.3s ease-out' : 'none' 
+          }}
+        >
+          {shouldShowLoader && (
+            <div 
+              className="fixed top-20 left-1/2 -translate-x-1/2 z-40"
+              style={{ opacity: loaderOpacity }}
+            >
+              <RefreshCw 
+                className="w-6 h-6 text-primary" 
+                style={{ transform: `rotate(${loaderRotation}deg)` }}
+              />
+            </div>
+          )}
+          
+          <PetsContent />
+        </div>
+        
+        <PendingInvitesModal 
+          open={showInvitesModal} 
+          onClose={() => setShowInvitesModal(false)} 
+        />
+      </IOSPageLayout>
+    )
+  }
+
+  // Web Layout
+  return (
+    <div ref={containerRef} className="min-h-screen bg-background" style={{ transform: `translateY(${pullDistance}px)`, transition: isRefreshing ? 'transform 0.3s ease-out' : 'none' }}>
+      {shouldShowLoader && (
+        <div 
+          className="fixed top-0 left-1/2 -translate-x-1/2 z-40 flex items-center justify-center pt-4"
+          style={{ opacity: loaderOpacity }}
+        >
+          <RefreshCw 
+            className="w-6 h-6 text-primary" 
+            style={{ transform: `rotate(${loaderRotation}deg)` }}
+          />
+        </div>
+      )}
+      <Header />
+      
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
+        <PetsContent />
       </main>
       
       <PendingInvitesModal 

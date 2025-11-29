@@ -14,13 +14,20 @@ import { au } from "@/lib/auEnglish";
 import { Drawer } from "vaul";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
+import { useIsNativeApp } from "@/hooks/useIsNativeApp";
 
 export const Header = () => {
   const { user, signOut } = useAuth();
   const { tier, loading } = usePlan();
   const navigate = useNavigate();
+  const isNative = useIsNativeApp();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [invitesCount, setInvitesCount] = useState(0);
+
+  // Don't render the web header on native apps - they use IOSHeader/IOSTabBar
+  if (isNative) {
+    return null;
+  }
 
   useEffect(() => {
     if (user?.email) {
