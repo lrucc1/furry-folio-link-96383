@@ -18,6 +18,7 @@ import { calculateAge } from '@/lib/age-utils'
 import { au } from '@/lib/auEnglish'
 import { usePullToRefresh } from '@/hooks/usePullToRefresh'
 import { toast } from 'sonner'
+import { useAutoTimezone } from '@/hooks/useAutoTimezone'
 
 interface Pet {
   id: string
@@ -40,6 +41,9 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true)
   const [showInvitesModal, setShowInvitesModal] = useState(false)
   const [hasCheckedInvites, setHasCheckedInvites] = useState(false)
+
+  // Auto-detect and save timezone for new users
+  useAutoTimezone(user?.id)
 
   useEffect(() => {
     fetchPets()
