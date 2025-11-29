@@ -199,8 +199,8 @@ const Support = () => {
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div>
-              <p className="font-medium text-foreground">{au('PetLinkID Australia Pty Ltd')}</p>
-              <p className="text-muted-foreground">ABN: 12 345 678 901</p>
+              <p className="font-medium text-foreground">{au('PetLinkID (Based in Australia)')}</p>
+              <p className="text-muted-foreground">ABN: 12 345 678 901 • Serving customers worldwide</p>
             </div>
             <div>
               <p className="text-muted-foreground">

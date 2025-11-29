@@ -28,7 +28,16 @@ export default function RefundsPolicy() {
           </p>
         </div>
 
+        {/* TODO: Add section for EU (GDPR) and US (state-specific) consumer rights for international users */}
         <div className="space-y-6">
+          <Card className="border-muted bg-muted/20">
+            <CardContent className="py-4">
+              <p className="text-sm text-muted-foreground">
+                <strong>About PetLinkID:</strong> PetLinkID is based in Australia and serves customers worldwide. Australian Consumer Law guarantees apply to Australian customers. International customers may have additional rights under their local consumer protection laws.
+              </p>
+            </CardContent>
+          </Card>
+
           <Card className="border-primary/20 bg-primary/5">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -38,7 +47,7 @@ export default function RefundsPolicy() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                As an Australian business, PetLinkID complies with the Australian Consumer Law (ACL), which provides automatic consumer guarantees for services. These guarantees cannot be excluded and apply in addition to any voluntary refund policy we offer.
+                As an Australian business, PetLinkID complies with the Australian Consumer Law (ACL), which provides automatic consumer guarantees for services. These guarantees apply to Australian customers and cannot be excluded.
               </p>
               <div>
                 <h3 className="font-semibold mb-2">Your Rights Under ACL</h3>

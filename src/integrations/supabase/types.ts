@@ -427,6 +427,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           billing_interval: string | null
+          country_code: string | null
           created_at: string
           deleted_at: string | null
           deletion_scheduled: boolean | null
@@ -451,6 +452,7 @@ export type Database = {
           stripe_subscription_id: string | null
           stripe_tier: string | null
           subscription_status: string | null
+          timezone: string | null
           trial_end_at: string | null
           updated_at: string
           user_id: string | null
@@ -458,6 +460,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           billing_interval?: string | null
+          country_code?: string | null
           created_at?: string
           deleted_at?: string | null
           deletion_scheduled?: boolean | null
@@ -482,6 +485,7 @@ export type Database = {
           stripe_subscription_id?: string | null
           stripe_tier?: string | null
           subscription_status?: string | null
+          timezone?: string | null
           trial_end_at?: string | null
           updated_at?: string
           user_id?: string | null
@@ -489,6 +493,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           billing_interval?: string | null
+          country_code?: string | null
           created_at?: string
           deleted_at?: string | null
           deletion_scheduled?: boolean | null
@@ -513,6 +518,7 @@ export type Database = {
           stripe_subscription_id?: string | null
           stripe_tier?: string | null
           subscription_status?: string | null
+          timezone?: string | null
           trial_end_at?: string | null
           updated_at?: string
           user_id?: string | null

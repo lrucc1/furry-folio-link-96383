@@ -69,6 +69,13 @@ const Terms = () => {
           {/* Main Content */}
           <Card className="bg-gradient-card border-0 shadow-medium">
             <CardContent className="prose prose-gray max-w-none p-8">
+              {/* TODO: Add GDPR compliance section for EU users, CCPA section for California users */}
+              <div className="bg-primary/5 p-4 rounded-lg mb-6">
+                <p className="text-sm text-muted-foreground">
+                  <strong>About PetLinkID:</strong> PetLinkID is operated by PetLinkID Australia Pty Ltd, headquartered in Sydney, Australia. We serve pet owners worldwide. These terms are primarily governed by Australian law, though your local consumer protection laws may also apply.
+                </p>
+              </div>
+
               <h2 className="text-2xl font-bold text-foreground mb-4">1. Acceptance of Terms</h2>
               <p className="text-muted-foreground mb-6">
                 By accessing or using PetLinkID ("we", "our", "us"), you agree to be bound by these Terms of Service. If you disagree with any part of these terms, you may not access our service. These terms apply to all visitors, users, and others who access or use our service.
@@ -136,7 +143,7 @@ const Terms = () => {
 
               <h2 className="text-2xl font-bold text-foreground mb-4">11. Governing Law</h2>
               <p className="text-muted-foreground mb-6">
-                These Terms shall be interpreted and governed by the laws of New South Wales, Australia, without regard to its conflict of law provisions. Any disputes will be resolved in the courts of New South Wales, Australia.
+                These Terms shall be interpreted and governed by the laws of New South Wales, Australia, without regard to its conflict of law provisions. Any disputes will be resolved in the courts of New South Wales, Australia. International users: Your local consumer protection laws may also apply in addition to these terms.
               </p>
 
               <h2 className="text-2xl font-bold text-foreground mb-4">12. Changes to Terms</h2>

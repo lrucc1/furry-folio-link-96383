@@ -120,7 +120,6 @@ export function AddressAutocomplete({
     autocompleteService.current.getPlacePredictions(
       {
         input: debouncedInput,
-        componentRestrictions: { country: 'au' },
         types: ['address']
       },
       (predictions: any, status: any) => {
