@@ -1,6 +1,6 @@
 export type Tier = 'free' | 'pro';
 export type LegacyTier = Tier | 'premium' | 'family' | 'trial' | 'fire';
-export type PlanSource = 'manual' | 'stripe' | 'system';
+export type PlanSource = 'manual' | 'stripe' | 'system' | 'apple';
 
 export interface ProfilePlanData {
   // Legacy fields

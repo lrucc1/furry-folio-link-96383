@@ -210,8 +210,26 @@ Navigate to **App Privacy** and enter:
 
 1. **Account Deletion** - ✅ Implemented at Settings → Delete Account
 2. **Privacy Policy** - ✅ Available at /privacy-policy
-3. **In-App Purchases** - Uses Stripe (not IAP), ensure disclosure
+3. **In-App Purchases** - ✅ Uses Apple IAP (StoreKit) via cordova-plugin-purchase
 4. **Location Usage** - Clear description provided for vet clinic search
+
+### Apple IAP Setup Required
+
+Before submitting to App Store, you must:
+
+1. **App Store Connect - In-App Purchases:**
+   - Create subscription products matching your env vars:
+     - `VITE_APPLE_PRO_MONTHLY_PRODUCT_ID` (e.g., `com.petlinkid.pro.monthly`)
+     - `VITE_APPLE_PRO_YEARLY_PRODUCT_ID` (e.g., `com.petlinkid.pro.yearly`)
+   - Configure subscription group and pricing
+   - Submit products for review alongside app
+
+2. **Sandbox Testing:**
+   - Create sandbox test accounts in App Store Connect
+   - Test purchase and restore flows in TestFlight
+
+3. **Environment Variables:**
+   - Add Apple product IDs to your production environment
 
 ---
 

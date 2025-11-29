@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -6,12 +6,13 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Crown, AlertTriangle, Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { Crown, AlertTriangle, Loader2, CheckCircle2, Smartphone } from 'lucide-react';
 import { au } from '@/lib/auEnglish';
-import { TierFeatures } from '@/config/tierFeatures';
 import { PLANS } from '@/config/pricing';
 import { log } from '@/lib/log';
 import { redirectToCheckout } from '@/lib/safeRedirect';
+import { isNativeApp, isIOSApp, isAppleIAPAvailable, purchasePro } from '@/lib/appleIap';
+import { usePlanV2 } from '@/hooks/usePlanV2';
 
 interface ManageSubscriptionModalProps {
   open: boolean;
@@ -53,6 +54,7 @@ export function ManageSubscriptionModal({
 }: ManageSubscriptionModalProps) {
   const [loading, setLoading] = useState(false);
   const [openingPortal, setOpeningPortal] = useState(false);
+  const { refresh } = usePlanV2();
 
   const canDowngradeTo = (targetTier: 'free' | 'pro') => {
     const targetLimits = TIER_INFO[targetTier];
@@ -72,13 +74,34 @@ export function ManageSubscriptionModal({
   const handleUpgrade = async (targetTier: 'pro') => {
     setLoading(true);
     try {
+      // Check if we should use Apple IAP (iOS native app)
+      if (isNativeApp() && isIOSApp()) {
+        if (isAppleIAPAvailable()) {
+          await purchasePro('monthly');
+          // Refresh plan data after purchase
+          await refresh();
+          onPlanChange();
+          onOpenChange(false);
+          toast.success(au('Welcome to Pro!'));
+        } else {
+          toast.error('In-app purchases are not configured. Please try again later.');
+        }
+        return;
+      }
+
+      // For non-iOS platforms, show message about iOS-only purchases
+      toast.info(au('Upgrades are currently available via the iOS app through Apple In-App Purchases.'));
+      return;
+
+      // Legacy Stripe code - commented out for reference
+      /*
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) throw new Error('No auth session');
       
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         method: 'POST',
         headers: { Authorization: `Bearer ${session.access_token}` },
-        body: { billingPeriod: 'monthly' }, // Let backend select price ID
+        body: { billingPeriod: 'monthly' },
       });
 
       if (error) throw error;
@@ -87,6 +110,7 @@ export function ManageSubscriptionModal({
         redirectToCheckout(data.url);
         toast.success(au('Redirecting to checkout...'));
       }
+      */
     } catch (error) {
       log.error('[Upgrade] Error:', error);
       toast.error(au('Failed to start upgrade process'));
@@ -96,6 +120,12 @@ export function ManageSubscriptionModal({
   };
 
   const handleOpenCustomerPortal = async () => {
+    // For Apple IAP subscriptions, direct to App Store settings
+    if (isNativeApp() && isIOSApp()) {
+      toast.info(au('To manage your subscription, go to Settings → Apple ID → Subscriptions on your device.'));
+      return;
+    }
+
     setOpeningPortal(true);
     try {
       const { data, error } = await supabase.functions.invoke('customer-portal');
@@ -126,6 +156,9 @@ export function ManageSubscriptionModal({
       petsToDelete: 0, 
       storageToFree: 0 
     };
+
+    // Show iOS-only message for upgrades on non-iOS platforms
+    const showIOSOnlyMessage = isUpgrade && (!isNativeApp() || !isIOSApp());
 
     return (
       <Card key={tier} className="p-4">
@@ -167,9 +200,18 @@ export function ManageSubscriptionModal({
           </Alert>
         )}
 
+        {showIOSOnlyMessage && (
+          <Alert className="mb-3">
+            <Smartphone className="w-4 h-4" />
+            <AlertDescription className="text-xs">
+              {au('Upgrades are available via the iOS app through Apple In-App Purchases.')}
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Button
           onClick={() => isUpgrade ? handleUpgrade(tier) : handleOpenCustomerPortal()}
-          disabled={loading || openingPortal || (isDowngrade && !validation.canDowngrade)}
+          disabled={loading || openingPortal || (isDowngrade && !validation.canDowngrade) || showIOSOnlyMessage}
           className="w-full"
           variant={isUpgrade ? 'default' : 'outline'}
         >
@@ -180,6 +222,8 @@ export function ManageSubscriptionModal({
             </>
           ) : isDowngrade ? (
             au(`Manage Subscription`)
+          ) : showIOSOnlyMessage ? (
+            au('Use iOS App to Upgrade')
           ) : (
             au(`Upgrade to ${tierInfo.name}`)
           )}
@@ -196,7 +240,10 @@ export function ManageSubscriptionModal({
             {au('Manage Subscription')}
           </DialogTitle>
           <DialogDescription>
-            {au('Change your plan or manage your subscription through Stripe')}
+            {isNativeApp() && isIOSApp() 
+              ? au('Manage your subscription through Apple In-App Purchases')
+              : au('Change your plan or manage your subscription')
+            }
           </DialogDescription>
         </DialogHeader>
 
@@ -223,24 +270,40 @@ export function ManageSubscriptionModal({
 
           {currentTier === 'pro' && (
             <div className="pt-4 border-t">
-              <p className="text-sm text-muted-foreground mb-3">
-                {au('To cancel or make other changes to your subscription, use the Stripe Customer Portal:')}
-              </p>
-              <Button
-                onClick={handleOpenCustomerPortal}
-                disabled={openingPortal}
-                variant="outline"
-                className="w-full"
-              >
-                {openingPortal ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {au('Loading...')}
-                  </>
-                ) : (
-                  au('Open Stripe Customer Portal')
-                )}
-              </Button>
+              {isNativeApp() && isIOSApp() ? (
+                <>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    {au('Your subscription is managed through Apple. To cancel or make changes:')}
+                  </p>
+                  <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside mb-3">
+                    <li>{au('Open Settings on your iPhone')}</li>
+                    <li>{au('Tap your Apple ID at the top')}</li>
+                    <li>{au('Tap Subscriptions')}</li>
+                    <li>{au('Find and tap PetLinkID')}</li>
+                  </ol>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    {au('To cancel or make other changes to your subscription, use the Stripe Customer Portal:')}
+                  </p>
+                  <Button
+                    onClick={handleOpenCustomerPortal}
+                    disabled={openingPortal}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    {openingPortal ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        {au('Loading...')}
+                      </>
+                    ) : (
+                      au('Open Stripe Customer Portal')
+                    )}
+                  </Button>
+                </>
+              )}
             </div>
           )}
         </div>
