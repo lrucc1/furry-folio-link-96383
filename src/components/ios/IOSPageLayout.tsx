@@ -18,18 +18,30 @@ export function IOSPageLayout({
   headerRight
 }: IOSPageLayoutProps) {
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div 
+      className="fixed inset-0 bg-background flex flex-col"
+      style={{ 
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+      }}
+    >
+      {/* Header - static in flex container */}
       {showHeader && <IOSHeader title={title} rightContent={headerRight} />}
       
-      <main className={`
-        ${showHeader ? 'pt-[calc(3.5rem+env(safe-area-inset-top))]' : 'pt-[env(safe-area-inset-top)]'}
-        ${showTabBar ? 'pb-[calc(5rem+env(safe-area-inset-bottom))]' : 'pb-[env(safe-area-inset-bottom)]'}
-        overflow-y-auto
-        -webkit-overflow-scrolling-touch
-      `}>
-        {children}
+      {/* Scrollable content area */}
+      <main 
+        className="flex-1 overflow-y-auto overflow-x-hidden"
+        style={{ 
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'none',
+        }}
+      >
+        <div className={`${showTabBar ? 'pb-4' : ''}`}>
+          {children}
+        </div>
       </main>
       
+      {/* Tab bar - static in flex container */}
       {showTabBar && <IOSTabBar />}
     </div>
   );

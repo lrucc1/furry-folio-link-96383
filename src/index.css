@@ -152,6 +152,11 @@ All colors MUST be HSL.
     display: none;
   }
 
+  /* Prevent iOS rubber banding */
+  html, body {
+    overscroll-behavior: none;
+  }
+
   /* iOS Safe Area utilities */
   .pt-safe {
     padding-top: env(safe-area-inset-top);
