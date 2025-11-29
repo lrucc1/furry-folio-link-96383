@@ -15,6 +15,8 @@ import { Switch } from '@/components/ui/switch'
 import { Header } from '@/components/Header'
 import { PaywallModal } from '@/components/PaywallModal'
 import { VetClinicAutocomplete, VetClinicData } from '@/components/VetClinicAutocomplete'
+import { IOSPageLayout } from '@/components/ios/IOSPageLayout'
+import { useIsNativeApp } from '@/hooks/useIsNativeApp'
 import { ArrowLeft, Upload, MapPin } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from '@/hooks/use-toast'
@@ -24,6 +26,7 @@ const AddPet = () => {
   const { user } = useAuth()
   const { plan, usage, entitlement } = usePlanV2()
   const navigate = useNavigate()
+  const isNative = useIsNativeApp()
   const [loading, setLoading] = useState(false)
   const [showPaywall, setShowPaywall] = useState(false)
 
@@ -191,6 +194,287 @@ const AddPet = () => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
+  // Shared form content component
+  const FormContent = () => (
+    <>
+      {/* Subscription Status Card */}
+      <Card className="mb-6 bg-gradient-card border-primary/20">
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-sm text-muted-foreground">{au('Current Plan')}</p>
+              <p className="text-xl font-semibold capitalize">{plan}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-muted-foreground">{au('Pets Available')}</p>
+              <p className="text-xl font-semibold">
+                {currentPets} {au('of')} {isUnlimited ? au('Unlimited') : maxPets}
+              </p>
+            </div>
+          </div>
+          
+          {!isUnlimited && (
+            <div className="space-y-2">
+              <Progress value={progressPercentage} className="h-2" />
+              <p className="text-sm text-muted-foreground text-center">
+                {remainingPets === 'Unlimited' 
+                  ? au('Unlimited pets remaining') 
+                  : remainingPets === 0
+                  ? au('No pets remaining')
+                  : au(`${remainingPets} ${remainingPets === 1 ? 'pet' : 'pets'} remaining`)
+                }
+              </p>
+            </div>
+          )}
+          
+          {!canAddPet && (
+            <div className="mt-4 p-3 bg-warning/10 border border-warning/20 rounded-md">
+              <p className="text-sm text-warning-foreground">
+                {au("You've reached your pet limit.")} <Link to="/pricing" className="underline font-medium">{au('Upgrade your plan')}</Link> {au('to add more pets')}.
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl">{au('Add New Pet')}</CardTitle>
+          <p className="text-muted-foreground">
+            {au('Create a comprehensive profile for your furry family member')}
+          </p>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Basic Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Basic Information</h3>
+              
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Pet Name *</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    placeholder="e.g., Max"
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="species">Species *</Label>
+                  <Select onValueChange={(value) => handleInputChange('species', value)} required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select species" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Dog">Dog</SelectItem>
+                      <SelectItem value="Cat">Cat</SelectItem>
+                      <SelectItem value="Bird">Bird</SelectItem>
+                      <SelectItem value="Rabbit">Rabbit</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="breed">Breed *</Label>
+                  <Input
+                    id="breed"
+                    value={formData.breed}
+                    onChange={(e) => handleInputChange('breed', e.target.value)}
+                    placeholder="e.g., Golden Retriever"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="color">Color/Markings *</Label>
+                  <Input
+                    id="color"
+                    value={formData.color}
+                    onChange={(e) => handleInputChange('color', e.target.value)}
+                    placeholder="e.g., Golden, white chest"
+                  />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="sex">Sex *</Label>
+                  <Select onValueChange={(value) => handleInputChange('sex', value)} >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select sex" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Male">Male</SelectItem>
+                      <SelectItem value="Female">Female</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="date_of_birth">Date of Birth *</Label>
+                  <Input
+                    id="date_of_birth"
+                    type="date"
+                    value={formData.date_of_birth}
+                    onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="desexed"
+                  checked={formData.desexed}
+                  onCheckedChange={(checked) => handleInputChange('desexed', checked)}
+                />
+                <Label htmlFor="desexed">Desexed</Label>
+              </div>
+            </div>
+
+            {/* Microchip & Registry */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Microchip & Registry</h3>
+              
+              <div className="space-y-2">
+                <Label htmlFor="microchip_number">Microchip Number</Label>
+                <Input
+                  id="microchip_number"
+                  value={formData.microchip_number}
+                  onChange={(e) => handleInputChange('microchip_number', e.target.value)}
+                  placeholder="15-digit number"
+                />
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="registry_name">Registry Name</Label>
+                  <Select onValueChange={(value) => handleInputChange('registry_name', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select registry" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Pet Address">Pet Address</SelectItem>
+                      <SelectItem value="Central Animal Records">Central Animal Records</SelectItem>
+                      <SelectItem value="National Pet Registry">National Pet Registry</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="registry_link">Registry Website</Label>
+                  <Input
+                    id="registry_link"
+                    value={formData.registry_link}
+                    onChange={(e) => handleInputChange('registry_link', e.target.value)}
+                    placeholder="https://..."
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Health & Care */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Health & Care</h3>
+              
+              <div className="space-y-2">
+                <Label htmlFor="clinic_name">Vet Clinic</Label>
+                <VetClinicAutocomplete
+                  value={formData.clinic_name}
+                  clinicAddress={formData.clinic_address}
+                  onChange={(data: VetClinicData) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      clinic_name: data.name,
+                      clinic_address: data.address,
+                    }))
+                  }}
+                  placeholder="Start typing vet clinic name…"
+                />
+                {formData.clinic_address && (
+                  <div className="flex items-start gap-2 text-xs text-muted-foreground mt-2 p-2 bg-muted/30 rounded-md">
+                    <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                    <span>{formData.clinic_address}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="insurance_provider">Insurance Provider</Label>
+                  <Select 
+                    value={formData.insurance_provider} 
+                    onValueChange={(value) => handleInputChange('insurance_provider', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select provider" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="RSPCA">RSPCA Pet Insurance</SelectItem>
+                      <SelectItem value="Pet Insurance Australia">Pet Insurance Australia</SelectItem>
+                      <SelectItem value="Bow Wow Meow">Bow Wow Meow</SelectItem>
+                      <SelectItem value="Woolworths Pet Insurance">Woolworths Pet Insurance</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="insurance_policy">Policy Number</Label>
+                  <Input
+                    id="insurance_policy"
+                    value={formData.insurance_policy}
+                    onChange={(e) => handleInputChange('insurance_policy', e.target.value)}
+                    placeholder="Policy number"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Additional Notes */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Additional Notes</h3>
+              <Textarea
+                id="notes"
+                value={formData.notes}
+                onChange={(e) => handleInputChange('notes', e.target.value)}
+                placeholder="Any additional information about your pet..."
+                className="min-h-[100px]"
+              />
+            </div>
+
+            <Button type="submit" className="w-full" disabled={!canAddPet || loading}>
+              {loading ? 'Adding...' : au('Add Pet')}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <PaywallModal
+        open={showPaywall}
+        onOpenChange={setShowPaywall}
+        feature="pet limit"
+      />
+    </>
+  )
+
+  // iOS Layout
+  if (isNative) {
+    return (
+      <IOSPageLayout title="Add Pet">
+        <div className="px-4 py-6 max-w-2xl mx-auto">
+          <FormContent />
+        </div>
+      </IOSPageLayout>
+    )
+  }
+
+  // Web Layout
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -205,289 +489,8 @@ const AddPet = () => {
           </Button>
         </div>
 
-        {/* Subscription Status Card */}
-        <Card className="mb-6 bg-gradient-card border-primary/20">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-sm text-muted-foreground">{au('Current Plan')}</p>
-                <p className="text-xl font-semibold capitalize">
-                  {plan}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-muted-foreground">{au('Pets Available')}</p>
-                <p className="text-xl font-semibold">
-                  {currentPets} {au('of')} {isUnlimited ? au('Unlimited') : maxPets}
-                </p>
-              </div>
-            </div>
-            
-            {!isUnlimited && (
-              <div className="space-y-2">
-                <Progress value={progressPercentage} className="h-2" />
-                <p className="text-sm text-muted-foreground text-center">
-                  {remainingPets === 'Unlimited' 
-                    ? au('Unlimited pets remaining') 
-                    : remainingPets === 0
-                    ? au('No pets remaining')
-                    : au(`${remainingPets} ${remainingPets === 1 ? 'pet' : 'pets'} remaining`)
-                  }
-                </p>
-              </div>
-            )}
-            
-            {!canAddPet && (
-              <div className="mt-4 p-3 bg-warning/10 border border-warning/20 rounded-md">
-                <p className="text-sm text-warning-foreground">
-                  {au("You've reached your pet limit.")} <Link to="/pricing" className="underline font-medium">{au('Upgrade your plan')}</Link> {au('to add more pets')}.
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">{au('Add New Pet')}</CardTitle>
-            <p className="text-muted-foreground">
-              {au('Create a comprehensive profile for your furry family member')}
-            </p>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Basic Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Basic Information</h3>
-                
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Pet Name *</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
-                      placeholder="e.g., Max"
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="species">Species *</Label>
-                    <Select onValueChange={(value) => handleInputChange('species', value)} required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select species" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Dog">Dog</SelectItem>
-                        <SelectItem value="Cat">Cat</SelectItem>
-                        <SelectItem value="Bird">Bird</SelectItem>
-                        <SelectItem value="Rabbit">Rabbit</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="breed">Breed *</Label>
-                    <Input
-                      id="breed"
-                      value={formData.breed}
-                      onChange={(e) => handleInputChange('breed', e.target.value)}
-                      placeholder="e.g., Golden Retriever"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="color">Color/Markings *</Label>
-                    <Input
-                      id="color"
-                      value={formData.color}
-                      onChange={(e) => handleInputChange('color', e.target.value)}
-                      placeholder="e.g., Golden, white chest"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="sex">Sex *</Label>
-                    <Select onValueChange={(value) => handleInputChange('sex', value)} >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select sex" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Male">Male</SelectItem>
-                        <SelectItem value="Female">Female</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="date_of_birth">Date of Birth *</Label>
-                    <Input
-                      id="date_of_birth"
-                      type="date"
-                      value={formData.date_of_birth}
-                      onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="desexed"
-                    checked={formData.desexed}
-                    onCheckedChange={(checked) => handleInputChange('desexed', checked)}
-                  />
-                  <Label htmlFor="desexed">Desexed</Label>
-                </div>
-              </div>
-
-              {/* Microchip & Registry */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Microchip & Registry</h3>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="microchip_number">Microchip Number</Label>
-                  <Input
-                    id="microchip_number"
-                    value={formData.microchip_number}
-                    onChange={(e) => handleInputChange('microchip_number', e.target.value)}
-                    placeholder="15-digit number"
-                  />
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="registry_name">Registry Name</Label>
-                    <Select onValueChange={(value) => handleInputChange('registry_name', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select registry" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Pet Address">Pet Address</SelectItem>
-                        <SelectItem value="Central Animal Records">Central Animal Records</SelectItem>
-                        <SelectItem value="National Pet Registry">National Pet Registry</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="registry_link">Registry Website</Label>
-                    <Input
-                      id="registry_link"
-                      value={formData.registry_link}
-                      onChange={(e) => handleInputChange('registry_link', e.target.value)}
-                      placeholder="https://..."
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Health & Care */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Health & Care</h3>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="clinic_name">Vet Clinic</Label>
-                  <VetClinicAutocomplete
-                    value={formData.clinic_name}
-                    clinicAddress={formData.clinic_address}
-                    onChange={(data: VetClinicData) => {
-                      setFormData(prev => ({
-                        ...prev,
-                        clinic_name: data.name,
-                        clinic_address: data.address,
-                      }))
-                    }}
-                    placeholder="Start typing vet clinic name…"
-                  />
-                  {formData.clinic_address && (
-                    <div className="flex items-start gap-2 text-xs text-muted-foreground mt-2 p-2 bg-muted/30 rounded-md">
-                      <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                      <span>{formData.clinic_address}</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="insurance_provider">Insurance Provider</Label>
-                    <Select 
-                      value={formData.insurance_provider} 
-                      onValueChange={(value) => handleInputChange('insurance_provider', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select provider" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {/* Australia & NZ */}
-                        <SelectItem value="AAMI Pet Insurance">AAMI Pet Insurance (AU)</SelectItem>
-                        <SelectItem value="Bow Wow Meow">Bow Wow Meow (AU)</SelectItem>
-                        <SelectItem value="Medibank Pet Insurance">Medibank Pet Insurance (AU)</SelectItem>
-                        <SelectItem value="Pet Insurance Australia">Pet Insurance Australia</SelectItem>
-                        <SelectItem value="Petplan">Petplan (AU/UK/US)</SelectItem>
-                        <SelectItem value="RSPCA Pet Insurance">RSPCA Pet Insurance (AU)</SelectItem>
-                        {/* International */}
-                        <SelectItem value="Healthy Paws">Healthy Paws (US)</SelectItem>
-                        <SelectItem value="Nationwide Pet">Nationwide Pet (US)</SelectItem>
-                        <SelectItem value="Trupanion">Trupanion (US/CA)</SelectItem>
-                        <SelectItem value="Embrace Pet Insurance">Embrace Pet Insurance (US)</SelectItem>
-                        <SelectItem value="Animal Friends">Animal Friends (UK)</SelectItem>
-                        <SelectItem value="Direct Line Pet Insurance">Direct Line Pet Insurance (UK)</SelectItem>
-                        <SelectItem value="Agria Pet Insurance">Agria Pet Insurance (UK/EU)</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="insurance_policy">Policy Number</Label>
-                    <Input
-                      id="insurance_policy"
-                      value={formData.insurance_policy}
-                      onChange={(e) => handleInputChange('insurance_policy', e.target.value)}
-                      placeholder="Policy number"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Additional Notes */}
-              <div className="space-y-2">
-                <Label htmlFor="notes">Additional Notes</Label>
-                <Textarea
-                  id="notes"
-                  value={formData.notes}
-                  onChange={(e) => handleInputChange('notes', e.target.value)}
-                  placeholder="Any special notes about your pet..."
-                  rows={3}
-                />
-              </div>
-
-              <div className="flex gap-4 pt-6">
-                <Button type="submit" disabled={loading || !canAddPet} className="flex-1">
-                  {loading ? au('Adding Pet...') : au('Add Pet')}
-                </Button>
-                <Button type="button" variant="outline" asChild>
-                  <Link to="/dashboard">{au('Cancel')}</Link>
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+        <FormContent />
       </main>
-
-      <PaywallModal 
-        open={showPaywall}
-        onOpenChange={setShowPaywall}
-        feature="Add Pet"
-        reason="Free plan allows 1 pet. Upgrade to Pro for unlimited pets."
-      />
     </div>
   )
 }

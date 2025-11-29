@@ -12,6 +12,8 @@ import { Switch } from '@/components/ui/switch'
 import { Header } from '@/components/Header'
 import { ImageCropDialog } from '@/components/ImageCropDialog'
 import { VetClinicAutocomplete, VetClinicData } from '@/components/VetClinicAutocomplete'
+import { IOSPageLayout } from '@/components/ios/IOSPageLayout'
+import { useIsNativeApp } from '@/hooks/useIsNativeApp'
 import { ArrowLeft, Upload, X, Trash2, CalendarIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { Calendar } from '@/components/ui/calendar'
@@ -35,6 +37,7 @@ const EditPet = () => {
   const { id } = useParams<{ id: string }>()
   const { user } = useAuth()
   const navigate = useNavigate()
+  const isNative = useIsNativeApp()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -319,6 +322,7 @@ const EditPet = () => {
     )
   }
 
+  // Web Layout (iOS support will be added in next iteration)
   return (
     <div className="min-h-screen bg-background">
       <Header />

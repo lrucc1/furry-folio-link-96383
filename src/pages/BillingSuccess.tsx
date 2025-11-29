@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { IOSPageLayout } from '@/components/ios/IOSPageLayout';
+import { useIsNativeApp } from '@/hooks/useIsNativeApp';
 import { usePlanV2 } from '@/hooks/usePlanV2';
 import { supabase } from '@/integrations/supabase/client';
 import { isNativeApp, returnToIOSApp, isReturningFromWebCheckout } from '@/lib/iosPaymentFlow';
@@ -14,6 +16,7 @@ export default function BillingSuccess() {
   const [searchParams] = useSearchParams();
   const { refresh, plan } = usePlanV2();
   const [verifying, setVerifying] = useState(true);
+  const isNativeHook = useIsNativeApp();
 
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
@@ -47,24 +50,113 @@ export default function BillingSuccess() {
     }
   }, [verifying]);
 
-  // If still verifying, show loader
+  // Shared loading content
+  const LoadingContent = () => (
+    <Card className="border-primary">
+      <CardHeader className="text-center">
+        <div className="flex justify-center mb-4">
+          <Loader2 className="w-16 h-16 text-primary animate-spin" />
+        </div>
+        <CardTitle className="text-2xl">Verifying...</CardTitle>
+        <CardDescription className="mt-2">
+          Please wait while we confirm your subscription
+        </CardDescription>
+      </CardHeader>
+    </Card>
+  );
+
+  // Shared success content
+  const SuccessContent = () => (
+    <Card className="border-primary">
+      <CardHeader className="text-center">
+        <div className="flex justify-center mb-4">
+          <CheckCircle className="w-16 h-16 text-primary" />
+        </div>
+        <CardTitle className="text-2xl">
+          {plan === 'PRO' ? 'Welcome to Pro!' : 'Subscription Updated!'}
+        </CardTitle>
+        <CardDescription className="mt-2">
+          {isNativeApp() 
+            ? 'Your subscription has been activated. Returning to app...'
+            : 'Your subscription has been activated successfully'
+          }
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="bg-muted rounded-lg p-6 space-y-3">
+          <h3 className="font-semibold">What's included in your Pro plan:</h3>
+          <ul className="space-y-2 text-sm">
+            <li className="flex items-start gap-2">
+              <CheckCircle className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+              <span>Unlimited pet profiles</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckCircle className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+              <span>Full caregiver access with read & write permissions</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckCircle className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+              <span>Unlimited health reminders</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckCircle className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+              <span>200MB document storage</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckCircle className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+              <span>Priority support</span>
+            </li>
+          </ul>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Button 
+            onClick={() => navigate('/dashboard')}
+            className="flex-1"
+          >
+            Go to Dashboard
+          </Button>
+          <Button 
+            onClick={() => navigate('/account')}
+            variant="outline"
+            className="flex-1"
+          >
+            Manage Subscription
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  // iOS Layout
+  if (isNativeHook) {
+    if (verifying) {
+      return (
+        <IOSPageLayout title="Verifying" showTabBar={false}>
+          <div className="px-4 py-6 max-w-2xl mx-auto">
+            <LoadingContent />
+          </div>
+        </IOSPageLayout>
+      );
+    }
+
+    return (
+      <IOSPageLayout title="Success" showTabBar={false}>
+        <div className="px-4 py-6 max-w-2xl mx-auto">
+          <SuccessContent />
+        </div>
+      </IOSPageLayout>
+    );
+  }
+
+  // Web Layout - Loading
   if (verifying) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-1 container mx-auto px-4 py-12">
           <div className="max-w-2xl mx-auto">
-            <Card className="border-primary">
-              <CardHeader className="text-center">
-                <div className="flex justify-center mb-4">
-                  <Loader2 className="w-16 h-16 text-primary animate-spin" />
-                </div>
-                <CardTitle className="text-3xl">Verifying...</CardTitle>
-                <CardDescription className="text-lg mt-2">
-                  Please wait while we confirm your subscription
-                </CardDescription>
-              </CardHeader>
-            </Card>
+            <LoadingContent />
           </div>
         </main>
         <Footer />
@@ -72,6 +164,7 @@ export default function BillingSuccess() {
     );
   }
 
+  // Web Layout - Success
   return (
     <div className="min-h-screen flex flex-col">
       <Header />

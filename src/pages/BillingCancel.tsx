@@ -4,9 +4,46 @@ import { Button } from '@/components/ui/button';
 import { XCircle } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { IOSPageLayout } from '@/components/ios/IOSPageLayout';
+import { useIsNativeApp } from '@/hooks/useIsNativeApp';
 
 export default function BillingCancel() {
   const navigate = useNavigate();
+  const isNative = useIsNativeApp();
+
+  if (isNative) {
+    return (
+      <IOSPageLayout title="Cancelled" showTabBar={false}>
+        <div className="px-4 py-6">
+          <Card>
+            <CardHeader className="text-center">
+              <div className="flex justify-center mb-4">
+                <XCircle className="w-16 h-16 text-muted-foreground" />
+              </div>
+              <CardTitle className="text-2xl">Checkout Cancelled</CardTitle>
+              <CardDescription className="mt-2">
+                Your subscription checkout was cancelled
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="text-center text-muted-foreground">
+                <p>No charges have been made to your account.</p>
+                <p className="mt-2">You can try again anytime you're ready to upgrade.</p>
+              </div>
+              <div className="flex flex-col gap-3">
+                <Button onClick={() => navigate('/pricing')} className="w-full">
+                  View Plans
+                </Button>
+                <Button onClick={() => navigate('/dashboard')} variant="outline" className="w-full">
+                  Back to Dashboard
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </IOSPageLayout>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
