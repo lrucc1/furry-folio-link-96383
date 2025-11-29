@@ -1,4 +1,3 @@
-require 'fileutils'
 require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 
 platform :ios, '14.0'
@@ -23,13 +22,12 @@ end
 
 post_install do |installer|
   assertDeploymentTarget(installer)
-
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
       config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
     end
-  end
 
-  frameworks_script = File.join(installer.sandbox.root, 'Target Support Files', 'Pods-App', 'Pods-App-frameworks.sh')
-  FileUtils.chmod('+x', frameworks_script) if File.exist?(frameworks_script)
+    frameworks_script = File.join('Pods', 'Target Support Files', target.name, "#{target.name}-frameworks.sh")
+    File.chmod(0o755, frameworks_script) if File.exist?(frameworks_script)
+  end
 end

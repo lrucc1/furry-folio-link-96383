@@ -11,5 +11,7 @@ capacitor-cordova-ios-plugins
 # Generated Config files
 App/App/capacitor.config.json
 App/App/config.xml
+
+# Generated asset PNGs (built from ios/assets *.b64 via npm run ios:assets)
 App/App/Assets.xcassets/AppIcon.appiconset/*.png
 App/App/Assets.xcassets/Splash.imageset/*.png

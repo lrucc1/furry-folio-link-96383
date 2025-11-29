@@ -1,14 +1,14 @@
-# PetLinkID iOS Setup Guide
+# iOS Setup and Build Guide
 
-This guide walks through cloning the project, building the bundled web assets, and preparing the Capacitor iOS wrapper for Xcode 15+.
+Follow these steps to produce a working iOS build of **PetLinkID** using Capacitor and Xcode 15+.
 
 ## Prerequisites
-- Xcode 15 or later with a valid Apple Developer account for signing.
-- CocoaPods installed (`sudo gem install cocoapods`).
-- Node.js/npm (project uses npm with Vite).
+- Xcode 15 or newer installed on macOS.
+- Node.js/npm installed.
+- CocoaPods installed (`sudo gem install cocoapods`), then `pod repo update` if needed.
 
-## One-time repository setup
-1. Clone the repo and enter it:
+## Clean install & build steps
+1. Clone the repository and move into it:
    ```bash
    git clone <repo-url>
    cd furry-folio-link-96383
@@ -17,62 +17,50 @@ This guide walks through cloning the project, building the bundled web assets, a
    ```bash
    npm install
    ```
-
-## Build and sync the iOS project
-Run these commands from the repository root:
-1. Build the web bundle (outputs to `dist`):
+3. Build the web assets (emits to `dist/`):
    ```bash
    npm run build
    ```
-2. Materialize the iOS asset catalog images (kept out of Git to avoid binary diffs):
+4. Generate iOS asset PNGs from the tracked base64 sources (keeps binaries out of git while ensuring Xcode has icons/splashes):
    ```bash
    npm run ios:assets
    ```
-3. Sync Capacitor (copies `dist` into `ios/App/App/public` and installs iOS dependencies):
+5. Sync the Capacitor iOS project with the latest assets and config:
    ```bash
    npx cap sync ios
    ```
-4. Install Pods (from `ios/App`):
+6. Install iOS pods (from `ios/App`):
    ```bash
    cd ios/App
    pod install
    cd ../..
    ```
-
-## Open in Xcode
-1. Open the workspace (always use the workspace, not the project file):
+   > The Podfile sets `ENABLE_USER_SCRIPT_SANDBOXING = NO` for all pods and fixes permissions on the CocoaPods framework script to avoid Xcode 15 sandbox errors.
+7. Open the workspace in Xcode (always the workspace, never the `.xcodeproj`):
    ```bash
    open ios/App/App.xcworkspace
    ```
-2. In Xcode:
+8. In Xcode:
    - Select the **App** target.
-   - Set your **Team** and confirm the Bundle Identifier is `com.petlinkid.app` (or adjust as needed for your account).
-   - Choose a real iPhone device as the run destination.
-   - Build and run.
-
-## Archiving for TestFlight
-1. With `ios/App/App.xcworkspace` open, select **Any iOS Device (arm64)**.
-2. From the menu choose **Product → Archive**.
-3. In the Organizer, select the new archive and choose **Distribute App → App Store Connect → Upload**.
+   - Set your Apple Developer Team and confirm the Bundle Identifier is `com.petlinkid.app` (adjust only if needed for your signing setup).
+   - Choose a real iPhone as the run destination.
+   - Build & Run.
+9. For TestFlight distribution:
+   - Select **Any iOS Device (arm64)**.
+   - Go to **Product → Archive**, then **Distribute App → App Store Connect → Upload**.
 
 ## Troubleshooting
-- **Black screen on launch**
-  - Rebuild the web assets with `npm run build`.
-  - Re-run `npm run ios:assets` if you cleaned the repo and the asset PNGs are missing.
-  - Re-run `npx cap copy ios` or `npx cap sync ios` to refresh `ios/App/App/public`.
-  - Confirm `capacitor.config.json` points to `webDir: "dist"` and does not use a remote server URL.
+- **Black screen when launching on device**
+  - Ensure you ran `npm run build` before `npx cap sync ios` so the bundled assets exist.
+  - Confirm `ios/App/App/public` contains `index.html` and assets after syncing.
+  - Make sure the app is not pointing at any remote dev server; it loads the bundled `dist` output by default.
 
-- **CocoaPods script sandbox or permission errors**
-  - Ensure `pod install` was run after syncing.
-  - The project and Pods targets set `ENABLE_USER_SCRIPT_SANDBOXING = NO` to avoid Xcode 15 sandbox issues, and the Podfile marks `[CP] Embed Pods Frameworks` scripts executable during `pod install`.
-  - If a script permission warning persists, manually run:
-    ```bash
-    chmod +x ios/App/Pods/Target\ Support\ Files/Pods-App/Pods-App-frameworks.sh
-    ```
+- **CocoaPods `[CP] Embed Pods Frameworks` sandbox or permission errors**
+  - Re-run `pod install` inside `ios/App` (the Podfile disables user script sandboxing and normalizes script permissions).
+  - If the script is still blocked, manually ensure `Pods/Target Support Files/Pods-App/Pods-App-frameworks.sh` is executable (`chmod +x`).
 
-- **Missing pods in this environment**
-  - If `npx cap sync ios` warns that CocoaPods is unavailable, install CocoaPods locally and run `pod install` inside `ios/App` before building in Xcode.
+- **Pods not installing**
+  - Run `pod repo update`.
+  - Verify you have Ruby and CocoaPods installed. If network restrictions block gem downloads, install CocoaPods on a network that allows access to `rubygems.org`.
 
-## Notes
-- The Capacitor configuration loads the bundled `dist` assets by default for offline reliability. For live-reload development you can temporarily enable a dev server URL in `capacitor.config.ts`, but keep it disabled for release builds.
-- Code signing is intentionally unset; configure it with your own Apple Developer team in Xcode.
+Following these steps should produce a clean, offline-capable Capacitor iOS app ready for device testing or TestFlight upload.
