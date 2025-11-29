@@ -8,7 +8,10 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "ios:assets": "node scripts/generate-ios-assets.mjs",
+    "ios:open": "npm run build && npm run ios:assets && npx cap sync ios && npx cap open ios",
+    "cap:sync": "npm run build && npm run ios:assets && npx cap sync"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
