@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CreditCard, Calendar, AlertCircle, ExternalLink, ArrowLeft, Sparkles, Download } from "lucide-react";
+import { Loader2, CreditCard, Calendar, AlertCircle, ExternalLink, ArrowLeft, Sparkles, Download, RotateCcw, Smartphone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,19 +10,27 @@ import { usePlanV2 } from "@/hooks/usePlanV2";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Link } from "react-router-dom";
 import { Header } from "@/components/Header";
-import { formatPrice } from "@/config/pricing";
+import { isNativeApp, isIOSApp, restorePurchases } from "@/lib/appleIap";
 
 export default function BillingSettings() {
   const [loading, setLoading] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   const { user } = useAuth();
-  const { plan, planConfig, subscriptionStatus, trialEndAt, nextBillingAt, daysUntilTrialEnd, isTrialActive, usage } = usePlanV2();
+  const { plan, planConfig, subscriptionStatus, trialEndAt, nextBillingAt, daysUntilTrialEnd, isTrialActive, usage, refresh } = usePlanV2();
   
   const isPro = plan === 'PRO';
   const hasMultiplePets = usage.pets_count > 1;
+  const isOnIOS = isNativeApp() && isIOSApp();
 
   const handleManageBilling = async () => {
     if (!user) {
       toast.error("Please sign in to manage billing");
+      return;
+    }
+
+    // For iOS users with Apple IAP subscriptions
+    if (isOnIOS) {
+      toast.info("To manage your subscription, go to Settings → Apple ID → Subscriptions on your device.");
       return;
     }
 
@@ -57,6 +65,18 @@ export default function BillingSettings() {
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRestorePurchases = async () => {
+    setRestoring(true);
+    try {
+      const success = await restorePurchases();
+      if (success) {
+        await refresh();
+      }
+    } finally {
+      setRestoring(false);
     }
   };
 
@@ -140,23 +160,33 @@ export default function BillingSettings() {
                     </Link>
                   </Button>
                 ) : plan === 'PRO' ? (
-                  <Button 
-                    onClick={handleManageBilling} 
-                    disabled={loading}
-                    variant="outline"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Opening...
-                      </>
-                    ) : (
-                      <>
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        Manage Billing
-                      </>
-                    )}
-                  </Button>
+                  isOnIOS ? (
+                    <Button 
+                      onClick={handleManageBilling}
+                      variant="outline"
+                    >
+                      <Smartphone className="mr-2 h-4 w-4" />
+                      Manage via Apple
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={handleManageBilling} 
+                      disabled={loading}
+                      variant="outline"
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Opening...
+                        </>
+                      ) : (
+                        <>
+                          <ExternalLink className="mr-2 h-4 w-4" />
+                          Manage Billing
+                        </>
+                      )}
+                    </Button>
+                  )
                 ) : (
                   <Button 
                     onClick={handleManageBilling} 
@@ -239,7 +269,37 @@ export default function BillingSettings() {
                 </Alert>
               )}
 
-              {plan === 'PRO' && (
+              {/* iOS Restore Purchases */}
+              {isOnIOS && (
+                <div className="pt-4 border-t">
+                  <h4 className="text-sm font-medium mb-2">Restore Purchases</h4>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    If you've previously purchased a subscription on another device or reinstalled the app, 
+                    you can restore your purchase here.
+                  </p>
+                  <Button
+                    onClick={handleRestorePurchases}
+                    disabled={restoring}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    {restoring ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Restoring...
+                      </>
+                    ) : (
+                      <>
+                        <RotateCcw className="w-4 h-4 mr-2" />
+                        Restore Purchases
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+
+              {/* Billing Portal Info - Only for non-iOS */}
+              {plan === 'PRO' && !isOnIOS && (
                 <div className="pt-4 border-t">
                   <h4 className="text-sm font-medium mb-2">Billing Portal</h4>
                   <p className="text-sm text-muted-foreground mb-3">
@@ -251,6 +311,22 @@ export default function BillingSettings() {
                     <li>Upgrade or downgrade your plan</li>
                     <li>Cancel your subscription</li>
                   </ul>
+                </div>
+              )}
+
+              {/* Apple Billing Info - Only for iOS */}
+              {plan === 'PRO' && isOnIOS && (
+                <div className="pt-4 border-t">
+                  <h4 className="text-sm font-medium mb-2">Manage Apple Subscription</h4>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Your subscription is managed through Apple. To make changes:
+                  </p>
+                  <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                    <li>Open Settings on your iPhone</li>
+                    <li>Tap your Apple ID at the top</li>
+                    <li>Tap Subscriptions</li>
+                    <li>Find and tap PetLinkID</li>
+                  </ol>
                 </div>
               )}
             </CardContent>
@@ -265,12 +341,26 @@ export default function BillingSettings() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button asChild className="w-full">
-                  <Link to="/pricing">
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Start 7-Day Free Trial
-                  </Link>
-                </Button>
+                {isOnIOS ? (
+                  <Button asChild className="w-full">
+                    <Link to="/pricing">
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Upgrade via App Store
+                    </Link>
+                  </Button>
+                ) : (
+                  <>
+                    <Button asChild className="w-full">
+                      <Link to="/pricing">
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        View Upgrade Options
+                      </Link>
+                    </Button>
+                    <p className="text-xs text-muted-foreground text-center mt-2">
+                      Upgrades are currently available via the iOS app
+                    </p>
+                  </>
+                )}
               </CardContent>
             </Card>
           )}
