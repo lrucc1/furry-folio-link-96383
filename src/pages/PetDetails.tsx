@@ -23,6 +23,7 @@ import { au } from '@/lib/auEnglish'
 import { IOSPageLayout } from '@/components/ios/IOSPageLayout'
 import { useIsNativeApp } from '@/hooks/useIsNativeApp'
 import { MobileCard } from '@/components/ios/MobileCard'
+import { SwipeableItem } from '@/components/ios/SwipeableItem'
 
 interface Pet {
   id: string
@@ -189,6 +190,30 @@ const PetDetails = () => {
       toast({
         title: "Error",
         description: "Failed to delete reminder",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const deleteVaccination = async (vaccinationId: string) => {
+    try {
+      const { error } = await (supabase as any)
+        .from('vaccinations')
+        .delete()
+        .eq('id', vaccinationId)
+
+      if (error) throw error
+
+      setVaccinations(vaccinations.filter(v => v.id !== vaccinationId))
+
+      toast({
+        title: "Vaccination deleted",
+      })
+    } catch (error) {
+      console.error('Error deleting vaccination:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete vaccination",
         variant: "destructive",
       })
     }
@@ -518,24 +543,28 @@ const PetDetails = () => {
               <p className="text-sm text-muted-foreground text-center py-4">No vaccinations recorded</p>
             ) : (
               <div className="space-y-3">
-                {vaccinations.slice(0, 3).map((vac) => (
-                  <div 
-                    key={vac.id} 
-                    className="flex items-center justify-between p-3 bg-muted/50 rounded-xl touch-manipulation active:bg-muted"
-                    onClick={() => handleEditVaccination(vac)}
+                {vaccinations.slice(0, 5).map((vac) => (
+                  <SwipeableItem 
+                    key={vac.id}
+                    onDelete={() => deleteVaccination(vac.id)}
                   >
-                    <div>
-                      <p className="font-medium text-sm">{vac.vaccine_name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(vac.vaccine_date).toLocaleDateString()}
-                      </p>
+                    <div 
+                      className="flex items-center justify-between p-3 bg-muted/50 rounded-xl touch-manipulation active:bg-muted"
+                      onClick={() => handleEditVaccination(vac)}
+                    >
+                      <div>
+                        <p className="font-medium text-sm">{vac.vaccine_name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(vac.vaccine_date).toLocaleDateString()}
+                        </p>
+                      </div>
+                      {vac.next_due_date && (
+                        <Badge variant="outline" className="text-xs">
+                          Due: {new Date(vac.next_due_date).toLocaleDateString()}
+                        </Badge>
+                      )}
                     </div>
-                    {vac.next_due_date && (
-                      <Badge variant="outline" className="text-xs">
-                        Due: {new Date(vac.next_due_date).toLocaleDateString()}
-                      </Badge>
-                    )}
-                  </div>
+                  </SwipeableItem>
                 ))}
               </div>
             )}
@@ -563,30 +592,34 @@ const PetDetails = () => {
               <p className="text-sm text-muted-foreground text-center py-4">No reminders</p>
             ) : (
               <div className="space-y-3">
-                {healthReminders.filter(r => !r.completed).slice(0, 3).map((reminder) => (
-                  <div 
-                    key={reminder.id} 
-                    className="flex items-center justify-between p-3 bg-muted/50 rounded-xl touch-manipulation active:bg-muted"
-                    onClick={() => handleEditReminder(reminder)}
+                {healthReminders.filter(r => !r.completed).slice(0, 5).map((reminder) => (
+                  <SwipeableItem
+                    key={reminder.id}
+                    onDelete={() => deleteReminder(reminder.id)}
                   >
-                    <div>
-                      <p className="font-medium text-sm">{reminder.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(reminder.reminder_date).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 w-8 p-0 touch-manipulation"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleReminderComplete(reminder.id, reminder.completed);
-                      }}
+                    <div 
+                      className="flex items-center justify-between p-3 bg-muted/50 rounded-xl touch-manipulation active:bg-muted"
+                      onClick={() => handleEditReminder(reminder)}
                     >
-                      <CheckCircle className="w-5 h-5" />
-                    </Button>
-                  </div>
+                      <div>
+                        <p className="font-medium text-sm">{reminder.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(reminder.reminder_date).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0 touch-manipulation"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleReminderComplete(reminder.id, reminder.completed);
+                        }}
+                      >
+                        <CheckCircle className="w-5 h-5" />
+                      </Button>
+                    </div>
+                  </SwipeableItem>
                 ))}
               </div>
             )}
