@@ -1,31 +1,30 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Smartphone, Monitor } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { setForceIOS, isDevModeActive } from '@/lib/platformUtils';
 import { cn } from '@/lib/utils';
 
 const DEV_EMAIL = 'leonrucci@hotmail.com';
 
 export function DevModeToggle() {
   const { user } = useAuth();
+  const location = useLocation();
   const [isIOS, setIsIOS] = useState(false);
 
-  // Check URL param on mount
+  // Check on mount AND on location changes
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setIsIOS(params.get('forceIOS') === 'true');
-  }, []);
+    setIsIOS(isDevModeActive());
+  }, [location]);
 
   // Only show for dev account
   if (user?.email !== DEV_EMAIL) return null;
 
   const toggleMode = () => {
-    const url = new URL(window.location.href);
-    if (isIOS) {
-      url.searchParams.delete('forceIOS');
-    } else {
-      url.searchParams.set('forceIOS', 'true');
-    }
-    window.location.href = url.toString();
+    const newState = !isIOS;
+    setForceIOS(newState);
+    // Reload current page to apply new mode
+    window.location.reload();
   };
 
   return (
