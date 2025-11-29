@@ -13,7 +13,7 @@ import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { PendingInvitesModal } from '@/components/PendingInvitesModal'
 import { IOSPageLayout } from '@/components/ios/IOSPageLayout'
-import { Plus, Crown, Heart, RefreshCw } from 'lucide-react'
+import { Plus, Crown, Heart, RefreshCw, Scale, Tag, Bell } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { calculateAge } from '@/lib/age-utils'
 import { au } from '@/lib/auEnglish'
@@ -33,6 +33,7 @@ interface Pet {
   microchip_number: string | null
   created_at: string
   public_id: string
+  weight_kg?: number | null
 }
 
 const Dashboard = () => {
@@ -323,6 +324,124 @@ const Dashboard = () => {
     </>
   )
 
+  const MobileDashboard = () => {
+    const primaryPet = pets[0]
+
+    return (
+      <div className="md:hidden max-w-md mx-auto px-4 pt-4 pb-24 space-y-5">
+        <Card className="rounded-2xl shadow-sm">
+          <CardContent className="p-5 space-y-2">
+            <p className="text-sm text-muted-foreground">Welcome back</p>
+            <h1 className="text-2xl font-bold">Manage your pets in one place</h1>
+            <p className="text-sm text-muted-foreground">Passports, QR tags, health and recovery are all here.</p>
+          </CardContent>
+        </Card>
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <h3 className="text-sm font-medium text-muted-foreground">Your Pets</h3>
+            {pets.length > 0 && (
+              <Button variant="ghost" size="sm" className="h-9" onClick={() => navigate('/pets/new')}>
+                <Plus className="w-4 h-4 mr-1" />
+                Add pet
+              </Button>
+            )}
+          </div>
+
+          {pets.length === 0 ? (
+            <Card className="rounded-2xl text-center shadow-sm">
+              <CardContent className="p-8 space-y-3">
+                <Heart className="w-10 h-10 text-muted-foreground mx-auto" />
+                <h3 className="font-semibold text-lg">No pets yet</h3>
+                <p className="text-sm text-muted-foreground">Add your first pet to get started.</p>
+                <Button className="w-full rounded-full" onClick={() => navigate('/pets/new')}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add your first pet
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 gap-3">
+              {pets.map((pet) => (
+                <Card
+                  key={pet.id}
+                  className="rounded-2xl shadow-sm cursor-pointer"
+                  onClick={() => handleViewPetDetails(pet)}
+                >
+                  <CardContent className="p-4 flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-muted flex items-center justify-center">
+                      <img
+                        src={pet.photo_url || 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=200&h=200&fit=crop'}
+                        alt={pet.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-semibold text-base truncate">{pet.name}</h4>
+                        {pet.is_lost && <Badge variant="destructive">Lost</Badge>}
+                      </div>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {pet.breed || pet.species}
+                      </p>
+                      {pet.weight_kg && (
+                        <p className="text-xs text-muted-foreground">Current weight: {pet.weight_kg} kg</p>
+                      )}
+                    </div>
+                    <Badge variant="secondary" className="px-3 py-1 rounded-full">Open</Badge>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {primaryPet && (
+          <Card className="rounded-2xl shadow-sm">
+            <CardContent className="p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs uppercase text-muted-foreground">Quick actions</p>
+                  <h3 className="text-lg font-semibold">{primaryPet.name}</h3>
+                </div>
+                <Badge variant="secondary">{tier === 'pro' ? 'Pro' : 'Free'}</Badge>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Button variant="outline" className="h-20 rounded-2xl flex flex-col items-start justify-center gap-1 text-left"
+                  onClick={() => navigate(`/pets/${primaryPet.id}`)}>
+                  <Heart className="w-4 h-4" />
+                  <span className="text-sm font-semibold">Pet Passport</span>
+                  <span className="text-xs text-muted-foreground">Profile & IDs</span>
+                </Button>
+                <Button variant="outline" className="h-20 rounded-2xl flex flex-col items-start justify-center gap-1 text-left"
+                  onClick={() => navigate(`/pets/${primaryPet.id}/weight`)}>
+                  <Scale className="w-4 h-4" />
+                  <span className="text-sm font-semibold">Weight Tracker</span>
+                  <span className="text-xs text-muted-foreground">Last: {primaryPet.weight_kg ? `${primaryPet.weight_kg} kg` : '—'}</span>
+                </Button>
+                <Button variant="outline" className="h-20 rounded-2xl flex flex-col items-start justify-center gap-1 text-left"
+                  onClick={() => navigate(`/pets/${primaryPet.id}#health`)}>
+                  <Bell className="w-4 h-4" />
+                  <span className="text-sm font-semibold">Medical</span>
+                  <span className="text-xs text-muted-foreground">Docs & vaccines</span>
+                </Button>
+                <Button variant="outline" className="h-20 rounded-2xl flex flex-col items-start justify-center gap-1 text-left"
+                  onClick={() => navigate('/smart-tags')}>
+                  <Tag className="w-4 h-4" />
+                  <span className="text-sm font-semibold">QR Tag</span>
+                  <span className="text-xs text-muted-foreground">Link & share</span>
+                </Button>
+              </div>
+              <Button className="w-full rounded-full h-12" onClick={() => navigate('/pets/new')}>
+                <Plus className="w-4 h-4 mr-2" /> Add another pet
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    )
+  }
+
   // iOS Native Layout
   if (isNative) {
     return (
@@ -362,7 +481,7 @@ const Dashboard = () => {
   return (
     <div ref={containerRef} className="min-h-screen bg-background" style={{ transform: `translateY(${pullDistance}px)`, transition: isRefreshing ? 'transform 0.3s ease-out' : 'none' }}>
       {shouldShowLoader && (
-        <div 
+        <div
           className="fixed top-0 left-1/2 -translate-x-1/2 z-40 flex items-center justify-center pt-4"
           style={{ opacity: loaderOpacity }}
         >
@@ -373,14 +492,20 @@ const Dashboard = () => {
         </div>
       )}
       <Header />
-      
+
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
-        <PetsContent />
+        <div className="md:hidden">
+          <MobileDashboard />
+        </div>
+
+        <div className="hidden md:block">
+          <PetsContent />
+        </div>
       </main>
-      
-      <PendingInvitesModal 
-        open={showInvitesModal} 
-        onClose={() => setShowInvitesModal(false)} 
+
+      <PendingInvitesModal
+        open={showInvitesModal}
+        onClose={() => setShowInvitesModal(false)}
       />
       
       <Footer />

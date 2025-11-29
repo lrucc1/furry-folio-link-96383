@@ -308,30 +308,30 @@ const AuthPage = () => {
     )
   }
 
-  // Web Layout - Original card design
+  // Web Layout - mobile first with iOS-inspired card stack
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <Logo iconClassName="w-12 h-12" textClassName="font-bold text-2xl text-white" />
+    <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4 py-8 sm:px-6">
+      <div className="w-full max-w-md space-y-6">
+        <div className="text-center space-y-3 pt-4">
+          <div className="flex items-center justify-center">
+            <Logo iconClassName="w-14 h-14" textClassName="font-bold text-3xl text-white" />
           </div>
-          <p className="text-white/90">Sign in to your account or create a new one.</p>
+          <div className="space-y-1">
+            <h1 className="text-3xl font-semibold text-white">Welcome to PetLinkID</h1>
+            <p className="text-white/80 text-sm">Your pet's passport, safety tag and health hub in one place.</p>
+          </div>
         </div>
 
-        <Card className="bg-white/95 backdrop-blur border-0 shadow-strong">
-          <CardHeader>
-            <CardTitle className="text-center text-foreground">Welcome</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <Card className="bg-white shadow-lg rounded-2xl border-0">
+          <CardContent className="p-6 space-y-4">
             <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="signin">Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 rounded-full bg-muted/60 h-11">
+                <TabsTrigger value="signin" className="rounded-full text-sm">Sign In</TabsTrigger>
+                <TabsTrigger value="signup" className="rounded-full text-sm">Sign Up</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="signin">
-                <form onSubmit={handleSignIn} className="space-y-4">
+              <TabsContent value="signin" className="space-y-4 pt-2">
+                <form onSubmit={handleSignIn} className="space-y-3">
                   <div className="space-y-2">
                     <Label htmlFor="signin-email">Email</Label>
                     <Input
@@ -342,6 +342,7 @@ const AuthPage = () => {
                       onChange={(e) => setSignInEmail(e.target.value)}
                       required
                       disabled={loading}
+                      className="h-12"
                     />
                   </div>
 
@@ -356,6 +357,7 @@ const AuthPage = () => {
                         onChange={(e) => setSignInPassword(e.target.value)}
                         required
                         disabled={loading}
+                        className="h-12 pr-12"
                       />
                       <Button
                         type="button"
@@ -370,23 +372,23 @@ const AuthPage = () => {
                     </div>
                   </div>
 
-                  <Button type="submit" className="w-full" disabled={loading}>
+                  <Button type="submit" className="w-full h-12 rounded-full font-semibold" disabled={loading}>
                     {loading ? 'Signing in...' : 'Sign In'}
                   </Button>
 
-                  <div className="relative my-4">
+                  <div className="relative my-2">
                     <div className="absolute inset-0 flex items-center">
                       <span className="w-full border-t" />
                     </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-white px-2 text-muted-foreground">Or continue with</span>
+                    <div className="relative flex justify-center text-[11px] uppercase">
+                      <span className="bg-white px-3 text-muted-foreground">Or continue with</span>
                     </div>
                   </div>
 
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full"
+                    className="w-full h-12 rounded-full"
                     onClick={handleGoogleSignIn}
                     disabled={loading}
                   >
@@ -413,8 +415,8 @@ const AuthPage = () => {
                 </form>
               </TabsContent>
 
-              <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-4">
+              <TabsContent value="signup" className="space-y-4 pt-2">
+                <form onSubmit={handleSignUp} className="space-y-3">
                   <div className="space-y-2">
                     <Label htmlFor="signup-name">Name</Label>
                     <Input
@@ -427,6 +429,7 @@ const AuthPage = () => {
                       disabled={loading}
                       minLength={2}
                       maxLength={100}
+                      className="h-12"
                     />
                   </div>
 
@@ -440,6 +443,7 @@ const AuthPage = () => {
                       onChange={(e) => setSignUpEmail(e.target.value)}
                       required
                       disabled={loading}
+                      className="h-12"
                     />
                   </div>
 
@@ -455,6 +459,7 @@ const AuthPage = () => {
                         required
                         disabled={loading}
                         minLength={8}
+                        className="h-12 pr-12"
                       />
                       <Button
                         type="button"
@@ -470,23 +475,23 @@ const AuthPage = () => {
                     <p className="text-xs text-muted-foreground">Minimum 8 characters</p>
                   </div>
 
-                  <Button type="submit" className="w-full" disabled={loading}>
+                  <Button type="submit" className="w-full h-12 rounded-full font-semibold" disabled={loading}>
                     {loading ? 'Creating account...' : 'Sign Up'}
                   </Button>
 
-                  <div className="relative my-4">
+                  <div className="relative my-2">
                     <div className="absolute inset-0 flex items-center">
                       <span className="w-full border-t" />
                     </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-white px-2 text-muted-foreground">Or continue with</span>
+                    <div className="relative flex justify-center text-[11px] uppercase">
+                      <span className="bg-white px-3 text-muted-foreground">Or continue with</span>
                     </div>
                   </div>
 
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full"
+                    className="w-full h-12 rounded-full"
                     onClick={handleGoogleSignIn}
                     disabled={loading}
                   >
@@ -516,8 +521,8 @@ const AuthPage = () => {
           </CardContent>
         </Card>
 
-        <div className="text-center mt-6">
-          <p className="text-white/70 text-sm">
+        <div className="text-center px-6 pb-2">
+          <p className="text-white/80 text-xs leading-relaxed">
             By signing in, you agree to our{' '}
             <Link to="/terms" className="underline hover:text-white">Terms of Service</Link>,{' '}
             <Link to="/subscription-terms" className="underline hover:text-white">Subscription Terms</Link>, and{' '}
