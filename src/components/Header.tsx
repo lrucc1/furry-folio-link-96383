@@ -24,11 +24,6 @@ export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [invitesCount, setInvitesCount] = useState(0);
 
-  // Don't render the web header on native apps - they use IOSHeader/IOSTabBar
-  if (isNative) {
-    return null;
-  }
-
   useEffect(() => {
     if (user?.email) {
       const fetchInvites = async () => {
@@ -42,6 +37,11 @@ export const Header = () => {
       fetchInvites();
     }
   }, [user]);
+
+  // Don't render the web header on native apps - they use IOSHeader/IOSTabBar
+  if (isNative) {
+    return null;
+  }
 
   const handleSignOut = async () => {
     await signOut();

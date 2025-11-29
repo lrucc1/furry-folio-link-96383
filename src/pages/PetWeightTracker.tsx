@@ -372,21 +372,28 @@ export default function PetWeightTracker() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
-      <main className="container mx-auto px-4 py-8 max-w-2xl">
-        <Button variant="ghost" size="sm" asChild className="mb-6">
+
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-6 pb-20 space-y-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          asChild
+          className="mb-2 w-full justify-start rounded-xl md:w-auto"
+        >
           <Link to={`/pets/${id}`}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to {pet.name}
           </Link>
         </Button>
 
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold">Weight Tracker</h1>
-          <p className="text-muted-foreground">Track {pet.name}'s weight over time</p>
+        <div className="space-y-2 md:mb-4">
+          <h1 className="text-3xl font-bold">Weight Tracker</h1>
+          <p className="text-muted-foreground text-sm">Track {pet.name}'s weight over time</p>
         </div>
 
-        <WeightContent />
+        <div className="space-y-6">
+          <WeightContent />
+        </div>
       </main>
     </div>
   );
