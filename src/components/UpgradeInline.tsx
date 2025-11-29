@@ -1,15 +1,13 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { usePlan } from '@/lib/plan/PlanContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Crown } from 'lucide-react';
+import { Crown, Smartphone } from 'lucide-react';
 import { au } from '@/lib/auEnglish';
-import { getEnvironmentConfig } from '@/config/environment';
-import { isIOSApp, openWebCheckout } from '@/lib/iosPaymentFlow';
+import { isNativeApp, isIOSApp, purchasePro } from '@/lib/appleIap';
 import { PaidPlanInfoSheet } from '@/components/PaidPlanInfoSheet';
-
-const ENV_CONFIG = getEnvironmentConfig();
+import { toast } from 'sonner';
 
 interface UpgradeInlineProps {
   feature: string;
@@ -22,7 +20,9 @@ export function UpgradeInline({ feature }: UpgradeInlineProps) {
   const [showInfoSheet, setShowInfoSheet] = useState(false);
   const { tier } = usePlan();
 
-  // Don't show upgrade CTA for family plan users (no upgrade path)
+  const isOnIOS = isNativeApp() && isIOSApp();
+
+  // Don't show upgrade CTA for pro plan users
   if (tier === 'pro') {
     return null;
   }
@@ -30,21 +30,24 @@ export function UpgradeInline({ feature }: UpgradeInlineProps) {
   const handleUpgrade = async () => {
     setBusy(true);
     
-    // iOS app: Open web checkout in Safari
-    if (isIOSApp()) {
-      await openWebCheckout(user?.id);
-      setBusy(false);
+    // iOS app: use Apple IAP directly
+    if (isOnIOS) {
+      try {
+        await purchasePro('monthly');
+        toast.success('Welcome to Pro!');
+        navigate('/billing-success');
+      } catch (error) {
+        // Error already handled in purchasePro
+        console.error('Purchase error:', error);
+      } finally {
+        setBusy(false);
+      }
       return;
     }
     
-    // Web: Show info sheet if IAPs disabled, otherwise navigate to pricing
-    if (!ENV_CONFIG.useInAppPurchases) {
-      setShowInfoSheet(true);
-      setBusy(false);
-      return;
-    }
-    
-    navigate('/pricing');
+    // Web: Navigate to pricing page with how-to-upgrade info
+    navigate('/pricing#how-to-upgrade');
+    setBusy(false);
   };
 
   return (
@@ -59,15 +62,28 @@ export function UpgradeInline({ feature }: UpgradeInlineProps) {
             <p className="text-muted-foreground text-sm mb-4">
               {au('This feature is available on our')} <strong>{au('Pro')}</strong> {au('plan')}.
             </p>
-            <Button 
-              onClick={handleUpgrade} 
-              disabled={busy}
-              size="sm"
-              className="gap-2"
-            >
-              <Crown className="w-4 h-4" />
-              {au('View Paid Plans')}
-            </Button>
+            {isOnIOS ? (
+              <Button 
+                onClick={handleUpgrade} 
+                disabled={busy}
+                size="sm"
+                className="gap-2"
+              >
+                <Crown className="w-4 h-4" />
+                {busy ? 'Processing...' : au('Upgrade to Pro')}
+              </Button>
+            ) : (
+              <Button 
+                onClick={handleUpgrade} 
+                disabled={busy}
+                size="sm"
+                variant="outline"
+                className="gap-2"
+              >
+                <Smartphone className="w-4 h-4" />
+                {au('Learn how to upgrade')}
+              </Button>
+            )}
           </div>
         </div>
       </div>

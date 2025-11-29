@@ -10,11 +10,15 @@ import {
   Star,
   Users,
   Shield,
-  Zap
+  Zap,
+  Apple,
+  Crown
 } from "lucide-react";
 import screenshotDashboard from "@/assets/screenshot-dashboard.png";
 import screenshotQR from "@/assets/screenshot-qr.png";
 import screenshotHealth from "@/assets/screenshot-health.png";
+
+const APP_STORE_URL = import.meta.env.VITE_APP_STORE_URL || '#';
 
 const AppDownloads = () => {
   const appFeatures = [
@@ -38,8 +42,8 @@ const AppDownloads = () => {
   const appStats = [
     { number: "4.9★", label: "App Store Rating" },
     { number: "50K+", label: "Downloads" },
-    { number: "4.8★", label: "Google Play Rating" },
-    { number: "99.9%", label: "Uptime" }
+    { number: "99.9%", label: "Uptime" },
+    { number: "24/7", label: "Support" }
   ];
 
   return (
@@ -58,50 +62,95 @@ const AppDownloads = () => {
           <div className="text-center mb-12">
             <Badge className="bg-primary/10 text-primary border-primary/20 mb-4">
               <Smartphone className="w-3 h-3 mr-1" />
-              App Downloads
+              iOS App
             </Badge>
             <h1 className="text-4xl font-bold text-foreground mb-4">
               Download PetLinkID
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Get the PetLinkID mobile app for the fastest access to your pet's information, QR scanning, and instant lost pet alerts.
+              Get the PetLinkID iOS app for the best experience — including Pro upgrades, QR scanning, and instant lost pet alerts.
             </p>
           </div>
         </div>
 
-        {/* Download Buttons */}
+        {/* Download Section */}
         <section className="mb-16">
           <Card className="bg-gradient-card border-0 shadow-medium max-w-2xl mx-auto">
             <CardContent className="text-center py-12">
-              <Smartphone className="w-16 h-16 text-primary mx-auto mb-6" />
+              <Apple className="w-16 h-16 text-primary mx-auto mb-6" />
               <h3 className="text-2xl font-bold text-foreground mb-4">
-                Available on All Devices
+                PetLinkID for iPhone
               </h3>
-              <p className="text-muted-foreground mb-8">
-                Download PetLinkID for free on iOS, Android, or access via web browser.
+              <p className="text-muted-foreground mb-6">
+                The full PetLinkID experience is on iOS. Download to access all features including Pro plan upgrades via Apple In-App Purchases.
               </p>
               
-              <div className="grid md:grid-cols-3 gap-4">
-                <Button size="lg" className="h-12" variant="hero">
-                  <Download className="w-5 h-5 mr-2" />
-                  App Store
+              <div className="flex flex-col gap-4 max-w-sm mx-auto">
+                <Button size="lg" className="h-14 text-lg" variant="hero" asChild>
+                  <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer">
+                    <Apple className="w-6 h-6 mr-2" />
+                    Download on App Store
+                  </a>
                 </Button>
-                <div className="flex flex-col gap-1">
-                  <Button size="lg" className="h-12" variant="hero" disabled>
-                    <Download className="w-5 h-5 mr-2" />
-                    Google Play
-                  </Button>
-                  <p className="text-xs text-muted-foreground text-center">Coming soon to the Google Play Store</p>
-                </div>
-                <Button size="lg" className="h-12" variant="outline">
-                  <Smartphone className="w-5 h-5 mr-2" />
-                  Web App
+                <Button size="lg" className="h-12" variant="outline" asChild>
+                  <Link to="/auth">
+                    <Smartphone className="w-5 h-5 mr-2" />
+                    Continue on Web
+                  </Link>
                 </Button>
               </div>
               
-              <p className="text-muted-foreground text-sm mt-4">
-                Free download • No ads • Pro features available
+              <p className="text-muted-foreground text-sm mt-6">
+                Free download • Pro features available via in-app purchase
               </p>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Why iOS App */}
+        <section className="mb-16">
+          <Card className="bg-primary/5 border-primary/20 max-w-2xl mx-auto">
+            <CardHeader className="text-center">
+              <CardTitle className="flex items-center justify-center gap-2">
+                <Crown className="w-5 h-5 text-primary" />
+                Why use the iOS app?
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-primary text-sm font-bold">1</span>
+                  </div>
+                  <div>
+                    <strong>Upgrade to Pro</strong> — Plan upgrades are only available in the iOS app via secure Apple In-App Purchases.
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-primary text-sm font-bold">2</span>
+                  </div>
+                  <div>
+                    <strong>Push notifications</strong> — Get instant alerts for health reminders and lost pet updates.
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-primary text-sm font-bold">3</span>
+                  </div>
+                  <div>
+                    <strong>Native QR scanning</strong> — Scan QR tags quickly with the built-in camera integration.
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-primary text-sm font-bold">4</span>
+                  </div>
+                  <div>
+                    <strong>Offline access</strong> — View your pet's information even without an internet connection.
+                  </div>
+                </li>
+              </ul>
             </CardContent>
           </Card>
         </section>
@@ -112,7 +161,7 @@ const AppDownloads = () => {
             Trusted by Pet Owners Everywhere
           </h2>
           
-          <div className="grid md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {appStats.map((stat, index) => (
               <Card key={index} className="bg-gradient-card border-0 shadow-medium text-center">
                 <CardContent className="py-8">
@@ -188,41 +237,22 @@ const AppDownloads = () => {
 
         {/* System Requirements */}
         <section className="mb-16">
-          <div className="grid lg:grid-cols-2 gap-8">
-            <Card className="bg-gradient-card border-0 shadow-medium">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Smartphone className="w-5 h-5 text-primary" />
-                  iOS Requirements
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-muted-foreground text-sm">
-                <p>• iOS 14.0 or later</p>
-                <p>• iPhone 8 or newer</p>
-                <p>• 50MB available storage</p>
-                <p>• Camera access for QR scanning</p>
-                <p>• Location services (optional)</p>
-                <p>• Push notification support</p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-card border-0 shadow-medium">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Smartphone className="w-5 h-5 text-primary" />
-                  Android Requirements
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-muted-foreground text-sm">
-                <p>• Android 8.0 (API level 26) or higher</p>
-                <p>• 2GB RAM minimum</p>
-                <p>• 50MB available storage</p>
-                <p>• Camera access for QR scanning</p>
-                <p>• Location services (optional)</p>
-                <p>• Google Play Services</p>
-              </CardContent>
-            </Card>
-          </div>
+          <Card className="bg-gradient-card border-0 shadow-medium max-w-xl mx-auto">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Apple className="w-5 h-5 text-primary" />
+                iOS Requirements
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-muted-foreground text-sm">
+              <p>• iOS 14.0 or later</p>
+              <p>• iPhone 8 or newer</p>
+              <p>• 50MB available storage</p>
+              <p>• Camera access for QR scanning</p>
+              <p>• Location services (optional)</p>
+              <p>• Push notification support</p>
+            </CardContent>
+          </Card>
         </section>
 
         {/* Reviews Section */}

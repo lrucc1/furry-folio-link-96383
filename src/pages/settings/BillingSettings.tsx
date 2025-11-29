@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CreditCard, Calendar, AlertCircle, ExternalLink, ArrowLeft, Sparkles, Download, RotateCcw, Smartphone } from "lucide-react";
+import { Loader2, CreditCard, Calendar, AlertCircle, ExternalLink, ArrowLeft, Sparkles, Download, RotateCcw, Smartphone, Apple } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,6 +11,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Link } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { isNativeApp, isIOSApp, restorePurchases } from "@/lib/appleIap";
+
+const APP_STORE_URL = import.meta.env.VITE_APP_STORE_URL || '#';
 
 export default function BillingSettings() {
   const [loading, setLoading] = useState(false);
@@ -96,9 +98,73 @@ export default function BillingSettings() {
                 Back to Account
               </Link>
             </Button>
-            <h2 className="text-2xl font-bold">Billing & Subscriptions</h2>
+            <h2 className="text-2xl font-bold">Plan & Billing</h2>
             <p className="text-muted-foreground">Manage your subscription and payment methods</p>
           </div>
+
+          {/* Web User Banner - Free Plan */}
+          {!isOnIOS && plan === 'FREE' && (
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Smartphone className="w-5 h-5 text-primary" />
+                  Plan & billing
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm">
+                  You're currently on <strong>PetLinkID Free</strong>.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  To upgrade to PetLinkID Pro, open the <strong>PetLinkID app on your iPhone</strong> and go to:
+                </p>
+                <p className="text-sm font-medium">
+                  Settings → Plan & billing → Upgrade to Pro
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  All payments are handled securely through Apple's in-app purchase system. Once upgraded, your Pro features will also be available when you sign in on the web.
+                </p>
+                <div className="pt-2">
+                  <p className="text-sm text-muted-foreground mb-2">Don't have the app yet?</p>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to="/downloads">
+                      <Apple className="w-4 h-4 mr-2" />
+                      Download from App Store
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Web User Banner - Pro Plan */}
+          {!isOnIOS && plan === 'PRO' && (
+            <Card className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-green-600" />
+                  Plan & billing
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm">
+                  You're on <strong>PetLinkID Pro</strong>. Thank you for supporting us!
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Your subscription is managed via the App Store on your iPhone. To view or change your subscription:
+                </p>
+                <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                  <li>Open <strong>Settings</strong> on your iPhone</li>
+                  <li>Tap your <strong>Apple ID</strong> at the top</li>
+                  <li>Tap <strong>Subscriptions</strong></li>
+                  <li>Find and tap <strong>PetLinkID</strong></li>
+                </ol>
+                <p className="text-xs text-muted-foreground pt-2">
+                  Changes may take a moment to reflect here after you update your subscription in iOS.
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Trial Status Alert */}
           {isTrialActive && daysUntilTrialEnd && daysUntilTrialEnd <= 2 && (
@@ -154,11 +220,20 @@ export default function BillingSettings() {
                 </div>
 
                 {plan === 'FREE' ? (
-                  <Button asChild>
-                    <Link to="/pricing">
-                      Upgrade Plan
-                    </Link>
-                  </Button>
+                  isOnIOS ? (
+                    <Button asChild>
+                      <Link to="/pricing">
+                        Upgrade Plan
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button variant="outline" asChild>
+                      <Link to="/pricing">
+                        <Smartphone className="w-4 h-4 mr-2" />
+                        Learn to Upgrade
+                      </Link>
+                    </Button>
+                  )
                 ) : plan === 'PRO' ? (
                   isOnIOS ? (
                     <Button 
@@ -298,23 +373,7 @@ export default function BillingSettings() {
                 </div>
               )}
 
-              {/* Billing Portal Info - Only for non-iOS */}
-              {plan === 'PRO' && !isOnIOS && (
-                <div className="pt-4 border-t">
-                  <h4 className="text-sm font-medium mb-2">Billing Portal</h4>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Use the Stripe Customer Portal to:
-                  </p>
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>Update payment method</li>
-                    <li>View billing history and invoices</li>
-                    <li>Upgrade or downgrade your plan</li>
-                    <li>Cancel your subscription</li>
-                  </ul>
-                </div>
-              )}
-
-              {/* Apple Billing Info - Only for iOS */}
+              {/* Apple Billing Info - Only for iOS Pro users */}
               {plan === 'PRO' && isOnIOS && (
                 <div className="pt-4 border-t">
                   <h4 className="text-sm font-medium mb-2">Manage Apple Subscription</h4>
@@ -332,7 +391,7 @@ export default function BillingSettings() {
             </CardContent>
           </Card>
 
-          {plan === 'FREE' && (
+          {plan === 'FREE' && isOnIOS && (
             <Card className="border-primary/20 bg-primary/5">
               <CardHeader>
                 <CardTitle>Upgrade to Pro</CardTitle>
@@ -341,26 +400,12 @@ export default function BillingSettings() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {isOnIOS ? (
-                  <Button asChild className="w-full">
-                    <Link to="/pricing">
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Upgrade via App Store
-                    </Link>
-                  </Button>
-                ) : (
-                  <>
-                    <Button asChild className="w-full">
-                      <Link to="/pricing">
-                        <Sparkles className="w-4 h-4 mr-2" />
-                        View Upgrade Options
-                      </Link>
-                    </Button>
-                    <p className="text-xs text-muted-foreground text-center mt-2">
-                      Upgrades are currently available via the iOS app
-                    </p>
-                  </>
-                )}
+                <Button asChild className="w-full">
+                  <Link to="/pricing">
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Upgrade via App Store
+                  </Link>
+                </Button>
               </CardContent>
             </Card>
           )}
