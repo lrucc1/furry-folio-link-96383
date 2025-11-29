@@ -9,7 +9,7 @@ import { isNativeApp } from '@/lib/iosPaymentFlow';
  * 
  * Behavior:
  * - iOS app (logged out): Redirect "/" to "/auth"
- * - iOS app (logged in): Redirect "/" to "/dashboard"
+ * - iOS app (logged in): Redirect "/" to "/ios-home"
  * - Web: Normal behavior, show marketing homepage
  */
 export function IOSAppRouter({ children }: { children: React.ReactNode }) {
@@ -29,7 +29,7 @@ export function IOSAppRouter({ children }: { children: React.ReactNode }) {
 
     // Redirect based on auth state
     if (user) {
-      navigate('/dashboard', { replace: true });
+      navigate('/ios-home', { replace: true });
     } else {
       navigate('/auth', { replace: true });
     }
