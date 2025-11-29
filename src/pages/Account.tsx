@@ -203,7 +203,7 @@ export default function Account() {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/');
+    navigate(isNative ? '/auth' : '/');
   };
 
   const handleExportData = async () => {

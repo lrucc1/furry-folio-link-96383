@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { PlanProvider } from "./lib/plan/PlanContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ProfileSetupDialog } from "./components/ProfileSetupDialog";
@@ -11,6 +11,8 @@ import { DowngradeHelper } from "./components/DowngradeHelper";
 import { AdminRoute } from "./components/AdminRoute";
 import { IOSAppRouter } from "./components/IOSAppRouter";
 import { DevModeToggle } from "./components/DevModeToggle";
+import { AppLoadingScreen } from "./components/AppLoadingScreen";
+import { useIsNativeApp } from "./hooks/useIsNativeApp";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -54,6 +56,152 @@ import IOSHome from "./pages/ios/IOSHome";
 
 const queryClient = new QueryClient();
 
+function AppContent() {
+  const { loading } = useAuth();
+  const isNative = useIsNativeApp();
+
+  // Show loading screen on native while auth initializes
+  if (isNative && loading) {
+    return <AppLoadingScreen />;
+  }
+
+  return (
+    <>
+      <IOSAppRouter>
+        <ProfileSetupDialog />
+        <DowngradeHelper />
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route 
+            path="/ios-home" 
+            element={
+              <ProtectedRoute>
+                <IOSHome />
+              </ProtectedRoute>
+            } 
+          />
+          <Route path="/found/:publicId" element={<FoundPet />} />
+          <Route path="/pet/:publicId" element={<PublicPetProfile />} />
+          <Route path="/help" element={<HelpCentre />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/lost-pet-guide" element={<LostPetGuide />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/subscription-terms" element={<SubscriptionTerms />} />
+          <Route path="/refunds" element={<RefundsPolicy />} />
+          <Route path="/privacy-australia" element={<AustralianPrivacy />} />
+          <Route path="/data-handling" element={<DataHandling />} />
+          <Route path="/downloads" element={<AppDownloads />} />
+          <Route path="/smart-tags" element={<SmartRecoveryTags />} />
+          <Route path="/support" element={<Support />} />
+          <Route
+            path="/admin" 
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            } 
+          />
+          <Route 
+            path="/admin/plan-debug" 
+            element={
+              <AdminRoute>
+                <PlanDebug />
+              </AdminRoute>
+            } 
+          />
+          <Route
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/pets/new" 
+            element={
+              <ProtectedRoute>
+                <AddPet />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/pets/:id" 
+            element={
+              <ProtectedRoute>
+                <PetDetails />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/pets/:id/weight" 
+            element={
+              <ProtectedRoute>
+                <PetWeightTracker />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/pets/:id/edit" 
+            element={
+              <ProtectedRoute>
+                <EditPet />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/reminders" 
+            element={
+              <ProtectedRoute>
+                <Reminders />
+              </ProtectedRoute>
+            } 
+          />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/billing/success" element={<BillingSuccess />} />
+          <Route path="/billing/cancel" element={<BillingCancel />} />
+          <Route 
+            path="/account" 
+            element={
+              <ProtectedRoute>
+                <Account />
+              </ProtectedRoute>
+            } 
+          />
+          <Route path="/invite/accept" element={<AcceptInvite />} />
+          <Route 
+            path="/invite/status" 
+            element={
+              <ProtectedRoute>
+                <InviteStatus />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/settings/billing" 
+            element={
+              <ProtectedRoute>
+                <BillingSettings />
+              </ProtectedRoute>
+            } 
+          />
+          <Route path="/admin/test-emails" element={<AdminRoute><TestEmails /></AdminRoute>} />
+          <Route path="/admin/email-preview" element={<AdminRoute><EmailPreview /></AdminRoute>} />
+          <Route path="/admin/limit-audit" element={<AdminRoute><LimitAudit /></AdminRoute>} />
+          <Route path="/admin/deletion-history" element={<AdminRoute><DeletionHistory /></AdminRoute>} />
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </IOSAppRouter>
+      <DevModeToggle />
+    </>
+  );
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -62,137 +210,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <IOSAppRouter>
-              <ProfileSetupDialog />
-              <DowngradeHelper />
-              <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route 
-                path="/ios-home" 
-                element={
-                  <ProtectedRoute>
-                    <IOSHome />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route path="/found/:publicId" element={<FoundPet />} />
-              <Route path="/pet/:publicId" element={<PublicPetProfile />} />
-              <Route path="/help" element={<HelpCentre />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/lost-pet-guide" element={<LostPetGuide />} />
-              <Route path="/privacy" element={<PrivacyPolicy />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/subscription-terms" element={<SubscriptionTerms />} />
-              <Route path="/refunds" element={<RefundsPolicy />} />
-              <Route path="/privacy-australia" element={<AustralianPrivacy />} />
-              <Route path="/data-handling" element={<DataHandling />} />
-              <Route path="/downloads" element={<AppDownloads />} />
-              <Route path="/smart-tags" element={<SmartRecoveryTags />} />
-              <Route path="/support" element={<Support />} />
-              <Route
-                path="/admin" 
-                element={
-                  <AdminRoute>
-                    <AdminDashboard />
-                  </AdminRoute>
-                } 
-              />
-              <Route 
-                path="/admin/plan-debug" 
-                element={
-                  <AdminRoute>
-                    <PlanDebug />
-                  </AdminRoute>
-                } 
-              />
-              <Route
-                path="/dashboard" 
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/pets/new" 
-                element={
-                  <ProtectedRoute>
-                    <AddPet />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/pets/:id" 
-                element={
-                  <ProtectedRoute>
-                    <PetDetails />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/pets/:id/weight" 
-                element={
-                  <ProtectedRoute>
-                    <PetWeightTracker />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/pets/:id/edit" 
-                element={
-                  <ProtectedRoute>
-                    <EditPet />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/reminders" 
-                element={
-                  <ProtectedRoute>
-                    <Reminders />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/billing/success" element={<BillingSuccess />} />
-              <Route path="/billing/cancel" element={<BillingCancel />} />
-              <Route 
-                path="/account" 
-                element={
-                  <ProtectedRoute>
-                    <Account />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route path="/invite/accept" element={<AcceptInvite />} />
-              <Route 
-                path="/invite/status" 
-                element={
-                  <ProtectedRoute>
-                    <InviteStatus />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/settings/billing" 
-                element={
-                  <ProtectedRoute>
-                    <BillingSettings />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route path="/admin/test-emails" element={<AdminRoute><TestEmails /></AdminRoute>} />
-              <Route path="/admin/email-preview" element={<AdminRoute><EmailPreview /></AdminRoute>} />
-              <Route path="/admin/limit-audit" element={<AdminRoute><LimitAudit /></AdminRoute>} />
-              <Route path="/admin/deletion-history" element={<AdminRoute><DeletionHistory /></AdminRoute>} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            </IOSAppRouter>
-            <DevModeToggle />
+            <AppContent />
           </BrowserRouter>
         </TooltipProvider>
       </PlanProvider>
