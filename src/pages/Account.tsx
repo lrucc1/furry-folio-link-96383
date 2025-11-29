@@ -670,8 +670,19 @@ export default function Account() {
   if (isNative) {
     return (
       <IOSPageLayout title="Account">
-        <div className="px-4 py-6 max-w-4xl mx-auto">
+        <div className="px-4 py-4 max-w-4xl mx-auto space-y-6">
           {accountContent}
+          
+          {/* iOS Sign Out Button - Always visible at bottom */}
+          <Card className="p-4">
+            <Button 
+              variant="outline" 
+              onClick={handleSignOut}
+              className="w-full h-12 text-destructive border-destructive/30 hover:bg-destructive/10"
+            >
+              {au('Sign Out')}
+            </Button>
+          </Card>
         </div>
         <ManageSubscriptionModal
           open={manageModalOpen}
