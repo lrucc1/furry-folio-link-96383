@@ -12,7 +12,7 @@ export const HeroSection = () => {
           <div>
             <Badge className="bg-white/20 text-white border-white/30 mb-6 backdrop-blur-sm">
               <Star className="w-3 h-3 mr-1" />
-              Trusted by 10,000+ pet owners across Australia
+              Trusted by 10,000+ pet owners worldwide
             </Badge>
             
             <h1 className="text-4xl lg:text-6xl font-bold mb-6 leading-tight">

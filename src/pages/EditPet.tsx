@@ -597,21 +597,21 @@ const EditPet = () => {
                         <SelectValue placeholder="Select provider" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="AAMI Pet Insurance">AAMI Pet Insurance</SelectItem>
-                        <SelectItem value="Australian Seniors Pet Insurance">Australian Seniors Pet Insurance</SelectItem>
-                        <SelectItem value="Bow Wow Meow">Bow Wow Meow</SelectItem>
-                        <SelectItem value="Budget Direct Pet Insurance">Budget Direct Pet Insurance</SelectItem>
-                        <SelectItem value="Choosi Pet Insurance">Choosi Pet Insurance</SelectItem>
-                        <SelectItem value="GMHBA Pet Insurance">GMHBA Pet Insurance</SelectItem>
-                        <SelectItem value="Guide Dogs Pet Insurance">Guide Dogs Pet Insurance</SelectItem>
-                        <SelectItem value="Knose Pet Insurance">Knose Pet Insurance</SelectItem>
-                        <SelectItem value="Medibank Pet Insurance">Medibank Pet Insurance</SelectItem>
+                        {/* Australia & NZ */}
+                        <SelectItem value="AAMI Pet Insurance">AAMI Pet Insurance (AU)</SelectItem>
+                        <SelectItem value="Bow Wow Meow">Bow Wow Meow (AU)</SelectItem>
+                        <SelectItem value="Medibank Pet Insurance">Medibank Pet Insurance (AU)</SelectItem>
                         <SelectItem value="Pet Insurance Australia">Pet Insurance Australia</SelectItem>
-                        <SelectItem value="Petplan">Petplan</SelectItem>
-                        <SelectItem value="Petsy Pet Insurance">Petsy Pet Insurance</SelectItem>
-                        <SelectItem value="PIA Pet Insurance">PIA Pet Insurance</SelectItem>
-                        <SelectItem value="RSPCA Pet Insurance">RSPCA Pet Insurance</SelectItem>
-                        <SelectItem value="Woolworths Pet Insurance">Woolworths Pet Insurance</SelectItem>
+                        <SelectItem value="Petplan">Petplan (AU/UK/US)</SelectItem>
+                        <SelectItem value="RSPCA Pet Insurance">RSPCA Pet Insurance (AU)</SelectItem>
+                        {/* International */}
+                        <SelectItem value="Healthy Paws">Healthy Paws (US)</SelectItem>
+                        <SelectItem value="Nationwide Pet">Nationwide Pet (US)</SelectItem>
+                        <SelectItem value="Trupanion">Trupanion (US/CA)</SelectItem>
+                        <SelectItem value="Embrace Pet Insurance">Embrace Pet Insurance (US)</SelectItem>
+                        <SelectItem value="Animal Friends">Animal Friends (UK)</SelectItem>
+                        <SelectItem value="Direct Line Pet Insurance">Direct Line Pet Insurance (UK)</SelectItem>
+                        <SelectItem value="Agria Pet Insurance">Agria Pet Insurance (UK/EU)</SelectItem>
                         <SelectItem value="Other">Other</SelectItem>
                       </SelectContent>
                     </Select>

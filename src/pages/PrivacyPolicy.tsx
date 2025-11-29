@@ -182,6 +182,7 @@ const PrivacyPolicy = () => {
               </Button>
             </CardContent>
           </Card>
+        {/* TODO: Add GDPR section for EU users, CCPA section for California users */}
         </div>
       </main>
     </div>

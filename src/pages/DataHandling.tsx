@@ -19,16 +19,17 @@ const DataHandling = () => {
             </Link>
           </Button>
           
+          {/* TODO: Add GDPR compliance section for EU users, CCPA section for California users */}
           <div className="text-center mb-12">
             <Badge className="bg-primary/10 text-primary border-primary/20 mb-4">
               <Shield className="w-3 h-3 mr-1" />
-              Australian Privacy & Data Handling
+              Privacy & Data Handling
             </Badge>
             <h1 className="text-4xl font-bold text-foreground mb-4">
               Data Handling & Security
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              How we handle, protect, and manage your data in compliance with Australian privacy standards.
+              How we handle, protect, and manage your data. PetLinkID is an Australian company committed to privacy standards that meet or exceed Australian and international requirements.
             </p>
             <p className="text-sm text-muted-foreground mt-2">
               Last updated: 14 October 2025

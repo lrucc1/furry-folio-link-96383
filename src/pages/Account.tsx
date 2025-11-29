@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Download, Trash2, UserCircle, Bell, Shield, Users, Loader2, Crown, FileText, Settings, Calendar, CreditCard, Receipt, ExternalLink, Phone, Cog } from "lucide-react";
+import { Download, Trash2, UserCircle, Bell, Shield, Users, Loader2, Crown, FileText, Settings, Calendar, CreditCard, Receipt, ExternalLink, Phone, Cog, Globe } from "lucide-react";
 import { ManageSubscriptionModal } from '@/components/ManageSubscriptionModal';
 import { exportUserData } from '@/features/export/exporter';
 import { downloadExport } from '@/features/export/download';
@@ -25,6 +25,8 @@ import { z } from 'zod';
 import { ExportData } from '@/pages/settings/ExportData';
 import { DeleteAccount } from '@/pages/settings/DeleteAccount';
 import { getEnvironmentConfig } from '@/config/environment';
+import { CountrySelector } from '@/components/CountrySelector';
+import { TimezoneSelector } from '@/components/TimezoneSelector';
 
 const ENV_CONFIG = getEnvironmentConfig();
 
@@ -68,7 +70,7 @@ export default function Account() {
   const [managingSubscription, setManagingSubscription] = useState(false);
   const [exportingData, setExportingData] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
-  const [profileData, setProfileData] = useState({ full_name: '', phone: '' });
+  const [profileData, setProfileData] = useState({ full_name: '', phone: '', country_code: '', timezone: '' });
   const [savingProfile, setSavingProfile] = useState(false);
   const [petCount, setPetCount] = useState(0);
   const [manageModalOpen, setManageModalOpen] = useState(false);
@@ -246,7 +248,7 @@ export default function Account() {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('full_name, phone')
+        .select('full_name, phone, country_code, timezone')
         .eq('id', user?.id)
         .single();
       
@@ -254,7 +256,9 @@ export default function Account() {
       if (data) {
         setProfileData({
           full_name: data.full_name || '',
-          phone: data.phone || ''
+          phone: data.phone || '',
+          country_code: data.country_code || '',
+          timezone: data.timezone || ''
         });
       }
     } catch (error) {
@@ -279,7 +283,9 @@ export default function Account() {
         .from('profiles')
         .update({
           full_name: profileData.full_name.trim(),
-          phone: profileData.phone.trim()
+          phone: profileData.phone.trim(),
+          country_code: profileData.country_code || null,
+          timezone: profileData.timezone || null
         })
         .eq('id', user?.id);
       
@@ -574,13 +580,38 @@ export default function Account() {
                       type="tel"
                       value={profileData.phone}
                       onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-                      placeholder="+61 4XX XXX XXX"
+                      placeholder="Enter your phone number"
                       maxLength={20}
                       className="mt-1"
                     />
                     <p className="text-xs text-muted-foreground mt-1">
                       This will be displayed when your pet is marked as lost
                     </p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="country" className="flex items-center gap-2">
+                      <Globe className="w-4 h-4" />
+                      {au('Country')}
+                    </Label>
+                    <div className="mt-1">
+                      <CountrySelector
+                        value={profileData.country_code}
+                        onChange={(value) => setProfileData({ ...profileData, country_code: value })}
+                        placeholder="Select your country"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="timezone">{au('Timezone')}</Label>
+                    <div className="mt-1">
+                      <TimezoneSelector
+                        value={profileData.timezone}
+                        onChange={(value) => setProfileData({ ...profileData, timezone: value })}
+                        placeholder="Select your timezone"
+                      />
+                    </div>
                   </div>
 
                   <div className="flex gap-3">

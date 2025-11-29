@@ -101,7 +101,7 @@ const About = () => {
                   After Max was safely returned home (thanks to a kind stranger and a barely readable ID tag), Sarah knew there had to be a better way. She assembled a team of veterinarians, technologists, and pet industry experts to create a comprehensive solution that would give every pet the best chance of coming home safe.
                 </p>
                 <p>
-                  Today, PetLinkID serves thousands of Australian families, providing peace of mind through innovative QR technology, comprehensive health tracking, and a community committed to keeping pets safe and healthy.
+                  Today, PetLinkID serves thousands of families worldwide from our base in Sydney, Australia, providing peace of mind through innovative QR technology, comprehensive health tracking, and a community committed to keeping pets safe and healthy.
                 </p>
               </div>
             </CardContent>
@@ -142,7 +142,7 @@ const About = () => {
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-muted-foreground">
-                  We're building a network of pet owners, veterinarians, shelters, and caring individuals all working together to keep Australia's pets safe.
+                  We're building a global network of pet owners, veterinarians, shelters, and caring individuals all working together to keep pets safe worldwide.
                 </p>
               </CardContent>
             </Card>
@@ -230,7 +230,7 @@ const About = () => {
               Join Our Mission
             </h3>
             <p className="text-white/90 mb-6 max-w-2xl mx-auto">
-              Ready to give your pet the protection they deserve? Join thousands of Australian families who trust PetLinkID.
+              Ready to give your pet the protection they deserve? Join thousands of families worldwide who trust PetLinkID.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button variant="secondary" size="lg" asChild>

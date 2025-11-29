@@ -383,7 +383,8 @@ export default function Pricing() {
 
           {/* FAQ or Additional Info */}
           <div className="text-center text-sm text-muted-foreground">
-            <p>All prices in Australian Dollars (AUD)</p>
+            <p>All prices are charged in AUD (Australian Dollars).</p>
+            <p className="mt-1">Your card provider may convert this to your local currency.</p>
             <p className="mt-2">Need help choosing? <a href="/contact" className="text-primary hover:underline">Contact us</a></p>
           </div>
         </div>
