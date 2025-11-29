@@ -1,16 +1,6 @@
 import { useMemo } from 'react';
 import { Capacitor } from '@capacitor/core';
-
-/**
- * Check URL param for development iOS preview mode
- */
-function checkForceIOS(): boolean {
-  if (typeof window !== 'undefined') {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('forceIOS') === 'true';
-  }
-  return false;
-}
+import { checkForceIOS } from '@/lib/platformUtils';
 
 /**
  * Hook to detect if running in a native app environment
