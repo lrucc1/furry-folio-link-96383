@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -41,13 +41,7 @@ export const HealthReminders = () => {
   const [reminders, setReminders] = useState<HealthReminder[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      fetchHealthReminders();
-    }
-  }, [user]);
-
-  const fetchHealthReminders = async () => {
+  const fetchHealthReminders = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -105,7 +99,13 @@ export const HealthReminders = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (user) {
+      fetchHealthReminders();
+    }
+  }, [user, fetchHealthReminders]);
 
   const getPriorityColor = (priority: string, isOverdue: boolean) => {
     if (isOverdue) return 'bg-destructive text-destructive-foreground';

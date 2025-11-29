@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Bell, Calendar, AlertTriangle, CheckCircle, Syringe, Heart, AlertCircle, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -41,10 +41,10 @@ export const NotificationsDropdown = () => {
     if (user && isOpen) {
       fetchNotifications();
     }
-  }, [user, isOpen]);
+  }, [user, isOpen, fetchNotifications]);
 
   // Fetch pending invites count to drive badge and toast
-  const fetchInvitesCount = async () => {
+  const fetchInvitesCount = useCallback(async () => {
     if (!user?.email) { setInvitesCount(0); return; }
     const { count } = await supabase
       .from('pet_invites')
@@ -57,15 +57,15 @@ export const NotificationsDropdown = () => {
       toast.info('You have a pending pet invite');
       setInvitesNotified(true);
     }
-  };
+  }, [user?.email, invitesNotified]);
 
   useEffect(() => {
     if (user) {
       fetchInvitesCount();
     }
-  }, [user]);
+  }, [user, fetchInvitesCount]);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     if (!user) return;
     
     try {
@@ -231,10 +231,11 @@ export const NotificationsDropdown = () => {
       setNotifications(allNotifications);
     } catch (error) {
       console.error('Error fetching notifications:', error);
+      toast.error('Failed to load notifications');
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   const getNotificationIcon = (type: string, isOverdue: boolean) => {
     if (type === 'lost_pet') return AlertCircle;

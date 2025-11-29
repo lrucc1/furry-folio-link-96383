@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,19 +37,7 @@ export function InviteFamilyModal({ open, onClose, petId, onSuccess }: InviteFam
     selectedPetIds: petId ? [petId] : [] as string[]
   });
 
-  useEffect(() => {
-    if (open && user) {
-      fetchUserPets();
-    }
-  }, [open, user]);
-
-  useEffect(() => {
-    if (petId) {
-      setFormData(prev => ({ ...prev, selectedPetIds: [petId] }));
-    }
-  }, [petId]);
-
-  const fetchUserPets = async () => {
+  const fetchUserPets = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -64,7 +52,19 @@ export function InviteFamilyModal({ open, onClose, petId, onSuccess }: InviteFam
     } catch (error) {
       console.error('Error fetching pets:', error);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (open && user) {
+      fetchUserPets();
+    }
+  }, [open, user, fetchUserPets]);
+
+  useEffect(() => {
+    if (petId) {
+      setFormData(prev => ({ ...prev, selectedPetIds: [petId] }));
+    }
+  }, [petId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

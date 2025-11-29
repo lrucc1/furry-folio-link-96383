@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -63,9 +63,9 @@ export function SharingTab({ petId }: SharingTabProps) {
     if (user) {
       fetchSharingData();
     }
-  }, [user, petId]);
+  }, [user, petId, fetchSharingData]);
 
-  const fetchSharingData = async () => {
+  const fetchSharingData = useCallback(async () => {
     if (!user) {
       setLoading(false);
       return;
@@ -156,7 +156,7 @@ export function SharingTab({ petId }: SharingTabProps) {
   }
 
     setLoading(false);
-  };
+  }, [user, petId]);
 
   const handleInviteSuccess = (inviteUrl: string) => {
     navigator.clipboard.writeText(inviteUrl);
