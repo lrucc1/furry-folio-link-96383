@@ -10,12 +10,13 @@ import { FormSection, FormRow } from '@/components/ios/FormSection';
 import { PaywallModal } from '@/components/PaywallModal';
 import { VetClinicAutocomplete, VetClinicData } from '@/components/VetClinicAutocomplete';
 import { RegistrySelect, InsuranceProviderSelect } from '@/components/RegionAwareSelect';
+import { ImageCropDialog } from '@/components/ImageCropDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { ChevronLeft, MapPin, PawPrint, AlertCircle } from 'lucide-react';
+import { ChevronLeft, MapPin, PawPrint, AlertCircle, Upload, X, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -46,6 +47,12 @@ export default function IOSAddPet() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
 
+  // Photo upload state
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
   const currentPets = usage.pets_count;
   const isProPlan = plan === 'PRO';
   const rawMax = entitlement?.pets_max ?? (isProPlan ? null : 1);
@@ -70,6 +77,7 @@ export default function IOSAddPet() {
     insurance_provider: '',
     insurance_policy: '',
     notes: '',
+    photo_url: '',
   });
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -95,6 +103,65 @@ export default function IOSAddPet() {
     }
     setErrors({});
     return true;
+  };
+
+  // Photo handling
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be under 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImageToCrop(reader.result as string);
+      setCropDialogOpen(true);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleCroppedImage = async (croppedBlob: Blob) => {
+    if (!user) return;
+
+    setUploading(true);
+    try {
+      const tempId = crypto.randomUUID();
+      const fileName = `${user.id}/${tempId}.jpg`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('pet-documents')
+        .upload(fileName, croppedBlob, {
+          contentType: 'image/jpeg',
+          upsert: true,
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from('pet-documents')
+        .getPublicUrl(fileName);
+
+      const photoUrl = urlData.publicUrl;
+      setPhotoPreview(photoUrl);
+      setFormData(prev => ({ ...prev, photo_url: photoUrl }));
+      toast.success('Photo uploaded');
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Failed to upload photo');
+    } finally {
+      setUploading(false);
+      setCropDialogOpen(false);
+      setImageToCrop(null);
+    }
+  };
+
+  const removePhoto = () => {
+    setPhotoPreview(null);
+    setFormData(prev => ({ ...prev, photo_url: '' }));
   };
 
   const handleSubmit = async () => {
@@ -126,7 +193,7 @@ export default function IOSAddPet() {
         sex: formData.sex || null,
         dob: formData.date_of_birth || null,
         microchip: formData.microchip_number || null,
-        photo_url: null,
+        photo_url: formData.photo_url || null,
         color: formData.color || null,
         gender: formData.sex || null,
         date_of_birth: formData.date_of_birth || null,
@@ -204,6 +271,64 @@ export default function IOSAddPet() {
             </p>
           </div>
         )}
+
+        {/* Profile Photo */}
+        <FormSection title="Profile Photo">
+          <div className="p-4">
+            <div className="flex justify-center">
+              <label className="cursor-pointer block">
+                <div className="w-32 h-32 rounded-2xl overflow-hidden bg-muted relative group border-2 border-dashed border-border hover:border-primary/50 transition-colors">
+                  {photoPreview ? (
+                    <>
+                      <img 
+                        src={photoPreview} 
+                        alt="Pet photo" 
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Camera className="w-8 h-8 text-white" />
+                      </div>
+                    </>
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground">
+                      {uploading ? (
+                        <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" />
+                      ) : (
+                        <>
+                          <Upload className="w-8 h-8 mb-2" />
+                          <span className="text-xs">Add Photo</span>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handlePhotoSelect} 
+                  className="hidden"
+                  disabled={uploading}
+                />
+              </label>
+            </div>
+            {photoPreview && (
+              <div className="flex justify-center mt-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    removePhoto();
+                  }}
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                >
+                  <X className="w-4 h-4 mr-1" />
+                  Remove Photo
+                </Button>
+              </div>
+            )}
+          </div>
+        </FormSection>
 
         {/* Basic Information */}
         <FormSection title="Basic Information">
@@ -371,7 +496,7 @@ export default function IOSAddPet() {
         <div className="px-4 pt-2">
           <Button 
             onClick={handleSubmit}
-            disabled={!canAddPet || loading || !formData.name || !formData.species}
+            disabled={!canAddPet || loading || uploading || !formData.name || !formData.species}
             className="w-full h-12 text-base font-semibold rounded-xl"
           >
             {loading ? (
@@ -392,6 +517,17 @@ export default function IOSAddPet() {
           open={showPaywall}
           onOpenChange={setShowPaywall}
           feature="pet limit"
+        />
+
+        <ImageCropDialog
+          image={imageToCrop}
+          open={cropDialogOpen}
+          onClose={() => {
+            setCropDialogOpen(false);
+            setImageToCrop(null);
+          }}
+          onCropComplete={handleCroppedImage}
+          aspectRatio={1}
         />
       </div>
     </IOSPageLayout>
