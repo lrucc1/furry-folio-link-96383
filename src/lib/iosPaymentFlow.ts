@@ -1,5 +1,6 @@
 import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
+import { checkForceIOS } from './platformUtils';
 
 /**
  * iOS Payment Flow Handler
@@ -9,11 +10,11 @@ import { Capacitor } from '@capacitor/core';
  */
 
 export const isNativeApp = () => {
-  return Capacitor.isNativePlatform();
+  return checkForceIOS() || Capacitor.isNativePlatform();
 };
 
 export const isIOSApp = () => {
-  return Capacitor.getPlatform() === 'ios';
+  return checkForceIOS() || Capacitor.getPlatform() === 'ios';
 };
 
 /**

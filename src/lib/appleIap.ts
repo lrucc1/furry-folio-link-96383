@@ -8,6 +8,7 @@
 import { Capacitor } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { checkForceIOS } from './platformUtils';
 
 // Re-use types from stripeConfig for consistency
 export type BillingPeriod = 'monthly' | 'yearly';
@@ -27,17 +28,17 @@ declare global {
 let isInitialized = false;
 
 /**
- * Check if running in native iOS app
+ * Check if running in native iOS app (or forceIOS dev mode)
  */
 export function isNativeApp(): boolean {
-  return Capacitor.isNativePlatform();
+  return checkForceIOS() || Capacitor.isNativePlatform();
 }
 
 /**
- * Check if running specifically on iOS
+ * Check if running specifically on iOS (or forceIOS dev mode)
  */
 export function isIOSApp(): boolean {
-  return Capacitor.getPlatform() === 'ios';
+  return checkForceIOS() || Capacitor.getPlatform() === 'ios';
 }
 
 /**
