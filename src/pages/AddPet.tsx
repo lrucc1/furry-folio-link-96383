@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePlanV2 } from '@/hooks/usePlanV2'
 import { EntitlementServiceV2 } from '@/services/EntitlementServiceV2'
@@ -15,18 +15,23 @@ import { Switch } from '@/components/ui/switch'
 import { Header } from '@/components/Header'
 import { PaywallModal } from '@/components/PaywallModal'
 import { VetClinicAutocomplete, VetClinicData } from '@/components/VetClinicAutocomplete'
-import { IOSPageLayout } from '@/components/ios/IOSPageLayout'
 import { useIsNativeApp } from '@/hooks/useIsNativeApp'
-import { ArrowLeft, Upload, MapPin } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import IOSAddPet from '@/pages/ios/IOSAddPet'
+import { ArrowLeft, MapPin } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { au } from '@/lib/auEnglish'
 import { z } from 'zod'
+
 const AddPet = () => {
+  const isNative = useIsNativeApp();
+  
+  // Return iOS version for native apps
+  if (isNative) {
+    return <IOSAddPet />;
+  }
   const { user } = useAuth()
   const { plan, usage, entitlement } = usePlanV2()
   const navigate = useNavigate()
-  const isNative = useIsNativeApp()
   const [loading, setLoading] = useState(false)
   const [showPaywall, setShowPaywall] = useState(false)
 
@@ -462,17 +467,6 @@ const AddPet = () => {
       />
     </>
   )
-
-  // iOS Layout
-  if (isNative) {
-    return (
-      <IOSPageLayout title="Add Pet">
-        <div className="px-4 py-6 max-w-2xl mx-auto">
-          <FormContent />
-        </div>
-      </IOSPageLayout>
-    )
-  }
 
   // Web Layout
   return (
