@@ -59,11 +59,6 @@ export function SharingTab({ petId }: SharingTabProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [petsById, setPetsById] = useState<Record<string, PetInfo>>({});
-  useEffect(() => {
-    if (user) {
-      fetchSharingData();
-    }
-  }, [user, petId, fetchSharingData]);
 
   const fetchSharingData = useCallback(async () => {
     if (!user) {
@@ -80,7 +75,8 @@ export function SharingTab({ petId }: SharingTabProps) {
         .select('*')
         .or(`invited_by.eq.${user.id},email.eq.${user.email?.toLowerCase()}`)
         .in('status', ['pending', 'revoked'])
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50);
 
       const { data: inviteData, error: inviteError } = await query;
 
@@ -120,7 +116,8 @@ export function SharingTab({ petId }: SharingTabProps) {
     const { data: memberData, error: memberError } = await supabase
       .from('pet_memberships')
       .select('*')
-      .eq('pet_id', petId);
+      .eq('pet_id', petId)
+      .limit(50);
 
     if (memberError) {
       setMembers([]);
@@ -157,6 +154,12 @@ export function SharingTab({ petId }: SharingTabProps) {
 
     setLoading(false);
   }, [user, petId]);
+
+  useEffect(() => {
+    if (user) {
+      fetchSharingData();
+    }
+  }, [user, petId, fetchSharingData]);
 
   const handleInviteSuccess = (inviteUrl: string) => {
     navigator.clipboard.writeText(inviteUrl);

@@ -77,19 +77,21 @@ const Dashboard = () => {
     if (!user) return
 
     try {
-      // Fetch pets owned by user
+      // Fetch pets owned by user with limit
       const { data: ownedPets, error: ownedError } = await supabase
         .from('pets')
         .select('*')
         .eq('user_id', user.id)
+        .limit(100)
 
       if (ownedError) throw ownedError
 
-      // Fetch shared pet IDs via memberships
+      // Fetch shared pet IDs via memberships with limit
       const { data: memberships, error: membershipError } = await supabase
         .from('pet_memberships')
         .select('pet_id')
         .eq('user_id', user.id)
+        .limit(100)
 
       if (membershipError) throw membershipError
 
@@ -101,6 +103,7 @@ const Dashboard = () => {
           .from('pets')
           .select('*')
           .in('id', petIds)
+          .limit(100)
 
         if (sharedError) throw sharedError
         sharedPets = sharedPetsData || []

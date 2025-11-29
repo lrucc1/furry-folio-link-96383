@@ -27,28 +27,6 @@ const AddPet = () => {
   const [loading, setLoading] = useState(false)
   const [showPaywall, setShowPaywall] = useState(false)
 
-  // Check entitlement when component loads
-  useEffect(() => {
-    checkCanAddPet()
-  }, [user, usage, checkCanAddPet])
-
-  const checkCanAddPet = useCallback(async () => {
-    if (!user || !entitlement) return
-
-    const service = EntitlementServiceV2.getInstance()
-    const check = await service.checkEntitlement(user.id, 'pets_max', 1)
-
-    if (!check.allowed) {
-      const maxPetsAllowed = entitlement?.pets_max
-      const currentCount = usage.pets_count
-
-      if (maxPetsAllowed !== null && currentCount < maxPetsAllowed) {
-        return
-      }
-      setShowPaywall(true)
-    }
-  }, [user, entitlement, usage])
-
   const currentPets = usage.pets_count
   const isProPlan = plan === 'PRO'
   const rawMax = entitlement?.pets_max ?? (isProPlan ? null : 1)
