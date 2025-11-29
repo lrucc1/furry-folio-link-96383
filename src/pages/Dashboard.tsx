@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePlan } from '@/lib/plan/PlanContext'
 import { TierFeatures } from '@/config/tierFeatures'
@@ -13,11 +13,10 @@ import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { PendingInvitesModal } from '@/components/PendingInvitesModal'
 import { IOSPageLayout } from '@/components/ios/IOSPageLayout'
-import { Plus, Crown, Heart, RefreshCw, Scale, Tag, Bell } from 'lucide-react'
+import { Plus, Crown, Heart, Scale, Tag, Bell } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { calculateAge } from '@/lib/age-utils'
 import { au } from '@/lib/auEnglish'
-import { usePullToRefresh } from '@/hooks/usePullToRefresh'
 import { toast } from 'sonner'
 import { useAutoTimezone } from '@/hooks/useAutoTimezone'
 import { useIsNativeApp } from '@/hooks/useIsNativeApp'
@@ -129,21 +128,10 @@ const Dashboard = () => {
     }
   }
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     await fetchPets();
     toast.success('Dashboard refreshed');
-  };
-
-  const {
-    containerRef,
-    isRefreshing,
-    pullDistance,
-    shouldShowLoader,
-    loaderOpacity,
-    loaderRotation,
-  } = usePullToRefresh({
-    onRefresh: handleRefresh,
-  });
+  }, [user]);
 
   const handleViewPetDetails = (pet: any) => {
     // Navigate to pet details
@@ -438,27 +426,8 @@ const Dashboard = () => {
   // iOS Native Layout
   if (isNative) {
     return (
-      <IOSPageLayout title={au('My Pets')}>
-        <div 
-          ref={containerRef}
-          className="px-4 py-6"
-          style={{ 
-            transform: `translateY(${pullDistance}px)`, 
-            transition: isRefreshing ? 'transform 0.3s ease-out' : 'none' 
-          }}
-        >
-          {shouldShowLoader && (
-            <div 
-              className="fixed top-20 left-1/2 -translate-x-1/2 z-40"
-              style={{ opacity: loaderOpacity }}
-            >
-              <RefreshCw 
-                className="w-6 h-6 text-primary" 
-                style={{ transform: `rotate(${loaderRotation}deg)` }}
-              />
-            </div>
-          )}
-          
+      <IOSPageLayout title={au('My Pets')} onRefresh={handleRefresh}>
+        <div className="px-4 py-6">
           <PetsContent />
         </div>
         
@@ -472,18 +441,7 @@ const Dashboard = () => {
 
   // Web Layout
   return (
-    <div ref={containerRef} className="min-h-screen bg-background" style={{ transform: `translateY(${pullDistance}px)`, transition: isRefreshing ? 'transform 0.3s ease-out' : 'none' }}>
-      {shouldShowLoader && (
-        <div
-          className="fixed top-0 left-1/2 -translate-x-1/2 z-40 flex items-center justify-center pt-4"
-          style={{ opacity: loaderOpacity }}
-        >
-          <RefreshCw 
-            className="w-6 h-6 text-primary" 
-            style={{ transform: `rotate(${loaderRotation}deg)` }}
-          />
-        </div>
-      )}
+    <div className="min-h-screen bg-background">
       <Header />
 
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">

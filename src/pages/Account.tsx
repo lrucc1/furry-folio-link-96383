@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlan } from '@/lib/plan/PlanContext';
@@ -666,10 +666,15 @@ export default function Account() {
     </Tabs>
   );
 
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([checkSubscription(), fetchProfile(), fetchPetCount(), calculateStorageUsage()]);
+    toast.success('Refreshed');
+  }, [user]);
+
   // iOS Layout
   if (isNative) {
     return (
-      <IOSPageLayout title="Account">
+      <IOSPageLayout title="Account" onRefresh={handleRefresh}>
         <div className="px-4 py-4 max-w-4xl mx-auto space-y-6">
           {accountContent}
           
