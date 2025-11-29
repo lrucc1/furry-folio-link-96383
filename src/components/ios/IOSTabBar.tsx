@@ -20,8 +20,11 @@ export function IOSTabBar() {
   const location = useLocation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)]">
-      <div className="flex items-center justify-around h-16">
+    <nav 
+      className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)]"
+      style={{ transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }}
+    >
+      <div className="flex items-center justify-around h-14">
         {tabs.map((tab) => {
           const isActive = location.pathname === tab.path || 
             (tab.path === '/dashboard' && location.pathname.startsWith('/pets'));

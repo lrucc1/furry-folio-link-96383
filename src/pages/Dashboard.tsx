@@ -368,8 +368,8 @@ const Dashboard = () => {
                   className="rounded-2xl shadow-sm cursor-pointer"
                   onClick={() => handleViewPetDetails(pet)}
                 >
-                  <CardContent className="p-4 flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-muted flex items-center justify-center">
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl overflow-hidden bg-muted flex items-center justify-center flex-shrink-0">
                       <img
                         src={pet.photo_url || 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=200&h=200&fit=crop'}
                         alt={pet.name}
@@ -378,17 +378,14 @@ const Dashboard = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <h4 className="font-semibold text-base truncate">{pet.name}</h4>
-                        {pet.is_lost && <Badge variant="destructive">Lost</Badge>}
+                        <h4 className="font-semibold text-sm truncate">{pet.name}</h4>
+                        {pet.is_lost && <Badge variant="destructive" className="text-xs px-1.5 py-0">Lost</Badge>}
                       </div>
-                      <p className="text-sm text-muted-foreground truncate">
+                      <p className="text-xs text-muted-foreground truncate">
                         {pet.breed || pet.species}
                       </p>
-                      {pet.weight_kg && (
-                        <p className="text-xs text-muted-foreground">Current weight: {pet.weight_kg} kg</p>
-                      )}
                     </div>
-                    <Badge variant="secondary" className="px-3 py-1 rounded-full">Open</Badge>
+                    <Badge variant="secondary" className="px-2 py-0.5 rounded-full text-xs flex-shrink-0">Open</Badge>
                   </CardContent>
                 </Card>
               ))}
@@ -407,29 +404,25 @@ const Dashboard = () => {
                 <Badge variant="secondary">{tier === 'pro' ? 'Pro' : 'Free'}</Badge>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <Button variant="outline" className="h-20 rounded-2xl flex flex-col items-start justify-center gap-1 text-left"
+                <Button variant="outline" className="h-16 rounded-2xl flex flex-col items-center justify-center gap-1 text-center p-2"
                   onClick={() => navigate(`/pets/${primaryPet.id}`)}>
                   <Heart className="w-4 h-4" />
-                  <span className="text-sm font-semibold">Pet Passport</span>
-                  <span className="text-xs text-muted-foreground">Profile & IDs</span>
+                  <span className="text-xs font-semibold">Pet Passport</span>
                 </Button>
-                <Button variant="outline" className="h-20 rounded-2xl flex flex-col items-start justify-center gap-1 text-left"
+                <Button variant="outline" className="h-16 rounded-2xl flex flex-col items-center justify-center gap-1 text-center p-2"
                   onClick={() => navigate(`/pets/${primaryPet.id}/weight`)}>
                   <Scale className="w-4 h-4" />
-                  <span className="text-sm font-semibold">Weight Tracker</span>
-                  <span className="text-xs text-muted-foreground">Last: {primaryPet.weight_kg ? `${primaryPet.weight_kg} kg` : '—'}</span>
+                  <span className="text-xs font-semibold">Weight</span>
                 </Button>
-                <Button variant="outline" className="h-20 rounded-2xl flex flex-col items-start justify-center gap-1 text-left"
+                <Button variant="outline" className="h-16 rounded-2xl flex flex-col items-center justify-center gap-1 text-center p-2"
                   onClick={() => navigate(`/pets/${primaryPet.id}#health`)}>
                   <Bell className="w-4 h-4" />
-                  <span className="text-sm font-semibold">Medical</span>
-                  <span className="text-xs text-muted-foreground">Docs & vaccines</span>
+                  <span className="text-xs font-semibold">Medical</span>
                 </Button>
-                <Button variant="outline" className="h-20 rounded-2xl flex flex-col items-start justify-center gap-1 text-left"
+                <Button variant="outline" className="h-16 rounded-2xl flex flex-col items-center justify-center gap-1 text-center p-2"
                   onClick={() => navigate('/smart-tags')}>
                   <Tag className="w-4 h-4" />
-                  <span className="text-sm font-semibold">QR Tag</span>
-                  <span className="text-xs text-muted-foreground">Link & share</span>
+                  <span className="text-xs font-semibold">QR Tag</span>
                 </Button>
               </div>
               <Button className="w-full rounded-full h-12" onClick={() => navigate('/pets/new')}>

@@ -298,15 +298,15 @@ export default function Reminders() {
   );
 
   const RemindersContent = () => (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2 mb-2">
-            <Heart className="w-6 h-6 sm:w-8 sm:h-8" />
+          <h1 className={`font-bold flex items-center gap-2 mb-1 ${isNative ? 'text-xl' : 'text-2xl sm:text-3xl'}`}>
+            <Heart className={`${isNative ? 'w-5 h-5' : 'w-6 h-6 sm:w-8 sm:h-8'}`} />
             Health Reminders
           </h1>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Keep track of all vaccinations and health reminders for your pets
+          <p className={`text-muted-foreground ${isNative ? 'text-xs' : 'text-sm sm:text-base'}`}>
+            Track vaccinations and health reminders
           </p>
         </div>
         {!isNative && (
@@ -552,7 +552,7 @@ export default function Reminders() {
       <IOSPageLayout title="Reminders" headerRight={addButton}>
         <div 
           ref={containerRef}
-          className="px-4 py-6"
+          className="px-4 py-4"
           style={{ 
             transform: `translateY(${pullDistance}px)`, 
             transition: isRefreshing ? 'transform 0.3s ease-out' : 'none' 

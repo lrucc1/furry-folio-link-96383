@@ -18,12 +18,14 @@ export function IOSPageLayout({
   headerRight
 }: IOSPageLayoutProps) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       {showHeader && <IOSHeader title={title} rightContent={headerRight} />}
       
       <main className={`
-        pt-[env(safe-area-inset-top)] 
-        ${showTabBar ? 'pb-[calc(4rem+env(safe-area-inset-bottom))]' : 'pb-[env(safe-area-inset-bottom)]'}
+        ${showHeader ? 'pt-[calc(3.5rem+env(safe-area-inset-top))]' : 'pt-[env(safe-area-inset-top)]'}
+        ${showTabBar ? 'pb-[calc(5rem+env(safe-area-inset-bottom))]' : 'pb-[env(safe-area-inset-bottom)]'}
+        overflow-y-auto
+        -webkit-overflow-scrolling-touch
       `}>
         {children}
       </main>
