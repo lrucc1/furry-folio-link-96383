@@ -96,13 +96,27 @@ export default function Account() {
   const checkSubscription = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return;
+      if (!session?.access_token) {
+        setSubscription(null);
+        return;
+      }
       
       const { data, error } = await supabase.functions.invoke('check-subscription', {
         method: 'GET',
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
-      if (error) throw error;
+      
+      // Handle auth errors gracefully - session may be expired on server
+      if (error) {
+        const errorMessage = error.message?.toLowerCase() || '';
+        if (errorMessage.includes('auth') || errorMessage.includes('session') || errorMessage.includes('401')) {
+          log.debug('Session expired or invalid, user needs to re-login');
+          setSubscription(null);
+          return;
+        }
+        throw error;
+      }
+      
       log.debug('Subscription data:', data);
       setSubscription(data);
       
