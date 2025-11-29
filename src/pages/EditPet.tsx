@@ -12,8 +12,8 @@ import { Switch } from '@/components/ui/switch'
 import { Header } from '@/components/Header'
 import { ImageCropDialog } from '@/components/ImageCropDialog'
 import { VetClinicAutocomplete, VetClinicData } from '@/components/VetClinicAutocomplete'
-import { IOSPageLayout } from '@/components/ios/IOSPageLayout'
 import { useIsNativeApp } from '@/hooks/useIsNativeApp'
+import IOSEditPet from '@/pages/ios/IOSEditPet'
 import { ArrowLeft, Upload, X, Trash2, CalendarIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { Calendar } from '@/components/ui/calendar'
@@ -34,10 +34,16 @@ import {
 } from "@/components/ui/alert-dialog"
 
 const EditPet = () => {
+  const isNative = useIsNativeApp();
+  
+  // Return iOS version for native apps
+  if (isNative) {
+    return <IOSEditPet />;
+  }
+
   const { id } = useParams<{ id: string }>()
   const { user } = useAuth()
   const navigate = useNavigate()
-  const isNative = useIsNativeApp()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -727,26 +733,6 @@ const EditPet = () => {
       />
     </>
   )
-
-  // iOS Layout
-  if (isNative) {
-    return (
-      <IOSPageLayout title={`Edit ${formData.name}`} showTabBar={false}>
-        <div className="px-4 py-6 max-w-2xl mx-auto pb-24">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => navigate(`/pets/${id}`)}
-            className="mb-4 -ml-2 h-10 touch-manipulation"
-          >
-            <ArrowLeft className="w-5 h-5 mr-1" />
-            Back
-          </Button>
-          <FormContent />
-        </div>
-      </IOSPageLayout>
-    )
-  }
 
   // Web Layout
   return (

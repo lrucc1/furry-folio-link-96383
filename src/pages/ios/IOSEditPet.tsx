@@ -1,31 +1,35 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { usePlanV2 } from '@/hooks/usePlanV2';
-import { EntitlementServiceV2 } from '@/services/EntitlementServiceV2';
 import { supabase } from '@/integrations/supabase/client';
 import { IOSPageLayout } from '@/components/ios/IOSPageLayout';
 import { MobileCard } from '@/components/ios/MobileCard';
 import { FormSection, FormRow } from '@/components/ios/FormSection';
-import { PaywallModal } from '@/components/PaywallModal';
+import { ImageCropDialog } from '@/components/ImageCropDialog';
 import { VetClinicAutocomplete, VetClinicData } from '@/components/VetClinicAutocomplete';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { ChevronLeft, MapPin, PawPrint, AlertCircle } from 'lucide-react';
+import { 
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle 
+} from '@/components/ui/alert-dialog';
+import { ChevronLeft, MapPin, Save, Upload, X, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { au } from '@/lib/auEnglish';
+import { useRole } from '@/rbac/useRole';
+import { canDeletePets } from '@/rbac/guards';
 import { z } from 'zod';
 
 const PetSchema = z.object({
   name: z.string().trim().min(1, 'Pet name is required').max(100, 'Name must be under 100 characters'),
-  species: z.string().trim().min(1, 'Species is required').max(50, 'Species must be under 50 characters'),
-  breed: z.string().trim().max(100, 'Breed must be under 100 characters').optional().or(z.literal('')),
-  color: z.string().trim().max(100, 'Colour must be under 100 characters').optional().or(z.literal('')),
-  sex: z.string().trim().max(20).optional().or(z.literal('')),
+  species: z.string().trim().min(1, 'Species is required'),
+  breed: z.string().trim().max(100).optional().or(z.literal('')),
+  color: z.string().trim().max(100).optional().or(z.literal('')),
+  sex: z.string().trim().optional().or(z.literal('')),
   date_of_birth: z.string().trim().optional().or(z.literal('')),
+  weight_kg: z.string().optional().or(z.literal('')),
   microchip_number: z.string().trim().max(30).optional().or(z.literal('')),
   registry_name: z.string().trim().max(100).optional().or(z.literal('')),
   registry_link: z.string().trim().url('Must be a valid URL').optional().or(z.literal('')),
@@ -38,21 +42,20 @@ const PetSchema = z.object({
 
 type FieldErrors = Partial<Record<keyof z.infer<typeof PetSchema>, string>>;
 
-export default function IOSAddPet() {
+export default function IOSEditPet() {
+  const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const { plan, usage, entitlement } = usePlanV2();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [showPaywall, setShowPaywall] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
-
-  const currentPets = usage.pets_count;
-  const isProPlan = plan === 'PRO';
-  const rawMax = entitlement?.pets_max ?? (isProPlan ? null : 1);
-  const isUnlimited = isProPlan || rawMax === null || (typeof rawMax === 'number' && rawMax < 0);
-  const maxPets = isUnlimited ? -1 : (rawMax as number);
-  const canAddPet = isUnlimited || currentPets < maxPets;
-  const remainingPets = isUnlimited ? 'Unlimited' : Math.max(0, maxPets - currentPets);
+  const { role } = useRole(id || null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -62,6 +65,7 @@ export default function IOSAddPet() {
     sex: '',
     date_of_birth: '',
     desexed: false,
+    weight_kg: '',
     microchip_number: '',
     registry_name: '',
     registry_link: '',
@@ -70,7 +74,51 @@ export default function IOSAddPet() {
     insurance_provider: '',
     insurance_policy: '',
     notes: '',
+    photo_url: '',
   });
+
+  useEffect(() => {
+    if (id && user) fetchPetDetails();
+  }, [id, user]);
+
+  const fetchPetDetails = async () => {
+    if (!user || !id) return;
+    try {
+      const { data, error } = await supabase
+        .from('pets')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+
+      setFormData({
+        name: data.name || '',
+        species: data.species || '',
+        breed: data.breed || '',
+        color: data.color || '',
+        sex: data.gender || '',
+        date_of_birth: data.date_of_birth || '',
+        desexed: !!data.desexed,
+        weight_kg: data.weight_kg ? String(data.weight_kg) : '',
+        microchip_number: data.microchip_number || '',
+        registry_name: data.registry_name || '',
+        registry_link: data.registry_link || '',
+        clinic_name: (data as any).clinic_name || data.vet_name || '',
+        clinic_address: (data as any).clinic_address || '',
+        insurance_provider: data.insurance_provider || '',
+        insurance_policy: data.insurance_policy || '',
+        notes: data.notes || '',
+        photo_url: data.photo_url || '',
+      });
+      setPhotoPreview(data.photo_url);
+    } catch (error) {
+      toast.error('Failed to load pet details');
+      navigate('/dashboard');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -97,69 +145,145 @@ export default function IOSAddPet() {
     return true;
   };
 
-  const handleSubmit = async () => {
-    if (!user) return;
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImageToCrop(reader.result as string);
+      setCropDialogOpen(true);
+    };
+    reader.readAsDataURL(file);
+  };
 
+  const handleCroppedImage = async (croppedBlob: Blob) => {
+    if (!user || !id) return;
+    setUploading(true);
+    try {
+      if (formData.photo_url) {
+        try {
+          const oldPhotoPath = formData.photo_url.split('/').pop();
+          if (oldPhotoPath && oldPhotoPath.includes(user.id)) {
+            const fullPath = `${user.id}/${oldPhotoPath.split(`${user.id}/`)[1]}`;
+            await supabase.storage.from('pet-documents').remove([fullPath]);
+          }
+        } catch {}
+      }
+
+      const fileName = `${user.id}/${id}-${Math.random()}.jpg`;
+      const { error: uploadError } = await supabase.storage
+        .from('pet-documents')
+        .upload(fileName, croppedBlob, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('pet-documents')
+        .getPublicUrl(fileName);
+
+      setPhotoPreview(publicUrl);
+      setFormData(prev => ({ ...prev, photo_url: publicUrl }));
+      toast.success('Photo uploaded');
+    } catch {
+      toast.error('Failed to upload photo');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removePhoto = async () => {
+    if (!user || !formData.photo_url) {
+      setPhotoPreview(null);
+      setFormData(prev => ({ ...prev, photo_url: '' }));
+      return;
+    }
+    try {
+      const oldPhotoPath = formData.photo_url.split('/').pop();
+      if (oldPhotoPath && oldPhotoPath.includes(user.id)) {
+        const fullPath = `${user.id}/${oldPhotoPath.split(`${user.id}/`)[1]}`;
+        await supabase.storage.from('pet-documents').remove([fullPath]);
+      }
+    } catch {}
+    setPhotoPreview(null);
+    setFormData(prev => ({ ...prev, photo_url: '' }));
+  };
+
+  const handleSubmit = async () => {
+    if (!user || !id) return;
     if (!validateForm()) {
       toast.error('Please fix the errors in the form');
       return;
     }
 
-    const service = EntitlementServiceV2.getInstance();
-    const check = await service.checkEntitlement(user.id, 'pets_max', 1);
-
-    if (!check.allowed) {
-      const maxPetsAllowed = entitlement?.pets_max;
-      if (!(maxPetsAllowed !== null && usage.pets_count < maxPetsAllowed)) {
-        setShowPaywall(true);
-        toast.error(check.reason || 'Upgrade to add more pets.');
-        return;
-      }
-    }
-
-    setLoading(true);
+    setSaving(true);
     try {
-      const payload = {
+      const updateData: any = {
         name: formData.name.trim(),
-        species: formData.species.trim(),
+        species: formData.species,
         breed: formData.breed || null,
-        sex: formData.sex || null,
-        dob: formData.date_of_birth || null,
-        microchip: formData.microchip_number || null,
-        photo_url: null,
         color: formData.color || null,
         gender: formData.sex || null,
         date_of_birth: formData.date_of_birth || null,
+        desexed: formData.desexed,
+        weight_kg: formData.weight_kg ? parseFloat(formData.weight_kg) : null,
         microchip_number: formData.microchip_number || null,
         registry_name: formData.registry_name || null,
         registry_link: formData.registry_link || null,
         clinic_name: formData.clinic_name || null,
         clinic_address: formData.clinic_address || null,
+        vet_name: formData.clinic_name || null,
         insurance_provider: formData.insurance_provider || null,
         insurance_policy: formData.insurance_policy || null,
         notes: formData.notes || null,
+        photo_url: formData.photo_url || null,
       };
 
-      const { data, error } = await supabase.functions.invoke('create-pet', {
-        body: payload,
-      });
+      const { error } = await supabase
+        .from('pets')
+        .update(updateData)
+        .eq('id', id);
 
-      if (error) {
-        const err: any = error;
-        const msg = err?.message || err?.context?.message || 'Failed to add pet';
-        throw new Error(msg);
-      }
+      if (error) throw error;
 
-      if (!data?.id) {
-        throw new Error('Pet was not created');
-      }
-
-      toast.success(`${formData.name} has been added!`);
-      navigate('/dashboard');
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to add pet');
+      toast.success(`${formData.name}'s profile updated`);
+      navigate(`/pets/${id}`);
+    } catch {
+      toast.error('Failed to update pet');
     } finally {
-      setLoading(false);
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!user || !id) return;
+    setDeleting(true);
+    try {
+      await supabase.from('vaccinations').delete().eq('pet_id', id);
+      await supabase.from('health_reminders').delete().eq('pet_id', id);
+      await supabase.from('pet_documents').delete().eq('pet_id', id);
+      await supabase.from('pet_memberships').delete().eq('pet_id', id);
+      await supabase.from('pet_invites').delete().eq('pet_id', id);
+
+      if (formData.photo_url) {
+        try {
+          const photoPath = formData.photo_url.split('/').pop();
+          if (photoPath && photoPath.includes(user.id)) {
+            const fullPath = `${user.id}/${photoPath.split(`${user.id}/`)[1]}`;
+            await supabase.storage.from('pet-documents').remove([fullPath]);
+          }
+        } catch {}
+      }
+
+      const { error } = await supabase.from('pets').delete().eq('id', id);
+      if (error) throw error;
+
+      toast.success(`${formData.name} has been removed`);
+      navigate('/dashboard');
+    } catch {
+      toast.error('Failed to delete pet');
+    } finally {
+      setDeleting(false);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -169,41 +293,57 @@ export default function IOSAddPet() {
     </Button>
   );
 
-  return (
-    <IOSPageLayout title="Add Pet" headerRight={headerLeft}>
-      <div className="pb-8">
-        {/* Pet Limit Indicator */}
-        {!canAddPet && (
-          <MobileCard className="mb-6 border-destructive/30 bg-destructive/5">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center flex-shrink-0">
-                <AlertCircle className="w-5 h-5 text-destructive" />
-              </div>
-              <div>
-                <p className="font-medium text-destructive">Pet limit reached</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Upgrade to Pro to add unlimited pets
-                </p>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="mt-3"
-                  onClick={() => navigate('/pricing')}
-                >
-                  View Plans
-                </Button>
-              </div>
-            </div>
-          </MobileCard>
-        )}
+  if (loading) {
+    return (
+      <IOSPageLayout title="Edit Pet" headerRight={headerLeft}>
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        </div>
+      </IOSPageLayout>
+    );
+  }
 
-        {canAddPet && !isUnlimited && (
-          <div className="px-4 mb-4">
-            <p className="text-sm text-muted-foreground text-center">
-              {remainingPets} {Number(remainingPets) === 1 ? 'pet slot' : 'pet slots'} remaining
-            </p>
+  return (
+    <IOSPageLayout title={`Edit ${formData.name}`} headerRight={headerLeft}>
+      <div className="pb-8">
+        {/* Profile Photo */}
+        <FormSection title="Profile Photo">
+          <div className="p-4">
+            <label className="cursor-pointer block">
+              <div className="w-32 h-32 mx-auto rounded-2xl overflow-hidden bg-muted relative group border-2 border-dashed border-border hover:border-primary/50 transition-colors">
+                {photoPreview ? (
+                  <>
+                    <img src={photoPreview} alt="Pet" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Upload className="w-8 h-8 text-white" />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); removePhoto(); }}
+                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </>
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center">
+                    <Upload className="w-8 h-8 text-muted-foreground mb-1" />
+                    <p className="text-xs text-muted-foreground">
+                      {uploading ? 'Uploading...' : 'Add photo'}
+                    </p>
+                  </div>
+                )}
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoSelect}
+                className="hidden"
+                disabled={uploading}
+              />
+            </label>
           </div>
-        )}
+        </FormSection>
 
         {/* Basic Information */}
         <FormSection title="Basic Information">
@@ -266,6 +406,18 @@ export default function IOSAddPet() {
               type="date"
               value={formData.date_of_birth}
               onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
+              className="bg-muted/50 border-0"
+            />
+          </FormRow>
+
+          <FormRow label="Weight (kg)">
+            <Input
+              type="number"
+              step="0.1"
+              min="0"
+              value={formData.weight_kg}
+              onChange={(e) => handleInputChange('weight_kg', e.target.value)}
+              placeholder="e.g., 25.5"
               className="bg-muted/50 border-0"
             />
           </FormRow>
@@ -347,6 +499,8 @@ export default function IOSAddPet() {
                 <SelectItem value="Pet Insurance Australia">Pet Insurance Australia</SelectItem>
                 <SelectItem value="Bow Wow Meow">Bow Wow Meow</SelectItem>
                 <SelectItem value="Woolworths Pet Insurance">Woolworths Pet Insurance</SelectItem>
+                <SelectItem value="Petplan">Petplan</SelectItem>
+                <SelectItem value="Healthy Paws">Healthy Paws</SelectItem>
                 <SelectItem value="Other">Other</SelectItem>
               </SelectContent>
             </Select>
@@ -372,39 +526,72 @@ export default function IOSAddPet() {
               className={`min-h-[100px] bg-muted/50 border-0 resize-none ${errors.notes ? 'ring-2 ring-destructive' : ''}`}
             />
             {errors.notes && (
-              <p className="text-xs text-destructive mt-2 flex items-center gap-1.5">
-                <AlertCircle className="w-3.5 h-3.5" />
-                {errors.notes}
-              </p>
+              <p className="text-xs text-destructive mt-2">{errors.notes}</p>
             )}
           </div>
         </FormSection>
 
-        {/* Submit Button */}
-        <div className="px-4 pt-2">
+        {/* Actions */}
+        <div className="px-4 pt-2 space-y-3">
           <Button 
             onClick={handleSubmit}
-            disabled={!canAddPet || loading || !formData.name || !formData.species}
+            disabled={saving || !formData.name || !formData.species}
             className="w-full h-12 text-base font-semibold rounded-xl"
           >
-            {loading ? (
+            {saving ? (
               <span className="flex items-center gap-2">
                 <span className="animate-spin rounded-full h-4 w-4 border-2 border-primary-foreground border-t-transparent" />
-                Adding...
+                Saving...
               </span>
             ) : (
               <span className="flex items-center gap-2">
-                <PawPrint className="w-5 h-5" />
-                Add Pet
+                <Save className="w-5 h-5" />
+                Save Changes
               </span>
             )}
           </Button>
+
+          {canDeletePets(role) && (
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(true)}
+              className="w-full h-12 text-base font-semibold rounded-xl text-destructive border-destructive/30 hover:bg-destructive/10"
+            >
+              <Trash2 className="w-5 h-5 mr-2" />
+              Delete Pet
+            </Button>
+          )}
         </div>
 
-        <PaywallModal
-          open={showPaywall}
-          onOpenChange={setShowPaywall}
-          feature="pet limit"
+        {/* Delete Dialog */}
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete {formData.name}?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. All pet data including vaccinations, health reminders, and documents will be permanently deleted.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDelete}
+                disabled={deleting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleting ? 'Deleting...' : 'Delete Forever'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Crop Dialog */}
+        <ImageCropDialog
+          open={cropDialogOpen}
+          onClose={() => { setCropDialogOpen(false); setImageToCrop(null); }}
+          image={imageToCrop}
+          onCropComplete={handleCroppedImage}
+          aspectRatio={1}
         />
       </div>
     </IOSPageLayout>
