@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { MobileCard } from './MobileCard';
+import { AlertCircle } from 'lucide-react';
 
 interface FormSectionProps {
   title: string;
@@ -22,16 +23,23 @@ export function FormSection({ title, children }: FormSectionProps) {
 interface FormRowProps {
   label: string;
   required?: boolean;
+  error?: string;
   children: ReactNode;
 }
 
-export function FormRow({ label, required, children }: FormRowProps) {
+export function FormRow({ label, required, error, children }: FormRowProps) {
   return (
     <div className="p-4">
       <label className="text-sm font-medium text-foreground mb-2 block">
         {label}{required && <span className="text-destructive ml-1">*</span>}
       </label>
       {children}
+      {error && (
+        <div className="flex items-center gap-1.5 mt-2 text-destructive">
+          <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+          <span className="text-xs">{error}</span>
+        </div>
+      )}
     </div>
   );
 }
