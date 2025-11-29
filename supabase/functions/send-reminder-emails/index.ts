@@ -148,7 +148,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
     log("info", "Starting reminder email send process");
 
     const daysToCheck = [7, 3, 1];
-    const healthRemindersToNotify = [];
+    const healthRemindersToNotify: any[] = [];
+    const vaccinationsToNotify: any[] = [];
+
+    // Collect all reminders and vaccinations first
+    const allHealthReminders: any[] = [];
+    const allVaccinations: any[] = [];
 
     // Get health reminders due in 7, 3, and 1 day(s)
     for (const days of daysToCheck) {
@@ -169,54 +174,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
       if (reminders && reminders.length > 0) {
         for (const reminder of reminders) {
-          // Check if notification already sent for this days_before value
-          const { data: existingNotification } = await supabase
-            .from('reminder_notifications')
-            .select('id')
-            .eq('reminder_id', reminder.id)
-            .eq('days_before', days)
-            .eq('reminder_type', 'health_reminder')
-            .single();
-
-          // Skip if already notified for this time period
-          if (existingNotification) {
-            log("info", "Notification already sent", { reminder_id: reminder.id, days_before: days });
-            continue;
-          }
-
-          // Fetch pet and profile data
-          const { data: pet } = await supabase
-            .from('pets')
-            .select('name, species')
-            .eq('id', reminder.pet_id)
-            .single();
-          
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('email, display_name')
-            .eq('id', reminder.user_id)
-            .single();
-
-          healthRemindersToNotify.push({ 
-            ...reminder, 
-            days_before: days,
-            pet_name: pet?.name,
-            pet_species: pet?.species,
-            user_email: profile?.email,
-            user_name: profile?.display_name
-          });
+          allHealthReminders.push({ ...reminder, days_before: days });
         }
       }
-    }
 
-    // Get vaccinations due in 7, 3, and 1 day(s)
-    const vaccinationsToNotify = [];
-
-    for (const days of daysToCheck) {
-      const targetDate = new Date();
-      targetDate.setDate(targetDate.getDate() + days);
-      const targetDateStr = targetDate.toISOString().split('T')[0];
-
+      // Get vaccinations due
       const { data: vaccinations, error: vaccinationError } = await supabase
         .from('vaccinations')
         .select('*')
@@ -229,44 +191,100 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
       if (vaccinations && vaccinations.length > 0) {
         for (const vaccination of vaccinations) {
-          // Check if notification already sent for this days_before value
-          const { data: existingNotification } = await supabase
-            .from('reminder_notifications')
-            .select('id')
-            .eq('reminder_id', vaccination.id)
-            .eq('days_before', days)
-            .eq('reminder_type', 'vaccination')
-            .single();
-
-          // Skip if already notified for this time period
-          if (existingNotification) {
-            log("info", "Notification already sent", { vaccination_id: vaccination.id, days_before: days });
-            continue;
-          }
-
-          // Fetch pet and profile data
-          const { data: pet } = await supabase
-            .from('pets')
-            .select('name, species')
-            .eq('id', vaccination.pet_id)
-            .single();
-          
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('email, display_name')
-            .eq('id', vaccination.user_id)
-            .single();
-
-          vaccinationsToNotify.push({ 
-            ...vaccination, 
-            days_before: days,
-            pet_name: pet?.name,
-            pet_species: pet?.species,
-            user_email: profile?.email,
-            user_name: profile?.display_name
-          });
+          allVaccinations.push({ ...vaccination, days_before: days });
         }
       }
+    }
+
+    // Batch fetch all pet and profile data (fix N+1)
+    const allPetIds = [...new Set([
+      ...allHealthReminders.map(r => r.pet_id),
+      ...allVaccinations.map(v => v.pet_id)
+    ])];
+    const allUserIds = [...new Set([
+      ...allHealthReminders.map(r => r.user_id),
+      ...allVaccinations.map(v => v.user_id)
+    ])];
+
+    const petsById: Record<string, { name: string; species: string }> = {};
+    const profilesById: Record<string, { email: string; display_name: string }> = {};
+
+    if (allPetIds.length > 0) {
+      const { data: petsData } = await supabase
+        .from('pets')
+        .select('id, name, species')
+        .in('id', allPetIds);
+
+      (petsData || []).forEach((pet: any) => {
+        petsById[pet.id] = { name: pet.name, species: pet.species };
+      });
+    }
+
+    if (allUserIds.length > 0) {
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, email, display_name')
+        .in('id', allUserIds);
+
+      (profilesData || []).forEach((profile: any) => {
+        profilesById[profile.id] = { email: profile.email, display_name: profile.display_name };
+      });
+    }
+
+    // Process health reminders with batched data
+    for (const reminder of allHealthReminders) {
+      // Check if notification already sent for this days_before value
+      const { data: existingNotification } = await supabase
+        .from('reminder_notifications')
+        .select('id')
+        .eq('reminder_id', reminder.id)
+        .eq('days_before', reminder.days_before)
+        .eq('reminder_type', 'health_reminder')
+        .maybeSingle();
+
+      if (existingNotification) {
+        log("info", "Notification already sent", { reminder_id: reminder.id, days_before: reminder.days_before });
+        continue;
+      }
+
+      const pet = petsById[reminder.pet_id];
+      const profile = profilesById[reminder.user_id];
+
+      healthRemindersToNotify.push({
+        ...reminder,
+        pet_name: pet?.name,
+        pet_species: pet?.species,
+        user_email: profile?.email,
+        user_name: profile?.display_name
+      });
+    }
+
+    // Process vaccinations with batched data
+    for (const vaccination of allVaccinations) {
+      // Check if notification already sent for this days_before value
+      const { data: existingNotification } = await supabase
+        .from('reminder_notifications')
+        .select('id')
+        .eq('reminder_id', vaccination.id)
+        .eq('days_before', vaccination.days_before)
+        .eq('reminder_type', 'vaccination')
+        .maybeSingle();
+
+      if (existingNotification) {
+        log("info", "Notification already sent", { vaccination_id: vaccination.id, days_before: vaccination.days_before });
+        continue;
+      }
+
+      const pet = petsById[vaccination.pet_id];
+      const profile = profilesById[vaccination.user_id];
+
+      vaccinationsToNotify.push({
+        ...vaccination,
+        pet_name: pet?.name,
+        pet_species: pet?.species,
+        user_email: profile?.email,
+        user_name: profile?.display_name
+      });
     }
 
     log("info", "Found reminders to process", {
