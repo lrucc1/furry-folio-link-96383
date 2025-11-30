@@ -248,10 +248,10 @@ export default function IOSPlans() {
             <div className="text-center p-4 bg-muted/30 rounded-xl">
               <p className="text-2xl font-bold">A$39.99<span className="text-sm font-normal text-muted-foreground">/year</span></p>
               <p className="text-sm text-muted-foreground mt-1">
-                or A$4.99/month
+                or A$3.99/month
               </p>
               <p className="text-xs text-muted-foreground mt-2">
-                Save 33% with yearly billing
+                Save 17% with yearly billing
               </p>
             </div>
           </div>

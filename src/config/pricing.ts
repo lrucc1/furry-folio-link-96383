@@ -60,8 +60,8 @@ export const PLANS: Record<PlanType, PlanConfig> = {
     id: 'PRO',
     name: 'Pro',
     description: 'Full features for pet families',
-    price_monthly_aud: 2.99,
-    price_yearly_aud: 28.99,
+    price_monthly_aud: 3.99,
+    price_yearly_aud: 39.99,
     stripe_price_monthly: STRIPE_PRICE_PRO_MONTHLY_AUD,
     stripe_price_yearly: STRIPE_PRICE_PRO_YEARLY_AUD,
     entitlements: {
