@@ -54,6 +54,11 @@ import AcceptInvite from "./pages/invite/AcceptInvite";
 import InviteStatus from "./pages/InviteStatus";
 import IOSHome from "./pages/ios/IOSHome";
 import IOSSettings from "./pages/ios/IOSSettings";
+import IOSEditProfile from "./pages/ios/IOSEditProfile";
+import IOSPlans from "./pages/ios/IOSPlans";
+import IOSSharingSettings from "./pages/ios/IOSSharingSettings";
+import IOSPrivacyPolicy from "./pages/ios/IOSPrivacyPolicy";
+import IOSTerms from "./pages/ios/IOSTerms";
 
 const queryClient = new QueryClient();
 
@@ -90,6 +95,32 @@ function AppContent() {
               </ProtectedRoute>
             } 
           />
+          <Route 
+            path="/settings/profile" 
+            element={
+              <ProtectedRoute>
+                <IOSEditProfile />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/settings/plans" 
+            element={
+              <ProtectedRoute>
+                <IOSPlans />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/settings/sharing" 
+            element={
+              <ProtectedRoute>
+                <IOSSharingSettings />
+              </ProtectedRoute>
+            } 
+          />
+          <Route path="/settings/privacy-policy" element={<IOSPrivacyPolicy />} />
+          <Route path="/settings/terms" element={<IOSTerms />} />
           <Route path="/found/:publicId" element={<FoundPet />} />
           <Route path="/pet/:publicId" element={<PublicPetProfile />} />
           <Route path="/help" element={<HelpCentre />} />
