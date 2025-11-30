@@ -59,7 +59,10 @@ export async function signInWithApple(): Promise<{ data: any; error: any }> {
       SocialLogin = module.SocialLogin;
     } catch (error) {
       console.error('[AppleAuth] Failed to load social login module:', error);
-      return { data: null, error };
+      return { 
+        data: null, 
+        error: new Error('Unable to load Apple Sign-In. Please try again.') 
+      };
     }
   }
 
@@ -85,26 +88,47 @@ export async function signInWithApple(): Promise<{ data: any; error: any }> {
 
       if (error) {
         console.error('[AppleAuth] Supabase sign-in error:', error);
-        return { data: null, error };
+        // Provide user-friendly error messages
+        if (error.message?.includes('network') || error.message?.includes('fetch')) {
+          return { 
+            data: null, 
+            error: new Error('Please check your internet connection and try again.') 
+          };
+        }
+        if (error.message?.includes('invalid') || error.message?.includes('expired')) {
+          return { 
+            data: null, 
+            error: new Error('Apple Sign-In session expired. Please try again.') 
+          };
+        }
+        return { 
+          data: null, 
+          error: new Error(error.message || 'Unable to verify Apple credentials. Please try again.') 
+        };
       }
 
       console.log('[AppleAuth] Successfully signed in with Supabase');
       
       // If Apple provided user info (only on first sign-in), update profile
+      // This is non-critical, so we log errors silently
       if (result.result.givenName || result.result.familyName) {
         const fullName = [result.result.givenName, result.result.familyName]
           .filter(Boolean)
           .join(' ');
         
         if (fullName && data.user) {
-          // Update profile with name from Apple
-          await supabase
-            .from('profiles')
-            .update({ 
-              full_name: fullName,
-              display_name: fullName 
-            })
-            .eq('id', data.user.id);
+          try {
+            await supabase
+              .from('profiles')
+              .update({ 
+                full_name: fullName,
+                display_name: fullName 
+              })
+              .eq('id', data.user.id);
+          } catch (profileError) {
+            // Non-critical - silently log profile update failures
+            console.warn('[AppleAuth] Profile update failed (non-critical):', profileError);
+          }
         }
       }
 
@@ -113,11 +137,32 @@ export async function signInWithApple(): Promise<{ data: any; error: any }> {
 
     return { 
       data: null, 
-      error: new Error('Apple Sign-In failed - no identity token received') 
+      error: new Error('Apple Sign-In failed. Please try again.') 
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('[AppleAuth] Error during Apple Sign-In:', error);
-    return { data: null, error };
+    
+    // Handle specific error types with user-friendly messages
+    const errorMessage = error?.message || '';
+    
+    if (errorMessage.includes('network') || errorMessage.includes('fetch') || errorMessage.includes('offline')) {
+      return { 
+        data: null, 
+        error: new Error('Please check your internet connection and try again.') 
+      };
+    }
+    
+    if (errorMessage.includes('timeout')) {
+      return { 
+        data: null, 
+        error: new Error('Request timed out. Please try again.') 
+      };
+    }
+    
+    return { 
+      data: null, 
+      error: new Error('Apple Sign-In failed. Please try again.') 
+    };
   }
 }
 
