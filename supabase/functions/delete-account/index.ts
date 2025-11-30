@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-import Stripe from "https://esm.sh/stripe@18.5.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,7 +16,6 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders });
   }
-  
 
   try {
     logStep("Function started");
@@ -59,39 +57,12 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    // Cancel Stripe subscription and delete customer (Issue 1)
-    let stripeCustomerId: string | null = null;
-    try {
-      const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-      if (stripeKey && userEmail) {
-        const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-        const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
-        
-        if (customers.data.length > 0) {
-          stripeCustomerId = customers.data[0].id;
-          
-          // List and immediately cancel all active subscriptions
-          const subscriptions = await stripe.subscriptions.list({ customer: stripeCustomerId });
-          for (const subscription of subscriptions.data) {
-            if (subscription.status === 'active' || subscription.status === 'trialing') {
-              await stripe.subscriptions.cancel(subscription.id);
-              logStep("Canceled subscription immediately", { subscriptionId: subscription.id });
-            }
-          }
-          
-          // Delete Stripe customer record
-          await stripe.customers.del(stripeCustomerId);
-          logStep("Deleted Stripe customer", { customerId: stripeCustomerId });
-        } else {
-          logStep("No Stripe customer found");
-        }
-      }
-    } catch (err) {
-      logStep("Warning: Error processing Stripe", { error: err });
-      // Continue with soft deletion even if Stripe fails
-    }
+    // Note: Apple IAP subscriptions are managed by Apple. 
+    // Users should cancel their subscription via iOS Settings before deleting account.
+    // The subscription will remain active until the billing period ends.
+    logStep("Note: Any Apple IAP subscription should be canceled via iOS Settings");
 
-    // Soft delete: Mark account for deletion (Issue 5)
+    // Soft delete: Mark account for deletion
     const deletionDate = new Date();
     const { error: softDeleteError } = await adminClient
       .from('profiles')

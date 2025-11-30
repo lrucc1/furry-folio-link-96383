@@ -2,76 +2,29 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CreditCard, Calendar, AlertCircle, ExternalLink, ArrowLeft, Sparkles, Download, RotateCcw, Smartphone, Apple } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { Loader2, CreditCard, Calendar, AlertCircle, ArrowLeft, Sparkles, Download, RotateCcw, Smartphone, Apple } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlanV2 } from "@/hooks/usePlanV2";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { IOSPageLayout } from "@/components/ios/IOSPageLayout";
 import { useIsNativeApp } from "@/hooks/useIsNativeApp";
 import { isNativeApp, isIOSApp, restorePurchases } from "@/lib/appleIap";
-
-const APP_STORE_URL = import.meta.env.VITE_APP_STORE_URL || '#';
+import { toast } from "sonner";
 
 export default function BillingSettings() {
-  const [loading, setLoading] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const { user } = useAuth();
   const { plan, planConfig, subscriptionStatus, trialEndAt, nextBillingAt, daysUntilTrialEnd, isTrialActive, usage, refresh } = usePlanV2();
-  const navigate = useNavigate();
   const isNative = useIsNativeApp();
   
   const isPro = plan === 'PRO';
   const hasMultiplePets = usage.pets_count > 1;
   const isOnIOS = isNativeApp() && isIOSApp();
 
-  const handleManageBilling = async () => {
-    if (!user) {
-      toast.error("Please sign in to manage billing");
-      return;
-    }
-
-    // For iOS users with Apple IAP subscriptions
-    if (isOnIOS) {
-      toast.info("To manage your subscription, go to Settings → Apple ID → Subscriptions on your device.");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('customer-portal', {
-        headers: {
-          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
-      });
-
-      if (error) {
-        console.error("Portal error:", error);
-        toast.error("Failed to open billing portal. Please try again.");
-        return;
-      }
-
-      if (data?.error) {
-        console.error("Portal error:", data.error);
-        toast.error(data.error);
-        return;
-      }
-
-      if (data?.url) {
-        window.open(data.url, '_blank');
-        toast.success("Opening billing portal...");
-      } else {
-        throw new Error("No portal URL returned");
-      }
-    } catch (error: any) {
-      console.error("Portal error:", error);
-      toast.error("An unexpected error occurred. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+  const handleManageAppleSubscription = () => {
+    toast.info("To manage your subscription, go to Settings → Apple ID → Subscriptions on your device.");
   };
 
   const handleRestorePurchases = async () => {
@@ -171,7 +124,7 @@ export default function BillingSettings() {
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Your payment is past due. Please update your payment method to continue using paid features.
+            Your payment is past due. Please update your payment method via your Apple ID settings.
           </AlertDescription>
         </Alert>
       )}
@@ -224,51 +177,13 @@ export default function BillingSettings() {
                   </Link>
                 </Button>
               )
-            ) : plan === 'PRO' ? (
-              isOnIOS ? (
-                <Button 
-                  onClick={handleManageBilling}
-                  variant="outline"
-                >
-                  <Smartphone className="mr-2 h-4 w-4" />
-                  Manage via Apple
-                </Button>
-              ) : (
-                <Button 
-                  onClick={handleManageBilling} 
-                  disabled={loading}
-                  variant="outline"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Opening...
-                    </>
-                  ) : (
-                    <>
-                      <ExternalLink className="mr-2 h-4 w-4" />
-                      Manage Billing
-                    </>
-                  )}
-                </Button>
-              )
             ) : (
               <Button 
-                onClick={handleManageBilling} 
-                disabled={loading}
+                onClick={handleManageAppleSubscription}
                 variant="outline"
               >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Opening...
-                  </>
-                ) : (
-                  <>
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    Manage Billing
-                  </>
-                )}
+                <Smartphone className="mr-2 h-4 w-4" />
+                Manage via Apple
               </Button>
             )}
           </div>

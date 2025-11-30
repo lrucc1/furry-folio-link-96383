@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { isNativeApp } from '@/lib/iosPaymentFlow';
+import { isNativeApp } from '@/lib/appleIap';
 
 /**
  * iOS App Router

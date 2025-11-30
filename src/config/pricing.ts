@@ -1,18 +1,18 @@
 /**
  * Pricing v2 Configuration
  * Single source of truth for plans, entitlements, and pricing
+ * 
+ * Note: All payments are handled via Apple In-App Purchase on iOS.
+ * Web users are directed to the iOS app to subscribe.
  */
 
 export const TRIAL_DAYS = parseInt(import.meta.env.VITE_TRIAL_DAYS || '7', 10);
 export const FREE_DOCS_STORAGE_MB = parseInt(import.meta.env.VITE_FREE_DOCS_STORAGE_MB || '50', 10);
 export const PRO_DOCS_STORAGE_MB = parseInt(import.meta.env.VITE_PRO_DOCS_STORAGE_MB || '200', 10);
 
-// Stripe Price IDs (AUD) - Import from centralized config
-import { getPriceId, isCheckoutAvailable } from '@/lib/stripeConfig';
-
-// Stripe Price IDs for PRO plan
-export const STRIPE_PRICE_PRO_MONTHLY_AUD = import.meta.env.VITE_STRIPE_PRICE_PRO_MONTHLY_AUD || '';
-export const STRIPE_PRICE_PRO_YEARLY_AUD = import.meta.env.VITE_STRIPE_PRICE_PRO_YEARLY_AUD || '';
+// Apple IAP Product IDs
+export const APPLE_PRO_MONTHLY_PRODUCT_ID = import.meta.env.VITE_APPLE_PRO_MONTHLY_PRODUCT_ID || 'pro_monthly';
+export const APPLE_PRO_YEARLY_PRODUCT_ID = import.meta.env.VITE_APPLE_PRO_YEARLY_PRODUCT_ID || 'pro_yearly';
 
 export type PlanType = 'FREE' | 'PRO';
 
@@ -32,8 +32,8 @@ export interface PlanConfig {
   description: string;
   price_monthly_aud: number;
   price_yearly_aud: number;
-  stripe_price_monthly: string;
-  stripe_price_yearly: string;
+  apple_product_monthly: string;
+  apple_product_yearly: string;
   entitlements: PlanEntitlements;
 }
 
@@ -44,8 +44,8 @@ export const PLANS: Record<PlanType, PlanConfig> = {
     description: 'Perfect for getting started with one pet',
     price_monthly_aud: 0,
     price_yearly_aud: 0,
-    stripe_price_monthly: '',
-    stripe_price_yearly: '',
+    apple_product_monthly: '',
+    apple_product_yearly: '',
     entitlements: {
       pets_max: 1,
       caregivers_readonly_max: 1,
@@ -62,8 +62,8 @@ export const PLANS: Record<PlanType, PlanConfig> = {
     description: 'Full features for pet families',
     price_monthly_aud: 3.99,
     price_yearly_aud: 39.99,
-    stripe_price_monthly: STRIPE_PRICE_PRO_MONTHLY_AUD,
-    stripe_price_yearly: STRIPE_PRICE_PRO_YEARLY_AUD,
+    apple_product_monthly: APPLE_PRO_MONTHLY_PRODUCT_ID,
+    apple_product_yearly: APPLE_PRO_YEARLY_PRODUCT_ID,
     entitlements: {
       pets_max: null, // unlimited
       caregivers_readonly_max: 5,
