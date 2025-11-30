@@ -20,11 +20,6 @@ interface AuthContextType {
   signOut: () => Promise<void>
 }
 
-const SUBSCRIPTION_TIERS = {
-  'prod_TGGcRtzlK6vz7A': { tier: 'pro' as Tier, maxPets: -1 },
-  'prod_TGGcY3nKNalPuA': { tier: 'pro' as Tier, maxPets: -1 },
-}
-
 const DEFAULT_SUBSCRIPTION: SubscriptionInfo = {
   subscribed: false,
   product_id: null,
@@ -78,8 +73,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return
       }
 
-      const tierInfo = data.product_id && SUBSCRIPTION_TIERS[data.product_id as keyof typeof SUBSCRIPTION_TIERS]
-      
       let tier: Tier = 'free'
       let maxPets = 1
       const apiEffectiveTier = data.effective_tier as string | undefined
@@ -87,9 +80,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (apiEffectiveTier) {
         tier = normalizeTier(apiEffectiveTier)
         maxPets = tier === 'pro' ? -1 : 1
-      } else if (data.subscribed && tierInfo) {
-        tier = tierInfo.tier
-        maxPets = tierInfo.maxPets
+      } else if (data.subscribed) {
+        tier = 'pro'
+        maxPets = -1
       }
       
       setSubscriptionInfo({

@@ -1,11 +1,6 @@
 /**
  * Environment Configuration & Validation
  * Validates environment variables and provides runtime environment detection
- * 
- * CRITICAL: This file ensures production safety by validating that:
- * - Production never uses test Stripe keys
- * - All required secrets are configured
- * - Environment mismatches crash early with clear errors
  */
 
 export type AppEnvironment = 'production' | 'development' | 'preview';
@@ -52,43 +47,6 @@ export function isDevelopment(): boolean {
 }
 
 /**
- * Validate Stripe keys match environment
- * @throws Error if production uses test keys or vice versa
- */
-export function validateStripeKeys(): void {
-  const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '';
-  const env = detectEnvironment();
-  
-  if (!publishableKey) {
-    console.warn('[ENV] Stripe publishable key not configured');
-    return;
-  }
-  
-  const isTestKey = publishableKey.startsWith('pk_test_');
-  const isLiveKey = publishableKey.startsWith('pk_live_');
-  
-  // Production MUST use live keys
-  if (env === 'production' && isTestKey) {
-    throw new Error(
-      '🚨 SECURITY ERROR: Production is using Stripe TEST keys! ' +
-      'Update VITE_STRIPE_PUBLISHABLE_KEY to use pk_live_* key. ' +
-      'Application startup blocked to prevent test transactions in production.'
-    );
-  }
-  
-  // Development/Preview should use test keys
-  if (env !== 'production' && isLiveKey) {
-    console.error(
-      '⚠️ WARNING: Non-production environment is using Stripe LIVE keys! ' +
-      'This could result in real charges during development. ' +
-      'Please use pk_test_* keys for development and preview environments.'
-    );
-  }
-  
-  console.log(`[ENV] Stripe keys validated: ${env} using ${isTestKey ? 'TEST' : 'LIVE'} keys`);
-}
-
-/**
  * Validate required environment variables
  * @throws Error if critical variables are missing in production
  */
@@ -132,9 +90,8 @@ export function getEnvironmentConfig() {
     isPreview: env === 'preview',
     enableDebugLogs: env !== 'production',
     enableSourceMaps: env !== 'production',
-    stripeMode: env === 'production' ? 'live' : 'test',
     // App-specific config
-    useInAppPurchases: false, // iOS app uses web-based subscriptions
+    useInAppPurchases: true, // iOS app uses Apple IAP
     marketingUrl: 'https://petlinkid.com',
   };
 }
@@ -149,7 +106,6 @@ export function initializeEnvironment(): void {
   
   try {
     validateEnvironment();
-    validateStripeKeys();
     console.log('[ENV] ✅ Environment validation passed');
   } catch (error) {
     console.error('[ENV] ❌ Environment validation failed:', error);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Loader2, Sparkles, Crown } from 'lucide-react';
@@ -9,36 +9,23 @@ import { IOSPageLayout } from '@/components/ios/IOSPageLayout';
 import { MobileCard } from '@/components/ios/MobileCard';
 import { useIsNativeApp } from '@/hooks/useIsNativeApp';
 import { usePlanV2 } from '@/hooks/usePlanV2';
-import { supabase } from '@/integrations/supabase/client';
 import { isNativeApp } from '@/lib/appleIap';
 
 export default function BillingSuccess() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { refresh } = usePlanV2();
   const isNativeHook = useIsNativeApp();
   const [verifying, setVerifying] = useState(true);
-  
-  const sessionId = searchParams.get('session_id');
 
   useEffect(() => {
     const verifyAndRefresh = async () => {
-      if (sessionId) {
-        try {
-          await supabase.functions.invoke('sync-subscription', {
-            body: { session_id: sessionId }
-          });
-        } catch (error) {
-          console.error('Error syncing subscription:', error);
-        }
-      }
-      
+      // Just refresh the plan data from the profile
       await refresh();
       setVerifying(false);
     };
 
     verifyAndRefresh();
-  }, [sessionId, refresh]);
+  }, [refresh]);
 
   // Auto-navigate for iOS users after verification
   useEffect(() => {

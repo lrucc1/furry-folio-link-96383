@@ -10,7 +10,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { checkForceIOS } from './platformUtils';
 
-// Re-use types from stripeConfig for consistency
 export type BillingPeriod = 'monthly' | 'yearly';
 export type PlanKey = 'PRO';
 

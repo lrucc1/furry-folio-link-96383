@@ -136,20 +136,10 @@ export default function Account() {
   };
 
   const fetchInvoices = async () => {
-    setLoadingInvoices(true);
-    try {
-      log.debug('Calling get-invoices function...');
-      const { data, error } = await supabase.functions.invoke('get-invoices');
-      log.debug('Invoice response:', { data, error });
-      if (error) throw error;
-      setInvoices(data?.invoices || []);
-      log.debug('Invoices set:', data?.invoices);
-    } catch (error) {
-      log.error('Error fetching invoices:', error);
-      toast.error('Failed to load invoice history');
-    } finally {
-      setLoadingInvoices(false);
-    }
+    // Invoice history is managed via Apple - not fetched from Stripe
+    // For Apple IAP subscriptions, users manage billing via iOS Settings
+    setInvoices([]);
+    setLoadingInvoices(false);
   };
 
   const calculateStorageUsage = async () => {
