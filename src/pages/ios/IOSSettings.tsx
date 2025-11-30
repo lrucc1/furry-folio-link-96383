@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { 
   User, Bell, Shield, CreditCard, Globe, Moon, 
   LogOut, ChevronRight, HelpCircle, FileText, 
-  Trash2, Download, Crown, Mail, ChevronLeft, Smartphone
+  Trash2, Download, Crown, Mail, ChevronLeft, Smartphone, Users
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
@@ -203,19 +203,19 @@ export default function IOSSettings() {
           <SettingsRow 
             icon={<User className="w-4 h-4" />}
             label="Edit Profile"
-            onClick={() => navigate('/account')}
+            onClick={() => navigate('/settings/profile')}
           />
           <SettingsRow 
             icon={<CreditCard className="w-4 h-4" />}
             label="Subscription"
             value={tier === 'pro' ? 'Pro' : 'Free'}
-            onClick={() => navigate('/settings/billing')}
+            onClick={() => navigate('/settings/plans')}
           />
           <SettingsRow 
             icon={<Globe className="w-4 h-4" />}
             label="Region"
             value={profile?.country_code || 'AU'}
-            onClick={() => navigate('/account')}
+            onClick={() => navigate('/settings/profile')}
           />
         </SettingsGroup>
 
@@ -263,19 +263,24 @@ export default function IOSSettings() {
         {/* Privacy & Security */}
         <SettingsGroup title="Privacy & Security">
           <SettingsRow 
+            icon={<Users className="w-4 h-4" />}
+            label="Sharing & Privacy"
+            onClick={() => navigate('/settings/sharing')}
+          />
+          <SettingsRow 
             icon={<Shield className="w-4 h-4" />}
             label="Privacy Policy"
-            onClick={() => navigate('/privacy')}
+            onClick={() => navigate('/settings/privacy-policy')}
           />
           <SettingsRow 
             icon={<FileText className="w-4 h-4" />}
             label="Terms of Service"
-            onClick={() => navigate('/terms')}
+            onClick={() => navigate('/settings/terms')}
           />
           <SettingsRow 
             icon={<Download className="w-4 h-4" />}
             label="Export My Data"
-            onClick={() => navigate('/account')}
+            onClick={() => navigate('/settings/export')}
           />
         </SettingsGroup>
 
