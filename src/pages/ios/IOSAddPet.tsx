@@ -11,6 +11,7 @@ import { PaywallModal } from '@/components/PaywallModal';
 import { VetClinicAutocomplete, VetClinicData } from '@/components/VetClinicAutocomplete';
 import { RegistrySelect, InsuranceProviderSelect } from '@/components/RegionAwareSelect';
 import { ImageCropDialog } from '@/components/ImageCropDialog';
+import { BreedAutocomplete } from '@/components/BreedAutocomplete';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -27,6 +28,7 @@ const PetSchema = z.object({
   color: z.string().trim().max(100, 'Colour must be under 100 characters').optional().or(z.literal('')),
   sex: z.string().trim().max(20).optional().or(z.literal('')),
   date_of_birth: z.string().trim().optional().or(z.literal('')),
+  weight_kg: z.string().optional().or(z.literal('')),
   microchip_number: z.string().trim().max(30).optional().or(z.literal('')),
   registry_name: z.string().trim().max(100).optional().or(z.literal('')),
   registry_link: z.string().trim().url('Must be a valid URL').optional().or(z.literal('')),
@@ -68,6 +70,7 @@ export default function IOSAddPet() {
     color: '',
     sex: '',
     date_of_birth: '',
+    weight_kg: '',
     desexed: false,
     microchip_number: '',
     registry_name: '',
@@ -197,6 +200,7 @@ export default function IOSAddPet() {
         color: formData.color || null,
         gender: formData.sex || null,
         date_of_birth: formData.date_of_birth || null,
+        weight_kg: formData.weight_kg ? parseFloat(formData.weight_kg) : null,
         microchip_number: formData.microchip_number || null,
         registry_name: formData.registry_name || null,
         registry_link: formData.registry_link || null,
@@ -205,6 +209,7 @@ export default function IOSAddPet() {
         insurance_provider: formData.insurance_provider || null,
         insurance_policy: formData.insurance_policy || null,
         notes: formData.notes || null,
+        desexed: formData.desexed,
       };
 
       const { data, error } = await supabase.functions.invoke('create-pet', {
@@ -357,11 +362,11 @@ export default function IOSAddPet() {
           </FormRow>
 
           <FormRow label="Breed" error={errors.breed}>
-            <Input
+            <BreedAutocomplete
+              species={formData.species}
               value={formData.breed}
-              onChange={(e) => handleInputChange('breed', e.target.value)}
-              placeholder="e.g., Golden Retriever"
-              className="bg-muted/50 border-0"
+              onChange={(value) => handleInputChange('breed', value)}
+              placeholder="Select or type breed"
             />
           </FormRow>
 
@@ -391,6 +396,18 @@ export default function IOSAddPet() {
               type="date"
               value={formData.date_of_birth}
               onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
+              className="bg-muted/50 border-0"
+            />
+          </FormRow>
+
+          <FormRow label="Weight (kg)">
+            <Input
+              type="number"
+              step="0.1"
+              min="0"
+              value={formData.weight_kg}
+              onChange={(e) => handleInputChange('weight_kg', e.target.value)}
+              placeholder="e.g., 25.5"
               className="bg-muted/50 border-0"
             />
           </FormRow>

@@ -8,6 +8,7 @@ import { FormSection, FormRow } from '@/components/ios/FormSection';
 import { ImageCropDialog } from '@/components/ImageCropDialog';
 import { VetClinicAutocomplete, VetClinicData } from '@/components/VetClinicAutocomplete';
 import { RegistrySelect, InsuranceProviderSelect } from '@/components/RegionAwareSelect';
+import { BreedAutocomplete } from '@/components/BreedAutocomplete';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -373,11 +374,11 @@ export default function IOSEditPet() {
           </FormRow>
 
           <FormRow label="Breed" error={errors.breed}>
-            <Input
+            <BreedAutocomplete
+              species={formData.species}
               value={formData.breed}
-              onChange={(e) => handleInputChange('breed', e.target.value)}
-              placeholder="e.g., Golden Retriever"
-              className="bg-muted/50 border-0"
+              onChange={(value) => handleInputChange('breed', value)}
+              placeholder="Select or type breed"
             />
           </FormRow>
 
