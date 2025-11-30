@@ -198,13 +198,7 @@ export class EntitlementServiceV2 {
       }
 
       case 'export_enabled': {
-        if (!entitlements.export_enabled) {
-          return {
-            allowed: false,
-            reason: 'Data export is a Pro feature. Upgrade to export your pet data.',
-            upgrade_required: true,
-          };
-        }
+        // Data export is a privacy right - always allowed for all users
         return { allowed: true };
       }
 

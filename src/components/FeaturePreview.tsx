@@ -5,7 +5,7 @@ import { Lock, FileText, Image, FileCheck, Upload, TrendingUp } from 'lucide-rea
 import { Link } from 'react-router-dom';
 
 interface FeaturePreviewProps {
-  feature: 'documents' | 'smartTags' | 'dataExport' | 'lostMode';
+  feature: 'documents' | 'smartTags' | 'lostMode';
 }
 
 const featureConfig = {
@@ -38,19 +38,6 @@ const featureConfig = {
       'GPS location tracking',
       'Public profile with contact info',
       'Lost mode activation',
-    ],
-    sampleItems: [],
-    storage: null,
-  },
-  dataExport: {
-    title: 'Data Export',
-    description: 'Export all your pet data in multiple formats',
-    icon: Upload,
-    benefits: [
-      'Export to PDF, CSV, or JSON',
-      'Complete health records',
-      'Vaccination history',
-      'Share with vets easily',
     ],
     sampleItems: [],
     storage: null,

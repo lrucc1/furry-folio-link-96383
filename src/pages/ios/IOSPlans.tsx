@@ -182,7 +182,7 @@ export default function IOSPlans() {
               <FeatureRow
                 icon={<Download className="w-4 h-4" />}
                 label="Data Export"
-                freeValue={false}
+                freeValue={true}
                 proValue={true}
               />
             </div>
