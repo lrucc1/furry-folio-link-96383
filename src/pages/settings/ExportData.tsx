@@ -1,26 +1,17 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, FileJson, Loader2, Crown } from 'lucide-react';
+import { Download, FileJson, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { au } from '@/lib/auEnglish';
 import { exportUserData } from '@/features/export/exporter';
 import { downloadExport, getExportStats } from '@/features/export/download';
 import { log } from '@/lib/log';
-import { usePlanV2 } from '@/hooks/usePlanV2';
-import { useNavigate } from 'react-router-dom';
 
 export function ExportData() {
   const [exporting, setExporting] = useState(false);
-  const { entitlement, loading } = usePlanV2();
-  const navigate = useNavigate();
 
   const handleExport = async () => {
-    if (!entitlement?.export_enabled) {
-      toast.error(au('Data export requires Pro plan'));
-      return;
-    }
-
     setExporting(true);
 
     try {
@@ -42,51 +33,6 @@ export function ExportData() {
       setExporting(false);
     }
   };
-
-  if (loading) {
-    return (
-      <Card>
-        <CardContent className="py-8 flex justify-center">
-          <Loader2 className="w-8 h-8 animate-spin" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!entitlement?.export_enabled) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileJson className="w-5 h-5" />
-            {au('Export my data')}
-          </CardTitle>
-          <CardDescription>
-            {au('Download all your PetLinkID data as an HTML report with all uploaded documents.')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="p-6 border border-primary/20 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10">
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-lg bg-primary/10">
-                <Crown className="w-6 h-6 text-primary" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-foreground mb-1">{au('Pro Feature')}</h3>
-                <p className="text-muted-foreground text-sm mb-4">
-                  {au('Data export is available on')} <strong>{au('Pro')}</strong> {au('plans')}.
-                </p>
-                <Button onClick={() => navigate('/pricing')} className="gap-2">
-                  <Crown className="w-4 h-4" />
-                  {au('Upgrade to Pro')}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <Card>
