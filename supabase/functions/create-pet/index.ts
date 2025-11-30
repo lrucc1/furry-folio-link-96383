@@ -95,6 +95,8 @@ Deno.serve(async (req) => {
         insurance_provider: body.insurance_provider?.trim() || null,
         insurance_policy: body.insurance_policy?.trim() || null,
         desexed: body.desexed || false,
+        weight_kg: body.weight_kg || null,
+        photo_url: body.photo_url?.trim() || null,
       })
       .select('id')
       .single()
