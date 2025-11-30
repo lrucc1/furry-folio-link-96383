@@ -16,7 +16,7 @@ export const TierFeatures: Record<Tier, Record<FeatureKey, boolean | number>> = 
     smartTags: false,
     reminders: true,
     lostMode: false,
-    dataExport: false,
+    dataExport: true,
     prioritySupport: false,
     documents: false,
     familyShare: false

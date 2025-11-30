@@ -52,7 +52,7 @@ export const PLANS: Record<PlanType, PlanConfig> = {
       caregivers_readwrite_enabled: false,
       reminders_active_max: 2,
       docs_storage_mb: FREE_DOCS_STORAGE_MB,
-      export_enabled: false,
+      export_enabled: true,
       priority_support: false,
     },
   },

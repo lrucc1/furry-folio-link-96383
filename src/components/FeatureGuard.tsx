@@ -10,7 +10,7 @@ interface FeatureGuardProps {
   fallback?: ReactNode;
 }
 
-const previewFeatures: FeatureKey[] = ['documents', 'smartTags', 'dataExport', 'lostMode'];
+const previewFeatures: FeatureKey[] = ['documents', 'smartTags', 'lostMode'];
 
 export function FeatureGuard({ feature, children, fallback }: FeatureGuardProps) {
   const { tier, loading } = useEffectivePlan();

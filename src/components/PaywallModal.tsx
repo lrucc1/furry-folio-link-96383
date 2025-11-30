@@ -27,7 +27,6 @@ export function PaywallModal({ open, onOpenChange, feature, reason }: PaywallMod
     'Full caregiver access (read & write)',
     'Unlimited health reminders',
     'Expanded document storage (200MB)',
-    'Data export capability',
     'Priority support',
   ];
 
