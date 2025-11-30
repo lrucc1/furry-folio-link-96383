@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +14,7 @@ import { IOSAppRouter } from "./components/IOSAppRouter";
 import { DevModeToggle } from "./components/DevModeToggle";
 import { AppLoadingScreen } from "./components/AppLoadingScreen";
 import { useIsNativeApp } from "./hooks/useIsNativeApp";
+import { initializeAppleAuth } from "./lib/appleAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -65,6 +67,13 @@ const queryClient = new QueryClient();
 function AppContent() {
   const { loading } = useAuth();
   const isNative = useIsNativeApp();
+
+  // Initialize Apple Auth on iOS native app startup
+  useEffect(() => {
+    if (isNative) {
+      initializeAppleAuth();
+    }
+  }, [isNative]);
 
   // Show loading screen on native while auth initializes
   if (isNative && loading) {
