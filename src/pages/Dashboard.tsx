@@ -161,12 +161,24 @@ const Dashboard = () => {
   const maxPets = TierFeatures[tier].maxPets as number
   const canAddPet = maxPets === -1 || pets.length < maxPets
 
+  // Show loading inside IOSPageLayout for native to prevent white flash
+  if (loading && isNative) {
+    return (
+      <IOSPageLayout title={au('My Pets')}>
+        <div className="flex-1 flex items-center justify-center min-h-[60vh]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </IOSPageLayout>
+    );
+  }
+
+  // Web loading state
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
-    )
+    );
   }
 
   const PetsContent = () => (

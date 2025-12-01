@@ -2,6 +2,7 @@ import { ReactNode, useRef, useState, useEffect, useCallback } from 'react';
 import { IOSTabBar } from './IOSTabBar';
 import { IOSHeader } from './IOSHeader';
 import { PullToRefreshIndicator } from './PullToRefreshIndicator';
+import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { Capacitor } from '@capacitor/core';
 
@@ -38,6 +39,9 @@ export function IOSPageLayout({
   const touchStartY = useRef(0);
   const isPulling = useRef(false);
   const hasTriggeredHaptic = useRef(false);
+
+  // Use scroll direction hook for hide-on-scroll navigation
+  const { isNavVisible } = useScrollDirection(mainRef, { threshold: 15 });
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
     const main = mainRef.current;
@@ -119,10 +123,9 @@ export function IOSPageLayout({
       className="fixed inset-0 bg-background flex flex-col"
       style={{ 
         paddingTop: 'env(safe-area-inset-top)',
-        paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
-      {showHeader && <IOSHeader title={title} rightContent={headerRight} />}
+      {showHeader && <IOSHeader title={title} rightContent={headerRight} visible={isNavVisible} />}
       
       <main 
         ref={mainRef}
@@ -143,7 +146,7 @@ export function IOSPageLayout({
         </div>
       </main>
       
-      {showTabBar && <IOSTabBar />}
+      {showTabBar && <IOSTabBar visible={isNavVisible} />}
     </div>
   );
 }
