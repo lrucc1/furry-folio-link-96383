@@ -3,16 +3,36 @@
  * Validates environment variables and provides runtime environment detection
  */
 
+import { Capacitor } from '@capacitor/core';
+
 export type AppEnvironment = 'production' | 'development' | 'preview';
+
+/**
+ * Determine if we're running inside a native Capacitor shell
+ */
+function isNativeApp(): boolean {
+  const platform = Capacitor.getPlatform?.();
+  const isNativePlatform = Capacitor.isNativePlatform?.() ?? false;
+
+  return isNativePlatform || platform === 'ios' || platform === 'android';
+}
 
 /**
  * Detect current environment based on hostname
  */
 export function detectEnvironment(): AppEnvironment {
   if (typeof window === 'undefined') return 'development';
-  
+
+  const protocol = window.location.protocol;
+  const nativeApp = isNativeApp();
+
+  // Packaged native builds use custom schemes like capacitor://localhost
+  if (nativeApp && protocol !== 'http:' && protocol !== 'https:') {
+    return 'production';
+  }
+
   const hostname = window.location.hostname;
-  
+
   // Production domains
   if (hostname === 'petlinkid.com' || hostname === 'www.petlinkid.com' || hostname === 'petlinkid.lovable.app') {
     return 'production';
@@ -82,14 +102,17 @@ export function validateEnvironment(): void {
  */
 export function getEnvironmentConfig() {
   const env = detectEnvironment();
-  
+  const nativeApp = isNativeApp();
+  const productionLike = env === 'production' || nativeApp;
+
   return {
     environment: env,
+    isNativeApp: nativeApp,
     isProduction: env === 'production',
     isDevelopment: env === 'development',
     isPreview: env === 'preview',
-    enableDebugLogs: env !== 'production',
-    enableSourceMaps: env !== 'production',
+    enableDebugLogs: !productionLike,
+    enableSourceMaps: !productionLike,
     // App-specific config
     useInAppPurchases: true, // iOS app uses Apple IAP
     marketingUrl: 'https://petlinkid.com',
@@ -103,9 +126,16 @@ export function getEnvironmentConfig() {
 export function initializeEnvironment(): void {
   const env = detectEnvironment();
   console.log(`[ENV] Initializing PetLinkID in ${env.toUpperCase()} mode`);
-  
+
   try {
     validateEnvironment();
+    const config = getEnvironmentConfig();
+    console.log('[ENV] Sanity check:', {
+      environment: config.environment,
+      native: config.isNativeApp,
+      protocol: typeof window !== 'undefined' ? window.location.protocol : 'unknown',
+      hostname: typeof window !== 'undefined' ? window.location.hostname : 'unknown',
+    });
     console.log('[ENV] ✅ Environment validation passed');
   } catch (error) {
     console.error('[ENV] ❌ Environment validation failed:', error);
