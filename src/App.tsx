@@ -71,7 +71,9 @@ function AppContent() {
   // Initialize Apple Auth on iOS native app startup
   useEffect(() => {
     if (isNative) {
-      initializeAppleAuth();
+      initializeAppleAuth().catch(error => {
+        console.error('[AppleAuth] Initialization failed during app startup:', error);
+      });
     }
   }, [isNative]);
 

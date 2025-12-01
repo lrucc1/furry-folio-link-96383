@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 /**
  * Environment Validation Script
- * 
+ *
  * Run this before deploying to production to validate:
  * - All required environment variables are set
  * - Apple IAP product IDs are configured (required for iOS)
@@ -13,6 +13,15 @@
  *   npm run validate:env
  *   npm run validate:env -- --env=production
  */
+import devCapacitorConfig from '../capacitor.config';
+import prodCapacitorConfig from '../capacitor.config.production';
+
+const bundleIds = Array.from(
+  new Set(
+    [devCapacitorConfig.appId, prodCapacitorConfig.appId]
+      .filter((id): id is string => Boolean(id))
+  )
+);
 
 interface ValidationResult {
   pass: boolean;
@@ -26,6 +35,8 @@ interface EnvironmentConfig {
   // Apple IAP (required for iOS)
   VITE_APPLE_PRO_MONTHLY_PRODUCT_ID?: string;
   VITE_APPLE_PRO_YEARLY_PRODUCT_ID?: string;
+  // Apple Sign-In
+  appleClientIds: Record<string, string>;
   // Stripe (legacy, for web/admin)
   VITE_STRIPE_PUBLISHABLE_KEY?: string;
   VITE_STRIPE_PRICE_PRO_MONTHLY_AUD?: string;
@@ -51,14 +62,35 @@ class EnvironmentValidator {
       VITE_SUPABASE_PUBLISHABLE_KEY: process.env.VITE_SUPABASE_PUBLISHABLE_KEY,
       VITE_APPLE_PRO_MONTHLY_PRODUCT_ID: process.env.VITE_APPLE_PRO_MONTHLY_PRODUCT_ID,
       VITE_APPLE_PRO_YEARLY_PRODUCT_ID: process.env.VITE_APPLE_PRO_YEARLY_PRODUCT_ID,
+      appleClientIds: this.loadAppleClientIds(),
       VITE_STRIPE_PUBLISHABLE_KEY: process.env.VITE_STRIPE_PUBLISHABLE_KEY,
       VITE_STRIPE_PRICE_PRO_MONTHLY_AUD: process.env.VITE_STRIPE_PRICE_PRO_MONTHLY_AUD,
       VITE_STRIPE_PRICE_PRO_YEARLY_AUD: process.env.VITE_STRIPE_PRICE_PRO_YEARLY_AUD,
     };
   }
 
+  private loadAppleClientIds(): Record<string, string> {
+    return Object.entries(process.env)
+      .filter(([key]) => key.startsWith('VITE_APPLE_CLIENT_ID_'))
+      .reduce<Record<string, string>>((acc, [key, value]) => {
+        if (value) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
+  }
+
   private addResult(result: ValidationResult): void {
     this.results.push(result);
+  }
+
+  private bundleIdToEnvKey(bundleId: string): string {
+    return `VITE_APPLE_CLIENT_ID_${bundleId.replace(/[^A-Za-z0-9]/g, '_').toUpperCase()}`;
+  }
+
+  private getAppleClientId(bundleId: string): string | undefined {
+    const envKey = this.bundleIdToEnvKey(bundleId);
+    return this.config.appleClientIds[envKey];
   }
 
   validateRequiredVariables(): void {
@@ -117,6 +149,37 @@ class EnvironmentValidator {
       pass: true,
       message: 'Apple IAP product IDs configured correctly ✓',
       severity: 'info',
+    });
+  }
+
+  validateAppleSignInConfig(bundleIds: string[]): void {
+    bundleIds.forEach(bundleId => {
+      const clientId = this.getAppleClientId(bundleId);
+      const envKey = this.bundleIdToEnvKey(bundleId);
+
+      if (!clientId) {
+        this.addResult({
+          pass: false,
+          message: `Missing Apple Sign-In client ID for bundle ${bundleId}. Set ${envKey} in your .env file.`,
+          severity: this.env === 'production' ? 'error' : 'warning',
+        });
+        return;
+      }
+
+      if (!/^[A-Za-z0-9.]+$/.test(clientId)) {
+        this.addResult({
+          pass: false,
+          message: `Apple Sign-In client ID for ${bundleId} has an unexpected format`,
+          severity: 'warning',
+        });
+        return;
+      }
+
+      this.addResult({
+        pass: true,
+        message: `Apple Sign-In client ID configured for ${bundleId} ✓ (${envKey})`,
+        severity: 'info',
+      });
     });
   }
 
@@ -256,6 +319,7 @@ class EnvironmentValidator {
 
     this.validateRequiredVariables();
     this.validateAppleIAPConfig();
+    this.validateAppleSignInConfig(bundleIds);
     this.validateStripeKeys();
     this.validateStripePrices();
     this.validateSupabaseConfig();

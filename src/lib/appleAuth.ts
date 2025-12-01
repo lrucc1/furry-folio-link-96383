@@ -3,12 +3,40 @@
  * Handles Apple Sign-In flow for iOS native app using Capacitor Social Login
  */
 
+import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 // Dynamic import for social login to avoid issues on web
 let SocialLogin: any = null;
+let appleAuthConfig: { clientId: string; bundleId: string } | null = null;
+
+function formatBundleIdForEnv(bundleId: string): string {
+  return bundleId.replace(/[^A-Za-z0-9]/g, '_').toUpperCase();
+}
+
+function getAppleClientId(bundleId: string): string {
+  const envKey = `VITE_APPLE_CLIENT_ID_${formatBundleIdForEnv(bundleId)}`;
+  const env = import.meta.env as Record<string, string | undefined>;
+  const clientId = env[envKey];
+
+  if (!clientId) {
+    const availableKeys = Object.keys(env)
+      .filter(key => key.startsWith('VITE_APPLE_CLIENT_ID_'))
+      .sort();
+
+    const message =
+      `[AppleAuth] Missing Apple client ID for bundle "${bundleId}". ` +
+      `Set ${envKey} in your environment (.env.*).` +
+      (availableKeys.length ? ` Available keys: ${availableKeys.join(', ')}` : ' No Apple client IDs found.');
+
+    console.error(message);
+    throw new Error(message);
+  }
+
+  return clientId;
+}
 
 /**
  * Initialize Apple Auth (call on app startup for iOS)
@@ -20,17 +48,26 @@ export async function initializeAppleAuth(): Promise<void> {
   }
 
   try {
+    const appInfo = await App.getInfo();
+    const clientId = getAppleClientId(appInfo.id);
+
     const module = await import('@capgo/capacitor-social-login');
     SocialLogin = module.SocialLogin;
-    
+
     await SocialLogin.initialize({
       apple: {
-        clientId: 'app.lovable.a2e9460fc39147688955cf1b862df298',
+        clientId,
       },
     });
+
+    appleAuthConfig = { clientId, bundleId: appInfo.id };
+
+    const maskedClientId = `${clientId.slice(0, 6)}...${clientId.slice(-4)}`;
+    console.log(`[AppleAuth] Initialized for bundle ${appInfo.id} using client ${maskedClientId}`);
     console.log('[AppleAuth] Initialized successfully');
   } catch (error) {
     console.error('[AppleAuth] Failed to initialize:', error);
+    throw error;
   }
 }
 
@@ -47,10 +84,16 @@ export function isAppleSignInAvailable(): boolean {
  */
 export async function signInWithApple(): Promise<{ data: any; error: any }> {
   if (!isAppleSignInAvailable()) {
-    return { 
-      data: null, 
-      error: new Error('Apple Sign-In is only available on iOS devices') 
+    return {
+      data: null,
+      error: new Error('Apple Sign-In is only available on iOS devices')
     };
+  }
+
+  if (!appleAuthConfig) {
+    const error = new Error('Apple Sign-In is not initialized. Check environment variables for your bundle ID.');
+    console.error('[AppleAuth] Missing configuration:', error.message);
+    return { data: null, error };
   }
 
   if (!SocialLogin) {
