@@ -1,4 +1,6 @@
 import { ReactNode, useRef, useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import { IOSTabBar } from './IOSTabBar';
 import { IOSHeader } from './IOSHeader';
 import { PullToRefreshIndicator } from './PullToRefreshIndicator';
@@ -33,6 +35,7 @@ export function IOSPageLayout({
   headerRight,
   onRefresh
 }: IOSPageLayoutProps) {
+  const location = useLocation();
   const mainRef = useRef<HTMLDivElement>(null);
   const [pullDistance, setPullDistance] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -141,9 +144,11 @@ export function IOSPageLayout({
             isRefreshing={isRefreshing} 
           />
         )}
-        <div className={`${showTabBar ? 'pb-4' : ''}`}>
-          {children}
-        </div>
+        <AnimatePresence mode="wait" initial={false}>
+          <div key={location.pathname} className={`${showTabBar ? 'pb-4' : ''}`}>
+            {children}
+          </div>
+        </AnimatePresence>
       </main>
       
       {showTabBar && <IOSTabBar visible={isNavVisible} />}
