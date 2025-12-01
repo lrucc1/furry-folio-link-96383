@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { IOSPageLayout } from '@/components/ios/IOSPageLayout';
 import { PageTransition } from '@/components/ios/PageTransition';
 import { MobileCard } from '@/components/ios/MobileCard';
+import { IOSSettingsSkeleton } from '@/components/ios/IOSSkeleton';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -168,9 +169,7 @@ export default function IOSSettings() {
   if (loading) {
     return (
       <IOSPageLayout title="Settings" headerRight={headerLeft}>
-        <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-        </div>
+        <IOSSettingsSkeleton />
       </IOSPageLayout>
     );
   }
