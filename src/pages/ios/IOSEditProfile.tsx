@@ -6,6 +6,8 @@ import { IOSPageLayout } from '@/components/ios/IOSPageLayout';
 import { PageTransition } from '@/components/ios/PageTransition';
 import { MobileCard } from '@/components/ios/MobileCard';
 import { FormSection, FormRow } from '@/components/ios/FormSection';
+import { LoadingBoundary } from '@/components/ios/LoadingBoundary';
+import { IOSEditProfileSkeleton } from '@/components/ios/IOSSkeleton';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { CountrySelector } from '@/components/CountrySelector';
@@ -150,106 +152,98 @@ export default function IOSEditProfile() {
     </Button>
   );
 
-  if (loading) {
-    return (
-      <IOSPageLayout title="Edit Profile" headerRight={headerLeft}>
-        <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-        </div>
-      </IOSPageLayout>
-    );
-  }
-
   return (
-    <IOSPageLayout title="Edit Profile" headerRight={headerRight}>
-      <PageTransition>
-      <div className="pb-8">
-        {/* Profile Photo */}
-        <MobileCard className="mb-6">
-          <div className="flex flex-col items-center py-4">
-            <button 
-              onClick={() => fileInputRef.current?.click()}
-              className="relative group"
-            >
-              <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-                {formData.avatar_url ? (
-                  <img 
-                    src={formData.avatar_url} 
-                    alt="Profile" 
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <User className="w-12 h-12 text-muted-foreground" />
-                )}
+    <IOSPageLayout title="Edit Profile" headerRight={loading ? headerLeft : headerRight}>
+      <LoadingBoundary loading={loading} skeleton={<IOSEditProfileSkeleton />}>
+        <PageTransition>
+          <div className="pb-8">
+            {/* Profile Photo */}
+            <MobileCard className="mb-6">
+              <div className="flex flex-col items-center py-4">
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="relative group"
+                >
+                  <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                    {formData.avatar_url ? (
+                      <img 
+                        src={formData.avatar_url} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User className="w-12 h-12 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center shadow-md">
+                    <Camera className="w-4 h-4 text-primary-foreground" />
+                  </div>
+                </button>
+                <p className="text-sm text-muted-foreground mt-3">Tap to change photo</p>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoSelect}
+                  className="hidden"
+                />
               </div>
-              <div className="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center shadow-md">
-                <Camera className="w-4 h-4 text-primary-foreground" />
-              </div>
-            </button>
-            <p className="text-sm text-muted-foreground mt-3">Tap to change photo</p>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handlePhotoSelect}
-              className="hidden"
-            />
+            </MobileCard>
+
+            {/* Personal Information */}
+            <FormSection title="Personal Information">
+              <FormRow label="Display Name">
+                <Input
+                  value={formData.display_name}
+                  onChange={(e) => handleInputChange('display_name', e.target.value)}
+                  placeholder="How you want to be called"
+                  className="bg-muted/50 border-0"
+                />
+              </FormRow>
+              <FormRow label="Full Name">
+                <Input
+                  value={formData.full_name}
+                  onChange={(e) => handleInputChange('full_name', e.target.value)}
+                  placeholder="Your legal name"
+                  className="bg-muted/50 border-0"
+                />
+              </FormRow>
+              <FormRow label="Email">
+                <Input
+                  value={user?.email || ''}
+                  disabled
+                  className="bg-muted/30 border-0 text-muted-foreground"
+                />
+              </FormRow>
+              <FormRow label="Phone">
+                <Input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                  placeholder="Your phone number"
+                  className="bg-muted/50 border-0"
+                />
+              </FormRow>
+            </FormSection>
+
+            {/* Location */}
+            <FormSection title="Location">
+              <FormRow label="Country">
+                <CountrySelector
+                  value={formData.country_code}
+                  onChange={(value) => handleInputChange('country_code', value)}
+                />
+              </FormRow>
+              <FormRow label="Timezone">
+                <TimezoneSelector
+                  value={formData.timezone}
+                  onChange={(value) => handleInputChange('timezone', value)}
+                />
+              </FormRow>
+            </FormSection>
           </div>
-        </MobileCard>
-
-        {/* Personal Information */}
-        <FormSection title="Personal Information">
-          <FormRow label="Display Name">
-            <Input
-              value={formData.display_name}
-              onChange={(e) => handleInputChange('display_name', e.target.value)}
-              placeholder="How you want to be called"
-              className="bg-muted/50 border-0"
-            />
-          </FormRow>
-          <FormRow label="Full Name">
-            <Input
-              value={formData.full_name}
-              onChange={(e) => handleInputChange('full_name', e.target.value)}
-              placeholder="Your legal name"
-              className="bg-muted/50 border-0"
-            />
-          </FormRow>
-          <FormRow label="Email">
-            <Input
-              value={user?.email || ''}
-              disabled
-              className="bg-muted/30 border-0 text-muted-foreground"
-            />
-          </FormRow>
-          <FormRow label="Phone">
-            <Input
-              type="tel"
-              value={formData.phone}
-              onChange={(e) => handleInputChange('phone', e.target.value)}
-              placeholder="Your phone number"
-              className="bg-muted/50 border-0"
-            />
-          </FormRow>
-        </FormSection>
-
-        {/* Location */}
-        <FormSection title="Location">
-          <FormRow label="Country">
-            <CountrySelector
-              value={formData.country_code}
-              onChange={(value) => handleInputChange('country_code', value)}
-            />
-          </FormRow>
-          <FormRow label="Timezone">
-            <TimezoneSelector
-              value={formData.timezone}
-              onChange={(value) => handleInputChange('timezone', value)}
-            />
-          </FormRow>
-        </FormSection>
-      </div>
-      </PageTransition>
+        </PageTransition>
+      </LoadingBoundary>
 
       <ImageCropDialog
         open={cropDialogOpen}
