@@ -22,7 +22,7 @@ export function MobileCard({
   return (
     <Card 
       className={cn(
-        'rounded-2xl shadow-sm border-border/50',
+        'rounded-3xl shadow-sm border-border/40 bg-card/95',
         onClick && 'cursor-pointer active:scale-[0.98] transition-transform',
         className
       )}

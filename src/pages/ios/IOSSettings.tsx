@@ -75,7 +75,7 @@ const SettingsGroup = ({ title, children }: { title: string; children: React.Rea
     <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 mb-2">
       {title}
     </h3>
-    <MobileCard className="p-0 divide-y divide-border overflow-hidden">
+    <MobileCard className="p-0 divide-y divide-border/30 overflow-hidden rounded-3xl">
       {children}
     </MobileCard>
   </div>

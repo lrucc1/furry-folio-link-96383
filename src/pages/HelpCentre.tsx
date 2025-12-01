@@ -14,8 +14,13 @@ import {
   Mail,
   Clock
 } from "lucide-react";
+import { useIsNativeApp } from "@/hooks/useIsNativeApp";
+import { IOSPageLayout } from "@/components/ios/IOSPageLayout";
+import { MobileCard } from "@/components/ios/MobileCard";
 
 const HelpCentre = () => {
+  const isNative = useIsNativeApp();
+
   const faqCategories = [
     {
       title: "Getting Started",
@@ -49,6 +54,97 @@ const HelpCentre = () => {
     }
   ];
 
+  // iOS Native Layout
+  if (isNative) {
+    return (
+      <IOSPageLayout title="Help Centre">
+        <div className="pb-8">
+          {/* Quick Actions */}
+          <div className="space-y-3 mb-6">
+            <MobileCard className="bg-gradient-to-br from-primary/10 to-primary/5">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center">
+                  <Phone className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold">Emergency Support</h3>
+                  <p className="text-sm text-muted-foreground">Pet emergency? Get immediate help.</p>
+                </div>
+              </div>
+              <Button variant="default" className="w-full mt-4 rounded-xl">
+                Call: 1800 PET SOS
+              </Button>
+            </MobileCard>
+
+            <div className="grid grid-cols-2 gap-3">
+              <MobileCard>
+                <div className="text-center">
+                  <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-2">
+                    <Mail className="w-5 h-5 text-primary" />
+                  </div>
+                  <h3 className="font-medium text-sm">Email Us</h3>
+                  <p className="text-xs text-muted-foreground">24hr response</p>
+                </div>
+              </MobileCard>
+
+              <MobileCard>
+                <div className="text-center">
+                  <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-2">
+                    <Clock className="w-5 h-5 text-primary" />
+                  </div>
+                  <h3 className="font-medium text-sm">Live Chat</h3>
+                  <p className="text-xs text-muted-foreground">Chat now</p>
+                </div>
+              </MobileCard>
+            </div>
+          </div>
+
+          {/* FAQ Categories */}
+          <h2 className="text-lg font-semibold mb-4 px-1">
+            Frequently Asked Questions
+          </h2>
+          
+          <div className="space-y-4">
+            {faqCategories.map((category, index) => (
+              <MobileCard key={index}>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
+                    {category.icon}
+                  </div>
+                  <h3 className="font-semibold">{category.title}</h3>
+                </div>
+                <ul className="space-y-2">
+                  {category.articles.map((article, articleIndex) => (
+                    <li key={articleIndex}>
+                      <button className="text-muted-foreground hover:text-primary text-sm text-left w-full py-1">
+                        {article}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </MobileCard>
+            ))}
+          </div>
+
+          {/* Contact Section */}
+          <MobileCard className="mt-6 bg-gradient-to-br from-primary to-primary/80 text-white border-0">
+            <div className="text-center py-4">
+              <Heart className="w-10 h-10 mx-auto mb-3" />
+              <h3 className="text-xl font-bold mb-2">Still need help?</h3>
+              <p className="text-white/90 text-sm mb-4">
+                Get personalized assistance from our pet care experts.
+              </p>
+              <Button variant="secondary" size="lg" className="rounded-xl" asChild>
+                <Link to="/contact">Contact Support</Link>
+              </Button>
+            </div>
+          </MobileCard>
+        </div>
+      </IOSPageLayout>
+    );
+  }
+
+  // Web Layout
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -78,7 +174,7 @@ const HelpCentre = () => {
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-3 gap-6 mb-12">
-          <Card className="bg-gradient-card border-0 shadow-medium">
+          <Card className="bg-gradient-card border-0 shadow-medium rounded-3xl">
             <CardHeader className="text-center">
               <Phone className="w-8 h-8 text-primary mx-auto mb-2" />
               <CardTitle>Emergency Support</CardTitle>
@@ -93,7 +189,7 @@ const HelpCentre = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-card border-0 shadow-medium">
+          <Card className="bg-gradient-card border-0 shadow-medium rounded-3xl">
             <CardHeader className="text-center">
               <Mail className="w-8 h-8 text-primary mx-auto mb-2" />
               <CardTitle>Email Support</CardTitle>
@@ -108,7 +204,7 @@ const HelpCentre = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-card border-0 shadow-medium">
+          <Card className="bg-gradient-card border-0 shadow-medium rounded-3xl">
             <CardHeader className="text-center">
               <Clock className="w-8 h-8 text-primary mx-auto mb-2" />
               <CardTitle>Live Chat</CardTitle>
@@ -132,7 +228,7 @@ const HelpCentre = () => {
           
           <div className="grid md:grid-cols-3 gap-6">
             {faqCategories.map((category, index) => (
-              <Card key={index} className="bg-gradient-card border-0 shadow-medium">
+              <Card key={index} className="bg-gradient-card border-0 shadow-medium rounded-3xl">
                 <CardHeader>
                   <div className="flex items-center gap-2 mb-2">
                     {category.icon}
@@ -156,7 +252,7 @@ const HelpCentre = () => {
         </div>
 
         {/* Contact Section */}
-        <Card className="bg-gradient-hero text-white border-0">
+        <Card className="bg-gradient-hero text-white border-0 rounded-3xl">
           <CardContent className="text-center py-12">
             <Heart className="w-12 h-12 mx-auto mb-4" />
             <h3 className="text-2xl font-bold mb-4">
