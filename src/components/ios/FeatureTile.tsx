@@ -30,7 +30,7 @@ export function FeatureTile({
   return (
     <Card 
       className={cn(
-        'rounded-2xl shadow-sm border-border/50 overflow-hidden',
+        'rounded-3xl shadow-sm border-border/40 overflow-hidden',
         !disabled && 'cursor-pointer active:scale-[0.97] transition-all',
         disabled && 'opacity-50',
         gradient,
@@ -40,7 +40,7 @@ export function FeatureTile({
     >
       <CardContent className="p-4 flex flex-col items-center text-center min-h-[100px] justify-center">
         <div className={cn(
-          'w-10 h-10 rounded-xl flex items-center justify-center mb-2',
+          'w-10 h-10 rounded-2xl flex items-center justify-center mb-2',
           gradient ? 'bg-white/20' : 'bg-primary/10'
         )}>
           <Icon className={cn(

@@ -178,9 +178,9 @@ const AuthPage = () => {
   if (isNative) {
     return (
       <div className="min-h-screen bg-gradient-hero flex flex-col pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
-        <div className="flex-1 flex flex-col px-6 py-8">
+      <div className="flex-1 flex flex-col px-6 py-4">
           {/* Logo section */}
-          <div className="text-center mb-8 pt-8">
+          <div className="text-center mb-6 pt-2">
             <div className="flex items-center justify-center mb-4">
               <Logo iconClassName="w-16 h-16" textClassName="font-bold text-3xl text-white" />
             </div>
