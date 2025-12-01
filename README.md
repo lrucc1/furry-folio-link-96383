@@ -41,6 +41,22 @@ npm run lint:fix    # Auto-fix linting issues
 npm run preview     # Preview production build
 ```
 
+### Apple Sign-In configuration
+
+Apple Sign-In uses bundle-aware client IDs. Define an environment variable for each bundle ID found in your Capacitor configs (`capacitor.config.ts`, `capacitor.config.production.ts`). The variable name is `VITE_APPLE_CLIENT_ID_<BUNDLE_ID>`, where the bundle ID is uppercased and non-alphanumeric characters are replaced with `_`.
+
+Example (for `com.petlinkid.app`):
+
+```env
+# .env.development
+VITE_APPLE_CLIENT_ID_COM_PETLINKID_APP=your.dev.client.id
+
+# .env.production
+VITE_APPLE_CLIENT_ID_COM_PETLINKID_APP=your.production.client.id
+```
+
+At runtime, the iOS app will read the bundle ID from Capacitor, resolve the matching client ID, and log a clear error if the expected variable is missing or malformed. Use `npm run validate:env -- --env=production` to confirm the required keys are present before releasing.
+
 ## Security
 
 ### API Keys & Secrets
