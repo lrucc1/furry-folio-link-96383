@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlan } from '@/lib/plan/PlanContext';
 import { IOSPageLayout } from '@/components/ios/IOSPageLayout';
+import { PageTransition } from '@/components/ios/PageTransition';
 import { MobileCard } from '@/components/ios/MobileCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -109,6 +110,7 @@ export default function IOSPlans() {
 
   return (
     <IOSPageLayout title="Your Plan" headerRight={headerLeft}>
+      <PageTransition>
       <div className="pb-8">
         {/* Current Plan Card */}
         <MobileCard className="mb-6">
@@ -264,6 +266,7 @@ export default function IOSPlans() {
           </p>
         </div>
       </div>
+      </PageTransition>
     </IOSPageLayout>
   );
 }

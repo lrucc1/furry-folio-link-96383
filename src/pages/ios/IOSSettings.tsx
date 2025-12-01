@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePlan } from '@/lib/plan/PlanContext';
 import { supabase } from '@/integrations/supabase/client';
 import { IOSPageLayout } from '@/components/ios/IOSPageLayout';
+import { PageTransition } from '@/components/ios/PageTransition';
 import { MobileCard } from '@/components/ios/MobileCard';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
@@ -176,6 +177,7 @@ export default function IOSSettings() {
 
   return (
     <IOSPageLayout title="Settings" headerRight={headerLeft}>
+      <PageTransition>
       <div className="pb-8">
         {/* Profile Header */}
         <MobileCard className="mb-6">
@@ -321,6 +323,7 @@ export default function IOSSettings() {
           <p className="mt-1">Made with ❤️ in Australia</p>
         </div>
       </div>
+      </PageTransition>
     </IOSPageLayout>
   );
 }

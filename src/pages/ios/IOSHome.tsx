@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePlan } from '@/lib/plan/PlanContext';
 import { supabase } from '@/integrations/supabase/client';
 import { IOSPageLayout } from '@/components/ios/IOSPageLayout';
+import { PageTransition } from '@/components/ios/PageTransition';
 import { MobileCard } from '@/components/ios/MobileCard';
 import { FeatureTile, FeatureTileGrid } from '@/components/ios/FeatureTile';
 import { Card, CardContent } from '@/components/ui/card';
@@ -115,6 +116,7 @@ export default function IOSHome() {
 
   return (
     <IOSPageLayout onRefresh={handleRefresh}>
+      <PageTransition>
       <div className="px-4 py-6 space-y-6 pb-8">
         {/* Welcome Card */}
         <MobileCard className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
@@ -298,6 +300,7 @@ export default function IOSHome() {
           </div>
         </div>
       </div>
+      </PageTransition>
     </IOSPageLayout>
   );
 }
