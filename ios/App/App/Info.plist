@@ -20,10 +20,18 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
+        <key>LSRequiresIPhoneOS</key>
+        <true/>
+        <key>NSCameraUsageDescription</key>
+        <string>Allow PetLinkID to use the camera for scanning QR codes on pet tags.</string>
+        <key>NSPhotoLibraryUsageDescription</key>
+        <string>Allow PetLinkID to access your photo library to upload pet photos.</string>
+        <key>NSPhotoLibraryAddUsageDescription</key>
+        <string>Allow PetLinkID to save photos (like QR scans or pet images) to your library.</string>
+        <key>NSUserNotificationUsageDescription</key>
+        <string>Allow PetLinkID to send you notifications about your pets and reminders.</string>
+        <key>UILaunchStoryboardName</key>
+        <string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>UIRequiredDeviceCapabilities</key>
