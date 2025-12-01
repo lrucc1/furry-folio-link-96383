@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlan } from '@/lib/plan/PlanContext';
 import { IOSPageLayout } from '@/components/ios/IOSPageLayout';
 import { PageTransition } from '@/components/ios/PageTransition';
 import { MobileCard } from '@/components/ios/MobileCard';
+import { LoadingBoundary } from '@/components/ios/LoadingBoundary';
+import { IOSPlansSkeleton } from '@/components/ios/IOSSkeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -60,12 +62,19 @@ const FeatureRow = ({ icon, label, freeValue, proValue }: FeatureRowProps) => (
 export default function IOSPlans() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { tier } = usePlan();
+  const { tier, loading: planLoading } = usePlan();
   const isNative = useIsNativeApp();
   const [upgrading, setUpgrading] = useState(false);
   const [restoring, setRestoring] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const isPro = tier === 'pro';
+
+  // Brief loading state for skeleton display
+  useEffect(() => {
+    const timer = setTimeout(() => setInitialLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleUpgrade = async () => {
     if (!user) {
@@ -108,9 +117,12 @@ export default function IOSPlans() {
     </Button>
   );
 
+  const loading = initialLoading || planLoading;
+
   return (
     <IOSPageLayout title="Your Plan" headerRight={headerLeft}>
-      <PageTransition>
+      <LoadingBoundary loading={loading} skeleton={<IOSPlansSkeleton />}>
+        <PageTransition>
       <div className="pb-8">
         {/* Current Plan Card */}
         <MobileCard className="mb-6">
@@ -266,7 +278,8 @@ export default function IOSPlans() {
           </p>
         </div>
       </div>
-      </PageTransition>
+        </PageTransition>
+      </LoadingBoundary>
     </IOSPageLayout>
   );
 }

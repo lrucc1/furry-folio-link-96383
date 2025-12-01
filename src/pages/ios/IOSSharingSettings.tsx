@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IOSPageLayout } from '@/components/ios/IOSPageLayout';
 import { PageTransition } from '@/components/ios/PageTransition';
 import { MobileCard } from '@/components/ios/MobileCard';
+import { LoadingBoundary } from '@/components/ios/LoadingBoundary';
+import { IOSSharingSettingsSkeleton } from '@/components/ios/IOSSkeleton';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -44,12 +46,19 @@ const SettingsGroup = ({ title, children }: { title: string; children: React.Rea
 
 export default function IOSSharingSettings() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
   
   // Sharing preferences state
   const [emergencyContactAccess, setEmergencyContactAccess] = useState(true);
   const [vetAccess, setVetAccess] = useState(true);
   const [qrVisibility, setQrVisibility] = useState<'full' | 'limited' | 'minimal'>('full');
   const [showLostModeAlert, setShowLostModeAlert] = useState(true);
+
+  // Brief loading state for skeleton display
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleToggleChange = (setting: string, value: boolean) => {
     switch (setting) {
@@ -81,7 +90,8 @@ export default function IOSSharingSettings() {
 
   return (
     <IOSPageLayout title="Sharing & Privacy" headerRight={headerLeft}>
-      <PageTransition>
+      <LoadingBoundary loading={loading} skeleton={<IOSSharingSettingsSkeleton />}>
+        <PageTransition>
       <div className="pb-8">
         {/* Emergency Contacts */}
         <SettingsGroup title="Emergency Contacts">
@@ -175,7 +185,8 @@ export default function IOSSharingSettings() {
           </p>
         </div>
       </div>
-      </PageTransition>
+        </PageTransition>
+      </LoadingBoundary>
     </IOSPageLayout>
   );
 }
