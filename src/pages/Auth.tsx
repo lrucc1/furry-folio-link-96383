@@ -348,9 +348,9 @@ const AuthPage = () => {
 
   // Web Layout - mobile first with iOS-inspired card stack
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4 py-8 sm:px-6">
-      <div className="w-full max-w-md space-y-6">
-        <div className="text-center space-y-3 pt-4">
+    <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4 py-4 sm:px-6">
+      <div className="w-full max-w-md space-y-4">
+        <div className="text-center space-y-2 pt-2">
           <div className="flex items-center justify-center">
             <Logo iconClassName="w-14 h-14" textClassName="font-bold text-3xl text-white" />
           </div>
@@ -360,8 +360,8 @@ const AuthPage = () => {
           </div>
         </div>
 
-        <Card className="bg-white shadow-lg rounded-2xl border-0">
-          <CardContent className="p-6 space-y-4">
+        <Card className="bg-white shadow-lg rounded-3xl border-0">
+          <CardContent className="p-5 space-y-3">
             <Tabs defaultValue="signin" className="w-full">
               <TabsList className="grid w-full grid-cols-2 rounded-full bg-muted/60 h-11">
                 <TabsTrigger value="signin" className="rounded-full text-sm">Sign In</TabsTrigger>

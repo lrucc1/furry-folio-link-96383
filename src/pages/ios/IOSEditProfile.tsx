@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { IOSPageLayout } from '@/components/ios/IOSPageLayout';
+import { PageTransition } from '@/components/ios/PageTransition';
 import { MobileCard } from '@/components/ios/MobileCard';
 import { FormSection, FormRow } from '@/components/ios/FormSection';
 import { Input } from '@/components/ui/input';
@@ -161,6 +162,7 @@ export default function IOSEditProfile() {
 
   return (
     <IOSPageLayout title="Edit Profile" headerRight={headerRight}>
+      <PageTransition>
       <div className="pb-8">
         {/* Profile Photo */}
         <MobileCard className="mb-6">
@@ -247,6 +249,7 @@ export default function IOSEditProfile() {
           </FormRow>
         </FormSection>
       </div>
+      </PageTransition>
 
       <ImageCropDialog
         open={cropDialogOpen}

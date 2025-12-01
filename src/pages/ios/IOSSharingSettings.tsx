@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IOSPageLayout } from '@/components/ios/IOSPageLayout';
+import { PageTransition } from '@/components/ios/PageTransition';
 import { MobileCard } from '@/components/ios/MobileCard';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
@@ -80,6 +81,7 @@ export default function IOSSharingSettings() {
 
   return (
     <IOSPageLayout title="Sharing & Privacy" headerRight={headerLeft}>
+      <PageTransition>
       <div className="pb-8">
         {/* Emergency Contacts */}
         <SettingsGroup title="Emergency Contacts">
@@ -173,6 +175,7 @@ export default function IOSSharingSettings() {
           </p>
         </div>
       </div>
+      </PageTransition>
     </IOSPageLayout>
   );
 }
