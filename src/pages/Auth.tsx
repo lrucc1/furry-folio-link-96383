@@ -78,6 +78,17 @@ const AuthPage = () => {
   const [signUpEmail, setSignUpEmail] = useState('')
   const [signUpPassword, setSignUpPassword] = useState('')
 
+  // Ensure the native app gets a full-bleed gradient behind the webview safe areas
+  useEffect(() => {
+    if (!isNative) return
+
+    document.body.classList.add('native-auth-bg')
+
+    return () => {
+      document.body.classList.remove('native-auth-bg')
+    }
+  }, [isNative])
+
   useEffect(() => {
     if (user) {
       navigate(isNative ? '/ios-home' : '/dashboard')
@@ -301,7 +312,13 @@ const AuthPage = () => {
           biometryName={biometric.biometryName}
         />
         
-      <div className="fixed inset-0 bg-gradient-hero flex flex-col">
+      <div
+        className="fixed inset-0 bg-gradient-hero flex flex-col overflow-hidden"
+        style={{
+          paddingTop: 'env(safe-area-inset-top)',
+          paddingBottom: 'env(safe-area-inset-bottom)'
+        }}
+      >
         {/* Welcome Screen */}
         {authView === 'welcome' && (
           <div className="flex-1 flex flex-col">
