@@ -14,8 +14,8 @@ export function IOSHeader({ title, rightContent, visible = true }: IOSHeaderProp
     <header 
       className={cn(
         "fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border",
-        "transition-all duration-200 ease-out",
-        !visible && "opacity-0 pointer-events-none -translate-y-2"
+        "transition-opacity duration-200 ease-out",
+        !visible && "opacity-0 pointer-events-none"
       )}
       style={{
         paddingTop: 'env(safe-area-inset-top)',

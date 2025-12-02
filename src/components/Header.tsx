@@ -95,37 +95,37 @@ export const Header = () => {
               <div className="flex flex-col gap-1 p-4">
                 <Link 
                   to={user ? '/dashboard' : '/auth'} 
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent active:opacity-80 transition-colors touch-manipulation"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <Home className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                  <Home className="w-5 h-5 text-primary" />
                   <span className="text-foreground font-medium">My Pets</span>
                 </Link>
 
                 <Link 
                   to="/smart-tags" 
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent active:opacity-80 transition-colors touch-manipulation"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <Tag className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                  <Tag className="w-5 h-5 text-primary" />
                   <span className="text-foreground font-medium">Smart Tags</span>
                 </Link>
 
                 <Link 
                   to={user ? '/reminders' : '/auth'} 
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent active:opacity-80 transition-colors touch-manipulation"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <Bell className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                  <Bell className="w-5 h-5 text-primary" />
                   <span className="text-foreground font-medium">Reminders</span>
                 </Link>
 
                 <Link 
                   to="/pricing" 
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent active:opacity-80 transition-colors touch-manipulation"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <DollarSign className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                  <DollarSign className="w-5 h-5 text-primary" />
                   <span className="text-foreground font-medium">Pricing</span>
                 </Link>
 
@@ -135,36 +135,36 @@ export const Header = () => {
                     
                     <Link 
                       to="/account" 
-                      className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent active:opacity-80 transition-colors touch-manipulation"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <User className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                      <User className="w-5 h-5 text-primary" />
                       <span className="text-foreground font-medium">Account</span>
                     </Link>
 
                     <Link 
                       to="/settings/billing" 
-                      className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent active:opacity-80 transition-colors touch-manipulation"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <CreditCard className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                      <CreditCard className="w-5 h-5 text-primary" />
                       <span className="text-foreground font-medium">Billing Settings</span>
                     </Link>
 
                     <Link 
                       to="/help" 
-                      className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors group"
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent active:opacity-80 transition-colors touch-manipulation"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <HelpCircle className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                      <HelpCircle className="w-5 h-5 text-primary" />
                       <span className="text-foreground font-medium">Help Centre</span>
                     </Link>
 
                     <button
                       onClick={handleSignOut}
-                      className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition-colors text-left w-full group"
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent active:opacity-80 transition-colors text-left w-full touch-manipulation"
                     >
-                      <LogOut className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                      <LogOut className="w-5 h-5 text-primary" />
                       <span className="text-foreground font-medium">Sign Out</span>
                     </button>
                   </>

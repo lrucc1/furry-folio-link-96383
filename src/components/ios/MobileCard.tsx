@@ -22,8 +22,8 @@ export function MobileCard({
   return (
     <Card 
       className={cn(
-        'rounded-3xl shadow-sm border-border/40 bg-card/95',
-        onClick && 'cursor-pointer active:scale-[0.98] transition-transform',
+        'rounded-3xl shadow-sm border-border/40 bg-card/95 touch-manipulation',
+        onClick && 'cursor-pointer active:opacity-95 transition-opacity duration-100',
         className
       )}
       onClick={onClick}

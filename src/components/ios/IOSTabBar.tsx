@@ -28,9 +28,9 @@ export function IOSTabBar({ visible = true, height }: IOSTabBarProps) {
     <nav
       className={cn(
         "fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border",
-        "transition-all duration-200 ease-out",
+        "transition-opacity duration-200 ease-out",
         "shadow-[0_-6px_24px_rgba(0,0,0,0.06)]",
-        !visible && "opacity-0 pointer-events-none translate-y-2"
+        !visible && "opacity-0 pointer-events-none"
       )}
       style={{
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
@@ -47,8 +47,8 @@ export function IOSTabBar({ visible = true, height }: IOSTabBarProps) {
               key={tab.path}
               onClick={() => navigate(tab.path)}
               className={cn(
-                'flex flex-col items-center justify-center gap-1 w-full h-full transition-colors rounded-2xl',
-                'active:scale-[0.98] px-2 py-1.5',
+                'flex flex-col items-center justify-center gap-1 w-full h-full transition-opacity rounded-2xl touch-manipulation',
+                'active:opacity-80 px-2 py-1.5',
                 isActive ? 'text-primary bg-primary/5' : 'text-muted-foreground'
               )}
             >

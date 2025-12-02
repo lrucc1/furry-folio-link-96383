@@ -30,16 +30,16 @@ export const PetCard = ({ pet, onViewDetails, onToggleLost }: PetCardProps) => {
   const publicUrl = hasPublicId ? `${window.location.origin}/pet/${pet.publicId}` : "";
 
   return (
-    <Card className="bg-gradient-card border-0 shadow-medium hover:shadow-strong transition-spring overflow-hidden group">
+    <Card className="bg-gradient-card border-0 shadow-medium hover:shadow-strong transition-spring overflow-hidden group touch-manipulation">
       <div className="relative overflow-hidden">
         {pet.photo ? (
           <img 
             src={pet.photo} 
             alt={`${pet.name} photo`}
-            className="w-full h-48 sm:h-56 md:h-64 object-cover object-center group-hover:scale-105 transition-spring"
+            className="w-full h-48 sm:h-56 md:h-64 object-cover object-center transition-spring"
           />
         ) : (
-          <div className="w-full h-48 sm:h-56 md:h-64 bg-muted flex items-center justify-center group-hover:scale-105 transition-spring">
+          <div className="w-full h-48 sm:h-56 md:h-64 bg-muted flex items-center justify-center transition-spring">
             <Heart className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-muted-foreground" />
           </div>
         )}
