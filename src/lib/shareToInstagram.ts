@@ -1,6 +1,12 @@
 /**
  * Utility for sharing images to Instagram with intelligent fallbacks
+ * - Uses the Web Share API (with files when supported)
+ * - Copies the share caption to the clipboard when native sharing is not available
+ * - Always downloads the image so the user can still post manually
  */
+
+import { Capacitor } from '@capacitor/core'
+import { Haptics, ImpactStyle } from '@capacitor/haptics'
 
 interface ShareOptions {
   imageBlob: Blob
@@ -8,34 +14,64 @@ interface ShareOptions {
   publicUrl: string
 }
 
+const triggerHaptic = async () => {
+  if (!Capacitor.isNativePlatform()) return
+
+  try {
+    await Haptics.impact({ style: ImpactStyle.Medium })
+  } catch (error) {
+    console.debug('Haptics unavailable, continuing without tactile feedback', error)
+  }
+}
+
+const copyCaptionToClipboard = async (caption: string) => {
+  if (!navigator.clipboard?.writeText) return false
+
+  try {
+    await navigator.clipboard.writeText(caption)
+    return true
+  } catch (error) {
+    console.debug('Clipboard copy failed', error)
+    return false
+  }
+}
+
 export const shareToInstagram = async ({ imageBlob, petName, publicUrl }: ShareOptions): Promise<void> => {
   const file = new File([imageBlob], `${petName}-passport.png`, { type: 'image/png' })
-  
-  // Detect mobile device
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-  
-  if (isMobile) {
-    // Try Instagram deep-link first (mobile only)
-    try {
-      // Try Web Share API with files (works on mobile)
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: `Meet ${petName}!`,
-          text: `Official Pet Passport 🛂 Get yours at PetLinkID.com #PetLinkID #PetPassport`,
-        })
-        return
-      }
-    } catch (error) {
-      // User cancelled or share failed
-      if ((error as Error).name === 'AbortError') {
-        throw error // User cancelled, propagate to caller
-      }
-      console.log('Share API failed, falling back to download', error)
+  const caption = `Meet ${petName}! Official Pet Passport 🛂 Get yours at PetLinkID.com #PetLinkID #PetPassport ${publicUrl}`
+
+  // Prefer the native share sheet (with files when supported)
+  try {
+    await triggerHaptic()
+
+    if (navigator.canShare?.({ files: [file] })) {
+      await navigator.share({
+        files: [file],
+        title: `Meet ${petName}!`,
+        text: caption,
+      })
+      return
     }
+
+    if (navigator.share) {
+      await navigator.share({
+        title: `Meet ${petName}!`,
+        text: caption,
+        url: publicUrl,
+      })
+      return
+    }
+  } catch (error) {
+    if ((error as Error).name === 'AbortError') {
+      // User cancelled, propagate so the UI can respect the decision
+      throw error
+    }
+
+    console.debug('Share attempt failed, falling back to clipboard + download', error)
   }
-  
-  // Fallback: Download the image
+
+  // Fallback: copy caption to clipboard so the user can paste in Instagram, then download image
+  await copyCaptionToClipboard(caption)
   downloadImage(imageBlob, petName)
 }
 
@@ -45,6 +81,9 @@ export const downloadImage = (blob: Blob, petName: string): void => {
   const timestamp = new Date().toISOString().split('T')[0]
   link.download = `${petName}-passport-${timestamp}.png`
   link.href = url
+  link.style.display = 'none'
+  document.body.appendChild(link)
   link.click()
+  document.body.removeChild(link)
   URL.revokeObjectURL(url)
 }
