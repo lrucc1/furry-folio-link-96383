@@ -13,11 +13,12 @@ import { Button } from '@/components/ui/button';
 import { 
   User, Bell, Shield, CreditCard, Globe, Moon, 
   LogOut, ChevronRight, HelpCircle, FileText, 
-  Trash2, Download, Crown, Mail, ChevronLeft, Smartphone, Users
+  Trash2, Download, Crown, Mail, ChevronLeft, Smartphone, Users, Fingerprint
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useIsNativeApp } from '@/hooks/useIsNativeApp';
+import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 
 interface SettingsRowProps {
   icon: React.ReactNode;
@@ -89,6 +90,7 @@ export default function IOSSettings() {
   const navigate = useNavigate();
   const isNative = useIsNativeApp();
   const { isSupported: pushSupported, isRegistered: pushRegistered, permissionStatus, register: registerPush, isLoading: pushLoading } = usePushNotifications();
+  const biometric = useBiometricAuth();
   
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -263,6 +265,22 @@ export default function IOSSettings() {
 
         {/* Privacy & Security */}
         <SettingsGroup title="Privacy & Security">
+          {isNative && biometric.isAvailable && (
+            <SettingsToggle
+              icon={<Fingerprint className="w-4 h-4" />}
+              label={`${biometric.biometryName} Sign-in`}
+              description="Use biometrics for quick sign-in"
+              checked={biometric.hasCredentials}
+              onCheckedChange={async (checked) => {
+                if (!checked) {
+                  await biometric.disable();
+                  toast.success('Biometric sign-in disabled');
+                } else {
+                  toast.info('Please sign out and sign in again to enable biometric authentication');
+                }
+              }}
+            />
+          )}
           <SettingsRow 
             icon={<Users className="w-4 h-4" />}
             label="Sharing & Privacy"

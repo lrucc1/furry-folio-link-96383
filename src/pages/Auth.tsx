@@ -9,10 +9,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
-import { Eye, EyeOff, Loader2, Mail } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Mail, Fingerprint } from 'lucide-react'
 import { useIsNativeApp } from '@/hooks/useIsNativeApp'
 import { isAppleSignInAvailable, handleAppleSignIn } from '@/lib/appleAuth'
 import { motion } from 'framer-motion'
+import { useBiometricAuth } from '@/hooks/useBiometricAuth'
+import { BiometricSetupModal } from '@/components/BiometricSetupModal'
 
 // Animation variants for welcome screen
 const containerVariants = {
@@ -62,7 +64,10 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false)
   const [appleLoading, setAppleLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [biometricLoading, setBiometricLoading] = useState(false)
+  const [showBiometricSetup, setShowBiometricSetup] = useState(false)
   const showAppleSignIn = isAppleSignInAvailable()
+  const biometric = useBiometricAuth()
   
   // Sign In form state
   const [signInEmail, setSignInEmail] = useState('')
@@ -93,11 +98,52 @@ const AuthPage = () => {
         toast.error(error.message)
       } else {
         toast.success('Signed in successfully!')
+        
+        // After successful sign-in, check if biometrics available but not set up
+        if (isNative && biometric.isAvailable && !biometric.hasCredentials) {
+          setShowBiometricSetup(true)
+        }
       }
     } catch (error) {
       toast.error('An unexpected error occurred')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleBiometricSignIn = async () => {
+    setBiometricLoading(true)
+    try {
+      const credentials = await biometric.authenticate()
+      if (credentials) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: credentials.email,
+          password: credentials.password,
+        })
+        
+        if (error) {
+          toast.error(error.message)
+        } else {
+          toast.success('Signed in with ' + biometric.biometryName)
+        }
+      } else {
+        toast.error('Biometric authentication failed')
+      }
+    } catch (error) {
+      toast.error('An unexpected error occurred')
+    } finally {
+      setBiometricLoading(false)
+    }
+  }
+
+  const handleEnableBiometric = async () => {
+    if (signInEmail && signInPassword) {
+      const success = await biometric.enableBiometric(signInEmail, signInPassword)
+      if (success) {
+        toast.success(biometric.biometryName + ' enabled for quick sign-in')
+      } else {
+        toast.error('Failed to enable ' + biometric.biometryName)
+      }
     }
   }
 
@@ -247,6 +293,14 @@ const AuthPage = () => {
   // iOS Native App Layout - Clean welcome-first approach
   if (isNative) {
     return (
+      <>
+        <BiometricSetupModal
+          open={showBiometricSetup}
+          onOpenChange={setShowBiometricSetup}
+          onEnable={handleEnableBiometric}
+          biometryName={biometric.biometryName}
+        />
+        
       <div className="min-h-screen bg-gradient-hero flex flex-col pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
         {/* Welcome Screen */}
         {authView === 'welcome' && (
@@ -276,6 +330,24 @@ const AuthPage = () => {
               animate="visible"
               variants={buttonContainerVariants}
             >
+              {/* Biometric sign-in button (if available and credentials stored) */}
+              {biometric.isAvailable && biometric.hasCredentials && (
+                <motion.div variants={fadeUpVariants}>
+                  <Button
+                    className="w-full h-14 text-base bg-white/20 text-white border border-white/30 hover:bg-white/30 rounded-xl"
+                    onClick={handleBiometricSignIn}
+                    disabled={biometricLoading || loading}
+                  >
+                    {biometricLoading ? (
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    ) : (
+                      <Fingerprint className="mr-2 h-5 w-5" />
+                    )}
+                    Sign in with {biometric.biometryName}
+                  </Button>
+                </motion.div>
+              )}
+              
               {/* Social sign-in buttons */}
               {showAppleSignIn && (
                 <motion.div variants={fadeUpVariants}>
@@ -633,6 +705,7 @@ const AuthPage = () => {
           </div>
         )}
       </div>
+      </>
     )
   }
 
