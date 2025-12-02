@@ -20,6 +20,13 @@
 | Data Export | ✅ Ready | GDPR compliant export functionality |
 | App Privacy JSON | ✅ Ready | `docs/app_privacy.json` prepared |
 
+## Current Release Checks
+
+- [x] Bundle identifier confirmed as `com.petlinkid.app` for release targets.
+- [x] Version values aligned to release target: `MARKETING_VERSION=1.0.0`, `CURRENT_PROJECT_VERSION=1`.
+- [x] App icon and launch assets present in `ios/App/App/Assets.xcassets` (AppIcon sets and Splash imageset).
+- [ ] Xcode archive build pending (requires macOS/Xcode environment to run Product → Archive).
+
 ---
 
 ## Pre-Build Verification
