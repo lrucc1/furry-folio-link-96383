@@ -14,7 +14,7 @@ export function useScrollDirection(
   scrollRef: RefObject<HTMLElement | null>,
   options: UseScrollDirectionOptions = {}
 ): UseScrollDirectionReturn {
-  const { threshold = 5, initialVisible = true } = options;
+  const { threshold = 8, initialVisible = true } = options;
   
   const [isNavVisible, setIsNavVisible] = useState(initialVisible);
   const [isAtTop, setIsAtTop] = useState(true);
@@ -43,7 +43,7 @@ export function useScrollDirection(
     // Only update if scroll delta exceeds threshold
     if (Math.abs(scrollDelta) >= threshold) {
       // Scrolling down - hide nav
-      if (scrollDelta > 0 && currentScrollY > 50) {
+      if (scrollDelta > 0 && currentScrollY > 40) {
         setIsNavVisible(false);
       }
       // Scrolling up - show nav

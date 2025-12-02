@@ -14,11 +14,11 @@ export function IOSHeader({ title, rightContent, visible = true }: IOSHeaderProp
     <header 
       className={cn(
         "flex-shrink-0 bg-background/95 backdrop-blur-md border-b border-border",
-        "transition-transform duration-250 ease-out will-change-transform",
+        "transition-transform ease-out will-change-transform",
         !visible && "-translate-y-full"
       )}
       style={{
-        transitionDuration: '250ms',
+        transitionDuration: '200ms',
         paddingTop: 'env(safe-area-inset-top)',
       }}
     >
