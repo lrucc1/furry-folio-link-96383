@@ -44,7 +44,7 @@ export function IOSPageLayout({
   const hasTriggeredHaptic = useRef(false);
 
   // Use scroll direction hook for hide-on-scroll navigation
-  const { isNavVisible } = useScrollDirection(mainRef, { threshold: 15 });
+  const { isNavVisible } = useScrollDirection(mainRef, { threshold: 8 });
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
     const main = mainRef.current;
