@@ -33,8 +33,10 @@ export function IOSTabBar({ visible = true, height }: IOSTabBarProps) {
         !visible && "opacity-0 pointer-events-none"
       )}
       style={{
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-        height: height ?? 'calc(56px + env(safe-area-inset-bottom, 0px))',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        height: height ?? 'calc(56px + env(safe-area-inset-bottom))',
+        // Ensure the tab bar sits at the absolute bottom
+        bottom: 0,
       }}
     >
       <div className="flex items-center justify-around h-full px-3 gap-1">

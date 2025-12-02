@@ -146,7 +146,7 @@ export default function IOSHome() {
                 <Card
                   key={pet.id}
                   className={cn(
-                    'shrink-0 cursor-pointer transition-all rounded-2xl',
+                    'shrink-0 cursor-pointer transition-all rounded-2xl touch-manipulation active:opacity-90',
                     selectedPetId === pet.id 
                       ? 'border-primary shadow-md ring-2 ring-primary/20' 
                       : 'border-border/50 hover:border-border',
@@ -172,7 +172,7 @@ export default function IOSHome() {
               {/* Add Pet Button */}
               {canAddPet && (
                 <Card
-                  className="shrink-0 cursor-pointer border-dashed border-2 border-muted-foreground/30 hover:border-primary/50 transition-colors rounded-2xl"
+                  className="shrink-0 cursor-pointer border-dashed border-2 border-muted-foreground/30 hover:border-primary/50 transition-colors rounded-2xl touch-manipulation active:opacity-90"
                   onClick={() => navigate('/pets/new')}
                 >
                   <CardContent className="p-3 flex flex-col items-center justify-center min-w-[80px] h-full">

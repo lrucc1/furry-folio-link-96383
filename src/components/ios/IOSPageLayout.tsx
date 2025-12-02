@@ -137,12 +137,15 @@ export function IOSPageLayout({
   const headerHeight = showHeader ? `calc(48px + ${safeAreaTop})` : '0px';
 
   return (
-    <div className="fixed inset-0 bg-background flex flex-col">
+    <div 
+      className="fixed inset-0 flex flex-col"
+      style={{ backgroundColor: 'hsl(45 100% 99%)' }}
+    >
       {showHeader && <IOSHeader title={title} rightContent={headerRight} visible={isNavVisible} />}
       
       <main
         ref={mainRef}
-        className="flex-1 overflow-y-auto overflow-x-hidden"
+        className="flex-1 overflow-y-auto overflow-x-hidden bg-background"
         style={{
           WebkitOverflowScrolling: 'touch',
           overscrollBehavior: 'none',
