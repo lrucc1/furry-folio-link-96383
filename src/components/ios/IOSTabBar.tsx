@@ -26,13 +26,12 @@ export function IOSTabBar({ visible = true }: IOSTabBarProps) {
   return (
     <nav
       className={cn(
-        "flex-shrink-0 bg-background/95 backdrop-blur-md border-t border-border",
-        "transition-transform ease-out will-change-transform",
-        "shadow-[0_-6px_24px_rgba(0,0,0,0.06)]"
+        "fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border",
+        "transition-all duration-200 ease-out",
+        "shadow-[0_-6px_24px_rgba(0,0,0,0.06)]",
+        !visible && "opacity-0 pointer-events-none translate-y-2"
       )}
       style={{
-        transitionDuration: '200ms',
-        transform: visible ? 'translateY(0)' : 'translateY(100%)',
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}
     >

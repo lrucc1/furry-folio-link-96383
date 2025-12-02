@@ -121,10 +121,13 @@ export function IOSPageLayout({
     };
   }, [handleTouchStart, handleTouchMove, handleTouchEnd, onRefresh]);
 
+  // Calculate header height (48px + safe area)
+  const headerHeight = showHeader ? 'calc(48px + env(safe-area-inset-top))' : '0px';
+  // Calculate tab bar height (56px + safe area)
+  const tabBarHeight = showTabBar ? 'calc(56px + env(safe-area-inset-bottom))' : '0px';
+
   return (
-    <div
-      className="fixed inset-0 bg-background flex flex-col"
-    >
+    <div className="fixed inset-0 bg-background flex flex-col">
       {showHeader && <IOSHeader title={title} rightContent={headerRight} visible={isNavVisible} />}
       
       <main
@@ -133,9 +136,10 @@ export function IOSPageLayout({
         style={{
           WebkitOverflowScrolling: 'touch',
           overscrollBehavior: 'none',
-          paddingBottom: showTabBar
-            ? 'calc(env(safe-area-inset-bottom, 0px) + 80px)'
-            : 'calc(env(safe-area-inset-bottom, 0px) + 20px)',
+          // Add top padding for header (fixed position)
+          paddingTop: headerHeight,
+          // Add bottom padding for tab bar (fixed position)
+          paddingBottom: tabBarHeight,
         }}
       >
         {onRefresh && (
