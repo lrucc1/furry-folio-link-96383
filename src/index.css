@@ -126,16 +126,28 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    height: 100%;
+    overflow: hidden;
+  }
+
   body {
     @apply bg-background text-foreground;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
   }
 
+  #root {
+    height: 100%;
+  }
+
+  /* Native iOS auth background - extends behind safe areas */
   body.native-auth-bg {
-    background-image: var(--gradient-hero);
-    background-size: cover;
-    background-repeat: no-repeat;
+    background: var(--gradient-hero);
+    background-attachment: fixed;
   }
 
   img {
@@ -161,11 +173,6 @@ All colors MUST be HSL.
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
-  }
-
-  /* Prevent iOS rubber banding */
-  html, body {
-    overscroll-behavior: none;
   }
 
   /* Dynamic viewport height for modern browsers */
@@ -197,5 +204,12 @@ All colors MUST be HSL.
   .ios-content {
     padding-top: calc(3.5rem + env(safe-area-inset-top));
     padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+  }
+
+  /* Full-bleed iOS layout - fills entire viewport including safe areas */
+  .ios-full-bleed {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
   }
 }

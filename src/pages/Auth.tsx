@@ -312,20 +312,22 @@ const AuthPage = () => {
           biometryName={biometric.biometryName}
         />
         
+      {/* Full-bleed gradient container that extends behind safe areas */}
       <div
-        className="fixed inset-0 bg-gradient-hero flex flex-col overflow-hidden"
+        className="fixed inset-0 flex flex-col overflow-hidden"
         style={{
-          paddingTop: 'env(safe-area-inset-top)',
-          paddingBottom: 'env(safe-area-inset-bottom)'
+          background: 'linear-gradient(135deg, hsl(175 60% 45%) 0%, hsl(15 85% 65%) 100%)',
         }}
       >
         {/* Welcome Screen */}
         {authView === 'welcome' && (
-          <div className="flex-1 flex flex-col">
+          <div 
+            className="flex-1 flex flex-col"
+            style={{ paddingTop: 'env(safe-area-inset-top)' }}
+          >
             {/* Main content - centered */}
             <motion.div 
               className="flex-1 flex flex-col items-center justify-center px-8"
-              style={{ paddingTop: 'env(safe-area-inset-top)' }}
               initial="hidden"
               animate="visible"
               variants={containerVariants}
@@ -343,8 +345,8 @@ const AuthPage = () => {
 
             {/* Action buttons - bottom */}
             <motion.div 
-              className="px-6 pb-8 space-y-3"
-              style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 32px)' }}
+              className="px-6 space-y-3"
+              style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}
               initial="hidden"
               animate="visible"
               variants={buttonContainerVariants}
