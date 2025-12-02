@@ -9,6 +9,7 @@ import { Capacitor } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { checkForceIOS } from './platformUtils';
+import { invokeWithAuth } from './invokeWithAuth';
 
 export type BillingPeriod = 'monthly' | 'yearly';
 export type PlanKey = 'PRO';
@@ -25,6 +26,29 @@ declare global {
 }
 
 let isInitialized = false;
+let productConfigurationError: string | null = null;
+
+function validateProductConfig(): boolean {
+  if (!APPLE_PRO_MONTHLY_ID || !APPLE_PRO_YEARLY_ID) {
+    productConfigurationError = 'In-app purchases are not configured for this build.';
+    return false;
+  }
+
+  if (APPLE_PRO_MONTHLY_ID === APPLE_PRO_YEARLY_ID) {
+    productConfigurationError = 'Monthly and yearly product IDs must be unique.';
+    return false;
+  }
+
+  productConfigurationError = null;
+  return true;
+}
+
+function ensureProductConfig(): boolean {
+  if (validateProductConfig()) return true;
+
+  toast.error(productConfigurationError ?? 'In-app purchases are misconfigured.');
+  return false;
+}
 
 /**
  * Check if running in native iOS app (or forceIOS dev mode)
@@ -44,7 +68,7 @@ export function isIOSApp(): boolean {
  * Check if Apple IAP is available
  */
 export function isAppleIAPAvailable(): boolean {
-  return isNativeApp() && isIOSApp() && !!APPLE_PRO_MONTHLY_ID && !!APPLE_PRO_YEARLY_ID;
+  return isNativeApp() && isIOSApp() && validateProductConfig();
 }
 
 /**
@@ -61,6 +85,47 @@ function getStore(): any {
   return window.CdvPurchase?.store;
 }
 
+function getReceiptData(transaction?: any): string | null {
+  const store = getStore();
+
+  return transaction?.appStoreReceipt
+    ?? transaction?.appstoreReceipt
+    ?? store?.applicationReceipt?.appStoreReceipt
+    ?? store?.appStoreReceipt
+    ?? store?.appstoreReceipt
+    ?? null;
+}
+
+async function syncReceiptWithBackend(transaction?: any, fallbackProductId?: string): Promise<void> {
+  const receiptData = getReceiptData(transaction);
+  if (!receiptData) {
+    throw new Error('Missing App Store receipt');
+  }
+
+  const productId = transaction?.productId
+    || transaction?.product?.id
+    || transaction?.id
+    || fallbackProductId
+    || null;
+
+  const transactionId = transaction?.transactionId
+    || transaction?.id
+    || transaction?.originalTransactionId
+    || null;
+
+  const response = await invokeWithAuth<{ ok?: boolean; error?: string }>('validate-apple-receipt', {
+    body: {
+      receiptData,
+      productId,
+      transactionId,
+    },
+  });
+
+  if (!response?.ok) {
+    throw new Error(response?.error ?? 'Receipt validation failed');
+  }
+}
+
 /**
  * Initialize the IAP store
  */
@@ -70,6 +135,8 @@ export async function initializeStore(): Promise<boolean> {
     return false;
   }
 
+  if (!ensureProductConfig()) return false;
+
   if (isInitialized && getStore()) {
     return true;
   }
@@ -77,6 +144,8 @@ export async function initializeStore(): Promise<boolean> {
   const store = getStore();
   if (!store) {
     console.error('[AppleIAP] Store not available - cordova-plugin-purchase not loaded');
+    productConfigurationError = 'In-app purchases are unavailable. Please reinstall from the App Store.';
+    toast.error(productConfigurationError);
     return false;
   }
 
@@ -102,7 +171,13 @@ export async function initializeStore(): Promise<boolean> {
     // Handle approved transactions
     store.when().approved(async (transaction: any) => {
       console.log('[AppleIAP] Transaction approved:', transaction.id);
-      await updateProfileAfterPurchase(transaction);
+      try {
+        await syncReceiptWithBackend(transaction);
+        toast.success('Purchase verified!');
+      } catch (error) {
+        console.error('[AppleIAP] Failed to sync receipt:', error);
+        toast.error('Could not validate your purchase. Please contact support.');
+      }
       transaction.finish();
     });
 
@@ -117,43 +192,25 @@ export async function initializeStore(): Promise<boolean> {
     });
 
     await store.initialize([CdvPurchase.Platform.APPLE_APPSTORE]);
+
+    const productStateInvalid = store?.ProductState?.INVALID;
+    const unavailableProducts = [APPLE_PRO_MONTHLY_ID, APPLE_PRO_YEARLY_ID].filter((id) => {
+      const product = store.get(id);
+      return !product || (productStateInvalid && product.state === productStateInvalid);
+    });
+
+    if (unavailableProducts.length) {
+      productConfigurationError = 'In-app purchase products are not recognized by the App Store.';
+      toast.error(productConfigurationError);
+      return false;
+    }
+
     isInitialized = true;
     console.log('[AppleIAP] Store initialized');
     return true;
   } catch (error) {
     console.error('[AppleIAP] Failed to initialize:', error);
     return false;
-  }
-}
-
-/**
- * Update Supabase profile after successful purchase
- */
-async function updateProfileAfterPurchase(transaction: any): Promise<void> {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('User not authenticated');
-
-    const expiryDate = transaction.expirationDate 
-      ? new Date(transaction.expirationDate).toISOString() 
-      : null;
-
-    const { error } = await supabase
-      .from('profiles')
-      .update({
-        plan_v2: 'PRO',
-        subscription_status: 'active',
-        plan_source: 'apple',
-        next_billing_at: expiryDate,
-        plan_updated_at: new Date().toISOString(),
-      })
-      .eq('id', user.id);
-
-    if (error) throw error;
-    console.log('[AppleIAP] Profile updated to PRO');
-  } catch (error) {
-    console.error('[AppleIAP] Error updating profile:', error);
-    throw error;
   }
 }
 
@@ -166,6 +223,10 @@ export async function purchasePro(period: BillingPeriod): Promise<void> {
     throw new Error('Apple IAP not available');
   }
 
+  if (!ensureProductConfig()) {
+    throw new Error(productConfigurationError ?? 'Product IDs not configured');
+  }
+
   const productId = getProductId(period);
   if (!productId) {
     toast.error('Product not configured.');
@@ -175,7 +236,8 @@ export async function purchasePro(period: BillingPeriod): Promise<void> {
   const initialized = await initializeStore();
   const store = getStore();
   if (!initialized || !store) {
-    toast.error('Unable to connect to App Store.');
+    const message = productConfigurationError ?? 'Unable to connect to App Store.';
+    toast.error(message);
     throw new Error('Store not initialized');
   }
 
@@ -219,10 +281,13 @@ export async function restorePurchases(): Promise<boolean> {
     return false;
   }
 
+  if (!ensureProductConfig()) return false;
+
   const initialized = await initializeStore();
   const store = getStore();
   if (!initialized || !store) {
-    toast.error('Unable to connect to App Store.');
+    const message = productConfigurationError ?? 'Unable to connect to App Store.';
+    toast.error(message);
     return false;
   }
 
@@ -239,20 +304,22 @@ export async function restorePurchases(): Promise<boolean> {
     const monthlyProduct = store.get(APPLE_PRO_MONTHLY_ID);
     const yearlyProduct = store.get(APPLE_PRO_YEARLY_ID);
     const hasActive = monthlyProduct?.owned || yearlyProduct?.owned;
+    const restoredProductId = monthlyProduct?.owned
+      ? APPLE_PRO_MONTHLY_ID
+      : yearlyProduct?.owned
+        ? APPLE_PRO_YEARLY_ID
+        : undefined;
 
     if (hasActive) {
-      await supabase
-        .from('profiles')
-        .update({
-          plan_v2: 'PRO',
-          subscription_status: 'active',
-          plan_source: 'apple',
-          plan_updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id);
-
-      toast.success('Subscription restored!');
-      return true;
+      try {
+        await syncReceiptWithBackend(undefined, restoredProductId);
+        toast.success('Subscription restored!');
+        return true;
+      } catch (error) {
+        console.error('[AppleIAP] Failed to sync restored receipt:', error);
+        toast.error('Failed to validate restored purchases');
+        return false;
+      }
     } else {
       toast.info('No purchases found.');
       return false;
