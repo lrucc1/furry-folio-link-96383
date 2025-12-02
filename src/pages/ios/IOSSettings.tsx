@@ -73,11 +73,11 @@ const SettingsToggle = ({
 );
 
 const SettingsGroup = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div className="mb-6">
-    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 mb-2">
+  <div className="space-y-2">
+    <h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.12em] px-1">
       {title}
     </h3>
-    <MobileCard className="p-0 divide-y divide-border/30 overflow-hidden rounded-3xl">
+    <MobileCard className="p-0 divide-y divide-border/30 overflow-hidden rounded-3xl shadow-sm">
       {children}
     </MobileCard>
   </div>
@@ -177,9 +177,9 @@ export default function IOSSettings() {
   return (
     <IOSPageLayout title="Settings" headerRight={headerLeft}>
       <PageTransition>
-      <div className="pb-8">
+      <div className="space-y-6 px-4 pb-6 pt-2">
         {/* Profile Header */}
-        <MobileCard className="mb-6">
+        <MobileCard>
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
               <User className="w-8 h-8 text-primary" />

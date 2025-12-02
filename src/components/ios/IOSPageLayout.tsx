@@ -122,30 +122,37 @@ export function IOSPageLayout({
   }, [handleTouchStart, handleTouchMove, handleTouchEnd, onRefresh]);
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-background flex flex-col"
-      style={{ 
+      style={{
         paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
       {showHeader && <IOSHeader title={title} rightContent={headerRight} visible={isNavVisible} />}
       
-      <main 
+      <main
         ref={mainRef}
         className="flex-1 overflow-y-auto overflow-x-hidden"
-        style={{ 
+        style={{
           WebkitOverflowScrolling: 'touch',
           overscrollBehavior: 'none',
+          paddingBottom: showTabBar
+            ? 'calc(env(safe-area-inset-bottom, 0px) + 80px)'
+            : 'calc(env(safe-area-inset-bottom, 0px) + 20px)',
         }}
       >
         {onRefresh && (
-          <PullToRefreshIndicator 
-            pullDistance={pullDistance} 
-            isRefreshing={isRefreshing} 
+          <PullToRefreshIndicator
+            pullDistance={pullDistance}
+            isRefreshing={isRefreshing}
           />
         )}
         <AnimatePresence mode="wait" initial={false}>
-          <div key={location.pathname} className={`${showTabBar ? 'pb-4' : ''}`}>
+          <div
+            key={location.pathname}
+            className="min-h-full"
+          >
             {children}
           </div>
         </AnimatePresence>
