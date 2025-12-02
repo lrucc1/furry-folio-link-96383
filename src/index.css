@@ -157,6 +157,14 @@ All colors MUST be HSL.
     overscroll-behavior: none;
   }
 
+  /* Dynamic viewport height for modern browsers */
+  .min-h-dvh {
+    min-height: 100dvh;
+  }
+  .h-dvh {
+    height: 100dvh;
+  }
+
   /* iOS Safe Area utilities */
   .pt-safe {
     padding-top: env(safe-area-inset-top);

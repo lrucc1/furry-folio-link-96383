@@ -301,13 +301,14 @@ const AuthPage = () => {
           biometryName={biometric.biometryName}
         />
         
-      <div className="min-h-screen bg-gradient-hero flex flex-col">
+      <div className="fixed inset-0 bg-gradient-hero flex flex-col">
         {/* Welcome Screen */}
         {authView === 'welcome' && (
-          <div className="flex-1 flex flex-col pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+          <div className="flex-1 flex flex-col">
             {/* Main content - centered */}
             <motion.div 
               className="flex-1 flex flex-col items-center justify-center px-8"
+              style={{ paddingTop: 'env(safe-area-inset-top)' }}
               initial="hidden"
               animate="visible"
               variants={containerVariants}
@@ -326,6 +327,7 @@ const AuthPage = () => {
             {/* Action buttons - bottom */}
             <motion.div 
               className="px-6 pb-8 space-y-3"
+              style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 32px)' }}
               initial="hidden"
               animate="visible"
               variants={buttonContainerVariants}
@@ -422,7 +424,13 @@ const AuthPage = () => {
 
         {/* Sign In Form */}
         {authView === 'signin' && (
-          <div className="flex-1 flex flex-col px-6 py-4 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+          <div 
+            className="flex-1 flex flex-col px-6 py-4 overflow-y-auto"
+            style={{ 
+              paddingTop: 'calc(env(safe-area-inset-top) + 16px)',
+              paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)'
+            }}
+          >
             {/* Back button */}
             <button
               type="button"
@@ -519,7 +527,13 @@ const AuthPage = () => {
 
         {/* Sign Up Form */}
         {authView === 'signup' && (
-          <div className="flex-1 flex flex-col px-6 py-4 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+          <div 
+            className="flex-1 flex flex-col px-6 py-4 overflow-y-auto"
+            style={{ 
+              paddingTop: 'calc(env(safe-area-inset-top) + 16px)',
+              paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)'
+            }}
+          >
             {/* Back button */}
             <button
               type="button"
@@ -630,7 +644,13 @@ const AuthPage = () => {
 
         {/* Forgot Password Form */}
         {authView === 'forgot-password' && (
-          <div className="flex-1 flex flex-col px-6 py-4 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+          <div 
+            className="flex-1 flex flex-col px-6 py-4 overflow-y-auto"
+            style={{ 
+              paddingTop: 'calc(env(safe-area-inset-top) + 16px)',
+              paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)'
+            }}
+          >
             {/* Back button */}
             <button
               type="button"
@@ -709,176 +729,175 @@ const AuthPage = () => {
     )
   }
 
-  // Web Layout - mobile first with iOS-inspired card stack
+  // Web Layout - Card-based approach
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4 py-4 sm:px-6">
-      <div className="w-full max-w-md space-y-4">
-        <div className="text-center space-y-2 pt-2">
-          <div className="flex items-center justify-center">
-            <Logo iconClassName="w-14 h-14" textClassName="font-bold text-3xl text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-accent/5 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardContent className="pt-6">
+          <div className="text-center mb-6">
+            <Logo iconClassName="w-12 h-12" textClassName="text-2xl font-bold" />
+            <p className="text-muted-foreground mt-2">Manage your pets' digital profiles</p>
           </div>
-          <div className="space-y-1">
-            <h1 className="text-3xl font-semibold text-white">Welcome to PetLinkID</h1>
-            <p className="text-white/80 text-sm">Your pet's passport, safety tag and health hub in one place.</p>
-          </div>
-        </div>
 
-        <Card className="bg-white shadow-lg rounded-3xl border-0">
-          <CardContent className="p-5 space-y-3">
-            <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 rounded-full bg-muted/60 h-11">
-                <TabsTrigger value="signin" className="rounded-full text-sm">Sign In</TabsTrigger>
-                <TabsTrigger value="signup" className="rounded-full text-sm">Sign Up</TabsTrigger>
-              </TabsList>
+          <Tabs defaultValue="signin" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="signin">Sign In</TabsTrigger>
+              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            </TabsList>
 
-              <TabsContent value="signin" className="space-y-4 pt-2">
-                <form onSubmit={handleSignIn} className="space-y-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-email">Email</Label>
+            <TabsContent value="signin">
+              <form onSubmit={handleSignIn} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={signInEmail}
+                    onChange={(e) => setSignInEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
                     <Input
-                      id="signin-email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={signInEmail}
-                      onChange={(e) => setSignInEmail(e.target.value)}
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      value={signInPassword}
+                      onChange={(e) => setSignInPassword(e.target.value)}
                       required
                       disabled={loading}
-                      className="h-12"
                     />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                      disabled={loading}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
                   </div>
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-password">Password</Label>
-                    <div className="relative">
-                      <Input
-                        id="signin-password"
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="••••••••"
-                        value={signInPassword}
-                        onChange={(e) => setSignInPassword(e.target.value)}
-                        required
-                        disabled={loading}
-                        className="h-12 pr-12"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
-                        disabled={loading}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                  </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Signing in...
+                    </>
+                  ) : (
+                    'Sign In'
+                  )}
+                </Button>
+              </form>
 
-                  <Button type="submit" className="w-full h-12 rounded-full font-semibold" disabled={loading}>
-                    {loading ? 'Signing in...' : 'Sign In'}
-                  </Button>
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                </div>
+              </div>
 
-                  <div className="relative my-2">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-[11px] uppercase">
-                      <span className="bg-white px-3 text-muted-foreground">Or continue with</span>
-                    </div>
-                  </div>
+              <SocialSignInButtons />
+            </TabsContent>
 
-                  <SocialSignInButtons />
-                </form>
-              </TabsContent>
+            <TabsContent value="signup">
+              <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-name-web">Name</Label>
+                  <Input
+                    id="signup-name-web"
+                    type="text"
+                    placeholder="Your name"
+                    value={signUpName}
+                    onChange={(e) => setSignUpName(e.target.value)}
+                    required
+                    disabled={loading}
+                    minLength={2}
+                    maxLength={100}
+                  />
+                </div>
 
-              <TabsContent value="signup" className="space-y-4 pt-2">
-                <form onSubmit={handleSignUp} className="space-y-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-name">Name</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email-web">Email</Label>
+                  <Input
+                    id="signup-email-web"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={signUpEmail}
+                    onChange={(e) => setSignUpEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password-web">Password</Label>
+                  <div className="relative">
                     <Input
-                      id="signup-name"
-                      type="text"
-                      placeholder="Your name"
-                      value={signUpName}
-                      onChange={(e) => setSignUpName(e.target.value)}
+                      id="signup-password-web"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      value={signUpPassword}
+                      onChange={(e) => setSignUpPassword(e.target.value)}
                       required
                       disabled={loading}
-                      minLength={2}
-                      maxLength={100}
-                      className="h-12"
+                      minLength={8}
                     />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={signUpEmail}
-                      onChange={(e) => setSignUpEmail(e.target.value)}
-                      required
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
                       disabled={loading}
-                      className="h-12"
-                    />
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
                   </div>
+                  <p className="text-xs text-muted-foreground">Minimum 8 characters</p>
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
-                    <div className="relative">
-                      <Input
-                        id="signup-password"
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="••••••••"
-                        value={signUpPassword}
-                        onChange={(e) => setSignUpPassword(e.target.value)}
-                        required
-                        disabled={loading}
-                        minLength={8}
-                        className="h-12 pr-12"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
-                        disabled={loading}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground">Minimum 8 characters</p>
-                  </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating account...
+                    </>
+                  ) : (
+                    'Create Account'
+                  )}
+                </Button>
+              </form>
 
-                  <Button type="submit" className="w-full h-12 rounded-full font-semibold" disabled={loading}>
-                    {loading ? 'Creating account...' : 'Sign Up'}
-                  </Button>
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                </div>
+              </div>
 
-                  <div className="relative my-2">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-[11px] uppercase">
-                      <span className="bg-white px-3 text-muted-foreground">Or continue with</span>
-                    </div>
-                  </div>
+              <SocialSignInButtons />
+            </TabsContent>
+          </Tabs>
 
-                  <SocialSignInButtons />
-                </form>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-
-        <div className="text-center px-6 pb-2">
-          <p className="text-white/80 text-xs leading-relaxed">
-            By signing in, you agree to our{' '}
-            <Link to="/terms" className="underline hover:text-white">Terms of Service</Link>,{' '}
-            <Link to="/subscription-terms" className="underline hover:text-white">Subscription Terms</Link>, and{' '}
-            <Link to="/privacy" className="underline hover:text-white">Privacy Policy</Link>.
+          <p className="text-center text-xs text-muted-foreground mt-6">
+            By continuing, you agree to our{' '}
+            <Link to="/terms" className="underline hover:text-primary">Terms of Service</Link> and{' '}
+            <Link to="/privacy" className="underline hover:text-primary">Privacy Policy</Link>.
           </p>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
