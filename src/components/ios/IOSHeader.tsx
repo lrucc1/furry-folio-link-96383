@@ -19,6 +19,7 @@ export function IOSHeader({ title, rightContent, visible = true }: IOSHeaderProp
       )}
       style={{
         transitionDuration: '250ms',
+        paddingTop: 'env(safe-area-inset-top)',
       }}
     >
       <div className="flex items-center justify-between h-12 px-4">

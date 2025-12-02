@@ -138,8 +138,9 @@ export async function signInWithApple(): Promise<{ data: any; error: any }> {
   }
 
   if (!appleAuthConfig) {
-    const error = new Error('Apple Sign-In is not initialized. Check environment variables for your bundle ID.');
-    console.error('[AppleAuth] Missing configuration:', error.message);
+    const error = new Error('Apple Sign-In is not configured. Please contact support or use email sign-in.');
+    console.error('[AppleAuth] Missing configuration - client ID not set for this bundle');
+    toast.error('Apple Sign-In unavailable. Use email sign-in instead.');
     return { data: null, error };
   }
 
