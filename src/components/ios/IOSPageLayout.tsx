@@ -50,9 +50,9 @@ export function IOSPageLayout({
   const safeAreaTop = 'env(safe-area-inset-top)';
 
   // Keep tab bar/padding heights in sync so content and the nav align to the exact bottom of the screen
-  const tabBarHeight = showTabBar ? '56px' : '0px';
+  const tabBarBaseHeight = '56px';
   const tabBarTotalHeight = showTabBar
-    ? `calc(${tabBarHeight} + ${safeAreaBottom})`
+    ? `calc(${tabBarBaseHeight} + ${safeAreaBottom})`
     : safeAreaBottom;
   const contentBottomPadding = showTabBar
     ? (isNavVisible ? tabBarTotalHeight : safeAreaBottom)
@@ -137,9 +137,9 @@ export function IOSPageLayout({
   const headerHeight = showHeader ? `calc(48px + ${safeAreaTop})` : '0px';
 
   return (
-    <div 
-      className="fixed inset-0 flex flex-col"
-      style={{ backgroundColor: 'hsl(45 100% 99%)' }}
+    <div
+      className="fixed inset-0 flex flex-col min-h-dvh"
+      style={{ backgroundColor: 'hsl(var(--background))' }}
     >
       {showHeader && <IOSHeader title={title} rightContent={headerRight} visible={isNavVisible} />}
       
@@ -153,6 +153,8 @@ export function IOSPageLayout({
           paddingTop: headerHeight,
           // Add bottom padding for tab bar (fixed position)
           paddingBottom: contentBottomPadding,
+          paddingLeft: 'env(safe-area-inset-left)',
+          paddingRight: 'env(safe-area-inset-right)',
           touchAction: 'manipulation',
         }}
       >
