@@ -30,6 +30,8 @@
         <string>Allow PetLinkID to save photos (like QR scans or pet images) to your library.</string>
         <key>NSUserNotificationUsageDescription</key>
         <string>Allow PetLinkID to send you notifications about your pets and reminders.</string>
+        <key>NSFaceIDUsageDescription</key>
+        <string>Enable Face ID for quick and secure sign-in to PetLinkID.</string>
         <key>UILaunchStoryboardName</key>
         <string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
