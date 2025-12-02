@@ -30,8 +30,8 @@ export function FeatureTile({
   return (
     <Card 
       className={cn(
-        'rounded-3xl shadow-sm border-border/40 overflow-hidden',
-        !disabled && 'cursor-pointer active:scale-[0.97] transition-all',
+        'rounded-3xl shadow-sm border-border/40 overflow-hidden touch-manipulation',
+        !disabled && 'cursor-pointer active:opacity-90 active:bg-black/5 transition-opacity duration-100',
         disabled && 'opacity-50',
         gradient,
         className

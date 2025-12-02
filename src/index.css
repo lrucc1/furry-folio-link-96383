@@ -145,7 +145,12 @@ All colors MUST be HSL.
   .backface-hidden {
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
-    transform: translateZ(0);
+  }
+
+  /* Touch-safe active feedback for iOS */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
