@@ -24,10 +24,11 @@ export function IOSTabBar({ visible = true }: IOSTabBarProps) {
   const location = useLocation();
 
   return (
-    <nav 
+    <nav
       className={cn(
         "flex-shrink-0 bg-background/95 backdrop-blur-md border-t border-border",
-        "transition-transform duration-250 ease-out will-change-transform"
+        "transition-transform duration-250 ease-out will-change-transform",
+        "shadow-[0_-6px_24px_rgba(0,0,0,0.06)]"
       )}
       style={{
         transitionDuration: '250ms',
@@ -35,9 +36,9 @@ export function IOSTabBar({ visible = true }: IOSTabBarProps) {
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}
     >
-      <div className="flex items-center justify-around h-12">
+      <div className="flex items-center justify-around h-14 px-3">
         {tabs.map((tab) => {
-          const isActive = location.pathname === tab.path || 
+          const isActive = location.pathname === tab.path ||
             (tab.path === '/dashboard' && location.pathname.startsWith('/pets'));
           
           return (
@@ -45,12 +46,13 @@ export function IOSTabBar({ visible = true }: IOSTabBarProps) {
               key={tab.path}
               onClick={() => navigate(tab.path)}
               className={cn(
-                'flex flex-col items-center justify-center gap-0.5 w-full h-full transition-colors',
-                isActive ? 'text-primary' : 'text-muted-foreground'
+                'flex flex-col items-center justify-center gap-1 w-full h-full transition-colors rounded-2xl',
+                'active:scale-[0.98] px-2 py-1.5',
+                isActive ? 'text-primary bg-primary/5' : 'text-muted-foreground'
               )}
             >
               <tab.icon className={cn('w-5 h-5', isActive && 'fill-primary/20')} />
-              <span className="text-[10px] font-medium">{tab.label}</span>
+              <span className="text-[11px] font-medium tracking-[0.01em]">{tab.label}</span>
             </button>
           );
         })}

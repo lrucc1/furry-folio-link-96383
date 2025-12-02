@@ -34,11 +34,11 @@ const SettingsToggle = ({ icon, label, description, checked, onCheckedChange }: 
 );
 
 const SettingsGroup = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div className="mb-6">
-    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 mb-2">
+  <div className="space-y-2">
+    <h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.12em] px-1">
       {title}
     </h3>
-    <MobileCard className="p-0 divide-y divide-border overflow-hidden">
+    <MobileCard className="p-0 divide-y divide-border overflow-hidden shadow-sm rounded-3xl">
       {children}
     </MobileCard>
   </div>
@@ -92,7 +92,7 @@ export default function IOSSharingSettings() {
     <IOSPageLayout title="Sharing & Privacy" headerRight={headerLeft}>
       <LoadingBoundary loading={loading} skeleton={<IOSSharingSettingsSkeleton />}>
         <PageTransition>
-      <div className="pb-8">
+      <div className="space-y-6 px-4 pb-6 pt-2">
         {/* Emergency Contacts */}
         <SettingsGroup title="Emergency Contacts">
           <SettingsToggle
@@ -116,8 +116,8 @@ export default function IOSSharingSettings() {
         </SettingsGroup>
 
         {/* QR Code Visibility */}
-        <div className="mb-6">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 mb-2">
+        <div className="space-y-2">
+          <h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.12em] px-1">
             QR Code Visibility
           </h3>
           <MobileCard>
@@ -179,7 +179,7 @@ export default function IOSSharingSettings() {
         </SettingsGroup>
 
         {/* Info Note */}
-        <div className="px-4 mt-4">
+        <div className="px-1">
           <p className="text-xs text-muted-foreground text-center">
             These settings apply to all your pets. You can override settings for individual pets from their profile page.
           </p>

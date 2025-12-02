@@ -123,9 +123,9 @@ export default function IOSPlans() {
     <IOSPageLayout title="Your Plan" headerRight={headerLeft}>
       <LoadingBoundary loading={loading} skeleton={<IOSPlansSkeleton />}>
         <PageTransition>
-      <div className="pb-8">
+      <div className="space-y-6 px-4 pb-6 pt-2">
         {/* Current Plan Card */}
-        <MobileCard className="mb-6">
+        <MobileCard>
           <div className="text-center py-4">
             <div className={`w-16 h-16 rounded-full mx-auto mb-3 flex items-center justify-center ${
               isPro ? 'bg-primary/10' : 'bg-muted'
@@ -146,8 +146,8 @@ export default function IOSPlans() {
         </MobileCard>
 
         {/* Feature Comparison */}
-        <div className="mb-6">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 mb-2">
+        <div className="space-y-2">
+          <h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.12em] px-1">
             Feature Comparison
           </h3>
           <MobileCard>
@@ -204,9 +204,9 @@ export default function IOSPlans() {
         </div>
 
         {/* Action Buttons */}
-        <div className="px-4 space-y-3">
+        <div className="space-y-3">
           {!isPro && (
-            <Button 
+            <Button
               onClick={handleUpgrade}
               disabled={upgrading}
               className="w-full h-12 text-base font-semibold"
@@ -258,7 +258,7 @@ export default function IOSPlans() {
 
         {/* Pricing Info */}
         {!isPro && (
-          <div className="px-4 mt-6">
+          <div className="mt-4">
             <div className="text-center p-4 bg-muted/30 rounded-xl">
               <p className="text-2xl font-bold">A$39.99<span className="text-sm font-normal text-muted-foreground">/year</span></p>
               <p className="text-sm text-muted-foreground mt-1">
@@ -272,7 +272,7 @@ export default function IOSPlans() {
         )}
 
         {/* Footer Note */}
-        <div className="px-4 mt-6">
+        <div className="mt-4">
           <p className="text-xs text-muted-foreground text-center">
             Payment will be charged to your Apple ID account. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period.
           </p>
