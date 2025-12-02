@@ -23,6 +23,7 @@ interface IOSTabBarProps {
 export function IOSTabBar({ visible = true, height }: IOSTabBarProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const safeAreaBottom = 'env(safe-area-inset-bottom)';
 
   return (
     <nav
@@ -33,10 +34,10 @@ export function IOSTabBar({ visible = true, height }: IOSTabBarProps) {
         !visible && "opacity-0 pointer-events-none"
       )}
       style={{
-        paddingBottom: 'env(safe-area-inset-bottom)',
-        height: height ?? 'calc(56px + env(safe-area-inset-bottom))',
-        // Ensure the tab bar sits at the absolute bottom
-        bottom: 0,
+        paddingBottom: safeAreaBottom,
+        paddingLeft: 'env(safe-area-inset-left)',
+        paddingRight: 'env(safe-area-inset-right)',
+        height: height ?? `calc(56px + ${safeAreaBottom})`,
       }}
     >
       <div className="flex items-center justify-around h-full px-3 gap-1">
