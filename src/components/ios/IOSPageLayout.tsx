@@ -124,10 +124,6 @@ export function IOSPageLayout({
   return (
     <div
       className="fixed inset-0 bg-background flex flex-col"
-      style={{
-        paddingTop: 'env(safe-area-inset-top)',
-        paddingBottom: 'env(safe-area-inset-bottom)',
-      }}
     >
       {showHeader && <IOSHeader title={title} rightContent={headerRight} visible={isNavVisible} />}
       
