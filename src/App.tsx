@@ -1,9 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { toast } from "sonner";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { PlanProvider } from "./lib/plan/PlanContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -14,7 +15,7 @@ import { IOSAppRouter } from "./components/IOSAppRouter";
 import { DevModeToggle } from "./components/DevModeToggle";
 import { AppLoadingScreen } from "./components/AppLoadingScreen";
 import { useIsNativeApp } from "./hooks/useIsNativeApp";
-import { initializeAppleAuth } from "./lib/appleAuth";
+import { AppleAuthError, initializeAppleAuth, logAppleAuthFailure } from "./lib/appleAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -67,15 +68,39 @@ const queryClient = new QueryClient();
 function AppContent() {
   const { loading } = useAuth();
   const isNative = useIsNativeApp();
+  const [appleAuthInitAttempt, setAppleAuthInitAttempt] = useState(0);
 
   // Initialize Apple Auth on iOS native app startup
   useEffect(() => {
     if (isNative) {
-      initializeAppleAuth().catch(error => {
-        console.error('[AppleAuth] Initialization failed during app startup:', error);
-      });
+      let isCancelled = false;
+
+      const initialize = async () => {
+        try {
+          await initializeAppleAuth();
+        } catch (error) {
+          if (isCancelled) return;
+
+          const reason = error instanceof AppleAuthError ? error.reason : 'initialization_failed';
+          logAppleAuthFailure(reason, error, { attempt: appleAuthInitAttempt + 1 });
+
+          toast.error('Apple Sign-In is unavailable right now.', {
+            description: error instanceof Error ? error.message : 'Retry setup to enable Apple Sign-In on this device.',
+            action: {
+              label: 'Retry',
+              onClick: () => setAppleAuthInitAttempt(attempt => attempt + 1),
+            },
+          });
+        }
+      };
+
+      initialize();
+
+      return () => {
+        isCancelled = true;
+      };
     }
-  }, [isNative]);
+  }, [appleAuthInitAttempt, isNative]);
 
   // Show loading screen on native while auth initializes
   if (isNative && loading) {
