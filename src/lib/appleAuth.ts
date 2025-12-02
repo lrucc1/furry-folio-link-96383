@@ -12,6 +12,39 @@ import { toast } from 'sonner';
 let SocialLogin: any = null;
 let appleAuthConfig: { clientId: string; bundleId: string } | null = null;
 
+export type AppleAuthFailureReason =
+  | 'missing_client_id'
+  | 'module_load_failed'
+  | 'initialization_failed'
+  | 'unknown';
+
+export class AppleAuthError extends Error {
+  reason: AppleAuthFailureReason;
+  metadata?: Record<string, unknown>;
+
+  constructor(reason: AppleAuthFailureReason, message: string, metadata?: Record<string, unknown>) {
+    super(message);
+    this.reason = reason;
+    this.metadata = metadata;
+    this.name = 'AppleAuthError';
+  }
+}
+
+export function logAppleAuthFailure(
+  reason: AppleAuthFailureReason,
+  error?: unknown,
+  metadata?: Record<string, unknown>
+) {
+  const message = error instanceof Error ? error.message : String(error ?? 'Unknown error');
+
+  console.error('[AppleAuth][Telemetry]', {
+    reason,
+    message,
+    stack: error instanceof Error ? error.stack : undefined,
+    metadata,
+  });
+}
+
 function formatBundleIdForEnv(bundleId: string): string {
   return bundleId.replace(/[^A-Za-z0-9]/g, '_').toUpperCase();
 }
@@ -31,8 +64,13 @@ function getAppleClientId(bundleId: string): string {
       `Set ${envKey} in your environment (.env.*).` +
       (availableKeys.length ? ` Available keys: ${availableKeys.join(', ')}` : ' No Apple client IDs found.');
 
-    console.error(message);
-    throw new Error(message);
+    const error = new AppleAuthError('missing_client_id', message, {
+      bundleId,
+      envKey,
+      availableKeys,
+    });
+    logAppleAuthFailure('missing_client_id', error, { bundleId });
+    throw error;
   }
 
   return clientId;
@@ -51,8 +89,16 @@ export async function initializeAppleAuth(): Promise<void> {
     const appInfo = await App.getInfo();
     const clientId = getAppleClientId(appInfo.id);
 
-    const module = await import('@capgo/capacitor-social-login');
-    SocialLogin = module.SocialLogin;
+    try {
+      const module = await import('@capgo/capacitor-social-login');
+      SocialLogin = module.SocialLogin;
+    } catch (error) {
+      const moduleError = new AppleAuthError('module_load_failed', 'Failed to load capacitor-social-login module', {
+        bundleId: appInfo.id,
+      });
+      logAppleAuthFailure('module_load_failed', moduleError, { originalError: error });
+      throw moduleError;
+    }
 
     await SocialLogin.initialize({
       apple: {
@@ -66,7 +112,8 @@ export async function initializeAppleAuth(): Promise<void> {
     console.log(`[AppleAuth] Initialized for bundle ${appInfo.id} using client ${maskedClientId}`);
     console.log('[AppleAuth] Initialized successfully');
   } catch (error) {
-    console.error('[AppleAuth] Failed to initialize:', error);
+    const reason = error instanceof AppleAuthError ? error.reason : 'initialization_failed';
+    logAppleAuthFailure(reason, error, { stage: 'initialize' });
     throw error;
   }
 }
