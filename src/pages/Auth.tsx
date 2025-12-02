@@ -301,10 +301,10 @@ const AuthPage = () => {
           biometryName={biometric.biometryName}
         />
         
-      <div className="min-h-screen bg-gradient-hero flex flex-col pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+      <div className="min-h-screen bg-gradient-hero flex flex-col">
         {/* Welcome Screen */}
         {authView === 'welcome' && (
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
             {/* Main content - centered */}
             <motion.div 
               className="flex-1 flex flex-col items-center justify-center px-8"
@@ -422,7 +422,7 @@ const AuthPage = () => {
 
         {/* Sign In Form */}
         {authView === 'signin' && (
-          <div className="flex-1 flex flex-col px-6 py-4">
+          <div className="flex-1 flex flex-col px-6 py-4 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
             {/* Back button */}
             <button
               type="button"
@@ -519,7 +519,7 @@ const AuthPage = () => {
 
         {/* Sign Up Form */}
         {authView === 'signup' && (
-          <div className="flex-1 flex flex-col px-6 py-4">
+          <div className="flex-1 flex flex-col px-6 py-4 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
             {/* Back button */}
             <button
               type="button"
@@ -630,7 +630,7 @@ const AuthPage = () => {
 
         {/* Forgot Password Form */}
         {authView === 'forgot-password' && (
-          <div className="flex-1 flex flex-col px-6 py-4">
+          <div className="flex-1 flex flex-col px-6 py-4 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
             {/* Back button */}
             <button
               type="button"

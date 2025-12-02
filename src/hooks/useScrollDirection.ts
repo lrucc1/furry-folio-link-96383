@@ -14,7 +14,7 @@ export function useScrollDirection(
   scrollRef: RefObject<HTMLElement | null>,
   options: UseScrollDirectionOptions = {}
 ): UseScrollDirectionReturn {
-  const { threshold = 10, initialVisible = true } = options;
+  const { threshold = 5, initialVisible = true } = options;
   
   const [isNavVisible, setIsNavVisible] = useState(initialVisible);
   const [isAtTop, setIsAtTop] = useState(true);
