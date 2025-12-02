@@ -53,7 +53,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
     // Handle remote notifications delivered in the background
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        ApplicationDelegateProxy.shared.application(application, didReceiveRemoteNotification: userInfo, fetchCompletionHandler: completionHandler)
+        // Forward the notification to the JS layer / plugins if needed
+        NotificationCenter.default.post(
+            name: Notification.Name("CapacitorDidReceiveRemoteNotification"),
+            object: nil,
+            userInfo: userInfo
+        )
+        
+        // Indicate that no new data was fetched
+        completionHandler(.noData)
     }
 
     // MARK: - UNUserNotificationCenterDelegate
