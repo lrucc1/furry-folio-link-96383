@@ -132,6 +132,12 @@ All colors MUST be HSL.
     -moz-osx-font-smoothing: grayscale;
   }
 
+  body.native-auth-bg {
+    background-image: var(--gradient-hero);
+    background-size: cover;
+    background-repeat: no-repeat;
+  }
+
   img {
     @apply backface-hidden;
   }

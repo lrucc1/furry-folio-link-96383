@@ -46,6 +46,18 @@ export function IOSPageLayout({
   // Use scroll direction hook for hide-on-scroll navigation
   const { isNavVisible } = useScrollDirection(mainRef, { threshold: 8 });
 
+  const safeAreaBottom = 'env(safe-area-inset-bottom)';
+  const safeAreaTop = 'env(safe-area-inset-top)';
+
+  // Keep tab bar/padding heights in sync so content and the nav align to the exact bottom of the screen
+  const tabBarHeight = showTabBar ? '56px' : '0px';
+  const tabBarTotalHeight = showTabBar
+    ? `calc(${tabBarHeight} + ${safeAreaBottom})`
+    : safeAreaBottom;
+  const contentBottomPadding = showTabBar
+    ? (isNavVisible ? tabBarTotalHeight : safeAreaBottom)
+    : safeAreaBottom;
+
   const handleTouchStart = useCallback((e: TouchEvent) => {
     const main = mainRef.current;
     if (!main || !onRefresh) return;
@@ -122,9 +134,7 @@ export function IOSPageLayout({
   }, [handleTouchStart, handleTouchMove, handleTouchEnd, onRefresh]);
 
   // Calculate header height (48px + safe area)
-  const headerHeight = showHeader ? 'calc(48px + env(safe-area-inset-top))' : '0px';
-  // Calculate tab bar height (56px + safe area)
-  const tabBarHeight = showTabBar ? 'calc(56px + env(safe-area-inset-bottom))' : '0px';
+  const headerHeight = showHeader ? `calc(48px + ${safeAreaTop})` : '0px';
 
   return (
     <div className="fixed inset-0 bg-background flex flex-col">
@@ -139,7 +149,8 @@ export function IOSPageLayout({
           // Add top padding for header (fixed position)
           paddingTop: headerHeight,
           // Add bottom padding for tab bar (fixed position)
-          paddingBottom: tabBarHeight,
+          paddingBottom: contentBottomPadding,
+          touchAction: 'manipulation',
         }}
       >
         {onRefresh && (
@@ -158,7 +169,7 @@ export function IOSPageLayout({
         </AnimatePresence>
       </main>
       
-      {showTabBar && <IOSTabBar visible={isNavVisible} />}
+      {showTabBar && <IOSTabBar visible={isNavVisible} height={tabBarTotalHeight} />}
     </div>
   );
 }

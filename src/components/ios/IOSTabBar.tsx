@@ -17,9 +17,10 @@ const tabs: TabItem[] = [
 
 interface IOSTabBarProps {
   visible?: boolean;
+  height?: string;
 }
 
-export function IOSTabBar({ visible = true }: IOSTabBarProps) {
+export function IOSTabBar({ visible = true, height }: IOSTabBarProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -33,9 +34,10 @@ export function IOSTabBar({ visible = true }: IOSTabBarProps) {
       )}
       style={{
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        height: height ?? 'calc(56px + env(safe-area-inset-bottom, 0px))',
       }}
     >
-      <div className="flex items-center justify-around h-14 px-3">
+      <div className="flex items-center justify-around h-full px-3 gap-1">
         {tabs.map((tab) => {
           const isActive = location.pathname === tab.path ||
             (tab.path === '/dashboard' && location.pathname.startsWith('/pets'));
