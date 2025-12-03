@@ -105,8 +105,8 @@ const HelpCentre = () => {
           </h2>
           
           <div className="space-y-4">
-            {faqCategories.map((category, index) => (
-              <MobileCard key={index}>
+            {faqCategories.map((category) => (
+              <MobileCard key={category.title}>
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
                     {category.icon}
@@ -114,8 +114,8 @@ const HelpCentre = () => {
                   <h3 className="font-semibold">{category.title}</h3>
                 </div>
                 <ul className="space-y-2">
-                  {category.articles.map((article, articleIndex) => (
-                    <li key={articleIndex}>
+                  {category.articles.map((article) => (
+                    <li key={`${category.title}-${article}`}>
                       <button className="text-muted-foreground hover:text-primary text-sm text-left w-full py-1">
                         {article}
                       </button>

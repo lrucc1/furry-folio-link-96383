@@ -98,8 +98,8 @@ export const FeatureGrid = () => {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {features.map((feature, index) => (
-            <Link key={index} to={`/faq#${feature.faqId}`} className="block">
+          {features.map((feature) => (
+            <Link key={feature.title} to={`/faq#${feature.faqId}`} className="block">
               <Card className="bg-gradient-card border-0 shadow-medium hover:shadow-strong transition-spring group cursor-pointer">
                 <CardHeader className="pb-3 sm:pb-4">
                   <div className="flex items-center justify-between mb-3">

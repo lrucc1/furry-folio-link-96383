@@ -43,6 +43,7 @@ export default function IOSHome() {
   const navigate = useNavigate();
   const [pets, setPets] = useState<Pet[]>([]);
   const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
+  const [pressedPetId, setPressedPetId] = useState<string | null>(null);
   const [upcomingReminders, setUpcomingReminders] = useState(0);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState<string | null>(null);
@@ -146,13 +147,18 @@ export default function IOSHome() {
                 <Card
                   key={pet.id}
                   className={cn(
-                    'shrink-0 cursor-pointer transition-all rounded-2xl touch-manipulation active:opacity-90',
-                    selectedPetId === pet.id 
-                      ? 'border-primary shadow-md ring-2 ring-primary/20' 
+                    'shrink-0 cursor-pointer transition-all rounded-2xl touch-manipulation',
+                    selectedPetId === pet.id
+                      ? 'border-primary shadow-md ring-2 ring-primary/20'
                       : 'border-border/50 hover:border-border',
-                    pet.is_lost && 'border-destructive/50'
+                    pet.is_lost && 'border-destructive/50',
+                    pressedPetId === pet.id && 'bg-muted'
                   )}
                   onClick={() => setSelectedPetId(pet.id)}
+                  onPointerDown={() => setPressedPetId(pet.id)}
+                  onPointerUp={() => setPressedPetId(null)}
+                  onPointerLeave={() => setPressedPetId(null)}
+                  onPointerCancel={() => setPressedPetId(null)}
                 >
                   <CardContent className="p-3 flex flex-col items-center min-w-[80px]">
                     <Avatar className="w-14 h-14 mb-2">
