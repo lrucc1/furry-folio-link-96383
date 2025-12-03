@@ -29,24 +29,35 @@ interface SettingsRowProps {
   destructive?: boolean;
 }
 
-const SettingsRow = ({ icon, label, value, onClick, showChevron = true, destructive }: SettingsRowProps) => (
-  <button
-    onClick={onClick}
-    disabled={!onClick}
-    className={`w-full flex items-center gap-3 p-4 text-left touch-manipulation active:bg-muted/50 transition-colors ${
-      destructive ? 'text-destructive' : ''
-    } ${!onClick ? 'cursor-default' : ''}`}
-  >
-    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-      destructive ? 'bg-destructive/10' : 'bg-muted'
-    }`}>
-      {icon}
-    </div>
-    <span className="flex-1 font-medium">{label}</span>
-    {value && <span className="text-muted-foreground text-sm">{value}</span>}
-    {onClick && showChevron && <ChevronRight className="w-5 h-5 text-muted-foreground" />}
-  </button>
-);
+const SettingsRow = ({ icon, label, value, onClick, showChevron = true, destructive }: SettingsRowProps) => {
+  const [isPressed, setIsPressed] = useState(false);
+
+  const handlePressStart = () => onClick && setIsPressed(true);
+  const handlePressEnd = () => setIsPressed(false);
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={!onClick}
+      onPointerDown={handlePressStart}
+      onPointerUp={handlePressEnd}
+      onPointerLeave={handlePressEnd}
+      onPointerCancel={handlePressEnd}
+      className={`w-full flex items-center gap-3 p-4 text-left touch-manipulation transition-colors ${
+        destructive ? 'text-destructive' : ''
+      } ${!onClick ? 'cursor-default' : ''} ${isPressed ? 'bg-muted/60' : ''}`}
+    >
+      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+        destructive ? 'bg-destructive/10' : 'bg-muted'
+      }`}>
+        {icon}
+      </div>
+      <span className="flex-1 font-medium">{label}</span>
+      {value && <span className="text-muted-foreground text-sm">{value}</span>}
+      {onClick && showChevron && <ChevronRight className="w-5 h-5 text-muted-foreground" />}
+    </button>
+  );
+};
 
 const SettingsToggle = ({ 
   icon, 

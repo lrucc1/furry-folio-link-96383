@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useCallback, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -16,27 +16,44 @@ interface FeatureTileProps {
   className?: string;
 }
 
-export function FeatureTile({ 
-  icon: Icon, 
-  title, 
-  subtitle, 
-  badge, 
+export function FeatureTile({
+  icon: Icon,
+  title,
+  subtitle,
+  badge,
   badgeVariant = 'secondary',
   onClick,
   gradient,
   disabled = false,
   className
 }: FeatureTileProps) {
+  const [isPressed, setIsPressed] = useState(false);
+
+  const handlePressStart = useCallback(() => {
+    if (!disabled) {
+      setIsPressed(true);
+    }
+  }, [disabled]);
+
+  const handlePressEnd = useCallback(() => {
+    setIsPressed(false);
+  }, []);
+
   return (
-    <Card 
+    <Card
       className={cn(
         'rounded-3xl shadow-sm border-border/40 overflow-hidden touch-manipulation',
-        !disabled && 'cursor-pointer active:opacity-90 active:bg-black/5 transition-opacity duration-100',
+        !disabled && 'cursor-pointer transition-colors duration-150',
+        isPressed && !disabled && 'ring-2 ring-primary/20 bg-black/5',
         disabled && 'opacity-50',
         gradient,
         className
       )}
       onClick={disabled ? undefined : onClick}
+      onPointerDown={handlePressStart}
+      onPointerUp={handlePressEnd}
+      onPointerLeave={handlePressEnd}
+      onPointerCancel={handlePressEnd}
     >
       <CardContent className="p-4 flex flex-col items-center text-center min-h-[100px] justify-center">
         <div className={cn(
