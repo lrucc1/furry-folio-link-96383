@@ -128,9 +128,10 @@ All colors MUST be HSL.
 
   html {
     height: 100%;
+    min-height: 100vh;
     min-height: 100dvh;
     width: 100%;
-    overflow: hidden;
+    overflow-x: hidden;
     background-color: hsl(var(--background));
   }
 
@@ -139,22 +140,30 @@ All colors MUST be HSL.
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     height: 100%;
+    min-height: 100vh;
     min-height: 100dvh;
     width: 100%;
     margin: 0;
-    overflow: hidden;
+    overflow-x: hidden;
     background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 
   #root {
     height: 100%;
+    min-height: 100vh;
     min-height: 100dvh;
   }
 
   /* Native iOS auth background - extends behind safe areas */
-  body.native-auth-bg {
+  .native-auth-bg,
+  body.native-auth-bg,
+  #root.native-auth-bg {
     background: var(--gradient-hero);
     background-attachment: fixed;
+    background-color: hsl(175 60% 45%);
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   img {

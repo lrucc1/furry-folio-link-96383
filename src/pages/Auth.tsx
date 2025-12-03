@@ -82,10 +82,16 @@ const AuthPage = () => {
   useEffect(() => {
     if (!isNative) return
 
+    const root = document.getElementById('root')
+
     document.body.classList.add('native-auth-bg')
+    document.documentElement.classList.add('native-auth-bg')
+    root?.classList.add('native-auth-bg')
 
     return () => {
       document.body.classList.remove('native-auth-bg')
+      document.documentElement.classList.remove('native-auth-bg')
+      root?.classList.remove('native-auth-bg')
     }
   }, [isNative])
 
@@ -314,7 +320,7 @@ const AuthPage = () => {
         
       {/* Full-bleed gradient container that extends behind safe areas */}
       <div
-        className="fixed inset-0 flex flex-col overflow-hidden"
+        className="fixed inset-0 flex flex-col overflow-hidden min-h-screen min-h-dvh"
         style={{
           background: 'linear-gradient(135deg, hsl(175 60% 45%) 0%, hsl(15 85% 65%) 100%)',
         }}
