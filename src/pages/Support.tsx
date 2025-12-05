@@ -1,8 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Mail, MessageCircle, Phone, FileText, ExternalLink } from 'lucide-react';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
 import { au } from '@/lib/auEnglish';
 
 const Support = () => {
@@ -11,7 +9,6 @@ const Support = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-hero">
-      <Header />
       
       <main className="flex-1 container mx-auto px-4 py-12 max-w-4xl">
         <div className="text-center mb-12">
@@ -219,7 +216,6 @@ const Support = () => {
         </Card>
       </main>
 
-      <Footer />
     </div>
   );
 };

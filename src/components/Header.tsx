@@ -175,48 +175,51 @@ export const Header = () => {
         </Drawer.Portal>
       </Drawer.Root>
 
-      <header className="border-b border-border bg-white/95 backdrop-blur-sm sticky top-0 z-50 shadow-soft">
-      <div className="container mx-auto px-3 sm:px-4 h-16 flex items-center justify-between gap-2 md:gap-8">
-        <div className="flex items-center gap-2 min-w-0 md:mr-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="shrink-0"
-            onClick={() => setMobileMenuOpen(true)}
-          >
-            <Menu className="w-5 h-5" />
-          </Button>
-          
-          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0">
-            <Logo />
-          </Link>
-        </div>
+        <header
+          className="border-b border-border bg-white/95 backdrop-blur-sm sticky top-0 z-50 shadow-soft"
+          style={{ paddingTop: "env(safe-area-inset-top)" }}
+        >
+          <div className="container mx-auto px-3 sm:px-4 h-16 flex items-center justify-between gap-2 md:gap-8">
+            <div className="flex items-center gap-2 min-w-0 md:mr-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="shrink-0"
+                onClick={() => setMobileMenuOpen(true)}
+              >
+                <Menu className="w-5 h-5" />
+              </Button>
 
-        <nav className="hidden md:flex items-center gap-6 flex-1 justify-center">
-          <Button
-            variant="ghost"
-            className="text-foreground hover:text-primary"
-            asChild
-          >
-            <Link to={user ? '/dashboard' : '/auth'}>My Pets</Link>
-          </Button>
-          <Button 
-            variant="ghost" 
-            className="text-foreground hover:text-primary" 
-            asChild
-          >
-            <Link to="/smart-tags">Smart Tags</Link>
-          </Button>
-          <Button
-            variant="ghost"
-            className="text-foreground hover:text-primary"
-            asChild
-          >
-            <Link to={user ? '/reminders' : '/auth'}>Reminders</Link>
-          </Button>
-        </nav>
+              <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0">
+                <Logo />
+              </Link>
+            </div>
 
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <nav className="hidden md:flex items-center gap-6 flex-1 justify-center">
+              <Button
+                variant="ghost"
+                className="text-foreground hover:text-primary"
+                asChild
+              >
+                <Link to={user ? '/dashboard' : '/auth'}>My Pets</Link>
+              </Button>
+              <Button
+                variant="ghost"
+                className="text-foreground hover:text-primary"
+                asChild
+              >
+                <Link to="/smart-tags">Smart Tags</Link>
+              </Button>
+              <Button
+                variant="ghost"
+                className="text-foreground hover:text-primary"
+                asChild
+              >
+                <Link to={user ? '/reminders' : '/auth'}>Reminders</Link>
+              </Button>
+            </nav>
+
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {user ? (
             <>
               {loading ? (

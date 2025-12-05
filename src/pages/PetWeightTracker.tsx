@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Header } from '@/components/Header';
 import { IOSPageLayout } from '@/components/ios/IOSPageLayout';
 import { MobileCard } from '@/components/ios/MobileCard';
 import { useIsNativeApp } from '@/hooks/useIsNativeApp';
@@ -371,7 +370,6 @@ export default function PetWeightTracker() {
   // Web Layout
   return (
     <div className="min-h-screen bg-background">
-      <Header />
 
       <main className="max-w-2xl mx-auto px-4 sm:px-6 py-6 pb-20 space-y-4">
         <Button

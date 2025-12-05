@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Loader2, Sparkles, Crown } from 'lucide-react';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
 import { IOSPageLayout } from '@/components/ios/IOSPageLayout';
 import { MobileCard } from '@/components/ios/MobileCard';
 import { useIsNativeApp } from '@/hooks/useIsNativeApp';
@@ -107,7 +105,6 @@ export default function BillingSuccess() {
   // Web Layout (can show more details)
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
       
       <main className="flex-1 container mx-auto px-4 py-12">
         <div className="max-w-2xl mx-auto">
@@ -167,7 +164,6 @@ export default function BillingSuccess() {
         </div>
       </main>
 
-      <Footer />
     </div>
   );
 }

@@ -7,8 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertTriangle, Calendar, CheckCircle, Heart, Syringe, Clock, Pill, Plus } from 'lucide-react';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
 import { toast } from 'sonner';
 import { EditVaccinationModal } from '@/components/EditVaccinationModal';
 import { EditHealthReminderModal } from '@/components/EditHealthReminderModal';
@@ -622,13 +620,11 @@ export default function Reminders() {
   // Web Layout
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <RemindersContent />
         </div>
       </main>
-      <Footer />
 
       {/* Pet selection dialog */}
       {showAddModal && pets.length > 1 && !selectedPetForReminder && (

@@ -1,8 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
 import { Home, ArrowLeft } from 'lucide-react';
 
 const NotFound = () => {
@@ -10,7 +8,6 @@ const NotFound = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header />
       
       <main className="flex-1 flex items-center justify-center px-4 py-16">
         <Card className="max-w-lg w-full">
@@ -68,7 +65,6 @@ const NotFound = () => {
         </Card>
       </main>
       
-      <Footer />
     </div>
   );
 };

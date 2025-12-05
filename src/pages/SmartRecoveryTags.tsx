@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -129,7 +128,6 @@ export default function SmartRecoveryTags() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       
       {/* Hero Section */}
       <section className="pt-20 pb-12 bg-gradient-hero text-white">

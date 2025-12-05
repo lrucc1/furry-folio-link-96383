@@ -41,7 +41,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { PendingDeletions } from '@/components/admin/PendingDeletions';
 import { computeEffectiveTier } from '@/lib/plan/effectivePlan';
-import { Header } from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import {
@@ -594,7 +593,6 @@ const AdminDashboard = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center h-96">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -607,7 +605,6 @@ const AdminDashboard = () => {
   if (error || !stats) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <div className="container mx-auto px-4 py-8">
           <Card className="max-w-md mx-auto">
             <CardContent className="p-6 text-center">
@@ -684,7 +681,6 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6">
