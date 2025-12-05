@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePlan } from '@/lib/plan/PlanContext';
 import { TierFeatures } from '@/config/tierFeatures';
 import { PLANS } from '@/config/pricing';
-import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -698,7 +697,6 @@ export default function Account() {
   // Web Layout
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold mb-8">{au('Account Settings')}</h1>

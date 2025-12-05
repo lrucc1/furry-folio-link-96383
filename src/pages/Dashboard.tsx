@@ -9,8 +9,6 @@ import { Badge } from '@/components/ui/badge'
 import { PetCard } from '@/components/PetCard'
 import { AddPetCard } from '@/components/AddPetCard'
 import { HealthReminders } from '@/components/HealthReminders'
-import { Header } from '@/components/Header'
-import { Footer } from '@/components/Footer'
 import { PendingInvitesModal } from '@/components/PendingInvitesModal'
 import { IOSPageLayout } from '@/components/ios/IOSPageLayout'
 import { Plus, Crown, Heart, Scale, Tag, Bell } from 'lucide-react'
@@ -454,7 +452,6 @@ const Dashboard = () => {
   // Web Layout
   return (
     <div className="min-h-screen bg-background">
-      <Header />
 
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <div className="md:hidden">
@@ -471,7 +468,6 @@ const Dashboard = () => {
         onClose={() => setShowInvitesModal(false)}
       />
       
-      <Footer />
     </div>
   )
 }

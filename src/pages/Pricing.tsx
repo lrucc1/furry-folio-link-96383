@@ -5,8 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Check, Crown, Sparkles, Smartphone, Loader2, Apple, ExternalLink } from 'lucide-react';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
 import { IOSPageLayout } from '@/components/ios/IOSPageLayout';
 import { useIsNativeApp } from '@/hooks/useIsNativeApp';
 import { useAuth } from '@/contexts/AuthContext';
@@ -402,7 +400,6 @@ export default function Pricing() {
   // Web Layout
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
       
       <main className="flex-1 container mx-auto px-4 py-12">
         <div className="max-w-5xl mx-auto">
@@ -717,7 +714,6 @@ export default function Pricing() {
         </div>
       </main>
 
-      <Footer />
     </div>
   );
 }
