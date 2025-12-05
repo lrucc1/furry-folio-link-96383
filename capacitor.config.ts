@@ -7,7 +7,7 @@ const config: CapacitorConfig = {
   ios: {
     contentInset: 'automatic',
     scrollEnabled: true,
-    backgroundColor: '#FFFDF7',
+    backgroundColor: '#2E9B8D', // Teal - matches auth gradient start
   },
   android: {
     allowMixedContent: false,

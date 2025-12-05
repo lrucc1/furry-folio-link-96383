@@ -157,11 +157,12 @@ All colors MUST be HSL.
 
   /* Native iOS auth background - extends behind safe areas */
   .native-auth-bg,
+  html.native-auth-bg,
   body.native-auth-bg,
   #root.native-auth-bg {
-    background: var(--gradient-hero);
-    background-attachment: fixed;
-    background-color: hsl(175 60% 45%);
+    background: var(--gradient-hero) !important;
+    background-attachment: fixed !important;
+    background-color: hsl(175 60% 45%) !important;
     min-height: 100vh;
     min-height: 100dvh;
   }
