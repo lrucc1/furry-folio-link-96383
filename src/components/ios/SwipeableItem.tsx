@@ -137,9 +137,9 @@ export const SwipeableItem = ({
         
         {/* Swipeable content */}
         <div
-          className={`relative bg-background transition-transform ${
+          className={`relative bg-background transition-all ${
             isDraggingRef.current ? '' : 'duration-200'
-          } ${isDeleting ? 'opacity-0 scale-95 duration-200' : ''}`}
+          } ${isDeleting ? 'opacity-0 duration-200' : ''}`}
           style={{ transform: `translateX(${translateX}px)` }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}

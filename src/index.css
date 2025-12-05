@@ -182,6 +182,14 @@ All colors MUST be HSL.
   }
 }
 
+/* Prevent transforms from affecting touch targets on iOS WebKit */
+@supports (-webkit-touch-callout: none) {
+  .touch-manipulation {
+    transform: none !important;
+    will-change: auto !important;
+  }
+}
+
 @layer utilities {
   .scrollbar-hide {
     -ms-overflow-style: none;
