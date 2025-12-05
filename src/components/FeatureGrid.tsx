@@ -103,7 +103,7 @@ export const FeatureGrid = () => {
               <Card className="bg-gradient-card border-0 shadow-medium hover:shadow-strong transition-spring group cursor-pointer">
                 <CardHeader className="pb-3 sm:pb-4">
                   <div className="flex items-center justify-between mb-3">
-                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-primary/10 flex items-center justify-center group-hover:scale-110 transition-spring ${feature.color}`}>
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-primary/10 flex items-center justify-center group-hover:bg-gradient-primary/20 transition-smooth ${feature.color}`}>
                       <feature.icon className="w-5 h-5 sm:w-6 sm:h-6" />
                     </div>
                     <Badge 

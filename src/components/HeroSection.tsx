@@ -61,14 +61,14 @@ export const HeroSection = () => {
           </div>
 
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent rounded-3xl transform rotate-6 scale-105 will-change-transform" />
+            <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent rounded-3xl transform rotate-6 scale-105" />
             <img 
               src={heroImage} 
               alt="Three happy pets wearing ID tags - golden retriever, tabby cat, and pug with smart collar tags"
-              className="relative rounded-3xl shadow-strong w-full h-auto object-cover max-w-lg mx-auto transform hover:scale-105 transition-spring will-change-transform backface-hidden"
+              className="relative rounded-3xl shadow-strong w-full h-auto object-cover max-w-lg mx-auto backface-hidden"
               style={{ imageRendering: '-webkit-optimize-contrast' }}
             />
-            <div className="absolute -bottom-6 -right-6 bg-white rounded-2xl p-4 shadow-strong transform rotate-3 hover:rotate-0 transition-spring will-change-transform">
+            <div className="absolute -bottom-6 -right-6 bg-white rounded-2xl p-4 shadow-strong transform rotate-3">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
                   <Heart className="w-6 h-6 text-white" />

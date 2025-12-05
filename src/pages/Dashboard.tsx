@@ -363,7 +363,7 @@ const Dashboard = () => {
               {pets.map((pet) => (
                 <Card
                   key={pet.id}
-                  className="rounded-2xl shadow-sm cursor-pointer"
+                  className="rounded-2xl shadow-sm cursor-pointer touch-manipulation active:opacity-90"
                   onClick={() => handleViewPetDetails(pet)}
                 >
                   <CardContent className="p-3 flex items-center gap-3">
