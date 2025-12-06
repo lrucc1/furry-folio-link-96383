@@ -167,7 +167,16 @@ All colors MUST be HSL.
     min-height: 100dvh;
   }
 
-  /* iOS Tab Bar - ensure it reaches the true bottom */
+  /**
+   * ⚠️ CRITICAL iOS TAB BAR FIX - DO NOT REMOVE
+   * 
+   * This !important rule is a CSS fallback to ensure the tab bar reaches
+   * the true bottom of the screen on all iOS devices. It works in conjunction
+   * with the inline style={{ bottom: 0 }} in IOSTabBar.tsx.
+   * 
+   * Removing this may cause a gap between the tab bar and screen edge
+   * on certain iOS versions or WebView configurations.
+   */
   .ios-tab-bar {
     bottom: 0 !important;
   }
