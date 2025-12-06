@@ -167,6 +167,11 @@ All colors MUST be HSL.
     min-height: 100dvh;
   }
 
+  /* iOS Tab Bar - ensure it reaches the true bottom */
+  .ios-tab-bar {
+    bottom: 0 !important;
+  }
+
   img {
     @apply backface-hidden;
   }

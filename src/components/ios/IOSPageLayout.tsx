@@ -49,13 +49,10 @@ export function IOSPageLayout({
   const safeAreaBottom = 'env(safe-area-inset-bottom)';
   const safeAreaTop = 'env(safe-area-inset-top)';
 
-  // Keep tab bar/padding heights in sync so content and the nav align to the exact bottom of the screen
-  const tabBarBaseHeight = '56px';
-  const tabBarTotalHeight = showTabBar
-    ? `calc(${tabBarBaseHeight} + ${safeAreaBottom})`
-    : safeAreaBottom;
+  // Tab bar: 56px content height + safe area padding applied inside the nav
+  // Content needs padding to avoid being hidden behind the fixed tab bar
   const contentBottomPadding = showTabBar
-    ? (isNavVisible ? tabBarTotalHeight : safeAreaBottom)
+    ? (isNavVisible ? `calc(56px + ${safeAreaBottom})` : safeAreaBottom)
     : safeAreaBottom;
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
@@ -174,7 +171,7 @@ export function IOSPageLayout({
         </AnimatePresence>
       </main>
       
-      {showTabBar && <IOSTabBar visible={isNavVisible} height={tabBarTotalHeight} />}
+      {showTabBar && <IOSTabBar visible={isNavVisible} />}
     </div>
   );
 }
