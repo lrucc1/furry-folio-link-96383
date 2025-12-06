@@ -49,8 +49,17 @@ export function IOSPageLayout({
   const safeAreaBottom = 'env(safe-area-inset-bottom)';
   const safeAreaTop = 'env(safe-area-inset-top)';
 
-  // Tab bar: 56px content height + safe area padding applied inside the nav
-  // Content needs padding to avoid being hidden behind the fixed tab bar
+  /**
+   * ⚠️ CRITICAL: Content bottom padding must match IOSTabBar's layout exactly.
+   * 
+   * The tab bar has:
+   * - 56px fixed height for content (icons/labels)
+   * - paddingBottom: env(safe-area-inset-bottom) for home indicator area
+   * 
+   * So total space needed = 56px + safe area. When tab bar is hidden (scrolled),
+   * only the safe area padding is needed. This calculation prevents content
+   * from being hidden behind the fixed tab bar while allowing full scroll access.
+   */
   const contentBottomPadding = showTabBar
     ? (isNavVisible ? `calc(56px + ${safeAreaBottom})` : safeAreaBottom)
     : safeAreaBottom;

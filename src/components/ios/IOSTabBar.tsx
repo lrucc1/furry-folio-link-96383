@@ -19,6 +19,20 @@ interface IOSTabBarProps {
   visible?: boolean;
 }
 
+/**
+ * ⚠️ CRITICAL iOS TAB BAR - DO NOT MODIFY POSITIONING/SIZING WITHOUT TESTING ON PHYSICAL DEVICE
+ * 
+ * This component's layout was carefully tuned to eliminate the gap between the tab bar
+ * and the bottom screen edge on all iPhone models. Key requirements:
+ * 
+ * 1. `ios-tab-bar` class: Applies `bottom: 0 !important` CSS fallback
+ * 2. Inline `bottom: 0`: Ensures positioning even if Tailwind classes fail
+ * 3. `paddingBottom: env(safe-area-inset-bottom)`: Extends background behind home indicator
+ * 4. Fixed 56px inner height: Keeps content above the home indicator area
+ * 
+ * The background must extend to the true bottom of the screen, with only the
+ * interactive content (icons/labels) staying within the safe area.
+ */
 export function IOSTabBar({ visible = true }: IOSTabBarProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -31,6 +45,12 @@ export function IOSTabBar({ visible = true }: IOSTabBarProps) {
         "shadow-[0_-6px_24px_rgba(0,0,0,0.06)]",
         !visible && "opacity-0 pointer-events-none"
       )}
+      /**
+       * ⚠️ CRITICAL: These inline styles ensure flush bottom positioning.
+       * - bottom: 0 - Explicit override for iOS WebView quirks
+       * - paddingBottom: env() - Background extends behind home indicator
+       * - paddingLeft/Right: env() - Handles landscape safe areas
+       */
       style={{
         bottom: 0,
         paddingBottom: 'env(safe-area-inset-bottom)',
@@ -38,6 +58,7 @@ export function IOSTabBar({ visible = true }: IOSTabBarProps) {
         paddingRight: 'env(safe-area-inset-right)',
       }}
     >
+      {/* ⚠️ Fixed 56px height keeps tab content above home indicator */}
       <div 
         className="flex items-center justify-around px-3 gap-1"
         style={{ height: '56px' }}
