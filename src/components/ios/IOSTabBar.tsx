@@ -17,30 +17,31 @@ const tabs: TabItem[] = [
 
 interface IOSTabBarProps {
   visible?: boolean;
-  height?: string;
 }
 
-export function IOSTabBar({ visible = true, height }: IOSTabBarProps) {
+export function IOSTabBar({ visible = true }: IOSTabBarProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const safeAreaBottom = 'env(safe-area-inset-bottom)';
 
   return (
     <nav
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border",
+        "fixed left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border ios-tab-bar",
         "transition-opacity duration-200 ease-out",
         "shadow-[0_-6px_24px_rgba(0,0,0,0.06)]",
         !visible && "opacity-0 pointer-events-none"
       )}
       style={{
-        paddingBottom: safeAreaBottom,
+        bottom: 0,
+        paddingBottom: 'env(safe-area-inset-bottom)',
         paddingLeft: 'env(safe-area-inset-left)',
         paddingRight: 'env(safe-area-inset-right)',
-        height: height ?? `calc(56px + ${safeAreaBottom})`,
       }}
     >
-      <div className="flex items-center justify-around h-full px-3 gap-1">
+      <div 
+        className="flex items-center justify-around px-3 gap-1"
+        style={{ height: '56px' }}
+      >
         {tabs.map((tab) => {
           const isActive = location.pathname === tab.path ||
             (tab.path === '/dashboard' && location.pathname.startsWith('/pets'));

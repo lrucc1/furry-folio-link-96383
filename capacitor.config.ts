@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'PetLinkID',
   webDir: 'dist',
   ios: {
-    contentInset: 'automatic',
+    contentInset: 'never',
     scrollEnabled: true,
     backgroundColor: '#2E9B8D', // Teal - matches auth gradient start
   },
