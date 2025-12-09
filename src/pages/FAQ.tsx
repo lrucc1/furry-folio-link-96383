@@ -250,7 +250,19 @@ export default function FAQ() {
           ))}
         </div>
 
-        <Card className="mt-12 bg-gradient-primary text-white border-0">
+        <Card className="mt-12 bg-muted/50 border">
+          <CardHeader>
+            <CardTitle className="text-xl text-foreground">About PetLinkID</CardTitle>
+          </CardHeader>
+          <CardContent className="text-muted-foreground">
+            <p>
+              PetLinkID is owned and operated by Betametrics Pty Ltd, headquartered in Victoria, Australia. 
+              We are governed by Victorian law and proudly serve pet owners worldwide.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="mt-8 bg-gradient-primary text-white border-0">
           <CardContent className="p-8 text-center">
             <MessageCircle className="w-12 h-12 mx-auto mb-4" />
             <h3 className="text-2xl font-bold mb-2">Still have questions?</h3>
@@ -260,6 +272,9 @@ export default function FAQ() {
             <Button asChild variant="secondary" size="lg">
               <Link to="/contact">Contact Support</Link>
             </Button>
+            <p className="mt-4 text-sm text-white/70">
+              PetLinkID by Betametrics Pty Ltd • Australian owned and operated
+            </p>
           </CardContent>
         </Card>
       </main>
