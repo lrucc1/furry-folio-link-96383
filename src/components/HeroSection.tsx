@@ -3,17 +3,32 @@ import { Badge } from "@/components/ui/badge";
 import { Heart, Shield, QrCode, Smartphone, Star, ChevronDown } from "lucide-react";
 import heroImage from "@/assets/hero-pets-realistic.jpg";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 
 export const HeroSection = () => {
+  const { scrollY } = useScroll();
+  
+  // Parallax transforms - image moves slower than scroll
+  const imageY = useTransform(scrollY, [0, 500], [0, 100]);
+  const bgY = useTransform(scrollY, [0, 500], [0, 50]);
+  const contentY = useTransform(scrollY, [0, 500], [0, 30]);
+  const opacity = useTransform(scrollY, [0, 400], [1, 0.3]);
+
   return (
     <section id="hero" className="relative overflow-hidden bg-gradient-hero text-white">
-      <div className="container mx-auto px-4 py-20 lg:py-32">
+      {/* Parallax background layer */}
+      <motion.div 
+        className="absolute inset-0 bg-gradient-hero"
+        style={{ y: bgY }}
+      />
+      
+      <div className="container relative mx-auto px-4 py-20 lg:py-32">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
+            style={{ y: contentY, opacity }}
           >
             <Badge className="bg-white/20 text-white border-white/30 mb-6 backdrop-blur-sm">
               <Star className="w-3 h-3 mr-1" />
@@ -72,11 +87,11 @@ export const HeroSection = () => {
             transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
           >
             <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent rounded-3xl transform rotate-6 scale-105" />
-            <img 
+            <motion.img 
               src={heroImage} 
               alt="Three happy pets wearing ID tags - golden retriever, tabby cat, and pug with smart collar tags"
               className="relative rounded-3xl shadow-strong w-full h-auto object-cover max-w-lg mx-auto backface-hidden"
-              style={{ imageRendering: '-webkit-optimize-contrast' }}
+              style={{ y: imageY, imageRendering: '-webkit-optimize-contrast' }}
             />
             <div className="absolute -bottom-6 -right-6 bg-white rounded-2xl p-4 shadow-strong transform rotate-3">
               <div className="flex items-center gap-3">
