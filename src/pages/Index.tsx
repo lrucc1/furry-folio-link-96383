@@ -14,6 +14,7 @@ import {
   Apple
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 // Mock data for demonstration
 const mockPets = [
@@ -57,12 +58,26 @@ const Index = () => {
       
       <main>
         <HeroSection />
-        <FeatureGrid />
+        
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          <FeatureGrid />
+        </motion.div>
         
         {/* Demo Pet Dashboard */}
-        <section className="py-12 sm:py-16 md:py-20 bg-background">
+        <section id="demo" className="py-12 sm:py-16 md:py-20 bg-background">
           <div className="container mx-auto px-4">
-            <div className="text-center mb-8 sm:mb-12">
+            <motion.div 
+              className="text-center mb-8 sm:mb-12"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5 }}
+            >
               <Badge className="bg-primary/10 text-primary border-primary/20 mb-4">
                 <Heart className="w-3 h-3 mr-1" />
                 Live Demo
@@ -73,7 +88,7 @@ const Index = () => {
               <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
                 See how easy it is to manage your pets with our intuitive interface.
               </p>
-            </div>
+            </motion.div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto">
               {mockPets.map((pet) => (
@@ -98,9 +113,15 @@ const Index = () => {
         </section>
 
         {/* Pricing Section - iOS First */}
-        <section className="py-12 sm:py-16 md:py-20 bg-muted/30">
+        <section id="pricing" className="py-12 sm:py-16 md:py-20 bg-muted/30">
           <div className="container mx-auto px-4">
-            <div className="text-center mb-8 sm:mb-12">
+            <motion.div 
+              className="text-center mb-8 sm:mb-12"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5 }}
+            >
               <Badge className="bg-accent/10 text-accent border-accent/20 mb-4">
                 <Crown className="w-3 h-3 mr-1" />
                 Simple Pricing
@@ -115,9 +136,15 @@ const Index = () => {
                 PetLinkID is designed to be iOS-first, with a simple web experience to support QR tag scans and quick access to your pet's profile.
                 All plan upgrades and billing are handled safely through the App Store on your iPhone.
               </p>
-            </div>
+            </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto"
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
               {/* Free Plan Card */}
               <Card className="p-4 sm:p-6 md:p-8 border-border">
                 <div className="text-center mb-6">
@@ -210,13 +237,19 @@ const Index = () => {
                   Upgrades available via the iOS app
                 </p>
               </Card>
-            </div>
+            </motion.div>
           </div>
         </section>
 
         {/* Final CTA */}
-        <section className="py-12 sm:py-16 md:py-20 bg-gradient-hero text-white">
-          <div className="container mx-auto px-4 text-center">
+        <section id="cta" className="py-12 sm:py-16 md:py-20 bg-gradient-hero text-white">
+          <motion.div 
+            className="container mx-auto px-4 text-center"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.5 }}
+          >
             <h2 className="text-2xl sm:text-3xl lg:text-5xl font-bold mb-4 sm:mb-6">
               Ready to Protect Your Pets?
             </h2>
@@ -257,7 +290,7 @@ const Index = () => {
                 <div className="text-white/80 text-sm">App Store Rating</div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </section>
       </main>
 
