@@ -67,7 +67,7 @@ const PrivacyPolicy = () => {
           {/* Company Info */}
           <div className="bg-primary/5 p-4 rounded-lg">
             <p className="text-sm text-muted-foreground">
-              <strong>About PetLinkID:</strong> PetLinkID is owned and operated by Betametrics Pty Ltd, headquartered in Sydney, Australia. We serve pet owners worldwide.
+              <strong>About PetLinkID:</strong> PetLinkID is owned and operated by Betametrics Pty Ltd, headquartered in Victoria, Australia. We serve pet owners worldwide.
             </p>
           </div>
 

@@ -30,7 +30,7 @@ export default function IOSPrivacyPolicy() {
           </p>
           <MobileCard>
             <p className="text-sm text-muted-foreground text-center py-2">
-              PetLinkID is owned and operated by <strong className="text-foreground">Betametrics Pty Ltd</strong>, headquartered in Sydney, Australia.
+              PetLinkID is owned and operated by <strong className="text-foreground">Betametrics Pty Ltd</strong>, headquartered in Victoria, Australia.
             </p>
           </MobileCard>
         </div>
