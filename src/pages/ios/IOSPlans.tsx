@@ -272,10 +272,16 @@ export default function IOSPlans() {
         )}
 
         {/* Footer Note */}
-        <div className="mt-4">
+        <div className="mt-4 space-y-3">
           <p className="text-xs text-muted-foreground text-center">
             Payment will be charged to your Apple ID account. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period.
           </p>
+          <button 
+            onClick={() => navigate('/settings/subscription-terms')}
+            className="text-xs text-primary text-center w-full underline"
+          >
+            View Subscription Terms
+          </button>
         </div>
       </div>
         </PageTransition>

@@ -308,6 +308,11 @@ export default function IOSSettings() {
             onClick={() => navigate('/settings/terms')}
           />
           <SettingsRow 
+            icon={<CreditCard className="w-4 h-4" />}
+            label="Subscription Terms"
+            onClick={() => navigate('/settings/subscription-terms')}
+          />
+          <SettingsRow 
             icon={<Download className="w-4 h-4" />}
             label="Export My Data"
             onClick={() => navigate('/settings/export')}
