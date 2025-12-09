@@ -65,7 +65,7 @@ export default function IOSTerms() {
         <div className="px-4 mb-6">
           <MobileCard>
             <p className="text-sm text-muted-foreground">
-              PetLinkID is operated by PetLinkID Australia Pty Ltd, headquartered in Sydney. These terms are governed by Australian law, though your local consumer protection laws may also apply.
+              PetLinkID is owned and operated by Betametrics Pty Ltd, headquartered in Sydney. These terms are governed by Australian law, though your local consumer protection laws may also apply.
             </p>
           </MobileCard>
         </div>
@@ -184,7 +184,7 @@ export default function IOSTerms() {
                 </AccordionTrigger>
                 <AccordionContent className="px-4 pb-4 text-sm text-muted-foreground">
                   <p>
-                    The PetLinkID service and its original content are owned by PetLinkID Pty Ltd and protected by international intellectual property laws.
+                    The PetLinkID service and its original content are owned by Betametrics Pty Ltd and protected by international intellectual property laws.
                   </p>
                 </AccordionContent>
               </AccordionItem>
