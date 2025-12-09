@@ -1,15 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Shield, QrCode, Smartphone, Star } from "lucide-react";
+import { Heart, Shield, QrCode, Smartphone, Star, ChevronDown } from "lucide-react";
 import heroImage from "@/assets/hero-pets-realistic.jpg";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 export const HeroSection = () => {
   return (
-    <section className="relative overflow-hidden bg-gradient-hero text-white">
+    <section id="hero" className="relative overflow-hidden bg-gradient-hero text-white">
       <div className="container mx-auto px-4 py-20 lg:py-32">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div>
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
             <Badge className="bg-white/20 text-white border-white/30 mb-6 backdrop-blur-sm">
               <Star className="w-3 h-3 mr-1" />
               Trusted by 10,000+ pet owners worldwide
@@ -28,10 +33,10 @@ export const HeroSection = () => {
 
             <div className="flex flex-col sm:flex-row gap-4 mb-12">
               <Button size="lg" variant="secondary" className="text-lg px-8 py-4 shadow-strong" asChild>
-                <Link to="/pricing">
+                <a href="#pricing">
                   <Heart className="w-5 h-5 mr-2" />
                   Choose Your Plan
-                </Link>
+                </a>
               </Button>
               <Button size="lg" variant="outline-light" className="text-lg px-8 py-4" asChild>
                 <Link to="/lost-pet-guide">
@@ -58,9 +63,14 @@ export const HeroSection = () => {
                 <p className="text-xs text-white/60">iOS & Web</p>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="relative">
+          <motion.div 
+            className="relative"
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+          >
             <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent rounded-3xl transform rotate-6 scale-105" />
             <img 
               src={heroImage} 
@@ -79,9 +89,26 @@ export const HeroSection = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
+      
+      {/* Scroll indicator */}
+      <motion.a 
+        href="#demo"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center text-white/60 hover:text-white transition-colors cursor-pointer"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.8 }}
+      >
+        <span className="text-xs mb-1">Explore</span>
+        <motion.div
+          animate={{ y: [0, 6, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <ChevronDown className="w-5 h-5" />
+        </motion.div>
+      </motion.a>
       
       <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
     </section>
