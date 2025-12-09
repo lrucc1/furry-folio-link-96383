@@ -2,17 +2,14 @@ import { HeroSection } from "@/components/HeroSection";
 import { FeatureGrid } from "@/components/FeatureGrid";
 import { SectionNav } from "@/components/SectionNav";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PetCard } from "@/components/PetCard";
+import { HomePricingCards } from "@/components/PricingCards";
 import { 
   Crown, 
-  Check, 
   ArrowRight, 
   Heart,
   Shield,
-  Smartphone,
-  Apple
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -114,7 +111,7 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Pricing Section - iOS First */}
+        {/* Pricing Section - Modern Design */}
         <section id="pricing" className="py-12 sm:py-16 md:py-20 bg-muted/30">
           <div className="container mx-auto px-4">
             <motion.div 
@@ -131,114 +128,21 @@ const Index = () => {
               <h2 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground mb-4 sm:mb-6">
                 Simple plans for every pet family
               </h2>
-              <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-4">
-                Start free in minutes. Upgrade any time from the PetLinkID iOS app using secure Apple in-app purchases.
+              <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-2">
+                Start free in minutes. Upgrade anytime via the iOS app.
               </p>
-              <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-                PetLinkID is designed to be iOS-first, with a simple web experience to support QR tag scans and quick access to your pet's profile.
-                All plan upgrades and billing are handled safely through the App Store on your iPhone.
+              <p className="text-sm text-muted-foreground max-w-xl mx-auto">
+                All prices in AUD • Secure Apple In-App Purchases
               </p>
             </motion.div>
 
             <motion.div 
-              className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto"
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              {/* Free Plan Card */}
-              <Card className="p-4 sm:p-6 md:p-8 border-border">
-                <div className="text-center mb-6">
-                  <h2 className="text-2xl font-bold mb-2">Free</h2>
-                  <div className="mb-4">
-                    <span className="text-4xl font-bold">Always free</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Perfect for trying PetLinkID with your first pet.
-                  </p>
-                </div>
-
-                <ul className="space-y-3 mb-8">
-                  <li className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">Create your PetLinkID account</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">Add 1 pet profile</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">Link QR tags to your pet</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">Lost & found profile page when someone scans the tag</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">Basic contact details and notes</span>
-                  </li>
-                </ul>
-
-                <Button variant="outline" className="w-full" asChild>
-                  <Link to="/auth">Get started free</Link>
-                </Button>
-              </Card>
-
-              {/* Pro Plan Card */}
-              <Card className="p-4 sm:p-6 md:p-8 relative border-primary shadow-lg scale-105">
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <div className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
-                    <Crown className="w-4 h-4" />
-                    Most Popular
-                  </div>
-                </div>
-                
-                <div className="text-center mb-6">
-                  <h2 className="text-2xl font-bold mb-2">PetLinkID Pro</h2>
-                  <div className="mb-4">
-                    <span className="text-4xl font-bold">Pricing in iOS app</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Full features for pet families
-                  </p>
-                </div>
-
-                <div className="space-y-4 mb-6">
-                  <p className="text-sm font-medium">🔓 Unlock extra capacity and features:</p>
-                  <ul className="space-y-2">
-                    <li className="flex items-start gap-2">
-                      <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                      <span className="text-sm">More pets and QR tags</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                      <span className="text-sm">Extra contact options for emergencies</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                      <span className="text-sm">Richer notes and attachments (vet, behaviour, medications, etc.)</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                      <span className="text-sm">Priority support for lost-pet incidents</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <Button className="w-full" asChild>
-                  <Link to="/pricing">
-                    <Smartphone className="w-4 h-4 mr-2" />
-                    Learn how to upgrade
-                  </Link>
-                </Button>
-                
-                <p className="text-xs text-center text-muted-foreground mt-3">
-                  Upgrades available via the iOS app
-                </p>
-              </Card>
+              <HomePricingCards />
             </motion.div>
           </div>
         </section>
