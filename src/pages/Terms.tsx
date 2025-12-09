@@ -70,7 +70,7 @@ const Terms = () => {
               {/* TODO: Add GDPR compliance section for EU users, CCPA section for California users */}
               <div className="bg-primary/5 p-4 rounded-lg mb-6">
                 <p className="text-sm text-muted-foreground">
-                  <strong>About PetLinkID:</strong> PetLinkID is operated by PetLinkID Australia Pty Ltd, headquartered in Sydney, Australia. We serve pet owners worldwide. These terms are primarily governed by Australian law, though your local consumer protection laws may also apply.
+                  <strong>About PetLinkID:</strong> PetLinkID is owned and operated by Betametrics Pty Ltd, headquartered in Sydney, Australia. We serve pet owners worldwide. These terms are primarily governed by Australian law, though your local consumer protection laws may also apply.
                 </p>
               </div>
 
@@ -131,7 +131,7 @@ const Terms = () => {
 
               <h2 className="text-2xl font-bold text-foreground mb-4">9. Intellectual Property</h2>
               <p className="text-muted-foreground mb-6">
-                The PetLinkID service and its original content, features, and functionality are owned by PetLinkID Pty Ltd and are protected by international copyright, trademark, patent, trade secret, and other intellectual property or proprietary rights laws.
+                The PetLinkID service and its original content, features, and functionality are owned by Betametrics Pty Ltd and are protected by international copyright, trademark, patent, trade secret, and other intellectual property or proprietary rights laws.
               </p>
 
               <h2 className="text-2xl font-bold text-foreground mb-4">10. Termination</h2>
@@ -156,7 +156,7 @@ const Terms = () => {
               <ul className="text-muted-foreground space-y-1">
                 <li>Email: legal@petpassport.com.au</li>
                 <li>Phone: 1800 PET HELP</li>
-                <li>Mail: Legal Department, PetLinkID Pty Ltd, 123 Pet Street, Sydney, NSW 2000</li>
+                <li>Mail: Legal Department, Betametrics Pty Ltd, 123 Pet Street, Sydney, NSW 2000</li>
               </ul>
             </CardContent>
           </Card>

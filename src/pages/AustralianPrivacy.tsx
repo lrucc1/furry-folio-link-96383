@@ -222,7 +222,7 @@ const AustralianPrivacy = () => {
                   <h4 className="font-semibold text-foreground mb-2">Privacy Officer</h4>
                   <div className="space-y-1 text-muted-foreground text-sm">
                     <p>Sarah Chen, Chief Privacy Officer</p>
-                    <p>PetLinkID Pty Ltd</p>
+                    <p>Betametrics Pty Ltd</p>
                     <p>123 Pet Street</p>
                     <p>Sydney, NSW 2000</p>
                     <p>Australia</p>
