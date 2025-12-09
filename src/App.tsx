@@ -63,6 +63,7 @@ import IOSPlans from "./pages/ios/IOSPlans";
 import IOSSharingSettings from "./pages/ios/IOSSharingSettings";
 import IOSPrivacyPolicy from "./pages/ios/IOSPrivacyPolicy";
 import IOSTerms from "./pages/ios/IOSTerms";
+import IOSSubscriptionTerms from "./pages/ios/IOSSubscriptionTerms";
 
 const queryClient = new QueryClient();
 
@@ -159,6 +160,7 @@ function AppContent() {
             />
             <Route path="/settings/privacy-policy" element={<IOSPrivacyPolicy />} />
             <Route path="/settings/terms" element={<IOSTerms />} />
+            <Route path="/settings/subscription-terms" element={<IOSSubscriptionTerms />} />
             <Route path="/found/:publicId" element={<FoundPet />} />
             <Route path="/pet/:publicId" element={<PublicPetProfile />} />
             <Route path="/help" element={<HelpCentre />} />
