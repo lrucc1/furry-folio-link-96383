@@ -25,9 +25,14 @@ export default function IOSPrivacyPolicy() {
       <div className="pb-8">
         {/* Header */}
         <div className="px-4 mb-6">
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-sm text-muted-foreground text-center mb-4">
             Last updated: 14 October 2025
           </p>
+          <MobileCard>
+            <p className="text-sm text-muted-foreground text-center py-2">
+              PetLinkID is owned and operated by <strong className="text-foreground">Betametrics Pty Ltd</strong>, headquartered in Sydney, Australia.
+            </p>
+          </MobileCard>
         </div>
 
         {/* Quick Overview */}
@@ -179,8 +184,11 @@ export default function IOSPrivacyPolicy() {
               <Mail className="w-6 h-6 text-primary" />
             </div>
             <h3 className="font-semibold mb-1">Questions?</h3>
+            <p className="text-sm text-muted-foreground mb-2">
+              Contact the Privacy Officer at Betametrics Pty Ltd
+            </p>
             <p className="text-sm text-muted-foreground mb-3">
-              Contact us at privacy@petlinkid.com
+              privacy@petlinkid.com
             </p>
             <Button variant="outline" size="sm" onClick={() => navigate('/contact')}>
               Contact Us
