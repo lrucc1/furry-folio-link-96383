@@ -99,7 +99,7 @@ const About = () => {
                   After Max was safely returned home (thanks to a kind stranger and a barely readable ID tag), Sarah knew there had to be a better way. She assembled a team of veterinarians, technologists, and pet industry experts to create a comprehensive solution that would give every pet the best chance of coming home safe.
                 </p>
                 <p>
-                  Today, PetLinkID serves thousands of families worldwide from our base in Sydney, Australia, providing peace of mind through innovative QR technology, comprehensive health tracking, and a community committed to keeping pets safe and healthy.
+                  Today, PetLinkID serves thousands of families worldwide from our base in Victoria, Australia, providing peace of mind through innovative QR technology, comprehensive health tracking, and a community committed to keeping pets safe and healthy.
                 </p>
               </div>
             </CardContent>
@@ -188,8 +188,7 @@ const About = () => {
                     <div>
                       <h4 className="font-semibold">Headquarters</h4>
                       <p className="text-muted-foreground text-sm">
-                        123 Pet Street<br />
-                        Sydney, NSW 2000<br />
+                        Melbourne, VIC 3000<br />
                         Australia
                       </p>
                     </div>

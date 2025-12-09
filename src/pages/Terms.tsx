@@ -57,8 +57,8 @@ const Terms = () => {
                 </div>
                 <div className="text-center p-4 bg-background/50 rounded-lg">
                   <Scale className="w-8 h-8 text-primary mx-auto mb-2" />
-                  <h4 className="font-semibold">Australian Law</h4>
-                  <p className="text-sm text-muted-foreground">Governed by Australian consumer law</p>
+                  <h4 className="font-semibold">Victorian Law</h4>
+                  <p className="text-sm text-muted-foreground">Governed by the laws of Victoria</p>
                 </div>
               </div>
             </CardContent>
@@ -70,7 +70,7 @@ const Terms = () => {
               {/* TODO: Add GDPR compliance section for EU users, CCPA section for California users */}
               <div className="bg-primary/5 p-4 rounded-lg mb-6">
                 <p className="text-sm text-muted-foreground">
-                  <strong>About PetLinkID:</strong> PetLinkID is owned and operated by Betametrics Pty Ltd, headquartered in Sydney, Australia. We serve pet owners worldwide. These terms are primarily governed by Australian law, though your local consumer protection laws may also apply.
+                  <strong>About PetLinkID:</strong> PetLinkID is owned and operated by Betametrics Pty Ltd, headquartered in Victoria, Australia. We serve pet owners worldwide. These terms are governed by the laws of Victoria, Australia, though your local consumer protection laws may also apply.
                 </p>
               </div>
 
@@ -141,7 +141,7 @@ const Terms = () => {
 
               <h2 className="text-2xl font-bold text-foreground mb-4">11. Governing Law</h2>
               <p className="text-muted-foreground mb-6">
-                These Terms shall be interpreted and governed by the laws of New South Wales, Australia, without regard to its conflict of law provisions. Any disputes will be resolved in the courts of New South Wales, Australia. International users: Your local consumer protection laws may also apply in addition to these terms.
+                These Terms shall be interpreted and governed by the laws of Victoria, Australia, without regard to its conflict of law provisions. Any disputes will be resolved in the courts of Victoria, Australia. International users: Your local consumer protection laws may also apply in addition to these terms.
               </p>
 
               <h2 className="text-2xl font-bold text-foreground mb-4">12. Changes to Terms</h2>
@@ -156,7 +156,7 @@ const Terms = () => {
               <ul className="text-muted-foreground space-y-1">
                 <li>Email: legal@petpassport.com.au</li>
                 <li>Phone: 1800 PET HELP</li>
-                <li>Mail: Legal Department, Betametrics Pty Ltd, 123 Pet Street, Sydney, NSW 2000</li>
+                <li>Mail: Legal Department, Betametrics Pty Ltd, Melbourne, VIC 3000</li>
               </ul>
             </CardContent>
           </Card>
