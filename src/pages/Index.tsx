@@ -1,5 +1,6 @@
 import { HeroSection } from "@/components/HeroSection";
 import { FeatureGrid } from "@/components/FeatureGrid";
+import { SectionNav } from "@/components/SectionNav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +56,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SectionNav />
       
       <main>
         <HeroSection />
