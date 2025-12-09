@@ -61,8 +61,15 @@ const PrivacyPolicy = () => {
                   <p className="text-sm text-muted-foreground">You control your data and privacy</p>
                 </div>
               </div>
-            </CardContent>
+          </CardContent>
           </Card>
+
+          {/* Company Info */}
+          <div className="bg-primary/5 p-4 rounded-lg">
+            <p className="text-sm text-muted-foreground">
+              <strong>About PetLinkID:</strong> PetLinkID is owned and operated by Betametrics Pty Ltd, headquartered in Sydney, Australia. We serve pet owners worldwide.
+            </p>
+          </div>
 
           {/* Main Content */}
           <Card className="bg-gradient-card border-0 shadow-medium">
@@ -118,7 +125,7 @@ const PrivacyPolicy = () => {
 
               <h2 className="text-2xl font-bold text-foreground mb-4">Contact & complaints</h2>
               <p className="text-muted-foreground mb-4">
-                If you have questions or concerns about privacy, contact us at <a href="mailto:privacy@petlinkid.com" className="underline">privacy@petlinkid.com</a>. If you are not satisfied with our response, you may lodge a complaint with the Office of the Australian Information Commissioner (OAIC).
+                If you have questions or concerns about privacy, contact the Privacy Officer at Betametrics Pty Ltd via <a href="mailto:privacy@petlinkid.com" className="underline">privacy@petlinkid.com</a>. If you are not satisfied with our response, you may lodge a complaint with the Office of the Australian Information Commissioner (OAIC).
               </p>
 
               <h2 className="text-2xl font-bold text-foreground mb-4">3. Information Sharing</h2>
