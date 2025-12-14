@@ -38,7 +38,6 @@ export const HeroSection = () => {
               transition={{ duration: 0.4, delay: 0.1 }}
             >
               <div className="relative bg-white/10 backdrop-blur-sm rounded-xl p-2">
-                <span className="absolute -top-1 -left-1 text-xs">🐾</span>
                 <Link2 className="w-8 h-8 text-white rotate-45" strokeWidth={2.5} />
               </div>
               <span className="text-2xl font-bold tracking-tight">PetLinkID</span>
@@ -116,9 +115,7 @@ export const HeroSection = () => {
                   <Link2 className="w-6 h-6 text-white rotate-45 relative z-10" />
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground flex items-center gap-1">
-                    <span className="text-xs">🐾</span> 3 Pets Licensed
-                  </p>
+                  <p className="font-semibold text-foreground">3 Pets Licensed</p>
                   <p className="text-xs text-muted-foreground">PetLinkID Protected</p>
                 </div>
               </div>
