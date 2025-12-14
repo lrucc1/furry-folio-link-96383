@@ -405,7 +405,7 @@ export const InstagramShareCard = ({
         ctx.font = 'bold 18px system-ui, -apple-system, sans-serif'
         ctx.fillText('AGE:', detailsX, ageY)
         
-        ctx.fillStyle = accentColor
+        ctx.fillStyle = valueColor
         ctx.font = 'bold 24px system-ui, -apple-system, sans-serif'
         ctx.fillText(petAge, detailsX + labelWidth, ageY)
       }
@@ -415,7 +415,7 @@ export const InstagramShareCard = ({
       ctx.font = 'bold 18px system-ui, -apple-system, sans-serif'
       ctx.fillText('AGE:', detailsX, infoY)
       
-      ctx.fillStyle = accentColor
+      ctx.fillStyle = valueColor
       ctx.font = 'bold 24px system-ui, -apple-system, sans-serif'
       ctx.fillText(petAge, detailsX + labelWidth, infoY)
     }
