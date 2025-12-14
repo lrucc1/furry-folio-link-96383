@@ -62,6 +62,7 @@ interface InstagramShareCardProps {
   petSpecies: string
   petBreed: string | null
   petColour: string | null
+  petWeight: number | null
   petPhoto: string | null
   publicId: string
   publicUrl: string
@@ -73,6 +74,7 @@ export const InstagramShareCard = ({
   petSpecies,
   petBreed,
   petColour,
+  petWeight,
   petPhoto,
   publicId,
   publicUrl,
@@ -184,23 +186,23 @@ export const InstagramShareCard = ({
     ctx.fillRect(cardPadding, cardY, cardWidth, stripeHeight + cardRadius)
     ctx.restore()
 
-    // PetLinkID branding - icon teal with glow, text black, positioned below stripe
+    // PetLinkID branding - icon teal with glow, text black, moved down for equal spacing
     const brandColor = '#2E9B8D'
     const textColor = '#1a1a1a'
-    drawLinkIcon(ctx, cardPadding + 50, cardY + 50, 32, brandColor, true)
+    drawLinkIcon(ctx, cardPadding + 50, cardY + 65, 32, brandColor, true)
     ctx.fillStyle = textColor
     ctx.font = 'bold 30px system-ui, -apple-system, sans-serif'
     ctx.textAlign = 'left'
-    ctx.fillText('PetLinkID', cardPadding + 95, cardY + 75)
+    ctx.fillText('PetLinkID', cardPadding + 95, cardY + 90)
 
-    // ID in top right corner
+    // ID in top right corner - moved down and larger text
     ctx.fillStyle = '#9ca3af'
-    ctx.font = 'bold 16px system-ui, -apple-system, sans-serif'
+    ctx.font = 'bold 18px system-ui, -apple-system, sans-serif'
     ctx.textAlign = 'right'
-    ctx.fillText('ID:', cardPadding + cardWidth - 175, cardY + 60)
+    ctx.fillText('ID:', cardPadding + cardWidth - 200, cardY + 90)
     ctx.fillStyle = textColor
-    ctx.font = 'bold 18px monospace'
-    ctx.fillText(publicId, cardPadding + cardWidth - 50, cardY + 60)
+    ctx.font = 'bold 22px monospace'
+    ctx.fillText(publicId, cardPadding + cardWidth - 50, cardY + 90)
 
     // Photo section (left side of card) - optimized sizing for balance
     const photoSize = 250
@@ -336,22 +338,35 @@ export const InstagramShareCard = ({
     const breedText = petBreed || petSpecies
     ctx.fillText(breedText, detailsX + labelWidth, breedY)
 
-    // COLOUR: label and value (if available)
+    // COLOUR / MARKINGS: label and value (if available)
     let currentY = breedY + 35
     if (petColour) {
       ctx.fillStyle = labelColor
-      ctx.font = 'bold 16px system-ui, -apple-system, sans-serif'
-      ctx.fillText('COLOUR:', detailsX, currentY)
+      ctx.font = 'bold 14px system-ui, -apple-system, sans-serif'
+      ctx.fillText('COLOUR / MARKINGS:', detailsX, currentY)
       
       ctx.fillStyle = valueColor
-      ctx.font = '22px system-ui, -apple-system, sans-serif'
+      ctx.font = '20px system-ui, -apple-system, sans-serif'
       // Truncate colour if too long
       let displayColour = petColour
-      while (ctx.measureText(displayColour).width > maxNameWidth && displayColour.length > 1) {
+      const colourMaxWidth = detailsWidth - 10
+      while (ctx.measureText(displayColour).width > colourMaxWidth && displayColour.length > 1) {
         displayColour = displayColour.slice(0, -1)
       }
       if (displayColour !== petColour) displayColour += '...'
-      ctx.fillText(displayColour, detailsX + labelWidth, currentY)
+      ctx.fillText(displayColour, detailsX, currentY + 25)
+      currentY += 55
+    }
+
+    // WEIGHT: label and value (if available)
+    if (petWeight) {
+      ctx.fillStyle = labelColor
+      ctx.font = 'bold 16px system-ui, -apple-system, sans-serif'
+      ctx.fillText('WEIGHT:', detailsX, currentY)
+      
+      ctx.fillStyle = valueColor
+      ctx.font = '22px system-ui, -apple-system, sans-serif'
+      ctx.fillText(`${petWeight} kg`, detailsX + labelWidth, currentY)
       currentY += 35
     }
 
@@ -451,15 +466,7 @@ export const InstagramShareCard = ({
     ctx.textAlign = 'left'
     ctx.fillText('✓ LICENSED', badgeX, badgeY)
 
-    // Security pattern (subtle lines on card)
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.03)'
-    ctx.lineWidth = 1
-    for (let i = cardY + 100; i < cardY + cardHeight; i += 8) {
-      ctx.beginPath()
-      ctx.moveTo(cardPadding, i)
-      ctx.lineTo(cardPadding + cardWidth, i)
-      ctx.stroke()
-    }
+    // Security pattern removed for cleaner look
 
     // === Below card content ===
 
