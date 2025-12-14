@@ -1,9 +1,9 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Instagram, Download, Share2 } from 'lucide-react'
+import { Instagram, Download, Share2, Copy } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
-import { shareToInstagram, downloadImage, ShareResult } from '@/lib/shareToInstagram'
+import { shareToInstagram, downloadImage, copyImageToClipboard, ShareResult } from '@/lib/shareToInstagram'
 import { calculateAge } from '@/lib/age-utils'
 import { Capacitor } from '@capacitor/core'
 import { format } from 'date-fns'
@@ -630,11 +630,42 @@ export const InstagramShareCard = ({
 
     canvas.toBlob((blob) => {
       if (!blob) return
-      downloadImage(blob, petName)
-      toast({
-        title: 'Card downloaded!',
-        description: 'Share your PetLinkID on Instagram! 🐾',
-      })
+      const result = downloadImage(blob, petName)
+      
+      if (result === 'opened') {
+        toast({
+          title: 'Image opened!',
+          description: 'Long-press the image and tap "Add to Photos" to save.',
+        })
+      } else {
+        toast({
+          title: 'Card downloaded!',
+          description: 'Share your PetLinkID on Instagram! 🐾',
+        })
+      }
+    })
+  }
+
+  const handleCopyToClipboard = async () => {
+    await generateLicenseCard()
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    canvas.toBlob(async (blob) => {
+      if (!blob) return
+      const success = await copyImageToClipboard(blob)
+      if (success) {
+        toast({
+          title: 'Copied to clipboard!',
+          description: 'Paste the image directly into Instagram Stories.',
+        })
+      } else {
+        toast({
+          title: 'Copy not supported',
+          description: 'Use the Save button instead.',
+          variant: 'destructive',
+        })
+      }
     })
   }
 
@@ -679,13 +710,17 @@ export const InstagramShareCard = ({
               <Instagram className="w-4 h-4 mr-2" />
               Share to Instagram Stories
             </Button>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <Button onClick={handleDownload} variant="outline" disabled={generating}>
-                <Download className="w-4 h-4 mr-2" />
-                Download
+                <Download className="w-4 h-4 mr-1" />
+                Save
+              </Button>
+              <Button onClick={handleCopyToClipboard} variant="outline" disabled={generating}>
+                <Copy className="w-4 h-4 mr-1" />
+                Copy
               </Button>
               <Button onClick={handleShare} variant="outline" disabled={generating}>
-                <Share2 className="w-4 h-4 mr-2" />
+                <Share2 className="w-4 h-4 mr-1" />
                 Share
               </Button>
             </div>
@@ -693,7 +728,7 @@ export const InstagramShareCard = ({
 
           {!Capacitor.isNativePlatform() && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && (
             <p className="text-xs text-muted-foreground text-center bg-muted/50 rounded-md p-2">
-              💡 <strong>Tip for Stories:</strong> Download the image, then open Instagram → Your Story → Add from camera roll.
+              💡 <strong>Tip for Stories:</strong> Copy or Save the image, then open Instagram → Your Story → Paste or add from camera roll.
             </p>
           )}
           <p className="text-xs text-muted-foreground text-center">
