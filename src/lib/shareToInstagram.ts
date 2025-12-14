@@ -11,6 +11,11 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics'
 import { Share } from '@capacitor/share'
 import { Filesystem, Directory } from '@capacitor/filesystem'
 
+export type ShareResult = {
+  method: 'native' | 'web-share' | 'web-share-url' | 'download'
+  captionCopied?: boolean
+}
+
 interface ShareOptions {
   imageBlob: Blob
   petName: string
@@ -85,14 +90,14 @@ const shareNative = async ({ imageBlob, petName, publicUrl }: ShareOptions): Pro
   }
 }
 
-export const shareToInstagram = async ({ imageBlob, petName, publicUrl }: ShareOptions): Promise<void> => {
+export const shareToInstagram = async ({ imageBlob, petName, publicUrl }: ShareOptions): Promise<ShareResult> => {
   const caption = `Meet ${petName}! 🐾 Officially licensed on PetLinkID ✓ Get yours at PetLinkID.com #PetLinkID #PetLicense ${publicUrl}`
 
   // Use native Capacitor Share on iOS/Android
   if (Capacitor.isNativePlatform()) {
     try {
       await shareNative({ imageBlob, petName, publicUrl })
-      return
+      return { method: 'native' }
     } catch (error) {
       if ((error as Error).message?.includes('canceled') || (error as Error).message?.includes('cancelled')) {
         throw error // User cancelled, propagate
@@ -113,7 +118,7 @@ export const shareToInstagram = async ({ imageBlob, petName, publicUrl }: ShareO
         title: `Meet ${petName}!`,
         text: caption,
       })
-      return
+      return { method: 'web-share' }
     }
 
     if (navigator.share) {
@@ -122,7 +127,7 @@ export const shareToInstagram = async ({ imageBlob, petName, publicUrl }: ShareO
         text: caption,
         url: publicUrl,
       })
-      return
+      return { method: 'web-share-url' }
     }
   } catch (error) {
     if ((error as Error).name === 'AbortError') {
@@ -132,8 +137,9 @@ export const shareToInstagram = async ({ imageBlob, petName, publicUrl }: ShareO
   }
 
   // Final fallback: copy caption to clipboard and download image
-  await copyCaptionToClipboard(caption)
+  const captionCopied = await copyCaptionToClipboard(caption)
   downloadImage(imageBlob, petName)
+  return { method: 'download', captionCopied }
 }
 
 export const downloadImage = (blob: Blob, petName: string): void => {
