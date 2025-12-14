@@ -82,15 +82,7 @@ const PetDetails = () => {
   const [editReminderModalOpen, setEditReminderModalOpen] = useState(false)
   const [selectedReminder, setSelectedReminder] = useState<HealthReminder | null>(null)
 
-  useEffect(() => {
-    if (id) {
-      fetchPetDetails()
-      fetchVaccinations()
-      fetchHealthReminders()
-    }
-  }, [id, user])
-
-  const fetchPetDetails = async () => {
+  const fetchPetDetails = useCallback(async () => {
     if (!user || !id) return
 
     try {
@@ -108,9 +100,9 @@ const PetDetails = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [id, user, navigate])
 
-  const fetchVaccinations = async () => {
+  const fetchVaccinations = useCallback(async () => {
     if (!id) return
 
     try {
@@ -125,9 +117,9 @@ const PetDetails = () => {
     } catch (error) {
       console.error('Error fetching vaccinations:', error)
     }
-  }
+  }, [id])
 
-  const fetchHealthReminders = async () => {
+  const fetchHealthReminders = useCallback(async () => {
     if (!id) return
 
     try {
@@ -142,7 +134,19 @@ const PetDetails = () => {
     } catch (error) {
       console.error('Error fetching health reminders:', error)
     }
-  }
+  }, [id])
+
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([fetchPetDetails(), fetchVaccinations(), fetchHealthReminders()]);
+  }, [fetchPetDetails, fetchVaccinations, fetchHealthReminders])
+
+  useEffect(() => {
+    if (id) {
+      fetchPetDetails()
+      fetchVaccinations()
+      fetchHealthReminders()
+    }
+  }, [id, user, fetchPetDetails, fetchVaccinations, fetchHealthReminders])
 
   const toggleReminderComplete = async (reminderId: string, currentStatus: boolean) => {
     const reminder = healthReminders.find(r => r.id === reminderId);
@@ -311,11 +315,6 @@ const PetDetails = () => {
     }
   }
 
-  // IMPORTANT: All hooks must be called before any conditional returns
-  const handleRefresh = useCallback(async () => {
-    await Promise.all([fetchPetDetails(), fetchVaccinations(), fetchHealthReminders()]);
-  }, [id, user]);
-  
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
