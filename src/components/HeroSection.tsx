@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Shield, QrCode, Smartphone, Star, ChevronDown, Link2 } from "lucide-react";
+import { Heart, Shield, Users, QrCode, Smartphone, Star, ChevronDown, Link2 } from "lucide-react";
 import heroImage from "@/assets/hero-pets-realistic.jpg";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
@@ -80,11 +80,11 @@ export const HeroSection = () => {
                 <p className="text-sm text-white/80">Secure</p>
                 <p className="text-xs text-white/60">Privacy Protected</p>
               </div>
-              <div className="text-center">
-                <QrCode className="w-8 h-8 mx-auto mb-2 text-primary-glow" />
-                <p className="text-sm text-white/80">Smart Tags</p>
-                <p className="text-xs text-white/60">QR & NFC Ready</p>
-              </div>
+            <div className="text-center">
+              <Users className="w-8 h-8 mx-auto mb-2 text-primary-glow" />
+              <p className="text-sm text-white/80">Family Sharing</p>
+              <p className="text-xs text-white/60">Share with Caregivers</p>
+            </div>
               <div className="text-center">
                 <Smartphone className="w-8 h-8 mx-auto mb-2 text-primary-glow" />
                 <p className="text-sm text-white/80">Cross-Platform</p>
