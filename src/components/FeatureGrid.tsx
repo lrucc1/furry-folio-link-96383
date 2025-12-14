@@ -23,14 +23,6 @@ const features = [
     faqId: "pet-profiles"
   },
   {
-    icon: QrCode,
-    title: "Smart Tags",
-    description: "Generate QR codes for instant pet identification and safe return when lost.",
-    badge: "Coming Soon",
-    color: "text-accent",
-    faqId: "smart-tags-qr-codes"
-  },
-  {
     icon: Shield,
     title: "VetShare",
     description: "Share medical records with vets via QR code for seamless healthcare coordination.",
@@ -77,6 +69,14 @@ const features = [
     badge: "Universal",
     color: "text-primary",
     faqId: "cross-platform-access"
+  },
+  {
+    icon: QrCode,
+    title: "Smart Tags",
+    description: "Generate QR codes for instant pet identification and safe return when lost.",
+    badge: "Coming Soon",
+    color: "text-accent",
+    faqId: "smart-tags-qr-codes"
   }
 ];
 
