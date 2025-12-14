@@ -48,6 +48,7 @@ export const FreePlanCard = ({
   const freeFeatures = [
     { icon: <User className="w-4 h-4" />, text: "Create your PetLinkID account" },
     { icon: <PawPrint className="w-4 h-4" />, text: "Add 1 pet profile" },
+    { icon: <Bell className="w-4 h-4" />, text: "2 health reminders" },
     { icon: <QrCode className="w-4 h-4" />, text: "Link QR tags to your pet" },
     { icon: <MapPin className="w-4 h-4" />, text: "Lost & found profile page" },
     { icon: <FileText className="w-4 h-4" />, text: "Basic contact details & notes" },
