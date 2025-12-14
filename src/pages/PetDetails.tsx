@@ -711,6 +711,7 @@ const PetDetails = () => {
             petBreed={pet.breed}
             petColour={pet.colour}
             petWeight={pet.weight_kg}
+            petGender={pet.sex}
             petPhoto={pet.photo_url}
             publicId={pet.public_id}
             publicUrl={publicUrl}
@@ -1207,6 +1208,7 @@ const PetDetails = () => {
                         petBreed={pet.breed}
                         petColour={pet.colour}
                         petWeight={pet.weight_kg}
+                        petGender={pet.sex}
                         petPhoto={pet.photo_url}
                         publicId={pet.public_id}
                         publicUrl={publicUrl}
@@ -1241,6 +1243,7 @@ const PetDetails = () => {
                     petBreed={pet.breed}
                     petColour={pet.colour}
                     petWeight={pet.weight_kg}
+                    petGender={pet.sex}
                     petPhoto={pet.photo_url}
                     publicId={pet.public_id}
                     publicUrl={publicUrl}
