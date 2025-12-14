@@ -3,8 +3,9 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Instagram, Download, Share2 } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
-import { shareToInstagram, downloadImage } from '@/lib/shareToInstagram'
+import { shareToInstagram, downloadImage, ShareResult } from '@/lib/shareToInstagram'
 import { calculateAge } from '@/lib/age-utils'
+import { Capacitor } from '@capacitor/core'
 import { format } from 'date-fns'
 
 // Draw Lucide Link2 icon on canvas (matches the actual SVG paths)
@@ -559,6 +560,43 @@ export const InstagramShareCard = ({
     return () => stopShimmerAnimation()
   }, [isOpen, generateLicenseCard, startShimmerAnimation, stopShimmerAnimation])
 
+  const getShareToastMessage = (result: ShareResult) => {
+    const isNative = Capacitor.isNativePlatform()
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+    
+    switch (result.method) {
+      case 'native':
+        return {
+          title: 'Share sheet opened!',
+          description: 'Select Instagram → Stories to share your PetLinkID!',
+        }
+      case 'web-share':
+        return {
+          title: 'Share sheet opened!',
+          description: isMobile 
+            ? 'Select Instagram to share. For Stories, save the image first then add to your Story.'
+            : 'Select where to share your PetLinkID!',
+        }
+      case 'web-share-url':
+        return {
+          title: 'Share sheet opened!',
+          description: 'Share your PetLinkID link! For Stories with the image, use the Download button.',
+        }
+      case 'download':
+        return {
+          title: 'Image saved!',
+          description: result.captionCopied 
+            ? 'Caption copied! Open Instagram → Your Story → Add the saved image.'
+            : 'Open Instagram → Your Story → Add the saved image.',
+        }
+      default:
+        return {
+          title: 'Ready to share!',
+          description: 'Share your PetLinkID on Instagram!',
+        }
+    }
+  }
+
   const handleShare = async () => {
     await generateLicenseCard()
     const canvas = canvasRef.current
@@ -568,13 +606,13 @@ export const InstagramShareCard = ({
       if (!blob) return
 
       try {
-        await shareToInstagram({ imageBlob: blob, petName, publicUrl })
-        toast({
-          title: 'Opening share...',
-          description: 'Share your PetLinkID to your story! 🚀',
-        })
+        const result = await shareToInstagram({ imageBlob: blob, petName, publicUrl })
+        const toastMessage = getShareToastMessage(result)
+        toast(toastMessage)
       } catch (error) {
-        if ((error as Error).name !== 'AbortError') {
+        if ((error as Error).name !== 'AbortError' && 
+            !(error as Error).message?.includes('canceled') &&
+            !(error as Error).message?.includes('cancelled')) {
           console.error('Error sharing:', error)
           toast({
             title: 'Download started',
@@ -653,8 +691,13 @@ export const InstagramShareCard = ({
             </div>
           </div>
 
+          {!Capacitor.isNativePlatform() && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && (
+            <p className="text-xs text-muted-foreground text-center bg-muted/50 rounded-md p-2">
+              💡 <strong>Tip for Stories:</strong> Download the image, then open Instagram → Your Story → Add from camera roll.
+            </p>
+          )}
           <p className="text-xs text-muted-foreground text-center">
-            Share your pet&apos;s official PetLinkID and help others discover PetLinkID! 🐾
+            Share your pet&apos;s official PetLinkID and help others discover PetLinkID!
           </p>
         </div>
       </DialogContent>
