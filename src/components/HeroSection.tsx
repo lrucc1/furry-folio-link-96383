@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Shield, QrCode, Smartphone, Star, ChevronDown } from "lucide-react";
+import { Heart, Shield, QrCode, Smartphone, Star, ChevronDown, Link2 } from "lucide-react";
 import heroImage from "@/assets/hero-pets-realistic.jpg";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
@@ -30,6 +30,20 @@ export const HeroSection = () => {
             transition={{ duration: 0.6, ease: "easeOut" }}
             style={{ y: contentY, opacity }}
           >
+            {/* PetLinkID Brand Logo */}
+            <motion.div 
+              className="flex items-center gap-3 mb-6"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+            >
+              <div className="relative bg-white/10 backdrop-blur-sm rounded-xl p-2">
+                <span className="absolute -top-1 -left-1 text-xs">🐾</span>
+                <Link2 className="w-8 h-8 text-white rotate-45" strokeWidth={2.5} />
+              </div>
+              <span className="text-2xl font-bold tracking-tight">PetLinkID</span>
+            </motion.div>
+            
             <Badge className="bg-white/20 text-white border-white/30 mb-6 backdrop-blur-sm">
               <Star className="w-3 h-3 mr-1" />
               Trusted by 10,000+ pet owners worldwide
@@ -37,8 +51,8 @@ export const HeroSection = () => {
             
             <h1 className="text-4xl lg:text-6xl font-bold mb-6 leading-tight">
               Your Pet's
-              <span className="block text-white">
-                Digital Passport
+              <span className="block bg-gradient-to-r from-white via-primary-glow to-white bg-clip-text text-transparent">
+                Digital License
               </span>
             </h1>
             
@@ -93,14 +107,19 @@ export const HeroSection = () => {
               className="relative rounded-3xl shadow-strong w-full h-auto object-cover max-w-lg mx-auto backface-hidden"
               style={{ y: imageY, imageRendering: '-webkit-optimize-contrast' }}
             />
-            <div className="absolute -bottom-6 -right-6 bg-white rounded-2xl p-4 shadow-strong transform rotate-3">
+            {/* PetLinkID License Card preview */}
+            <div className="absolute -bottom-6 -right-6 bg-gradient-to-br from-white to-gray-50 rounded-2xl p-4 shadow-strong transform rotate-3 border border-white/50">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
-                  <Heart className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center relative overflow-hidden">
+                  {/* Holographic shimmer effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
+                  <Link2 className="w-6 h-6 text-white rotate-45 relative z-10" />
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground">3 Pets Safe</p>
-                  <p className="text-xs text-muted-foreground">Protected & Tagged</p>
+                  <p className="font-semibold text-foreground flex items-center gap-1">
+                    <span className="text-xs">🐾</span> 3 Pets Licensed
+                  </p>
+                  <p className="text-xs text-muted-foreground">PetLinkID Protected</p>
                 </div>
               </div>
             </div>

@@ -258,3 +258,17 @@ All colors MUST be HSL.
     overflow: hidden;
   }
 }
+
+/* Holographic shimmer animation for PetLinkID cards */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-200%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite ease-in-out;
+}
