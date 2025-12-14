@@ -27,11 +27,7 @@ export const Logo = ({
 
   return (
     <div className={`flex items-center gap-2 cursor-pointer ${className}`}>
-      <div className="relative">
-        {/* Paw print behind link icon for pet branding */}
-        <span className="absolute -top-1 -left-1 text-xs opacity-60">🐾</span>
-        <Link2 className={`${iconClassName} ${iconColorClass} rotate-45`} strokeWidth={2.5} />
-      </div>
+      <Link2 className={`${iconClassName} ${iconColorClass} rotate-45`} strokeWidth={2.5} />
       {showText && <span className={`${textClassName} ${textColorClass}`}>PetLinkID</span>}
     </div>
   );
