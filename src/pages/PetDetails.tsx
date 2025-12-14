@@ -311,6 +311,11 @@ const PetDetails = () => {
     }
   }
 
+  // IMPORTANT: All hooks must be called before any conditional returns
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([fetchPetDetails(), fetchVaccinations(), fetchHealthReminders()]);
+  }, [id, user]);
+  
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -345,10 +350,6 @@ const PetDetails = () => {
   }
 
   const publicUrl = `${window.location.origin}/found/${pet.public_id}`
-
-  const handleRefresh = useCallback(async () => {
-    await Promise.all([fetchPetDetails(), fetchVaccinations(), fetchHealthReminders()]);
-  }, [id, user]);
 
   // iOS Header with back and edit buttons
   const iosHeaderRight = (
