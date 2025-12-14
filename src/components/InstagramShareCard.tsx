@@ -548,27 +548,35 @@ export const InstagramShareCard = ({
     }
   }, [])
 
+  // Track if we've loaded the initial card for this dialog session
+  const hasLoadedRef = useRef(false)
+
   useEffect(() => {
-    if (isOpen) {
-      // Use timeout to ensure canvas is mounted after dialog animation
-      const timeoutId = setTimeout(() => {
-        if (canvasRef.current) {
-          generateLicenseCard(0).then(() => {
-            startShimmerAnimation()
-          })
-        }
-      }, 100)
-      
-      return () => {
-        clearTimeout(timeoutId)
-        stopShimmerAnimation()
-      }
-    } else {
+    // Reset loaded state when dialog closes
+    if (!isOpen) {
+      hasLoadedRef.current = false
       stopShimmerAnimation()
+      return
     }
     
-    return () => stopShimmerAnimation()
-  }, [isOpen, generateLicenseCard, startShimmerAnimation, stopShimmerAnimation])
+    // Only load once per dialog open
+    if (hasLoadedRef.current) return
+    
+    // Use timeout to ensure canvas is mounted after dialog animation
+    const timeoutId = setTimeout(() => {
+      if (canvasRef.current) {
+        hasLoadedRef.current = true
+        generateLicenseCard(0).then(() => {
+          startShimmerAnimation()
+        })
+      }
+    }, 100)
+    
+    return () => {
+      clearTimeout(timeoutId)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen])
 
   const getShareToastMessage = (result: ShareResult) => {
     const isNative = Capacitor.isNativePlatform()
