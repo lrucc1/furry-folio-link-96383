@@ -63,7 +63,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
         cacheRef.current = { data: profileData, timestamp: Date.now() };
         setProfile(profileData);
         setTier(computeEffectiveTier(profileData));
-        setSource((data.plan_source as PlanSource) || 'stripe');
+        setSource((data.plan_source as PlanSource) || 'system');
       } else {
         setTier('free');
         setSource('system');
@@ -113,7 +113,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
             cacheRef.current = { data: newProfile, timestamp: Date.now() };
             setProfile(newProfile);
             setTier(computeEffectiveTier(newProfile));
-            setSource((newProfile.plan_source as PlanSource) || 'stripe');
+            setSource((newProfile.plan_source as PlanSource) || 'system');
           }
         }
       )

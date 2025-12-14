@@ -130,7 +130,7 @@ export default function IOSPrivacyPolicy() {
                   <p className="mb-3">Some providers may store data outside Australia:</p>
                   <ul className="space-y-2">
                     <li>• Hosting & Database: Australia/Asia-Pacific</li>
-                    <li>• Payments: Stripe (global processing)</li>
+                    <li>• Payments: Apple In-App Purchases</li>
                   </ul>
                   <p className="mt-3">We ensure providers comply with Australian Privacy Principles.</p>
                 </AccordionContent>

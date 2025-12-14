@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 export function useEffectivePlan() {
   const { user } = useAuth();
   const [tier, setTier] = useState<Tier>('free');
-  const [source, setSource] = useState<PlanSource>('stripe');
+  const [source, setSource] = useState<PlanSource>('system');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export function useEffectivePlan() {
           stripe_status: (profile as any).stripe_status,
         };
         setTier(computeEffectiveTier(profileData));
-        setSource((profile.plan_source as PlanSource) || 'stripe');
+        setSource((profile.plan_source as PlanSource) || 'system');
       }
       setLoading(false);
     };
@@ -57,7 +57,7 @@ export function useEffectivePlan() {
           console.log('[useEffectivePlan] Profile updated:', payload);
           const newProfile = payload.new;
           setTier(computeEffectiveTier(newProfile));
-          setSource((newProfile.plan_source as PlanSource) || 'stripe');
+          setSource((newProfile.plan_source as PlanSource) || 'system');
         }
       )
       .subscribe();

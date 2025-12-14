@@ -107,7 +107,7 @@ const PrivacyPolicy = () => {
               </p>
               <ul className="list-disc list-inside text-muted-foreground mb-4 ml-4">
                 <li>Application hosting & database: Supabase (region: Australia/Asia-Pacific)</li>
-                <li>Payments: Stripe (global processing with data centres outside Australia)</li>
+                <li>Payments: Apple In-App Purchases (processed by Apple Inc.)</li>
               </ul>
               <p className="text-muted-foreground mb-4">
                 We will update this page if our providers materially change.
