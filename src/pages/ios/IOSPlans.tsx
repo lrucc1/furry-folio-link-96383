@@ -206,23 +206,35 @@ export default function IOSPlans() {
         {/* Action Buttons */}
         <div className="space-y-3">
           {!isPro && (
-            <Button
-              onClick={handleUpgrade}
-              disabled={upgrading}
-              className="w-full h-12 text-base font-semibold"
-            >
-              {upgrading ? (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <Crown className="w-4 h-4 mr-2" />
-                  Upgrade to Pro
-                </>
-              )}
-            </Button>
+            <>
+              {/* 7-Day Trial Callout */}
+              <div className="text-center p-4 bg-primary/5 rounded-xl border border-primary/20">
+                <p className="text-sm font-semibold text-primary mb-1">
+                  Start with a 7-day free trial
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Try all Pro features free. Cancel anytime.
+                </p>
+              </div>
+              
+              <Button
+                onClick={handleUpgrade}
+                disabled={upgrading}
+                className="w-full h-12 text-base font-semibold"
+              >
+                {upgrading ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Crown className="w-4 h-4 mr-2" />
+                    Upgrade to Pro
+                  </>
+                )}
+              </Button>
+            </>
           )}
           
           {isPro && isNative && (
@@ -235,24 +247,29 @@ export default function IOSPlans() {
           )}
 
           {isNative && (
-            <Button 
-              variant="outline"
-              onClick={handleRestore}
-              disabled={restoring}
-              className="w-full h-12"
-            >
-              {restoring ? (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Restoring...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Restore Purchases
-                </>
-              )}
-            </Button>
+            <div className="space-y-1">
+              <Button 
+                variant="outline"
+                onClick={handleRestore}
+                disabled={restoring}
+                className="w-full h-12"
+              >
+                {restoring ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    Restoring...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Restore Purchases
+                  </>
+                )}
+              </Button>
+              <p className="text-xs text-muted-foreground text-center">
+                Already subscribed? Restore to sync with your Apple ID
+              </p>
+            </div>
           )}
         </div>
 
@@ -271,16 +288,21 @@ export default function IOSPlans() {
           </div>
         )}
 
-        {/* Footer Note */}
-        <div className="mt-4 space-y-3">
-          <p className="text-xs text-muted-foreground text-center">
-            Payment will be charged to your Apple ID account. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period.
+        {/* Footer Note - Apple Required Disclosures */}
+        <div className="mt-4 space-y-3 bg-muted/30 rounded-xl p-4">
+          <p className="text-xs text-muted-foreground text-center font-medium">
+            Important Subscription Information
           </p>
+          <ul className="text-xs text-muted-foreground space-y-2">
+            <li>• Payment will be charged to your Apple ID account at confirmation of purchase</li>
+            <li>• Subscription automatically renews unless cancelled at least 24 hours before the end of the current period</li>
+            <li>• Your account will be charged for renewal within 24 hours prior to the end of the current period</li>
+          </ul>
           <button 
             onClick={() => navigate('/settings/subscription-terms')}
             className="text-xs text-primary text-center w-full underline"
           >
-            View Subscription Terms
+            View Full Subscription Terms
           </button>
         </div>
       </div>

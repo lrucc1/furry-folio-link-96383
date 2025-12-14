@@ -25,7 +25,7 @@ export default function IOSSubscriptionTerms() {
         {/* Header */}
         <div className="px-4 mb-6">
           <p className="text-sm text-muted-foreground text-center">
-            Last updated: January 2025
+            Last updated: December 2024
           </p>
         </div>
 
@@ -98,7 +98,7 @@ export default function IOSSubscriptionTerms() {
                 </AccordionTrigger>
                 <AccordionContent className="px-4 pb-4 text-sm text-muted-foreground">
                   <p className="mb-2">
-                    Pro subscriptions are available exclusively through the iOS app. Payment is processed securely through Apple In-App Purchase using your Apple ID.
+                    <strong>Payment will be charged to your Apple ID account at the confirmation of purchase.</strong> Pro subscriptions are available exclusively through the iOS app.
                   </p>
                   <p>
                     Subscriptions automatically renew unless cancelled at least 24 hours before the end of the current billing period. Your Apple ID account will be charged for renewal within 24 hours prior to the end of the current period.
@@ -112,7 +112,7 @@ export default function IOSSubscriptionTerms() {
                 </AccordionTrigger>
                 <AccordionContent className="px-4 pb-4 text-sm text-muted-foreground">
                   <p>
-                    We may offer free trial periods. If you don't cancel before the trial ends, you'll be charged the subscription price. Any unused portion of a free trial will be forfeited when you purchase a subscription.
+                    New subscribers may be eligible for a <strong>7-day free trial</strong>. If you don't cancel before the trial ends, you'll be charged the subscription price. Any unused portion of a free trial will be forfeited when you purchase a subscription.
                   </p>
                 </AccordionContent>
               </AccordionItem>
@@ -172,8 +172,11 @@ export default function IOSSubscriptionTerms() {
                   <p className="mb-2">
                     Pro subscriptions are only available through the iOS app. Web users can sign in with their account to access Pro features after subscribing via iOS.
                   </p>
-                  <p>
+                  <p className="mb-2">
                     Your subscription is tied to your PetLinkID account, not your device. Sign in on any device to access your Pro features.
+                  </p>
+                  <p>
+                    You can restore previous purchases at any time from the Plans screen in the app.
                   </p>
                 </AccordionContent>
               </AccordionItem>
