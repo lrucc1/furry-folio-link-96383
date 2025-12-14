@@ -57,7 +57,7 @@ export const HeroSection = () => {
             </h1>
             
             <p className="text-xl text-white/90 mb-8 leading-relaxed max-w-lg">
-              Store pet profiles, manage vaccinations, and never lose your furry family member again with smart QR tags and instant recovery tools.
+              Store pet profiles, track vaccinations, and instantly share essential pet information with family and caregivers — so your furry family is always cared for.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 mb-12">
