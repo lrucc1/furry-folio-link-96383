@@ -5,7 +5,43 @@ import { Instagram, Download, Share2 } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { shareToInstagram, downloadImage } from '@/lib/shareToInstagram'
 import { calculateAge } from '@/lib/age-utils'
+import { format } from 'date-fns'
 
+// Draw link chain icon on canvas (matches Logo component style)
+const drawLinkIcon = (ctx: CanvasRenderingContext2D, x: number, y: number, size: number, color: string) => {
+  ctx.save()
+  ctx.translate(x, y)
+  ctx.rotate(Math.PI / 4) // 45 degree rotation
+  
+  const linkWidth = size * 0.4
+  const linkHeight = size * 0.7
+  const lineWidth = size * 0.12
+  const gap = size * 0.15
+  
+  ctx.strokeStyle = color
+  ctx.lineWidth = lineWidth
+  ctx.lineCap = 'round'
+  
+  // First link (top-left)
+  ctx.beginPath()
+  ctx.moveTo(-gap, -linkHeight / 2)
+  ctx.lineTo(-gap, linkHeight / 4)
+  ctx.arc(-gap - linkWidth / 2, linkHeight / 4, linkWidth / 2, 0, Math.PI)
+  ctx.lineTo(-gap - linkWidth, -linkHeight / 2)
+  ctx.arc(-gap - linkWidth / 2, -linkHeight / 2, linkWidth / 2, Math.PI, 0)
+  ctx.stroke()
+  
+  // Second link (bottom-right)
+  ctx.beginPath()
+  ctx.moveTo(gap, linkHeight / 2)
+  ctx.lineTo(gap, -linkHeight / 4)
+  ctx.arc(gap + linkWidth / 2, -linkHeight / 4, linkWidth / 2, Math.PI, 0)
+  ctx.lineTo(gap + linkWidth, linkHeight / 2)
+  ctx.arc(gap + linkWidth / 2, linkHeight / 2, linkWidth / 2, 0, Math.PI)
+  ctx.stroke()
+  
+  ctx.restore()
+}
 interface InstagramShareCardProps {
   petName: string
   petSpecies: string
@@ -130,17 +166,13 @@ export const InstagramShareCard = ({
     ctx.fillRect(cardPadding, cardY, cardWidth, stripeHeight + cardRadius)
     ctx.restore()
 
-    // "PET LICENSE ID" header on card
-    ctx.fillStyle = '#1a1a1a'
+    // PetLinkID branding with link icon (teal color)
+    const brandColor = '#2E9B8D'
+    drawLinkIcon(ctx, cardPadding + 60, cardY + 60, 35, brandColor)
+    ctx.fillStyle = brandColor
     ctx.font = 'bold 32px system-ui, -apple-system, sans-serif'
     ctx.textAlign = 'left'
-    ctx.fillText('PET LICENSE ID', cardPadding + 40, cardY + 70)
-
-    // PetLinkID logo text on right
-    ctx.fillStyle = '#9b87f5'
-    ctx.font = 'bold 28px system-ui, -apple-system, sans-serif'
-    ctx.textAlign = 'right'
-    ctx.fillText('PetLinkID', cardPadding + cardWidth - 40, cardY + 70)
+    ctx.fillText('PETLINKID', cardPadding + 95, cardY + 70)
 
     // Photo section (left side of card)
     const photoSize = 280
@@ -261,25 +293,67 @@ export const InstagramShareCard = ({
     const breedText = petBreed || petSpecies
     ctx.fillText(breedText, detailsX, detailsY + 90)
 
-    // Age (if available)
-    if (petAge) {
-      ctx.fillStyle = '#9b87f5'
-      ctx.font = 'bold 28px system-ui, -apple-system, sans-serif'
-      ctx.fillText(petAge, detailsX, detailsY + 135)
+    // DOB and Age section with labels
+    const infoY = detailsY + 130
+    const labelColor = '#9ca3af'
+    const valueColor = '#1a1a1a'
+    
+    if (dateOfBirth) {
+      // Format DOB nicely
+      const dobDate = new Date(dateOfBirth)
+      const formattedDob = format(dobDate, 'd MMM yyyy')
+      
+      // DOB label and value
+      ctx.fillStyle = labelColor
+      ctx.font = '20px system-ui, -apple-system, sans-serif'
+      ctx.fillText('BORN', detailsX, infoY)
+      
+      ctx.fillStyle = valueColor
+      ctx.font = 'bold 26px system-ui, -apple-system, sans-serif'
+      ctx.fillText(formattedDob, detailsX, infoY + 30)
+      
+      // Age label and value (next to DOB)
+      if (petAge) {
+        const ageX = detailsX + 180
+        ctx.fillStyle = labelColor
+        ctx.font = '20px system-ui, -apple-system, sans-serif'
+        ctx.fillText('AGE', ageX, infoY)
+        
+        ctx.fillStyle = '#2E9B8D'
+        ctx.font = 'bold 26px system-ui, -apple-system, sans-serif'
+        ctx.fillText(petAge, ageX, infoY + 30)
+      }
+    } else if (petAge) {
+      // Just age if no DOB
+      ctx.fillStyle = labelColor
+      ctx.font = '20px system-ui, -apple-system, sans-serif'
+      ctx.fillText('AGE', detailsX, infoY)
+      
+      ctx.fillStyle = '#2E9B8D'
+      ctx.font = 'bold 26px system-ui, -apple-system, sans-serif'
+      ctx.fillText(petAge, detailsX, infoY + 30)
     }
 
-    // Species icon
+    // Species icon with label
     const speciesEmoji = petSpecies.toLowerCase() === 'dog' ? '🐕' : 
                          petSpecies.toLowerCase() === 'cat' ? '🐈' : 
                          petSpecies.toLowerCase() === 'bird' ? '🐦' : 
                          petSpecies.toLowerCase() === 'rabbit' ? '🐰' : '🐾'
-    ctx.font = '48px system-ui'
-    ctx.fillText(speciesEmoji, detailsX, detailsY + 200)
+    const speciesY = dateOfBirth ? infoY + 80 : infoY + 50
+    ctx.font = '40px system-ui'
+    ctx.fillText(speciesEmoji, detailsX, speciesY)
+    ctx.fillStyle = labelColor
+    ctx.font = 'bold 22px system-ui, -apple-system, sans-serif'
+    ctx.fillText(petSpecies.toUpperCase(), detailsX + 50, speciesY - 5)
 
-    // ID number with shield
-    ctx.fillStyle = '#1a1a1a'
-    ctx.font = 'bold 24px monospace'
-    ctx.fillText(`ID: ${publicId}`, detailsX, detailsY + 260)
+    // ID number
+    const idY = speciesY + 50
+    ctx.fillStyle = labelColor
+    ctx.font = '18px system-ui, -apple-system, sans-serif'
+    ctx.fillText('ID', detailsX, idY)
+    ctx.fillStyle = valueColor
+    ctx.font = 'bold 22px monospace'
+    ctx.fillText(publicId, detailsX + 30, idY)
 
     // QR Code (bottom right of card)
     const qrSize = 120
@@ -336,7 +410,7 @@ export const InstagramShareCard = ({
     ctx.fillText('is officially licensed! 🎉', WIDTH / 2, cardY + cardHeight + 220)
 
     // Call to action
-    ctx.fillStyle = '#9b87f5'
+    ctx.fillStyle = '#2E9B8D'
     ctx.font = 'bold 40px system-ui, -apple-system, sans-serif'
     ctx.fillText('Get yours at PetLinkID.com', WIDTH / 2, HEIGHT - 200)
 
