@@ -30,7 +30,7 @@ interface Pet {
   species: string
   breed: string | null
   colour: string | null
-  sex: string | null
+  gender: string | null
   date_of_birth: string | null
   desexed: boolean
   weight_kg: number | null
@@ -409,9 +409,9 @@ const PetDetails = () => {
                   {pet.weight_kg} kg
                 </Badge>
               )}
-              {pet.sex && (
+              {pet.gender && (
                 <Badge variant="outline" className="text-xs">
-                  {pet.sex}
+                  {pet.gender}
                 </Badge>
               )}
             </div>
@@ -711,7 +711,7 @@ const PetDetails = () => {
             petBreed={pet.breed}
             petColour={pet.colour}
             petWeight={pet.weight_kg}
-            petGender={pet.sex}
+            petGender={pet.gender}
             petPhoto={pet.photo_url}
             publicId={pet.public_id}
             publicUrl={publicUrl}
@@ -812,10 +812,10 @@ const PetDetails = () => {
                       <p className="font-medium">{pet.colour}</p>
                     </div>
                   )}
-                  {pet.sex && (
+                  {pet.gender && (
                     <div>
                       <span className="text-muted-foreground">Sex:</span>
-                      <p className="font-medium">{pet.sex}</p>
+                      <p className="font-medium">{pet.gender}</p>
                     </div>
                   )}
                   <div>
@@ -1208,7 +1208,7 @@ const PetDetails = () => {
                         petBreed={pet.breed}
                         petColour={pet.colour}
                         petWeight={pet.weight_kg}
-                        petGender={pet.sex}
+                        petGender={pet.gender}
                         petPhoto={pet.photo_url}
                         publicId={pet.public_id}
                         publicUrl={publicUrl}
@@ -1243,7 +1243,7 @@ const PetDetails = () => {
                     petBreed={pet.breed}
                     petColour={pet.colour}
                     petWeight={pet.weight_kg}
-                    petGender={pet.sex}
+                    petGender={pet.gender}
                     petPhoto={pet.photo_url}
                     publicId={pet.public_id}
                     publicUrl={publicUrl}
