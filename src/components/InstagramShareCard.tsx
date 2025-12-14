@@ -96,19 +96,20 @@ export const InstagramShareCard = ({
     canvas.width = WIDTH
     canvas.height = HEIGHT
 
-    // Background - premium gradient
+    // Background - clean premium gradient
     const bgGradient = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT)
-    bgGradient.addColorStop(0, '#1a1a2e')
-    bgGradient.addColorStop(0.5, '#16213e')
-    bgGradient.addColorStop(1, '#0f3460')
+    bgGradient.addColorStop(0, '#0f172a')
+    bgGradient.addColorStop(0.5, '#1e293b')
+    bgGradient.addColorStop(1, '#1e3a5a')
     ctx.fillStyle = bgGradient
     ctx.fillRect(0, 0, WIDTH, HEIGHT)
 
-    // Subtle pattern overlay for texture
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.02)'
-    for (let i = 0; i < HEIGHT; i += 4) {
-      ctx.fillRect(0, i, WIDTH, 1)
-    }
+    // Subtle radial glow in center for depth
+    const glowGradient = ctx.createRadialGradient(WIDTH / 2, HEIGHT / 2, 0, WIDTH / 2, HEIGHT / 2, 600)
+    glowGradient.addColorStop(0, 'rgba(46, 155, 141, 0.08)')
+    glowGradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
+    ctx.fillStyle = glowGradient
+    ctx.fillRect(0, 0, WIDTH, HEIGHT)
 
     // Main card dimensions (credit card aspect ratio)
     const cardPadding = 60
@@ -118,9 +119,9 @@ export const InstagramShareCard = ({
     const cardRadius = 40
 
     // Card shadow
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)'
-    ctx.shadowBlur = 60
-    ctx.shadowOffsetY = 20
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.4)'
+    ctx.shadowBlur = 50
+    ctx.shadowOffsetY = 15
 
     // Card background gradient
     const cardGradient = ctx.createLinearGradient(cardPadding, cardY, cardPadding + cardWidth, cardY + cardHeight)
@@ -179,13 +180,14 @@ export const InstagramShareCard = ({
     ctx.fillRect(cardPadding, cardY, cardWidth, stripeHeight + cardRadius)
     ctx.restore()
 
-    // PetLinkID branding with link icon (teal color with glow)
+    // PetLinkID branding - icon teal with glow, text black, positioned below stripe
     const brandColor = '#2E9B8D'
-    drawLinkIcon(ctx, cardPadding + 55, cardY + 52, 38, brandColor, true)
-    ctx.fillStyle = brandColor
-    ctx.font = 'bold 34px system-ui, -apple-system, sans-serif'
+    const textColor = '#1a1a1a'
+    drawLinkIcon(ctx, cardPadding + 55, cardY + 58, 32, brandColor, true)
+    ctx.fillStyle = textColor
+    ctx.font = 'bold 30px system-ui, -apple-system, sans-serif'
     ctx.textAlign = 'left'
-    ctx.fillText('PETLINKID', cardPadding + 100, cardY + 70)
+    ctx.fillText('PetLinkID', cardPadding + 95, cardY + 75)
 
     // Photo section (left side of card) - optimized sizing for balance
     const photoSize = 250
@@ -282,14 +284,19 @@ export const InstagramShareCard = ({
       ctx.fillText('🐾', photoX + photoSize / 2, photoY + photoSize / 2 + 25)
     }
 
-    // Pet details (right side of card) - improved spacing for balance
-    const detailsX = photoX + photoSize + 40
-    const detailsY = photoY + 10
-    const detailsWidth = cardWidth - photoSize - 120
+    // Pet details (right side of card) - consistent alignment and sizing
+    const detailsX = photoX + photoSize + 45
+    const detailsY = photoY + 5
+    const detailsWidth = cardWidth - photoSize - 130
 
-    // Pet name - larger and bolder
-    ctx.fillStyle = '#1a1a1a'
-    ctx.font = 'bold 52px system-ui, -apple-system, sans-serif'
+    // Standard colors for consistency
+    const labelColor = '#9ca3af'
+    const valueColor = '#1a1a1a'
+    const accentColor = '#2E9B8D'
+
+    // Pet name - bold and prominent
+    ctx.fillStyle = valueColor
+    ctx.font = 'bold 48px system-ui, -apple-system, sans-serif'
     ctx.textAlign = 'left'
     
     // Truncate name if too long
@@ -298,11 +305,11 @@ export const InstagramShareCard = ({
       displayName = displayName.slice(0, -1)
     }
     if (displayName !== petName) displayName += '...'
-    ctx.fillText(displayName, detailsX, detailsY + 38)
+    ctx.fillText(displayName, detailsX, detailsY + 40)
 
-    // Breed - with better spacing
+    // Breed - consistent sizing
     ctx.fillStyle = '#6b7280'
-    ctx.font = '28px system-ui, -apple-system, sans-serif'
+    ctx.font = '26px system-ui, -apple-system, sans-serif'
     const breedText = petBreed || petSpecies
     ctx.fillText(breedText, detailsX, detailsY + 78)
 
@@ -311,69 +318,68 @@ export const InstagramShareCard = ({
     ctx.lineWidth = 1
     ctx.beginPath()
     ctx.moveTo(detailsX, detailsY + 100)
-    ctx.lineTo(detailsX + detailsWidth - 20, detailsY + 100)
+    ctx.lineTo(detailsX + detailsWidth, detailsY + 100)
     ctx.stroke()
 
-    // DOB and Age section with improved layout
-    const infoY = detailsY + 125
-    const labelColor = '#9ca3af'
-    const valueColor = '#1a1a1a'
+    // DOB and Age section - aligned grid layout
+    const infoY = detailsY + 130
     
     if (dateOfBirth) {
       // Format DOB nicely
       const dobDate = new Date(dateOfBirth)
       const formattedDob = format(dobDate, 'd MMM yyyy')
       
-      // DOB label and value
+      // DOB label and value - left column
       ctx.fillStyle = labelColor
-      ctx.font = '18px system-ui, -apple-system, sans-serif'
+      ctx.font = 'bold 14px system-ui, -apple-system, sans-serif'
       ctx.fillText('BORN', detailsX, infoY)
       
       ctx.fillStyle = valueColor
-      ctx.font = 'bold 24px system-ui, -apple-system, sans-serif'
-      ctx.fillText(formattedDob, detailsX, infoY + 28)
+      ctx.font = 'bold 22px system-ui, -apple-system, sans-serif'
+      ctx.fillText(formattedDob, detailsX, infoY + 26)
       
-      // Age label and value (next to DOB with more spacing)
+      // Age label and value - right column (aligned)
       if (petAge) {
-        const ageX = detailsX + 160
+        const ageX = detailsX + 170
         ctx.fillStyle = labelColor
-        ctx.font = '18px system-ui, -apple-system, sans-serif'
+        ctx.font = 'bold 14px system-ui, -apple-system, sans-serif'
         ctx.fillText('AGE', ageX, infoY)
         
-        ctx.fillStyle = '#2E9B8D'
-        ctx.font = 'bold 24px system-ui, -apple-system, sans-serif'
-        ctx.fillText(petAge, ageX, infoY + 28)
+        ctx.fillStyle = accentColor
+        ctx.font = 'bold 22px system-ui, -apple-system, sans-serif'
+        ctx.fillText(petAge, ageX, infoY + 26)
       }
     } else if (petAge) {
       // Just age if no DOB
       ctx.fillStyle = labelColor
-      ctx.font = '18px system-ui, -apple-system, sans-serif'
+      ctx.font = 'bold 14px system-ui, -apple-system, sans-serif'
       ctx.fillText('AGE', detailsX, infoY)
       
-      ctx.fillStyle = '#2E9B8D'
-      ctx.font = 'bold 24px system-ui, -apple-system, sans-serif'
-      ctx.fillText(petAge, detailsX, infoY + 28)
+      ctx.fillStyle = accentColor
+      ctx.font = 'bold 22px system-ui, -apple-system, sans-serif'
+      ctx.fillText(petAge, detailsX, infoY + 26)
     }
 
-    // Species icon with label - better vertical positioning
+    // Species icon with label - consistent positioning
     const speciesEmoji = petSpecies.toLowerCase() === 'dog' ? '🐕' : 
                          petSpecies.toLowerCase() === 'cat' ? '🐈' : 
                          petSpecies.toLowerCase() === 'bird' ? '🐦' : 
                          petSpecies.toLowerCase() === 'rabbit' ? '🐰' : '🐾'
-    const speciesY = dateOfBirth ? infoY + 70 : infoY + 45
-    ctx.font = '36px system-ui'
+    const speciesY = dateOfBirth ? infoY + 70 : infoY + 50
+    ctx.font = '32px system-ui'
     ctx.fillText(speciesEmoji, detailsX, speciesY)
     ctx.fillStyle = labelColor
-    ctx.font = 'bold 20px system-ui, -apple-system, sans-serif'
-    ctx.fillText(petSpecies.toUpperCase(), detailsX + 45, speciesY - 5)
+    ctx.font = 'bold 18px system-ui, -apple-system, sans-serif'
+    ctx.fillText(petSpecies.toUpperCase(), detailsX + 42, speciesY - 4)
 
-    // ID number - moved to footer area for cleaner layout
+    // Footer row - ID aligned with LICENSED badge
+    const footerY = cardY + cardHeight - 55
     ctx.fillStyle = labelColor
-    ctx.font = '16px system-ui, -apple-system, sans-serif'
-    ctx.fillText('ID:', cardPadding + 180, cardY + cardHeight - 55)
+    ctx.font = 'bold 16px system-ui, -apple-system, sans-serif'
+    ctx.fillText('ID:', cardPadding + 175, footerY)
     ctx.fillStyle = valueColor
-    ctx.font = 'bold 18px monospace'
-    ctx.fillText(publicId, cardPadding + 210, cardY + cardHeight - 55)
+    ctx.font = 'bold 16px monospace'
+    ctx.fillText(publicId, cardPadding + 205, footerY)
 
     // QR Code (bottom right of card)
     const qrSize = 120
@@ -434,13 +440,13 @@ export const InstagramShareCard = ({
     ctx.font = 'bold 40px system-ui, -apple-system, sans-serif'
     ctx.fillText('Get yours at PetLinkID.com', WIDTH / 2, HEIGHT - 200)
 
-    // Paw prints decoration
-    ctx.font = '60px system-ui'
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
+    // Paw prints decoration - smaller and more subtle
+    ctx.font = '50px system-ui'
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.06)'
     ctx.fillText('🐾', 100, 200)
-    ctx.fillText('🐾', WIDTH - 150, 280)
+    ctx.fillText('🐾', WIDTH - 140, 280)
     ctx.fillText('🐾', 80, HEIGHT - 400)
-    ctx.fillText('🐾', WIDTH - 130, HEIGHT - 350)
+    ctx.fillText('🐾', WIDTH - 120, HEIGHT - 350)
 
     // PetLinkID logo at top
     ctx.fillStyle = '#ffffff'
