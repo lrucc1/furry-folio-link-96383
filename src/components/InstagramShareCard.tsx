@@ -549,10 +549,20 @@ export const InstagramShareCard = ({
   }, [])
 
   useEffect(() => {
-    if (isOpen && canvasRef.current) {
-      generateLicenseCard(0).then(() => {
-        startShimmerAnimation()
-      })
+    if (isOpen) {
+      // Use timeout to ensure canvas is mounted after dialog animation
+      const timeoutId = setTimeout(() => {
+        if (canvasRef.current) {
+          generateLicenseCard(0).then(() => {
+            startShimmerAnimation()
+          })
+        }
+      }, 100)
+      
+      return () => {
+        clearTimeout(timeoutId)
+        stopShimmerAnimation()
+      }
     } else {
       stopShimmerAnimation()
     }
@@ -562,7 +572,6 @@ export const InstagramShareCard = ({
 
   const getShareToastMessage = (result: ShareResult) => {
     const isNative = Capacitor.isNativePlatform()
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
     
     switch (result.method) {
       case 'native':
@@ -573,21 +582,19 @@ export const InstagramShareCard = ({
       case 'web-share':
         return {
           title: 'Share sheet opened!',
-          description: isMobile 
-            ? 'Select Instagram to share. For Stories, save the image first then add to your Story.'
-            : 'Select where to share your PetLinkID!',
+          description: 'Select Instagram to share your PetLinkID!',
         }
       case 'web-share-url':
         return {
           title: 'Share sheet opened!',
-          description: 'Share your PetLinkID link! For Stories with the image, use the Download button.',
+          description: 'Share your PetLinkID link!',
         }
       case 'download':
         return {
           title: 'Image saved!',
           description: result.captionCopied 
-            ? 'Caption copied! Open Instagram → Your Story → Add the saved image.'
-            : 'Open Instagram → Your Story → Add the saved image.',
+            ? 'Caption copied! Open Instagram and add the saved image.'
+            : 'Open Instagram and add the saved image.',
         }
       default:
         return {
@@ -657,7 +664,7 @@ export const InstagramShareCard = ({
       if (success) {
         toast({
           title: 'Copied to clipboard!',
-          description: 'Paste the image directly into Instagram Stories.',
+          description: 'Paste the image into Instagram!',
         })
       } else {
         toast({
@@ -708,7 +715,7 @@ export const InstagramShareCard = ({
               disabled={generating}
             >
               <Instagram className="w-4 h-4 mr-2" />
-              Share to Instagram Stories
+              {Capacitor.isNativePlatform() ? 'Share to Instagram Stories' : 'Share to Instagram'}
             </Button>
             <div className="grid grid-cols-3 gap-2">
               <Button onClick={handleDownload} variant="outline" disabled={generating}>
@@ -728,7 +735,7 @@ export const InstagramShareCard = ({
 
           {!Capacitor.isNativePlatform() && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && (
             <p className="text-xs text-muted-foreground text-center bg-muted/50 rounded-md p-2">
-              💡 <strong>Tip for Stories:</strong> Copy or Save the image, then open Instagram → Your Story → Paste or add from camera roll.
+              💡 <strong>Tip:</strong> Copy or Save the image, then open Instagram and share it to your feed or story.
             </p>
           )}
           <p className="text-xs text-muted-foreground text-center">
