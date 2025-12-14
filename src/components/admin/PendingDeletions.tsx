@@ -302,7 +302,7 @@ export function PendingDeletions() {
                   <div className="text-sm text-destructive font-medium">
                     {immediateDelete
                       ? '⚠️ Account will be deleted immediately and cannot be recovered.'
-                      : 'Stripe subscriptions will be canceled. Account remains scheduled for deletion.'}
+                      : 'Subscriptions will be canceled (Apple subscriptions may need manual cancellation). Account remains scheduled for deletion.'}
                   </div>
                 </div>
               )}

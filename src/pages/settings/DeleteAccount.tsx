@@ -74,7 +74,7 @@ export function DeleteAccount() {
             <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
               <h4 className="font-medium text-destructive mb-2">{au('Warning:')}</h4>
               <ul className="text-sm space-y-1 list-disc list-inside">
-                <li>{au('Your active Stripe subscription will be canceled immediately')}</li>
+                <li>{au('Your active subscription will be canceled (you may also need to cancel in your Apple ID settings)')}</li>
                 <li>{au('Your account will be marked for deletion')}</li>
                 <li>{au('All data will be permanently removed after 30 days')}</li>
                 <li>{au('This includes all pets, health records, documents, and invitations')}</li>
