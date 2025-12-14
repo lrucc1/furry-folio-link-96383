@@ -26,6 +26,7 @@ export const InstagramShareCard = ({
   dateOfBirth,
 }: InstagramShareCardProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const animationRef = useRef<number | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [generating, setGenerating] = useState(false)
 
@@ -35,11 +36,11 @@ export const InstagramShareCard = ({
   const WIDTH = 1080
   const HEIGHT = 1920
 
-  const generateLicenseCard = useCallback(async () => {
+  const generateLicenseCard = useCallback(async (shimmerOffset: number = 0) => {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    setGenerating(true)
+    if (shimmerOffset === 0) setGenerating(true)
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
@@ -96,13 +97,22 @@ export const InstagramShareCard = ({
     ctx.shadowBlur = 0
     ctx.shadowOffsetY = 0
 
-    // Holographic accent stripe at top of card
+    // Animated holographic accent stripe at top of card
     const stripeHeight = 12
-    const holoGradient = ctx.createLinearGradient(cardPadding, cardY, cardPadding + cardWidth, cardY)
+    
+    // Create animated gradient with offset
+    const gradientStart = cardPadding - cardWidth + shimmerOffset
+    const gradientEnd = cardPadding + cardWidth * 2 + shimmerOffset
+    const holoGradient = ctx.createLinearGradient(gradientStart, cardY, gradientEnd, cardY)
+    
+    // Rainbow holographic colors with shimmer effect
     holoGradient.addColorStop(0, '#9b87f5')
-    holoGradient.addColorStop(0.25, '#f97316')
-    holoGradient.addColorStop(0.5, '#9b87f5')
-    holoGradient.addColorStop(0.75, '#22c55e')
+    holoGradient.addColorStop(0.15, '#22c55e')
+    holoGradient.addColorStop(0.3, '#f97316')
+    holoGradient.addColorStop(0.45, '#ec4899')
+    holoGradient.addColorStop(0.6, '#9b87f5')
+    holoGradient.addColorStop(0.75, '#3b82f6')
+    holoGradient.addColorStop(0.9, '#22c55e')
     holoGradient.addColorStop(1, '#9b87f5')
     
     ctx.save()
@@ -349,14 +359,45 @@ export const InstagramShareCard = ({
     ctx.font = '28px system-ui, -apple-system, sans-serif'
     ctx.fillText('Keep your pets safe', WIDTH / 2, 230)
 
-    setGenerating(false)
+    if (shimmerOffset === 0) setGenerating(false)
   }, [petAge, petBreed, petName, petPhoto, petSpecies, publicId, publicUrl])
+
+  // Shimmer animation loop
+  const startShimmerAnimation = useCallback(() => {
+    let offset = 0
+    const cardWidth = WIDTH - 120 // cardPadding * 2
+    const animationSpeed = 8 // pixels per frame
+    
+    const animate = () => {
+      offset += animationSpeed
+      if (offset > cardWidth * 3) {
+        offset = 0
+      }
+      generateLicenseCard(offset)
+      animationRef.current = requestAnimationFrame(animate)
+    }
+    
+    animationRef.current = requestAnimationFrame(animate)
+  }, [generateLicenseCard])
+
+  const stopShimmerAnimation = useCallback(() => {
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current)
+      animationRef.current = null
+    }
+  }, [])
 
   useEffect(() => {
     if (isOpen && canvasRef.current) {
-      generateLicenseCard()
+      generateLicenseCard(0).then(() => {
+        startShimmerAnimation()
+      })
+    } else {
+      stopShimmerAnimation()
     }
-  }, [isOpen, generateLicenseCard])
+    
+    return () => stopShimmerAnimation()
+  }, [isOpen, generateLicenseCard, startShimmerAnimation, stopShimmerAnimation])
 
   const handleShare = async () => {
     await generateLicenseCard()
