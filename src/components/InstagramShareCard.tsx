@@ -63,6 +63,7 @@ interface InstagramShareCardProps {
   petBreed: string | null
   petColour: string | null
   petWeight: number | null
+  petGender: string | null
   petPhoto: string | null
   publicId: string
   publicUrl: string
@@ -75,6 +76,7 @@ export const InstagramShareCard = ({
   petBreed,
   petColour,
   petWeight,
+  petGender,
   petPhoto,
   publicId,
   publicUrl,
@@ -431,6 +433,18 @@ export const InstagramShareCard = ({
     ctx.fillStyle = valueColor
     ctx.font = '22px system-ui, -apple-system, sans-serif'
     ctx.fillText(petSpecies.toUpperCase(), detailsX + labelWidth + 30, speciesY)
+
+    // SEX: next to species on same row
+    if (petGender) {
+      const sexLabelX = detailsX + labelWidth + 180
+      ctx.fillStyle = labelColor
+      ctx.font = 'bold 16px system-ui, -apple-system, sans-serif'
+      ctx.fillText('SEX:', sexLabelX, speciesY)
+      ctx.fillStyle = valueColor
+      ctx.font = '22px system-ui, -apple-system, sans-serif'
+      const genderDisplay = petGender.charAt(0).toUpperCase() + petGender.slice(1).toLowerCase()
+      ctx.fillText(genderDisplay, sexLabelX + 50, speciesY)
+    }
 
     // Footer row - just the LICENSED badge (ID moved to top right)
     const footerY = cardY + cardHeight - 55
