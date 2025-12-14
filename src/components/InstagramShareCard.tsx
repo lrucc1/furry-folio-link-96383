@@ -314,12 +314,12 @@ export const InstagramShareCard = ({
 
     // NAME: label and value
     ctx.fillStyle = labelColor
-    ctx.font = 'bold 16px system-ui, -apple-system, sans-serif'
+    ctx.font = 'bold 18px system-ui, -apple-system, sans-serif'
     ctx.textAlign = 'left'
     ctx.fillText('NAME:', detailsX, detailsY + 25)
     
     ctx.fillStyle = valueColor
-    ctx.font = 'bold 32px system-ui, -apple-system, sans-serif'
+    ctx.font = 'bold 34px system-ui, -apple-system, sans-serif'
     // Truncate name if too long
     let displayName = petName
     const maxNameWidth = detailsWidth - labelWidth
@@ -332,11 +332,11 @@ export const InstagramShareCard = ({
     // BREED: label and value
     const breedY = detailsY + 60
     ctx.fillStyle = labelColor
-    ctx.font = 'bold 16px system-ui, -apple-system, sans-serif'
+    ctx.font = 'bold 18px system-ui, -apple-system, sans-serif'
     ctx.fillText('BREED:', detailsX, breedY)
     
     ctx.fillStyle = valueColor
-    ctx.font = '22px system-ui, -apple-system, sans-serif'
+    ctx.font = '24px system-ui, -apple-system, sans-serif'
     const breedText = petBreed || petSpecies
     ctx.fillText(breedText, detailsX + labelWidth, breedY)
 
@@ -344,11 +344,11 @@ export const InstagramShareCard = ({
     let currentY = breedY + 35
     if (petColour) {
       ctx.fillStyle = labelColor
-      ctx.font = 'bold 14px system-ui, -apple-system, sans-serif'
+      ctx.font = 'bold 16px system-ui, -apple-system, sans-serif'
       ctx.fillText('COLOUR / MARKINGS:', detailsX, currentY)
       
       ctx.fillStyle = valueColor
-      ctx.font = '20px system-ui, -apple-system, sans-serif'
+      ctx.font = '22px system-ui, -apple-system, sans-serif'
       // Truncate colour if too long
       let displayColour = petColour
       const colourMaxWidth = detailsWidth - 10
@@ -363,11 +363,11 @@ export const InstagramShareCard = ({
     // WEIGHT: label and value (if available)
     if (petWeight) {
       ctx.fillStyle = labelColor
-      ctx.font = 'bold 16px system-ui, -apple-system, sans-serif'
+      ctx.font = 'bold 18px system-ui, -apple-system, sans-serif'
       ctx.fillText('WEIGHT:', detailsX, currentY)
       
       ctx.fillStyle = valueColor
-      ctx.font = '22px system-ui, -apple-system, sans-serif'
+      ctx.font = '24px system-ui, -apple-system, sans-serif'
       ctx.fillText(`${petWeight} kg`, detailsX + labelWidth, currentY)
       currentY += 35
     }
@@ -390,32 +390,32 @@ export const InstagramShareCard = ({
       
       // DOB: label and value
       ctx.fillStyle = labelColor
-      ctx.font = 'bold 16px system-ui, -apple-system, sans-serif'
+      ctx.font = 'bold 18px system-ui, -apple-system, sans-serif'
       ctx.fillText('DOB:', detailsX, infoY)
       
       ctx.fillStyle = valueColor
-      ctx.font = '22px system-ui, -apple-system, sans-serif'
+      ctx.font = '24px system-ui, -apple-system, sans-serif'
       ctx.fillText(formattedDob, detailsX + labelWidth, infoY)
       
       // AGE: label and value
       if (petAge) {
         const ageY = infoY + 30
         ctx.fillStyle = labelColor
-        ctx.font = 'bold 16px system-ui, -apple-system, sans-serif'
+        ctx.font = 'bold 18px system-ui, -apple-system, sans-serif'
         ctx.fillText('AGE:', detailsX, ageY)
         
         ctx.fillStyle = accentColor
-        ctx.font = 'bold 22px system-ui, -apple-system, sans-serif'
+        ctx.font = 'bold 24px system-ui, -apple-system, sans-serif'
         ctx.fillText(petAge, detailsX + labelWidth, ageY)
       }
     } else if (petAge) {
       // Just age if no DOB
       ctx.fillStyle = labelColor
-      ctx.font = 'bold 16px system-ui, -apple-system, sans-serif'
+      ctx.font = 'bold 18px system-ui, -apple-system, sans-serif'
       ctx.fillText('AGE:', detailsX, infoY)
       
       ctx.fillStyle = accentColor
-      ctx.font = 'bold 22px system-ui, -apple-system, sans-serif'
+      ctx.font = 'bold 24px system-ui, -apple-system, sans-serif'
       ctx.fillText(petAge, detailsX + labelWidth, infoY)
     }
 
@@ -426,24 +426,24 @@ export const InstagramShareCard = ({
                          petSpecies.toLowerCase() === 'rabbit' ? '🐰' : '🐾'
     const speciesY = dateOfBirth && petAge ? infoY + 70 : infoY + 40
     ctx.fillStyle = labelColor
-    ctx.font = 'bold 16px system-ui, -apple-system, sans-serif'
+    ctx.font = 'bold 18px system-ui, -apple-system, sans-serif'
     ctx.fillText('SPECIES:', detailsX, speciesY)
-    ctx.font = '22px system-ui'
+    ctx.font = '24px system-ui'
     ctx.fillText(speciesEmoji, detailsX + labelWidth, speciesY)
     ctx.fillStyle = valueColor
-    ctx.font = '22px system-ui, -apple-system, sans-serif'
+    ctx.font = '24px system-ui, -apple-system, sans-serif'
     ctx.fillText(petSpecies.toUpperCase(), detailsX + labelWidth + 30, speciesY)
 
     // SEX: next to species on same row
     if (petGender) {
       const sexLabelX = detailsX + labelWidth + 180
       ctx.fillStyle = labelColor
-      ctx.font = 'bold 16px system-ui, -apple-system, sans-serif'
+      ctx.font = 'bold 18px system-ui, -apple-system, sans-serif'
       ctx.fillText('SEX:', sexLabelX, speciesY)
       ctx.fillStyle = valueColor
-      ctx.font = '22px system-ui, -apple-system, sans-serif'
+      ctx.font = '24px system-ui, -apple-system, sans-serif'
       const genderDisplay = petGender.charAt(0).toUpperCase() + petGender.slice(1).toLowerCase()
-      ctx.fillText(genderDisplay, sexLabelX + 50, speciesY)
+      ctx.fillText(genderDisplay, sexLabelX + 55, speciesY)
     }
 
     // Footer row - just the LICENSED badge (ID moved to top right)
@@ -468,7 +468,7 @@ export const InstagramShareCard = ({
 
     // "SCAN ME" text under QR
     ctx.fillStyle = '#9ca3af'
-    ctx.font = 'bold 18px system-ui, -apple-system, sans-serif'
+    ctx.font = 'bold 20px system-ui, -apple-system, sans-serif'
     ctx.textAlign = 'center'
     ctx.fillText('SCAN ME', qrX + qrSize / 2, qrY + qrSize + 30)
 
@@ -476,7 +476,7 @@ export const InstagramShareCard = ({
     const badgeX = cardPadding + 50
     const badgeY = cardY + cardHeight - 60
     ctx.fillStyle = '#22c55e'
-    ctx.font = 'bold 22px system-ui, -apple-system, sans-serif'
+    ctx.font = 'bold 24px system-ui, -apple-system, sans-serif'
     ctx.textAlign = 'left'
     ctx.fillText('✓ LICENSED', badgeX, badgeY)
 
