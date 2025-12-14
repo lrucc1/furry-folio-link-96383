@@ -37,8 +37,8 @@ const copyCaptionToClipboard = async (caption: string) => {
 }
 
 export const shareToInstagram = async ({ imageBlob, petName, publicUrl }: ShareOptions): Promise<void> => {
-  const file = new File([imageBlob], `${petName}-passport.png`, { type: 'image/png' })
-  const caption = `Meet ${petName}! Official Pet Passport 🛂 Get yours at PetLinkID.com #PetLinkID #PetPassport ${publicUrl}`
+  const file = new File([imageBlob], `${petName}-petlinkid.png`, { type: 'image/png' })
+  const caption = `Meet ${petName}! 🐾 Officially licensed on PetLinkID ✓ Get yours at PetLinkID.com #PetLinkID #PetLicense ${publicUrl}`
 
   // Prefer the native share sheet (with files when supported)
   try {
@@ -79,7 +79,7 @@ export const downloadImage = (blob: Blob, petName: string): void => {
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   const timestamp = new Date().toISOString().split('T')[0]
-  link.download = `${petName}-passport-${timestamp}.png`
+  link.download = `${petName}-petlinkid-${timestamp}.png`
   link.href = url
   link.style.display = 'none'
   document.body.appendChild(link)
