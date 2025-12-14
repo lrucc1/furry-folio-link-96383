@@ -1,12 +1,15 @@
 /**
  * Utility for sharing images to Instagram with intelligent fallbacks
- * - Uses the Web Share API (with files when supported)
+ * - Uses native Capacitor Share on iOS/Android for native share sheet
+ * - Uses the Web Share API (with files when supported) on web
  * - Copies the share caption to the clipboard when native sharing is not available
  * - Always downloads the image so the user can still post manually
  */
 
 import { Capacitor } from '@capacitor/core'
 import { Haptics, ImpactStyle } from '@capacitor/haptics'
+import { Share } from '@capacitor/share'
+import { Filesystem, Directory } from '@capacitor/filesystem'
 
 interface ShareOptions {
   imageBlob: Blob
@@ -36,11 +39,71 @@ const copyCaptionToClipboard = async (caption: string) => {
   }
 }
 
+const blobToBase64 = (blob: Blob): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const base64 = (reader.result as string).split(',')[1]
+      resolve(base64)
+    }
+    reader.onerror = reject
+    reader.readAsDataURL(blob)
+  })
+}
+
+const shareNative = async ({ imageBlob, petName, publicUrl }: ShareOptions): Promise<void> => {
+  const caption = `Meet ${petName}! 🐾 Officially licensed on PetLinkID ✓ Get yours at PetLinkID.com #PetLinkID #PetLicense ${publicUrl}`
+  const fileName = `${petName}-petlinkid-${Date.now()}.png`
+
+  await triggerHaptic()
+
+  // Convert blob to base64 and save to temp file
+  const base64Data = await blobToBase64(imageBlob)
+  
+  const savedFile = await Filesystem.writeFile({
+    path: fileName,
+    data: base64Data,
+    directory: Directory.Cache,
+  })
+
+  // Share using native share sheet
+  await Share.share({
+    title: `Meet ${petName}!`,
+    text: caption,
+    url: savedFile.uri,
+    dialogTitle: 'Share your PetLinkID',
+  })
+
+  // Clean up temp file after sharing
+  try {
+    await Filesystem.deleteFile({
+      path: fileName,
+      directory: Directory.Cache,
+    })
+  } catch {
+    // Ignore cleanup errors
+  }
+}
+
 export const shareToInstagram = async ({ imageBlob, petName, publicUrl }: ShareOptions): Promise<void> => {
-  const file = new File([imageBlob], `${petName}-petlinkid.png`, { type: 'image/png' })
   const caption = `Meet ${petName}! 🐾 Officially licensed on PetLinkID ✓ Get yours at PetLinkID.com #PetLinkID #PetLicense ${publicUrl}`
 
-  // Prefer the native share sheet (with files when supported)
+  // Use native Capacitor Share on iOS/Android
+  if (Capacitor.isNativePlatform()) {
+    try {
+      await shareNative({ imageBlob, petName, publicUrl })
+      return
+    } catch (error) {
+      if ((error as Error).message?.includes('canceled') || (error as Error).message?.includes('cancelled')) {
+        throw error // User cancelled, propagate
+      }
+      console.debug('Native share failed, falling back to web methods', error)
+    }
+  }
+
+  // Web fallback: Use Web Share API
+  const file = new File([imageBlob], `${petName}-petlinkid.png`, { type: 'image/png' })
+
   try {
     await triggerHaptic()
 
@@ -63,14 +126,12 @@ export const shareToInstagram = async ({ imageBlob, petName, publicUrl }: ShareO
     }
   } catch (error) {
     if ((error as Error).name === 'AbortError') {
-      // User cancelled, propagate so the UI can respect the decision
-      throw error
+      throw error // User cancelled, propagate
     }
-
     console.debug('Share attempt failed, falling back to clipboard + download', error)
   }
 
-  // Fallback: copy caption to clipboard so the user can paste in Instagram, then download image
+  // Final fallback: copy caption to clipboard and download image
   await copyCaptionToClipboard(caption)
   downloadImage(imageBlob, petName)
 }
