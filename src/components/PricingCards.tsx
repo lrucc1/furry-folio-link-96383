@@ -1,6 +1,12 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { 
   Crown, 
   Sparkles, 
@@ -13,7 +19,8 @@ import {
   AlertTriangle,
   User,
   Smartphone,
-  Gift
+  Gift,
+  Info
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PLANS, formatPrice, getYearlySavings } from "@/config/pricing";
@@ -152,12 +159,12 @@ export const ProPlanCard = ({
   const savings = getYearlySavings();
 
   const proFeatures = [
-    { icon: <PawPrint className="w-4 h-4" />, text: "Unlimited pets & QR tags" },
-    { icon: <Users className="w-4 h-4" />, text: "Family sharing with caregivers" },
-    { icon: <FileText className="w-4 h-4" />, text: "Document storage (vet records, etc.)" },
-    { icon: <Bell className="w-4 h-4" />, text: "Unlimited health reminders" },
-    { icon: <AlertTriangle className="w-4 h-4" />, text: "Priority lost-pet support" },
-    { icon: <Gift className="w-4 h-4" />, text: "7-day free trial included" },
+    { icon: <PawPrint className="w-4 h-4" />, text: "Unlimited pets & QR tags", hasTooltip: false },
+    { icon: <Users className="w-4 h-4" />, text: "Family sharing with caregivers", hasTooltip: true, tooltipText: "Caregivers you invite can use a free PetLinkID account — they don't need to pay!" },
+    { icon: <FileText className="w-4 h-4" />, text: "Document storage (vet records, etc.)", hasTooltip: false },
+    { icon: <Bell className="w-4 h-4" />, text: "Unlimited health reminders", hasTooltip: false },
+    { icon: <AlertTriangle className="w-4 h-4" />, text: "Priority lost-pet support", hasTooltip: false },
+    { icon: <Gift className="w-4 h-4" />, text: "7-day free trial included", hasTooltip: false },
   ];
 
   return (
@@ -227,11 +234,30 @@ export const ProPlanCard = ({
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
             Everything in Free, plus
           </p>
-          <div className="space-y-2.5">
-            {proFeatures.map((feature, i) => (
-              <FeatureItem key={i} icon={feature.icon} text={feature.text} />
-            ))}
-          </div>
+          <TooltipProvider>
+            <div className="space-y-2.5">
+              {proFeatures.map((feature, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-5 h-5 text-primary mt-0.5">
+                    {feature.icon}
+                  </div>
+                  <span className="text-sm text-foreground/80 flex items-center gap-1.5">
+                    {feature.text}
+                    {feature.hasTooltip && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="w-3.5 h-3.5 text-muted-foreground hover:text-primary cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-[200px] text-center">
+                          <p className="text-xs">{feature.tooltipText}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </TooltipProvider>
         </div>
 
         {/* CTA */}
