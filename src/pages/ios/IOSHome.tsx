@@ -213,7 +213,7 @@ export default function IOSHome() {
                     pet.is_lost && 'border-destructive/50',
                     pressedPetId === pet.id && 'bg-muted'
                   )}
-                  onClick={() => setSelectedPetId(pet.id)}
+                  onClick={() => navigate(`/pets/${pet.id}`)}
                   onPointerDown={() => setPressedPetId(pet.id)}
                   onPointerUp={() => setPressedPetId(null)}
                   onPointerLeave={() => setPressedPetId(null)}
