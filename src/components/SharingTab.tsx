@@ -139,12 +139,42 @@ export function SharingTab({ petId }: SharingTabProps) {
         }
       }
 
-      // 3) Merge profiles into memberships for display
-      const membersWithProfiles = (memberData || []).map((m: any) => ({
-        ...m,
-        email: profilesById[m.user_id]?.email,
-        display_name: profilesById[m.user_id]?.display_name,
-      }));
+      // 3) Also try to get invite emails for members without profile data
+      const inviteEmailsByUserId: Record<string, string> = {};
+      const { data: acceptedInvites } = await supabase
+        .from('pet_invites')
+        .select('email, status')
+        .eq('pet_id', petId)
+        .eq('status', 'accepted');
+      
+      // Match accepted invite emails to user IDs by checking if they accepted
+      if (acceptedInvites) {
+        // We'll use these emails as fallbacks
+        acceptedInvites.forEach((inv: any) => {
+          // Store by lowercase email for matching
+          inviteEmailsByUserId[inv.email.toLowerCase()] = inv.email;
+        });
+      }
+
+      // 4) Merge profiles into memberships for display
+      const membersWithProfiles = (memberData || []).map((m: any) => {
+        const profile = profilesById[m.user_id];
+        // Try to find matching invite email if no profile data
+        let inviteEmail: string | undefined;
+        if (!profile?.email && !profile?.display_name) {
+          // Check all accepted invites - the member likely came from one
+          const matchingInvite = acceptedInvites?.find((inv: any) => 
+            inv.email && inv.status === 'accepted'
+          );
+          inviteEmail = matchingInvite?.email;
+        }
+        
+        return {
+          ...m,
+          email: profile?.email || inviteEmail,
+          display_name: profile?.display_name,
+        };
+      });
 
       setMembers(membersWithProfiles);
     }
@@ -376,19 +406,29 @@ export function SharingTab({ petId }: SharingTabProps) {
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                 {au('Active Shares')}
               </h3>
-              {members.map((member) => (
+              {members.map((member) => {
+                // Create a friendly display name
+                const getRoleFriendlyName = (role: string) => {
+                  switch (role) {
+                    case 'vet': return au('Veterinarian');
+                    case 'family': return au('Family Member');
+                    case 'caregiver': return au('Caregiver');
+                    default: return au('Member');
+                  }
+                };
+                
+                const displayName = member.display_name || 
+                  member.email || 
+                  `Invited ${getRoleFriendlyName(member.role)}`;
+                
+                return (
                 <div key={member.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg">
                   <div className="flex-1 space-y-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-medium truncate max-w-[200px] sm:max-w-none" 
                          title={member.display_name || member.email || undefined}>
-                        {member.display_name || member.email || `${member.role.charAt(0).toUpperCase() + member.role.slice(1)} ${au('Member')}`}
+                        {displayName}
                       </p>
-                      {!member.display_name && !member.email && (
-                        <span className="text-xs text-muted-foreground">
-                          (ID: {member.user_id.substring(0, 8)}...)
-                        </span>
-                      )}
                     </div>
                     <p className="text-sm text-muted-foreground break-words">
                       {member.role === 'vet' && au('Veterinarian - Read-only medical access')}
@@ -440,7 +480,7 @@ export function SharingTab({ petId }: SharingTabProps) {
                     )}
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
 
