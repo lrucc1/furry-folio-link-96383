@@ -84,11 +84,18 @@ export const InstagramShareCard = ({
   dateOfBirth,
 }: InstagramShareCardProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const previewCanvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [generating, setGenerating] = useState(false)
+  const [previewLoaded, setPreviewLoaded] = useState(false)
 
   const petAge = dateOfBirth ? calculateAge(dateOfBirth) : null
+  
+  // Preview dimensions (scaled down)
+  const PREVIEW_SCALE = 0.2
+  const PREVIEW_WIDTH = 1080 * PREVIEW_SCALE
+  const PREVIEW_HEIGHT = 1920 * PREVIEW_SCALE
 
   // Stories format: 1080x1920
   const WIDTH = 1080
@@ -523,6 +530,191 @@ export const InstagramShareCard = ({
     if (shimmerOffset === 0) setGenerating(false)
   }, [petAge, petBreed, petColour, petName, petPhoto, petSpecies, publicId, publicUrl])
 
+  // Generate static preview thumbnail
+  const generatePreview = useCallback(async () => {
+    const canvas = previewCanvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    canvas.width = PREVIEW_WIDTH
+    canvas.height = PREVIEW_HEIGHT
+
+    // Scale everything down
+    ctx.scale(PREVIEW_SCALE, PREVIEW_SCALE)
+
+    // Background gradient
+    const bgGradient = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT)
+    bgGradient.addColorStop(0, '#0f172a')
+    bgGradient.addColorStop(0.5, '#1e293b')
+    bgGradient.addColorStop(1, '#1e3a5a')
+    ctx.fillStyle = bgGradient
+    ctx.fillRect(0, 0, WIDTH, HEIGHT)
+
+    // Subtle glow
+    const glowGradient = ctx.createRadialGradient(WIDTH / 2, HEIGHT / 2, 0, WIDTH / 2, HEIGHT / 2, 600)
+    glowGradient.addColorStop(0, 'rgba(46, 155, 141, 0.08)')
+    glowGradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
+    ctx.fillStyle = glowGradient
+    ctx.fillRect(0, 0, WIDTH, HEIGHT)
+
+    // Card dimensions
+    const cardPadding = 60
+    const cardWidth = WIDTH - cardPadding * 2
+    const cardHeight = 600
+    const cardY = 380
+    const cardRadius = 40
+
+    // Card shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.4)'
+    ctx.shadowBlur = 50
+    ctx.shadowOffsetY = 15
+
+    // Card background
+    const cardGradient = ctx.createLinearGradient(cardPadding, cardY, cardPadding + cardWidth, cardY + cardHeight)
+    cardGradient.addColorStop(0, '#ffffff')
+    cardGradient.addColorStop(1, '#f8f9fa')
+
+    ctx.beginPath()
+    ctx.moveTo(cardPadding + cardRadius, cardY)
+    ctx.lineTo(cardPadding + cardWidth - cardRadius, cardY)
+    ctx.quadraticCurveTo(cardPadding + cardWidth, cardY, cardPadding + cardWidth, cardY + cardRadius)
+    ctx.lineTo(cardPadding + cardWidth, cardY + cardHeight - cardRadius)
+    ctx.quadraticCurveTo(cardPadding + cardWidth, cardY + cardHeight, cardPadding + cardWidth - cardRadius, cardY + cardHeight)
+    ctx.lineTo(cardPadding + cardRadius, cardY + cardHeight)
+    ctx.quadraticCurveTo(cardPadding, cardY + cardHeight, cardPadding, cardY + cardHeight - cardRadius)
+    ctx.lineTo(cardPadding, cardY + cardRadius)
+    ctx.quadraticCurveTo(cardPadding, cardY, cardPadding + cardRadius, cardY)
+    ctx.closePath()
+    ctx.fillStyle = cardGradient
+    ctx.fill()
+
+    ctx.shadowBlur = 0
+    ctx.shadowOffsetY = 0
+
+    // Holographic stripe (static)
+    const stripeHeight = 12
+    const holoGradient = ctx.createLinearGradient(cardPadding, cardY, cardPadding + cardWidth, cardY)
+    holoGradient.addColorStop(0, '#9b87f5')
+    holoGradient.addColorStop(0.25, '#22c55e')
+    holoGradient.addColorStop(0.5, '#f97316')
+    holoGradient.addColorStop(0.75, '#ec4899')
+    holoGradient.addColorStop(1, '#9b87f5')
+
+    ctx.save()
+    ctx.beginPath()
+    ctx.moveTo(cardPadding + cardRadius, cardY)
+    ctx.lineTo(cardPadding + cardWidth - cardRadius, cardY)
+    ctx.quadraticCurveTo(cardPadding + cardWidth, cardY, cardPadding + cardWidth, cardY + cardRadius)
+    ctx.lineTo(cardPadding + cardWidth, cardY + stripeHeight + cardRadius)
+    ctx.lineTo(cardPadding, cardY + stripeHeight + cardRadius)
+    ctx.lineTo(cardPadding, cardY + cardRadius)
+    ctx.quadraticCurveTo(cardPadding, cardY, cardPadding + cardRadius, cardY)
+    ctx.closePath()
+    ctx.clip()
+    ctx.fillStyle = holoGradient
+    ctx.fillRect(cardPadding, cardY, cardWidth, stripeHeight + cardRadius)
+    ctx.restore()
+
+    // Pet photo placeholder or actual photo
+    const photoSize = 250
+    const photoX = cardPadding + 45
+    const photoY = cardY + 115
+    const photoRadius = 16
+
+    if (petPhoto) {
+      try {
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve()
+          img.onerror = reject
+          img.src = petPhoto
+        })
+
+        ctx.save()
+        ctx.beginPath()
+        ctx.moveTo(photoX + photoRadius, photoY)
+        ctx.lineTo(photoX + photoSize - photoRadius, photoY)
+        ctx.quadraticCurveTo(photoX + photoSize, photoY, photoX + photoSize, photoY + photoRadius)
+        ctx.lineTo(photoX + photoSize, photoY + photoSize - photoRadius)
+        ctx.quadraticCurveTo(photoX + photoSize, photoY + photoSize, photoX + photoSize - photoRadius, photoY + photoSize)
+        ctx.lineTo(photoX + photoRadius, photoY + photoSize)
+        ctx.quadraticCurveTo(photoX, photoY + photoSize, photoX, photoY + photoSize - photoRadius)
+        ctx.lineTo(photoX, photoY + photoRadius)
+        ctx.quadraticCurveTo(photoX, photoY, photoX + photoRadius, photoY)
+        ctx.closePath()
+        ctx.clip()
+
+        const size = Math.min(img.width, img.height)
+        const sx = (img.width - size) / 2
+        const sy = (img.height - size) / 2
+        ctx.drawImage(img, sx, sy, size, size, photoX, photoY, photoSize, photoSize)
+        ctx.restore()
+      } catch {
+        // Placeholder on error
+        ctx.fillStyle = '#f3f4f6'
+        ctx.beginPath()
+        ctx.moveTo(photoX + photoRadius, photoY)
+        ctx.lineTo(photoX + photoSize - photoRadius, photoY)
+        ctx.quadraticCurveTo(photoX + photoSize, photoY, photoX + photoSize, photoY + photoRadius)
+        ctx.lineTo(photoX + photoSize, photoY + photoSize - photoRadius)
+        ctx.quadraticCurveTo(photoX + photoSize, photoY + photoSize, photoX + photoSize - photoRadius, photoY + photoSize)
+        ctx.lineTo(photoX + photoRadius, photoY + photoSize)
+        ctx.quadraticCurveTo(photoX, photoY + photoSize, photoX, photoY + photoSize - photoRadius)
+        ctx.lineTo(photoX, photoY + photoRadius)
+        ctx.quadraticCurveTo(photoX, photoY, photoX + photoRadius, photoY)
+        ctx.fill()
+        ctx.fillStyle = '#9ca3af'
+        ctx.font = '60px system-ui'
+        ctx.textAlign = 'center'
+        ctx.fillText('🐾', photoX + photoSize / 2, photoY + photoSize / 2 + 20)
+      }
+    } else {
+      ctx.fillStyle = '#f3f4f6'
+      ctx.beginPath()
+      ctx.moveTo(photoX + photoRadius, photoY)
+      ctx.lineTo(photoX + photoSize - photoRadius, photoY)
+      ctx.quadraticCurveTo(photoX + photoSize, photoY, photoX + photoSize, photoY + photoRadius)
+      ctx.lineTo(photoX + photoSize, photoY + photoSize - photoRadius)
+      ctx.quadraticCurveTo(photoX + photoSize, photoY + photoSize, photoX + photoSize - photoRadius, photoY + photoSize)
+      ctx.lineTo(photoX + photoRadius, photoY + photoSize)
+      ctx.quadraticCurveTo(photoX, photoY + photoSize, photoX, photoY + photoSize - photoRadius)
+      ctx.lineTo(photoX, photoY + photoRadius)
+      ctx.quadraticCurveTo(photoX, photoY, photoX + photoRadius, photoY)
+      ctx.fill()
+      ctx.fillStyle = '#9ca3af'
+      ctx.font = '80px system-ui'
+      ctx.textAlign = 'center'
+      ctx.fillText('🐾', photoX + photoSize / 2, photoY + photoSize / 2 + 25)
+    }
+
+    // Pet name below card
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 100px system-ui, -apple-system, sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText(petName, WIDTH / 2, cardY + cardHeight + 150)
+
+    // Tagline
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'
+    ctx.font = '36px system-ui, -apple-system, sans-serif'
+    ctx.fillText('is officially licensed! 🎉', WIDTH / 2, cardY + cardHeight + 220)
+
+    // PetLinkID logo at top
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 48px system-ui, -apple-system, sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText('PetLinkID', WIDTH / 2, 180)
+
+    setPreviewLoaded(true)
+  }, [petName, petPhoto, PREVIEW_SCALE, PREVIEW_WIDTH, PREVIEW_HEIGHT])
+
+  // Generate preview on mount and when props change
+  useEffect(() => {
+    generatePreview()
+  }, [generatePreview])
+
   // Shimmer animation loop
   const startShimmerAnimation = useCallback(() => {
     let offset = 0
@@ -687,10 +879,39 @@ export const InstagramShareCard = ({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 hover:from-purple-600 hover:to-pink-600">
-          <Instagram className="w-4 h-4 mr-2" />
-          Create PetLinkID
-        </Button>
+        <div className="cursor-pointer group">
+          {/* Preview thumbnail */}
+          <div className="relative rounded-xl overflow-hidden border-2 border-border/50 hover:border-primary/50 transition-all shadow-md hover:shadow-lg">
+            <canvas
+              ref={previewCanvasRef}
+              className="w-full h-auto"
+              style={{ 
+                display: previewLoaded ? 'block' : 'none',
+                maxHeight: '280px',
+                objectFit: 'contain'
+              }}
+            />
+            {!previewLoaded && (
+              <div 
+                className="w-full bg-gradient-to-b from-slate-800 to-slate-900 flex items-center justify-center"
+                style={{ height: '280px' }}
+              >
+                <div className="animate-pulse text-muted-foreground text-sm">Loading preview...</div>
+              </div>
+            )}
+            {/* Hover overlay */}
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-200 flex items-center justify-center">
+              <div className="opacity-0 group-hover:opacity-100 transition-all duration-200 bg-white/95 px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+                <Instagram className="w-4 h-4 text-purple-500" />
+                <span className="text-sm font-medium text-foreground">Create PetLinkID</span>
+              </div>
+            </div>
+          </div>
+          {/* Tap hint for mobile */}
+          <p className="text-xs text-muted-foreground text-center mt-2">
+            Tap to create your Instagram share card
+          </p>
+        </div>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
