@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { requireCronSecret } from "../_shared/cron.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -140,6 +141,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   try {
+    const cronError = requireCronSecret(req);
+    if (cronError) {
+      return cronError;
+    }
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""

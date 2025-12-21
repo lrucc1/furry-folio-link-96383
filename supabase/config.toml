@@ -33,6 +33,9 @@ verify_jwt = true
 [functions.public-pet-contact]
 verify_jwt = false
 
+[functions.send-reminder-emails]
+verify_jwt = false
+
 [functions.track-consent]
 verify_jwt = true
 
@@ -43,4 +46,4 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.send-contact-email]
-verify_jwt = false
+verify_jwt = true

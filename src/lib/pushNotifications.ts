@@ -60,7 +60,7 @@ export const registerForPush = async (): Promise<string | null> => {
     // Return a promise that resolves with the token
     return new Promise((resolve) => {
       PushNotifications.addListener('registration', (token: Token) => {
-        console.log('Push registration success, token:', token.value);
+        console.log('Push registration success');
         resolve(token.value);
       });
 

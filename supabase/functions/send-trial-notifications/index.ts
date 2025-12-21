@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { requireCronSecret } from "../_shared/cron.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,6 +18,11 @@ serve(async (req) => {
   }
 
   try {
+    const cronError = requireCronSecret(req);
+    if (cronError) {
+      return cronError;
+    }
+
     logStep("Function started");
 
     const supabaseClient = createClient(
@@ -58,14 +64,13 @@ serve(async (req) => {
       if (notifError) {
         logStep("Error creating notification", { userId: user.id, error: notifError });
       } else {
-        logStep("Notification created", { userId: user.id, email: user.email });
+        logStep("Notification created", { userId: user.id });
       }
 
       // TODO: Send email notification via Resend
       // For now, just log that we would send an email
       logStep("Would send trial ending email", { 
-        to: user.email, 
-        name: user.full_name,
+        userId: user.id,
         trialEnd: user.trial_end_at 
       });
     }
@@ -110,8 +115,7 @@ serve(async (req) => {
             });
 
           logStep("Would send trial ended email", { 
-            to: user.email,
-            name: user.full_name 
+            userId: user.id
           });
         }
       }

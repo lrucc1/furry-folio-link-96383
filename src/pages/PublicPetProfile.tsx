@@ -175,19 +175,13 @@ const PublicPetProfile = () => {
               </div>
             )}
 
-            {/* Owner Contact Information - Always shown */}
-            {(pet.owner?.phone || pet.owner?.email || pet.emergency_contact_phone) && (
+            {/* Owner Contact Information - Only shown when pet is marked lost */}
+            {pet.is_lost && (pet.owner?.phone || pet.owner?.email || pet.emergency_contact_phone) && (
               <Card className={`mt-6 ${pet.is_lost ? 'bg-primary/5 border-primary/20' : 'bg-muted/50'}`}>
                 <CardContent className="p-4 space-y-3">
                   <h4 className="font-semibold text-sm mb-3">
                     {pet.is_lost ? '📞 Contact Owner Immediately' : '👋 If Found, Please Contact Owner'}
                   </h4>
-                  
-                  {!pet.is_lost && (
-                    <p className="text-xs text-muted-foreground mb-3">
-                      Found this pet? They're not marked as lost, but the owner would appreciate being contacted.
-                    </p>
-                  )}
 
                   {pet.owner?.phone && (
                     <div className="flex items-center gap-3 text-sm">
@@ -269,6 +263,14 @@ const PublicPetProfile = () => {
                   )}
                 </CardContent>
               </Card>
+            )}
+
+            {!pet.is_lost && (
+              <div className="mt-6 p-4 bg-muted/70 rounded-lg border border-muted">
+                <p className="text-sm text-muted-foreground">
+                  This pet is not marked as lost. Owner contact details are hidden until the pet is reported missing.
+                </p>
+              </div>
             )}
           </CardContent>
         </Card>
