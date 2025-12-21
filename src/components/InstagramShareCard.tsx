@@ -10,32 +10,49 @@ import { format } from 'date-fns'
 
 // Helper to load images with CORS handling and fetch fallback
 const loadImageWithCORS = async (url: string): Promise<HTMLImageElement | null> => {
-  // First try: direct load with crossOrigin
+  const isNative = Capacitor.isNativePlatform()
+  console.log('[InstagramShare] Loading image:', url, 'isNative:', isNative)
+  
+  // On native platforms, try loading directly without CORS first
   const img = new Image()
-  img.crossOrigin = 'anonymous'
+  if (!isNative) {
+    img.crossOrigin = 'anonymous'
+  }
   
   try {
     await new Promise<void>((resolve, reject) => {
-      img.onload = () => resolve()
-      img.onerror = reject
+      img.onload = () => {
+        console.log('[InstagramShare] Direct image load succeeded')
+        resolve()
+      }
+      img.onerror = (e) => {
+        console.warn('[InstagramShare] Direct image load failed:', e)
+        reject(new Error('Direct load failed'))
+      }
       img.src = url
     })
     return img
   } catch {
+    console.log('[InstagramShare] Trying fetch fallback...')
     // Fallback: Fetch as blob and create object URL
     try {
-      const response = await fetch(url, { mode: 'cors' })
+      const response = await fetch(url)
+      if (!response.ok) throw new Error(`Fetch failed: ${response.status}`)
       const blob = await response.blob()
       const objectUrl = URL.createObjectURL(blob)
       const fallbackImg = new Image()
       await new Promise<void>((resolve, reject) => {
-        fallbackImg.onload = () => resolve()
+        fallbackImg.onload = () => {
+          console.log('[InstagramShare] Fetch fallback succeeded')
+          resolve()
+        }
         fallbackImg.onerror = reject
         fallbackImg.src = objectUrl
       })
+      // Note: We don't revoke objectUrl here as the image needs it for drawing
       return fallbackImg
     } catch (err) {
-      console.error('Failed to load image with CORS:', url, err)
+      console.error('[InstagramShare] All image loading attempts failed:', url, err)
       return null
     }
   }
@@ -869,6 +886,7 @@ export const InstagramShareCard = ({
   }
 
   const handleDownload = async () => {
+    console.log('[InstagramShare] handleDownload started')
     await generateLicenseCard()
     const canvas = canvasRef.current
     if (!canvas) return
@@ -883,15 +901,34 @@ export const InstagramShareCard = ({
       return
     }
     
-    const result = await downloadImage(blob, petName)
-    const isNative = Capacitor.isNativePlatform()
-    
-    toast({
-      title: result === 'saved' ? 'Card saved!' : 'Card downloaded!',
-      description: isNative 
-        ? 'Open your Files app to find the image, then share to Instagram! 🐾'
-        : 'Share your PetLinkID on Instagram! 🐾',
-    })
+    try {
+      const result = await downloadImage(blob, petName)
+      console.log('[InstagramShare] Download result:', result)
+      
+      if (result === 'shared') {
+        toast({
+          title: 'Share sheet opened!',
+          description: 'Save to Photos or share directly to Instagram! 🐾',
+        })
+      } else {
+        toast({
+          title: 'Card downloaded!',
+          description: 'Share your PetLinkID on Instagram! 🐾',
+        })
+      }
+    } catch (error) {
+      // User cancelled share sheet
+      if ((error as Error).message?.includes('canceled') || (error as Error).message?.includes('cancelled')) {
+        console.log('[InstagramShare] User cancelled share sheet')
+        return
+      }
+      console.error('[InstagramShare] Download error:', error)
+      toast({
+        title: 'Error saving image',
+        description: 'Please try the Share button instead.',
+        variant: 'destructive',
+      })
+    }
   }
 
   const handleCopyToClipboard = async () => {

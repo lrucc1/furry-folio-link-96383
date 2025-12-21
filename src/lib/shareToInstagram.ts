@@ -158,24 +158,45 @@ export const copyImageToClipboard = async (blob: Blob): Promise<boolean> => {
   }
 }
 
-export const downloadImage = async (blob: Blob, petName: string): Promise<'downloaded' | 'saved'> => {
+export const downloadImage = async (blob: Blob, petName: string): Promise<'downloaded' | 'saved' | 'shared'> => {
   const timestamp = new Date().toISOString().split('T')[0]
   const fileName = `${petName}-petlinkid-${timestamp}.png`
 
-  // On native platforms, use Filesystem to save properly
+  // On native platforms, save to cache and open share sheet
   if (Capacitor.isNativePlatform()) {
     try {
+      console.log('[Instagram] Starting native save flow...')
       const base64Data = await blobToBase64(blob)
       
-      await Filesystem.writeFile({
+      // Save to Cache directory first
+      const savedFile = await Filesystem.writeFile({
         path: fileName,
         data: base64Data,
-        directory: Directory.Documents,
+        directory: Directory.Cache,
       })
+      console.log('[Instagram] File saved to cache:', savedFile.uri)
       
-      return 'saved'
+      // Open native share sheet so user can save to Photos or share directly
+      await Share.share({
+        title: `${petName}'s PetLinkID`,
+        url: savedFile.uri,
+        dialogTitle: 'Save or Share your PetLinkID',
+      })
+      console.log('[Instagram] Share sheet opened successfully')
+      
+      // Clean up cache file after sharing
+      try {
+        await Filesystem.deleteFile({ path: fileName, directory: Directory.Cache })
+      } catch {
+        // Ignore cleanup errors
+      }
+      
+      return 'shared'
     } catch (error) {
-      console.error('Native file save failed:', error)
+      if ((error as Error).message?.includes('canceled') || (error as Error).message?.includes('cancelled')) {
+        throw error // User cancelled, propagate
+      }
+      console.error('[Instagram] Native save/share failed:', error)
       // Fall through to web download as backup
     }
   }
