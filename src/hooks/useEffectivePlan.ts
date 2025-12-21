@@ -20,7 +20,7 @@ export function useEffectivePlan() {
     const fetchProfile = async () => {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('plan_tier, manual_override, plan_source, plan_v2, subscription_status, stripe_tier, stripe_status')
+        .select('plan_tier, manual_override, plan_source, plan_v2, subscription_status')
         .eq('id', user.id)
         .single();
 
@@ -31,8 +31,6 @@ export function useEffectivePlan() {
           plan_source: profile.plan_source as PlanSource | undefined,
           plan_v2: (profile as any).plan_v2,
           subscription_status: (profile as any).subscription_status,
-          stripe_tier: (profile as any).stripe_tier,
-          stripe_status: (profile as any).stripe_status,
         };
         setTier(computeEffectiveTier(profileData));
         setSource((profile.plan_source as PlanSource) || 'system');

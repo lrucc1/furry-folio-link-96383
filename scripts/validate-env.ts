@@ -5,9 +5,7 @@
  * Run this before deploying to production to validate:
  * - All required environment variables are set
  * - Apple IAP product IDs are configured (required for iOS)
- * - Stripe keys match the intended environment (legacy, for web/admin)
  * - No test keys in production
- * - No live keys in development
  * 
  * Usage:
  *   npm run validate:env
@@ -37,10 +35,6 @@ interface EnvironmentConfig {
   VITE_APPLE_PRO_YEARLY_PRODUCT_ID?: string;
   // Apple Sign-In
   appleClientIds: Record<string, string>;
-  // Stripe (legacy, for web/admin)
-  VITE_STRIPE_PUBLISHABLE_KEY?: string;
-  VITE_STRIPE_PRICE_PRO_MONTHLY_AUD?: string;
-  VITE_STRIPE_PRICE_PRO_YEARLY_AUD?: string;
 }
 
 type Environment = 'production' | 'development' | 'preview';
@@ -63,9 +57,6 @@ class EnvironmentValidator {
       VITE_APPLE_PRO_MONTHLY_PRODUCT_ID: process.env.VITE_APPLE_PRO_MONTHLY_PRODUCT_ID,
       VITE_APPLE_PRO_YEARLY_PRODUCT_ID: process.env.VITE_APPLE_PRO_YEARLY_PRODUCT_ID,
       appleClientIds: this.loadAppleClientIds(),
-      VITE_STRIPE_PUBLISHABLE_KEY: process.env.VITE_STRIPE_PUBLISHABLE_KEY,
-      VITE_STRIPE_PRICE_PRO_MONTHLY_AUD: process.env.VITE_STRIPE_PRICE_PRO_MONTHLY_AUD,
-      VITE_STRIPE_PRICE_PRO_YEARLY_AUD: process.env.VITE_STRIPE_PRICE_PRO_YEARLY_AUD,
     };
   }
 
@@ -183,104 +174,6 @@ class EnvironmentValidator {
     });
   }
 
-  validateStripeKeys(): void {
-    const publishableKey = this.config.VITE_STRIPE_PUBLISHABLE_KEY;
-
-    if (!publishableKey) {
-      this.addResult({
-        pass: true,
-        message: 'VITE_STRIPE_PUBLISHABLE_KEY not configured (OK - Stripe is legacy for iOS)',
-        severity: 'info',
-      });
-      return;
-    }
-
-    const isTestKey = publishableKey.startsWith('pk_test_');
-    const isLiveKey = publishableKey.startsWith('pk_live_');
-
-    if (!isTestKey && !isLiveKey) {
-      this.addResult({
-        pass: false,
-        message: 'VITE_STRIPE_PUBLISHABLE_KEY has invalid format (must start with pk_test_ or pk_live_)',
-        severity: 'error',
-      });
-      return;
-    }
-
-    // Production MUST use live keys if Stripe is configured
-    if (this.env === 'production' && isTestKey) {
-      this.addResult({
-        pass: false,
-        message: '⚠️ WARNING: Production is using Stripe TEST keys (OK if Stripe is only for web/admin)',
-        severity: 'warning',
-      });
-      return;
-    }
-
-    // Development should use test keys
-    if (this.env !== 'production' && isLiveKey) {
-      this.addResult({
-        pass: false,
-        message: '⚠️ WARNING: Non-production environment is using Stripe LIVE keys! This could result in real charges.',
-        severity: 'warning',
-      });
-      return;
-    }
-
-    this.addResult({
-      pass: true,
-      message: `Stripe keys validated (legacy): ${this.env} using ${isTestKey ? 'TEST' : 'LIVE'} keys ✓`,
-      severity: 'info',
-    });
-  }
-
-  validateStripePrices(): void {
-    const monthly = this.config.VITE_STRIPE_PRICE_PRO_MONTHLY_AUD;
-    const yearly = this.config.VITE_STRIPE_PRICE_PRO_YEARLY_AUD;
-
-    if (!monthly && !yearly) {
-      this.addResult({
-        pass: true,
-        message: 'Stripe price IDs not configured (OK - Stripe is legacy for iOS)',
-        severity: 'info',
-      });
-      return;
-    }
-
-    // If partially configured, warn
-    if (!monthly || !yearly) {
-      const missing = [];
-      if (!monthly) missing.push('VITE_STRIPE_PRICE_PRO_MONTHLY_AUD');
-      if (!yearly) missing.push('VITE_STRIPE_PRICE_PRO_YEARLY_AUD');
-
-      this.addResult({
-        pass: false,
-        message: `Partially configured Stripe prices: ${missing.join(', ')}`,
-        severity: 'warning',
-      });
-      return;
-    }
-
-    // Validate format
-    const monthlyValid = monthly.startsWith('price_');
-    const yearlyValid = yearly.startsWith('price_');
-
-    if (!monthlyValid || !yearlyValid) {
-      this.addResult({
-        pass: false,
-        message: 'Stripe price IDs have invalid format (must start with price_)',
-        severity: 'error',
-      });
-      return;
-    }
-
-    this.addResult({
-      pass: true,
-      message: 'Stripe price IDs configured correctly (legacy) ✓',
-      severity: 'info',
-    });
-  }
-
   validateSupabaseConfig(): void {
     const url = this.config.VITE_SUPABASE_URL;
 
@@ -320,8 +213,6 @@ class EnvironmentValidator {
     this.validateRequiredVariables();
     this.validateAppleIAPConfig();
     this.validateAppleSignInConfig(bundleIds);
-    this.validateStripeKeys();
-    this.validateStripePrices();
     this.validateSupabaseConfig();
 
     return this.printResults();

@@ -1,15 +1,11 @@
 export type Tier = 'free' | 'pro';
 export type LegacyTier = Tier | 'premium' | 'family' | 'trial' | 'fire';
-export type PlanSource = 'manual' | 'stripe' | 'system' | 'apple';
+export type PlanSource = 'manual' | 'system' | 'apple';
 
 export interface ProfilePlanData {
   // Legacy fields
   plan_tier?: LegacyTier;
   manual_override?: boolean;
-  stripe_tier?: LegacyTier | null;
-  stripe_status?: string | null;
-  stripe_current_period_end?: string | null;
-  stripe_customer_id?: string | null;
   plan_source?: PlanSource;
   // New v2 fields
   plan_v2?: 'FREE' | 'PRO' | 'TRIAL' | null;
@@ -38,7 +34,7 @@ function normalizeTier(tier?: LegacyTier | string | null): Tier {
 export function computeEffectiveTier(profile: ProfilePlanData | null): Tier {
   // Prefer new plan_v2 + subscription_status when available
   const v2 = profile?.plan_v2 || null;
-  const status = (profile?.subscription_status || profile?.stripe_status) || null;
+  const status = profile?.subscription_status || null;
   if (v2) {
     if (v2 === 'PRO') return 'pro';
     if (v2 === 'TRIAL') return 'pro';
@@ -51,9 +47,9 @@ export function computeEffectiveTier(profile: ProfilePlanData | null): Tier {
     return normalizeTier(profile.plan_tier);
   }
 
-  // Check Stripe-derived legacy fields
-  if (profile?.stripe_tier && (status === 'active' || status === 'trialing')) {
-    return normalizeTier(profile.stripe_tier);
+  // Check subscription status
+  if (status === 'active' || status === 'trialing') {
+    return 'pro';
   }
 
   // Fallback to legacy plan_tier

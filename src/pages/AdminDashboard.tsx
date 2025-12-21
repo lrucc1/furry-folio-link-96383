@@ -206,8 +206,6 @@ const AdminDashboard = () => {
         plan_tier: user.plan_tier as any,
         plan_v2: user.plan_v2 as any,
         subscription_status: user.subscription_status as any,
-        stripe_status: user.stripe_status,
-        stripe_tier: user.stripe_tier as any,
         manual_override: user.manual_override,
         plan_source: user.plan_source as any,
       });
@@ -347,8 +345,6 @@ const AdminDashboard = () => {
           plan_tier: u.plan_tier as any,
           plan_v2: u.plan_v2 as any,
           subscription_status: u.subscription_status as any,
-          stripe_status: u.stripe_status,
-          stripe_tier: u.stripe_tier as any,
           manual_override: u.manual_override,
           plan_source: u.plan_source as any,
         });
@@ -992,8 +988,6 @@ const AdminDashboard = () => {
                             plan_tier: user.plan_tier as any,
                             plan_v2: user.plan_v2 as any,
                             subscription_status: user.subscription_status as any,
-                            stripe_status: user.stripe_status,
-                            stripe_tier: user.stripe_tier as any,
                             manual_override: user.manual_override,
                             plan_source: user.plan_source as any,
                           });
@@ -1213,8 +1207,6 @@ const AdminDashboard = () => {
                   plan_tier: editingUser.plan_tier as any,
                   plan_v2: editingUser.plan_v2 as any,
                   subscription_status: editingUser.subscription_status as any,
-                  stripe_status: editingUser.stripe_status,
-                  stripe_tier: editingUser.stripe_tier as any,
                   manual_override: editingUser.manual_override,
                   plan_source: editingUser.plan_source as any,
                 }) === 'pro' ? 'Pro' : 'Free'}

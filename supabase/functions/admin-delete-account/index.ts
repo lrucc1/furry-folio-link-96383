@@ -1,6 +1,5 @@
 import { json, buildCors } from '../_shared/cors.ts';
 import { makeAnonClient, makeServiceClient } from '../_shared/clients.ts';
-import Stripe from 'https://esm.sh/stripe@18.5.0';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -46,42 +45,13 @@ Deno.serve(async (req) => {
     // Get target user's profile
     const { data: profile, error: profileError } = await adminClient
       .from('profiles')
-      .select('id, email, display_name, stripe_customer_id')
+      .select('id, email, display_name')
       .eq('id', user_id)
       .single();
 
     if (profileError || !profile) {
       console.error('[admin-delete-account] Profile not found:', profileError);
       return json(req, { error: 'Account not found' }, 404);
-    }
-
-    // Cancel Stripe subscription and delete customer
-    try {
-      const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
-      if (stripeKey && profile.email) {
-        const stripe = new Stripe(stripeKey, { apiVersion: '2025-08-27.basil' });
-        const customers = await stripe.customers.list({ email: profile.email, limit: 1 });
-
-        if (customers.data.length > 0) {
-          const customerId = customers.data[0].id;
-
-          // Cancel all active subscriptions
-          const subscriptions = await stripe.subscriptions.list({ customer: customerId });
-          for (const subscription of subscriptions.data) {
-            if (subscription.status === 'active' || subscription.status === 'trialing') {
-              await stripe.subscriptions.cancel(subscription.id);
-              console.log('[admin-delete-account] Canceled subscription:', subscription.id);
-            }
-          }
-
-          // Delete Stripe customer
-          await stripe.customers.del(customerId);
-          console.log('[admin-delete-account] Deleted Stripe customer:', customerId);
-        }
-      }
-    } catch (stripeError) {
-      console.error('[admin-delete-account] Stripe error:', stripeError);
-      // Continue with deletion even if Stripe fails
     }
 
     if (immediate) {
