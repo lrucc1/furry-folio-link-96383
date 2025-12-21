@@ -22,9 +22,20 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    const authHeader = req.headers.get("authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
     const { firstName, lastName, email, subject, message }: ContactFormData = await req.json();
 
-    console.log("Received contact form submission:", { firstName, lastName, email, subject });
+    console.log("Received contact form submission");
 
     // Send email to support inbox
     const emailResponse = await resend.emails.send({
@@ -43,7 +54,7 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    console.log("Email sent successfully");
     if ((emailResponse as any)?.error) {
       console.error("Resend support email error:", (emailResponse as any).error);
       throw new Error((emailResponse as any).error.message || "Failed to send support email");

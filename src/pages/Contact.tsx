@@ -42,6 +42,13 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        toast.error("Please sign in to contact support.");
+        return;
+      }
+
       const { error } = await supabase.functions.invoke("send-contact-email", {
         body: formData,
       });

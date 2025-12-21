@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { requireCronSecret } from "../_shared/cron.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,6 +18,11 @@ serve(async (req) => {
   }
 
   try {
+    const cronError = requireCronSecret(req);
+    if (cronError) {
+      return cronError;
+    }
+
     logStep("Cleanup function started");
 
     // Create admin client
@@ -56,7 +62,7 @@ serve(async (req) => {
 
     for (const profile of profilesToDelete) {
       const userId = profile.id;
-      logStep("Deleting user data", { userId, email: profile.email });
+      logStep("Deleting user data", { userId });
 
       try {
         // Delete from all related tables

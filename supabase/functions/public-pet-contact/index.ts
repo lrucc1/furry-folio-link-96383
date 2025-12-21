@@ -53,10 +53,12 @@ serve(async (req) => {
       );
     }
 
-    // Fetch owner profile (always, regardless of lost status)
+    const isLost = pet.is_lost === true;
+
+    // Fetch owner profile only for lost pets
     let owner = null as null | { full_name: string | null; email: string | null; phone: string | null };
 
-    if (pet.user_id) {
+    if (isLost && pet.user_id) {
       const { data: profile } = await supabase
         .from("profiles")
         .select("full_name, email, phone")
@@ -81,12 +83,12 @@ serve(async (req) => {
           date_of_birth: pet.date_of_birth ?? null,
           photo_url: pet.photo_url ?? null,
           is_lost: pet.is_lost,
-          microchip_number: pet.microchip_number ?? null,
+          microchip_number: isLost ? pet.microchip_number ?? null : null,
         },
         owner,
         emergency_contact: {
-          name: pet.emergency_contact_name ?? null,
-          phone: pet.emergency_contact_phone ?? null,
+          name: isLost ? pet.emergency_contact_name ?? null : null,
+          phone: isLost ? pet.emergency_contact_phone ?? null : null,
         },
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }

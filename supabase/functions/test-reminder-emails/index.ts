@@ -16,8 +16,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
     console.log("Admin testing reminder email system");
 
     // Call the send-reminder-emails function
+    const cronSecret = Deno.env.get("CRON_SECRET");
     const { data, error } = await supabase.functions.invoke('send-reminder-emails', {
-      body: {}
+      body: {},
+      headers: cronSecret ? { "x-cron-secret": cronSecret } : undefined,
     });
 
     if (error) {
