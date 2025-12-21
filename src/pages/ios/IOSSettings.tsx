@@ -96,8 +96,8 @@ const SettingsGroup = ({ title, children }: { title: string; children: React.Rea
 );
 
 export default function IOSSettings() {
-  const { user, signOut } = useAuth();
-  const { tier } = usePlan();
+  const { user, signOut, refreshSubscription } = useAuth();
+  const { tier, refresh: refreshPlan, profile: planProfile } = usePlan();
   const navigate = useNavigate();
   const isNative = useIsNativeApp();
   const { isSupported: pushSupported, isRegistered: pushRegistered, permissionStatus, register: registerPush, isLoading: pushLoading } = usePushNotifications();
@@ -105,11 +105,33 @@ export default function IOSSettings() {
   
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshingPlan, setRefreshingPlan] = useState(false);
   
   // Settings state
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [reminderNotifications, setReminderNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
+
+  // Debug logging for plan status
+  useEffect(() => {
+    console.log('[IOSSettings] Current tier:', tier);
+    console.log('[IOSSettings] Plan profile:', planProfile);
+  }, [tier, planProfile]);
+
+  const handleForceRefreshPlan = async () => {
+    setRefreshingPlan(true);
+    console.log('[IOSSettings] Force refreshing plan...');
+    try {
+      await Promise.all([refreshPlan(), refreshSubscription()]);
+      toast.success('Plan status refreshed');
+      console.log('[IOSSettings] Plan refresh complete, new tier:', tier);
+    } catch (error) {
+      console.error('[IOSSettings] Plan refresh error:', error);
+      toast.error('Failed to refresh plan status');
+    } finally {
+      setRefreshingPlan(false);
+    }
+  };
 
   useEffect(() => {
     fetchProfile();
@@ -222,8 +244,18 @@ export default function IOSSettings() {
           <SettingsRow 
             icon={<CreditCard className="w-4 h-4" />}
             label="Subscription"
-            value={tier === 'pro' ? 'Pro' : 'Free'}
+            value={
+              refreshingPlan ? 'Refreshing...' : 
+              tier === 'pro' ? 'Pro' : 'Free'
+            }
             onClick={() => navigate('/settings/plans')}
+          />
+          <SettingsRow 
+            icon={<Crown className="w-4 h-4" />}
+            label="Refresh Plan Status"
+            value={refreshingPlan ? 'Refreshing...' : undefined}
+            onClick={handleForceRefreshPlan}
+            showChevron={false}
           />
           <SettingsRow 
             icon={<Globe className="w-4 h-4" />}

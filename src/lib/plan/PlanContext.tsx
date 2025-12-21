@@ -26,6 +26,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
 
   const fetchProfile = useCallback(async (force = false) => {
     if (!user?.id) {
+      console.log('[PlanContext] No user, setting defaults');
       setTier('free');
       setSource('system');
       setProfile(null);
@@ -35,8 +36,11 @@ export function PlanProvider({ children }: { children: ReactNode }) {
 
     // Check cache
     if (!force && cacheRef.current && Date.now() - cacheRef.current.timestamp < CACHE_DURATION) {
+      console.log('[PlanContext] Using cached data, tier:', cacheRef.current.data?.plan_v2);
       return;
     }
+
+    console.log('[PlanContext] Fetching profile for user:', user.id);
 
     try {
       const { data, error } = await supabase
@@ -45,7 +49,10 @@ export function PlanProvider({ children }: { children: ReactNode }) {
         .eq('id', user.id)
         .maybeSingle();
 
+      console.log('[PlanContext] Profile query result:', { data, error: error?.message });
+
       if (error) {
+        console.error('[PlanContext] Error fetching profile:', error);
         setTier('free');
         setSource('system');
         setProfile(null);
@@ -58,16 +65,21 @@ export function PlanProvider({ children }: { children: ReactNode }) {
           subscription_status: (data as any).subscription_status,
         };
         
+        const computedTier = computeEffectiveTier(profileData);
+        console.log('[PlanContext] Computed tier:', computedTier, 'from profile:', profileData);
+        
         cacheRef.current = { data: profileData, timestamp: Date.now() };
         setProfile(profileData);
-        setTier(computeEffectiveTier(profileData));
+        setTier(computedTier);
         setSource((data.plan_source as PlanSource) || 'system');
       } else {
+        console.log('[PlanContext] No profile found, using defaults');
         setTier('free');
         setSource('system');
         setProfile(null);
       }
-    } catch {
+    } catch (err) {
+      console.error('[PlanContext] Exception fetching profile:', err);
       setTier('free');
       setSource('system');
       setProfile(null);
