@@ -94,14 +94,11 @@ interface UserDetails {
   plan_tier: string;
   plan_v2?: string | null;
   subscription_status?: string | null;
-  stripe_status?: string | null;
-  stripe_tier?: string | null;
   manual_override?: boolean | null;
   plan_source?: string | null;
   plan_expires_at?: string | null;
   plan_updated_at?: string | null;
   next_billing_at?: string | null;
-  stripe_current_period_end?: string | null;
   billing_interval?: string | null;
   deleted_at?: string | null;
   deletion_scheduled?: boolean;
@@ -142,7 +139,6 @@ interface SubscriptionTier {
   id: string;
   name: string;
   price_monthly: number;
-  stripe_price_id: string | null;
 }
 
 const AdminDashboard = () => {
@@ -195,10 +191,10 @@ const AdminDashboard = () => {
       
       // Status filter
       const matchesStatus = statusFilter === 'all' || (
-        (statusFilter === 'active' && (user.stripe_status === 'active' || user.subscription_status === 'active')) ||
-        (statusFilter === 'trialing' && (user.stripe_status === 'trialing' || user.subscription_status === 'trialing')) ||
-        (statusFilter === 'canceled' && (user.stripe_status === 'canceled' || user.subscription_status === 'canceled')) ||
-        (statusFilter === 'past_due' && (user.stripe_status === 'past_due' || user.subscription_status === 'past_due'))
+        (statusFilter === 'active' && user.subscription_status === 'active') ||
+        (statusFilter === 'trialing' && user.subscription_status === 'trialing') ||
+        (statusFilter === 'canceled' && user.subscription_status === 'canceled') ||
+        (statusFilter === 'past_due' && user.subscription_status === 'past_due')
       );
 
       // Tier filter
@@ -288,7 +284,7 @@ const AdminDashboard = () => {
           const userIds = users.map(u => u.user_id);
           const { data: profileRows } = await supabase
             .from('profiles')
-            .select('id, plan_tier, plan_v2, subscription_status, stripe_status, stripe_tier, manual_override, plan_source, plan_expires_at, plan_updated_at, next_billing_at, stripe_current_period_end, billing_interval, deleted_at, deletion_scheduled')
+            .select('id, plan_tier, plan_v2, subscription_status, manual_override, plan_source, plan_expires_at, plan_updated_at, next_billing_at, billing_interval, deleted_at, deletion_scheduled')
             .in('id', userIds);
           
           if (profileRows) {
@@ -301,14 +297,11 @@ const AdminDashboard = () => {
               if (profile) {
                 user.plan_v2 = profile.plan_v2;
                 user.subscription_status = profile.subscription_status;
-                user.stripe_status = profile.stripe_status;
-                user.stripe_tier = profile.stripe_tier;
                 user.manual_override = profile.manual_override;
                 user.plan_source = profile.plan_source;
                 user.plan_expires_at = profile.plan_expires_at;
                 user.plan_updated_at = profile.plan_updated_at;
                 user.next_billing_at = profile.next_billing_at;
-                user.stripe_current_period_end = profile.stripe_current_period_end;
                 user.billing_interval = profile.billing_interval;
                 user.deleted_at = profile.deleted_at;
                 user.deletion_scheduled = profile.deletion_scheduled;
@@ -455,10 +448,10 @@ const AdminDashboard = () => {
   };
 
   const getExpiryDisplay = (user: UserDetails) => {
-    const hasActiveSubscription = user.stripe_status === 'active' || user.subscription_status === 'active';
+    const hasActiveSubscription = user.subscription_status === 'active';
     
     if (hasActiveSubscription) {
-      const renewalDate = user.next_billing_at || user.stripe_current_period_end;
+      const renewalDate = user.next_billing_at;
       if (renewalDate) {
         const cycle = user.billing_interval === 'year' ? 'Yearly' : user.billing_interval === 'month' ? 'Monthly' : '';
         return {

@@ -462,7 +462,6 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
-          latest_invoice_id: string | null
           manual_override: boolean | null
           next_billing_at: string | null
           phone: string | null
@@ -473,11 +472,6 @@ export type Database = {
           plan_updated_at: string | null
           plan_v2: string | null
           role: string | null
-          stripe_current_period_end: string | null
-          stripe_customer_id: string | null
-          stripe_status: string | null
-          stripe_subscription_id: string | null
-          stripe_tier: string | null
           subscription_status: string | null
           timezone: string | null
           trial_end_at: string | null
@@ -495,7 +489,6 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
-          latest_invoice_id?: string | null
           manual_override?: boolean | null
           next_billing_at?: string | null
           phone?: string | null
@@ -506,11 +499,6 @@ export type Database = {
           plan_updated_at?: string | null
           plan_v2?: string | null
           role?: string | null
-          stripe_current_period_end?: string | null
-          stripe_customer_id?: string | null
-          stripe_status?: string | null
-          stripe_subscription_id?: string | null
-          stripe_tier?: string | null
           subscription_status?: string | null
           timezone?: string | null
           trial_end_at?: string | null
@@ -528,7 +516,6 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
-          latest_invoice_id?: string | null
           manual_override?: boolean | null
           next_billing_at?: string | null
           phone?: string | null
@@ -539,11 +526,6 @@ export type Database = {
           plan_updated_at?: string | null
           plan_v2?: string | null
           role?: string | null
-          stripe_current_period_end?: string | null
-          stripe_customer_id?: string | null
-          stripe_status?: string | null
-          stripe_subscription_id?: string | null
-          stripe_tier?: string | null
           subscription_status?: string | null
           timezone?: string | null
           trial_end_at?: string | null
@@ -639,39 +621,6 @@ export type Database = {
         }
         Relationships: []
       }
-      stripe_webhook_events: {
-        Row: {
-          error: string | null
-          event_id: string
-          event_type: string
-          id: string
-          payload: Json
-          processed: boolean | null
-          processed_at: string | null
-          received_at: string | null
-        }
-        Insert: {
-          error?: string | null
-          event_id: string
-          event_type: string
-          id?: string
-          payload: Json
-          processed?: boolean | null
-          processed_at?: string | null
-          received_at?: string | null
-        }
-        Update: {
-          error?: string | null
-          event_id?: string
-          event_type?: string
-          id?: string
-          payload?: Json
-          processed?: boolean | null
-          processed_at?: string | null
-          received_at?: string | null
-        }
-        Relationships: []
-      }
       subscription_tiers: {
         Row: {
           created_at: string | null
@@ -681,7 +630,6 @@ export type Database = {
           name: string
           price_monthly: number
           price_yearly: number | null
-          stripe_price_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -691,7 +639,6 @@ export type Database = {
           name: string
           price_monthly: number
           price_yearly?: number | null
-          stripe_price_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -701,7 +648,6 @@ export type Database = {
           name?: string
           price_monthly?: number
           price_yearly?: number | null
-          stripe_price_id?: string | null
         }
         Relationships: []
       }

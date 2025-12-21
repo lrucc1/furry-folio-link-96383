@@ -74,9 +74,7 @@ Available functions:
 - `delete-account` - Delete user account and data
 - `export-data` - Export all user data
 - `check-subscription` - Check user subscription status
-- `create-checkout` - Create Stripe checkout session
-- `customer-portal` - Access Stripe customer portal
-- `get-invoices` - Get user invoices
+- `validate-apple-receipt` - Validate Apple IAP receipts
 - `public-pet-contact` - Handle lost pet contact requests
 
 ## RBAC System
@@ -113,6 +111,8 @@ Required environment variables:
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key
 VITE_GOOGLE_MAPS_API_KEY=your_google_maps_key
+VITE_APPLE_PRO_MONTHLY_PRODUCT_ID=your_apple_monthly_product_id
+VITE_APPLE_PRO_YEARLY_PRODUCT_ID=your_apple_yearly_product_id
 ```
 
 See `.env.example` for full list with descriptions.
@@ -152,12 +152,9 @@ log.error('Error occurred', error);
 
 Production logs are automatically suppressed.
 
-### Supabase Logs
+### Backend Logs
 
-Check edge function logs in the Supabase dashboard:
-```
-Dashboard > Edge Functions > Function > Logs
-```
+Check edge function logs in Lovable Cloud → Backend → Functions.
 
 ### Network Debugging
 

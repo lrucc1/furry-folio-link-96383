@@ -26,7 +26,7 @@ PetLinkID has undergone comprehensive pre-release security hardening. The applic
 | Check | Status | Notes |
 |-------|--------|-------|
 | No service role keys in client | ✅ PASS | Verified - no exposure detected |
-| RLS enabled on all tables | ✅ PASS | All 18 tables protected |
+| RLS enabled on all tables | ✅ PASS | All tables protected |
 | Storage bucket security | ✅ PASS | Private buckets with signed URLs |
 | Input validation (edge functions) | ✅ PASS | Zod validation implemented |
 | Secure session handling | ✅ PASS | Proper token refresh, no localStorage abuse |
@@ -37,11 +37,10 @@ PetLinkID has undergone comprehensive pre-release security hardening. The applic
 
 | Issue | Severity | Status | Action Required |
 |-------|----------|--------|-----------------|
-| Leaked Password Protection | 🟡 WARN | PENDING | Enable in Supabase Auth settings |
+| Leaked Password Protection | 🟡 WARN | PENDING | Enable in Lovable Cloud Auth settings |
 | HTTP Security Headers | 🔴 CRITICAL | PENDING | Configure in deployment platform |
 | CSP via HTTP Headers | 🔴 CRITICAL | PENDING | Remove meta tag, add to hosting config |
 | Capacitor Production Config | 🔴 CRITICAL | PENDING | Update for App Store builds |
-| Stripe Live Keys Validation | 🟡 WARN | FIXED | Environment validation added |
 | Support URL for App Store | 🟡 WARN | FIXED | `/support` page created |
 
 ---
@@ -68,25 +67,21 @@ PetLinkID has undergone comprehensive pre-release security hardening. The applic
 - [ ] Enable "Sign in with Apple" (if using third-party auth)
 - [ ] Update Capacitor config to production URL
 - [ ] Build & submit via Xcode with production config
+- [ ] Configure Apple In-App Purchases in App Store Connect
+- [ ] Test IAP in sandbox environment
 
 ---
 
-## 💳 Stripe & Payments Security
+## 💳 Apple In-App Purchase Setup
 
-### ✅ Implemented
+### ⚠️ Required Configuration
 
-- Environment-based key validation (crashes if prod uses test keys)
-- Webhook signature verification enforced
-- Stripe integration uses typed SDK
-- Payment flows properly authenticated
-
-### ⚠️ Manual Verification Required
-
-- [ ] Confirm `VITE_STRIPE_PUBLISHABLE_KEY` in production uses `pk_live_*`
-- [ ] Confirm `STRIPE_SECRET_KEY` in production uses `sk_live_*`
-- [ ] Verify webhook secret is for live mode
-- [ ] Test checkout flow end-to-end in production
-- [ ] Verify subscription cancellation works correctly
+- [ ] Create PRO Monthly product in App Store Connect
+- [ ] Create PRO Yearly product in App Store Connect
+- [ ] Set `VITE_APPLE_PRO_MONTHLY_PRODUCT_ID` environment variable
+- [ ] Set `VITE_APPLE_PRO_YEARLY_PRODUCT_ID` environment variable
+- [ ] Test purchases in sandbox environment
+- [ ] Submit IAP products for review
 
 ---
 
@@ -113,7 +108,7 @@ Content-Security-Policy: [see _headers file]
 
 ---
 
-## 🔐 Supabase Configuration Checklist
+## 🔐 Backend Configuration Checklist
 
 ### ✅ Completed
 - [x] RLS enabled on all tables
@@ -123,11 +118,8 @@ Content-Security-Policy: [see _headers file]
 - [x] No public data exposure
 
 ### ⚠️ Required Actions
-- [ ] **Enable Leaked Password Protection** in Supabase Auth settings
-  - Go to: Lovable Cloud → Backend → Auth Settings
-  - Toggle ON: "Leaked Password Protection"
+- [ ] **Enable Leaked Password Protection** in Lovable Cloud → Backend → Auth Settings
 - [ ] Verify email redirect URLs point to production domain
-- [ ] Confirm Stripe webhook endpoint is configured
 - [ ] Test email flows (signup, password reset, notifications)
 
 ---
@@ -204,18 +196,9 @@ A comprehensive environment validation system has been added:
 
 **Features:**
 - Detects production/development/preview environments
-- Validates Stripe keys match environment (crashes if mismatched)
+- Validates Apple IAP product IDs
 - Checks required environment variables
 - Provides typed environment helpers
-
-**Integration Required:**
-Add to `src/main.tsx` at the top:
-```typescript
-import { initializeEnvironment } from '@/config/environment';
-
-// Validate environment before React renders
-initializeEnvironment();
-```
 
 ---
 
@@ -229,13 +212,14 @@ initializeEnvironment();
 - [x] No service role keys in client code
 - [x] All edge functions use input validation
 - [x] Storage uses signed URLs
+- [x] Stripe integration removed (using Apple IAP)
 
 ### Configuration (YOU MUST DO)
-- [ ] Enable Leaked Password Protection in Supabase
+- [ ] Enable Leaked Password Protection in Lovable Cloud
 - [ ] Configure security headers at hosting level
 - [ ] Update Capacitor config for production iOS build
-- [ ] Verify all production secrets use LIVE Stripe keys
-- [ ] Add production domain to Supabase allowed redirect URLs
+- [ ] Configure Apple IAP products in App Store Connect
+- [ ] Add production domain to allowed redirect URLs
 
 ### Compliance
 - [x] Account deletion functional
@@ -250,7 +234,7 @@ initializeEnvironment();
 - [ ] Run Lighthouse audit on production URL
 - [ ] Test account deletion end-to-end
 - [ ] Test data export with real data
-- [ ] Verify Stripe checkout works with live keys
+- [ ] Test Apple IAP in sandbox environment
 - [ ] Test iOS app on TestFlight
 - [ ] Verify public pet profile sharing works
 - [ ] Test lost pet recovery flow
@@ -270,11 +254,11 @@ initializeEnvironment();
 ### 🔴 CRITICAL
 1. **Security Headers Not Active** - Configure at deployment level
 2. **Capacitor Points to Dev URL** - Update for production builds
-3. **Leaked Password Protection Off** - Enable in Supabase
+3. **Leaked Password Protection Off** - Enable in Lovable Cloud
 
 ### 🟡 HIGH PRIORITY
 1. **No Lighthouse Audit** - Performance unknown
-2. **Stripe Keys Not Verified** - Manually confirm live keys in prod
+2. **Apple IAP Not Configured** - Set up products in App Store Connect
 3. **No Accessibility Testing** - WCAG compliance unverified
 
 ---
@@ -282,33 +266,33 @@ initializeEnvironment();
 ## ✅ Next Steps
 
 ### Immediate (Before App Store Submission)
-1. Enable Leaked Password Protection in Supabase Auth
+1. Enable Leaked Password Protection in Lovable Cloud Auth
 2. Configure security headers in deployment platform
 3. Update Capacitor config for production
 4. Run Lighthouse audit on production URL
 5. Test all flows end-to-end
 
 ### Before Public Launch
-1. Verify live Stripe keys in production
-2. Test subscription flows with real payments
+1. Configure Apple IAP products
+2. Test subscription flows with sandbox purchases
 3. Conduct accessibility review
 4. Performance optimization based on Lighthouse
 5. Load testing with expected traffic
 
 ### Post-Launch Monitoring
 1. Set up error tracking (Sentry)
-2. Monitor Stripe webhooks for failures
+2. Monitor Apple IAP for issues
 3. Track Lighthouse scores weekly
 4. Monitor auth success/failure rates
-5. Review Supabase RLS policy effectiveness
+5. Review RLS policy effectiveness
 
 ---
 
 ## 📞 Support Contacts
 
 - **Development:** Check logs in Lovable Cloud
-- **Supabase Issues:** Lovable Cloud → Backend
-- **Stripe Support:** https://support.stripe.com
+- **Backend Issues:** Lovable Cloud → Backend
+- **Apple Developer:** https://developer.apple.com
 - **Security Concerns:** security@petlinkid.com
 
 ---
@@ -338,5 +322,5 @@ initializeEnvironment();
 ---
 
 **Report Generated:** 2025-10-26  
-**Report Version:** 1.0  
+**Report Version:** 1.1 (Stripe removed, Apple IAP only)  
 **Next Review:** Before App Store submission
