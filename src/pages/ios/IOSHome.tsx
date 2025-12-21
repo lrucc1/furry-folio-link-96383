@@ -24,6 +24,7 @@ import {
   FileText,
   Plus,
   Syringe,
+  Users,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -35,6 +36,7 @@ interface Pet {
   species: string;
   photo_url: string | null;
   is_lost: boolean;
+  isShared?: boolean;
 }
 
 export default function IOSHome() {
@@ -74,11 +76,12 @@ export default function IOSHome() {
           .select('id, name, species, photo_url, is_lost')
           .in('id', petIds)
           .order('created_at', { ascending: true });
-        sharedPets = sharedPetsData || [];
+        // Mark shared pets
+        sharedPets = (sharedPetsData || []).map(p => ({ ...p, isShared: true }));
       }
       
-      // Combine owned and shared pets
-      const petsData = [...(ownedPets || []), ...sharedPets];
+      // Combine owned and shared pets (owned pets don't have isShared flag)
+      const petsData = [...(ownedPets || []).map(p => ({ ...p, isShared: false })), ...sharedPets];
       setPets(petsData);
       
       // Select first pet by default
@@ -189,6 +192,12 @@ export default function IOSHome() {
                       </AvatarFallback>
                     </Avatar>
                     <span className="text-sm font-medium truncate max-w-[70px]">{pet.name}</span>
+                    {pet.isShared && (
+                      <Badge variant="outline" className="text-[10px] mt-1 px-1.5 py-0 border-primary/50 text-primary">
+                        <Users className="w-2.5 h-2.5 mr-0.5" />
+                        Shared
+                      </Badge>
+                    )}
                     {pet.is_lost && (
                       <Badge variant="destructive" className="text-xs mt-1 px-1.5 py-0">Lost</Badge>
                     )}
