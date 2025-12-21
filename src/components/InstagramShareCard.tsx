@@ -883,10 +883,14 @@ export const InstagramShareCard = ({
       return
     }
     
-    downloadImage(blob, petName)
+    const result = await downloadImage(blob, petName)
+    const isNative = Capacitor.isNativePlatform()
+    
     toast({
-      title: 'Card downloaded!',
-      description: 'Share your PetLinkID on Instagram! 🐾',
+      title: result === 'saved' ? 'Card saved!' : 'Card downloaded!',
+      description: isNative 
+        ? 'Open your Files app to find the image, then share to Instagram! 🐾'
+        : 'Share your PetLinkID on Instagram! 🐾',
     })
   }
 

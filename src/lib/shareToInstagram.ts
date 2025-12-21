@@ -158,11 +158,32 @@ export const copyImageToClipboard = async (blob: Blob): Promise<boolean> => {
   }
 }
 
-export const downloadImage = (blob: Blob, petName: string): 'downloaded' => {
+export const downloadImage = async (blob: Blob, petName: string): Promise<'downloaded' | 'saved'> => {
+  const timestamp = new Date().toISOString().split('T')[0]
+  const fileName = `${petName}-petlinkid-${timestamp}.png`
+
+  // On native platforms, use Filesystem to save properly
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const base64Data = await blobToBase64(blob)
+      
+      await Filesystem.writeFile({
+        path: fileName,
+        data: base64Data,
+        directory: Directory.Documents,
+      })
+      
+      return 'saved'
+    } catch (error) {
+      console.error('Native file save failed:', error)
+      // Fall through to web download as backup
+    }
+  }
+
+  // Web fallback
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
-  const timestamp = new Date().toISOString().split('T')[0]
-  link.download = `${petName}-petlinkid-${timestamp}.png`
+  link.download = fileName
   link.href = url
   link.style.display = 'none'
   document.body.appendChild(link)
