@@ -207,7 +207,13 @@ const AppDownloads = () => {
               <div className="grid md:grid-cols-3 gap-6">
                 <div className="text-center">
                   <div className="w-full h-64 bg-muted rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-                    <img src={screenshotDashboard} alt="Pet Dashboard showing multiple pet profiles" className="h-full w-auto object-contain" />
+                    <img
+                      src={screenshotDashboard}
+                      alt="Pet Dashboard showing multiple pet profiles"
+                      className="h-full w-auto object-contain"
+                      loading="lazy"
+                      decoding="async"
+                    />
                   </div>
                   <h4 className="font-semibold mb-2">Pet Dashboard</h4>
                   <p className="text-sm text-muted-foreground">View all your pets at a glance with health status and recent updates.</p>
@@ -215,7 +221,13 @@ const AppDownloads = () => {
                 
                 <div className="text-center">
                   <div className="w-full h-64 bg-muted rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-                    <img src={screenshotQR} alt="QR code scanner interface" className="h-full w-auto object-contain" />
+                    <img
+                      src={screenshotQR}
+                      alt="QR code scanner interface"
+                      className="h-full w-auto object-contain"
+                      loading="lazy"
+                      decoding="async"
+                    />
                   </div>
                   <h4 className="font-semibold mb-2">QR Scanner</h4>
                   <p className="text-sm text-muted-foreground">Instantly scan QR tags to access pet information and contact owners.</p>
@@ -223,7 +235,13 @@ const AppDownloads = () => {
                 
                 <div className="text-center">
                   <div className="w-full h-64 bg-muted rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-                    <img src={screenshotHealth} alt="Health tracking and vaccination reminders" className="h-full w-auto object-contain" />
+                    <img
+                      src={screenshotHealth}
+                      alt="Health tracking and vaccination reminders"
+                      className="h-full w-auto object-contain"
+                      loading="lazy"
+                      decoding="async"
+                    />
                   </div>
                   <h4 className="font-semibold mb-2">Health Tracking</h4>
                   <p className="text-sm text-muted-foreground">Track vaccinations, medications, and receive smart reminders.</p>
