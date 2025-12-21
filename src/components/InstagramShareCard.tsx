@@ -8,6 +8,46 @@ import { calculateAge } from '@/lib/age-utils'
 import { Capacitor } from '@capacitor/core'
 import { format } from 'date-fns'
 
+// Helper to load images with CORS handling and fetch fallback
+const loadImageWithCORS = async (url: string): Promise<HTMLImageElement | null> => {
+  // First try: direct load with crossOrigin
+  const img = new Image()
+  img.crossOrigin = 'anonymous'
+  
+  try {
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve()
+      img.onerror = reject
+      img.src = url
+    })
+    return img
+  } catch {
+    // Fallback: Fetch as blob and create object URL
+    try {
+      const response = await fetch(url, { mode: 'cors' })
+      const blob = await response.blob()
+      const objectUrl = URL.createObjectURL(blob)
+      const fallbackImg = new Image()
+      await new Promise<void>((resolve, reject) => {
+        fallbackImg.onload = () => resolve()
+        fallbackImg.onerror = reject
+        fallbackImg.src = objectUrl
+      })
+      return fallbackImg
+    } catch (err) {
+      console.error('Failed to load image with CORS:', url, err)
+      return null
+    }
+  }
+}
+
+// Promise-based wrapper for canvas.toBlob
+const canvasToBlob = (canvas: HTMLCanvasElement): Promise<Blob | null> => {
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), 'image/png')
+  })
+}
+
 // Draw Lucide Link2 icon on canvas (matches the actual SVG paths)
 const drawLinkIcon = (ctx: CanvasRenderingContext2D, x: number, y: number, size: number, color: string, withGlow: boolean = false) => {
   ctx.save()
@@ -221,16 +261,9 @@ export const InstagramShareCard = ({
     const photoRadius = 16
 
     if (petPhoto) {
-      try {
-        const img = new Image()
-        img.crossOrigin = 'anonymous'
-        
-        await new Promise<void>((resolve, reject) => {
-          img.onload = () => resolve()
-          img.onerror = reject
-          img.src = petPhoto
-        })
-
+      const img = await loadImageWithCORS(petPhoto)
+      
+      if (img) {
         // Photo with rounded corners
         ctx.save()
         ctx.beginPath()
@@ -267,8 +300,13 @@ export const InstagramShareCard = ({
         ctx.lineTo(photoX, photoY + photoRadius)
         ctx.quadraticCurveTo(photoX, photoY, photoX + photoRadius, photoY)
         ctx.stroke()
-      } catch (error) {
-        console.error('Error loading pet photo:', error)
+      } else {
+        // Photo failed to load - show placeholder
+        toast({
+          title: 'Photo unavailable',
+          description: 'Could not load pet photo. Using placeholder instead.',
+          variant: 'destructive',
+        })
         // Placeholder
         ctx.fillStyle = '#f3f4f6'
         ctx.beginPath()
@@ -624,15 +662,9 @@ export const InstagramShareCard = ({
     const photoRadius = 16
 
     if (petPhoto) {
-      try {
-        const img = new Image()
-        img.crossOrigin = 'anonymous'
-        await new Promise<void>((resolve, reject) => {
-          img.onload = () => resolve()
-          img.onerror = reject
-          img.src = petPhoto
-        })
-
+      const img = await loadImageWithCORS(petPhoto)
+      
+      if (img) {
         ctx.save()
         ctx.beginPath()
         ctx.moveTo(photoX + photoRadius, photoY)
@@ -652,7 +684,7 @@ export const InstagramShareCard = ({
         const sy = (img.height - size) / 2
         ctx.drawImage(img, sx, sy, size, size, photoX, photoY, photoSize, photoSize)
         ctx.restore()
-      } catch {
+      } else {
         // Placeholder on error
         ctx.fillStyle = '#f3f4f6'
         ctx.beginPath()
@@ -809,25 +841,31 @@ export const InstagramShareCard = ({
     const canvas = canvasRef.current
     if (!canvas) return
 
-    canvas.toBlob(async (blob) => {
-      if (!blob) return
+    const blob = await canvasToBlob(canvas)
+    if (!blob) {
+      toast({
+        title: 'Error generating image',
+        description: 'Please try again or use the Save button.',
+        variant: 'destructive',
+      })
+      return
+    }
 
-      try {
-        const result = await shareToInstagram({ imageBlob: blob, petName, publicUrl })
-        const toastMessage = getShareToastMessage(result)
-        toast(toastMessage)
-      } catch (error) {
-        if ((error as Error).name !== 'AbortError' && 
-            !(error as Error).message?.includes('canceled') &&
-            !(error as Error).message?.includes('cancelled')) {
-          console.error('Error sharing:', error)
-          toast({
-            title: 'Download started',
-            description: 'Share the downloaded image to Instagram!',
-          })
-        }
+    try {
+      const result = await shareToInstagram({ imageBlob: blob, petName, publicUrl })
+      const toastMessage = getShareToastMessage(result)
+      toast(toastMessage)
+    } catch (error) {
+      if ((error as Error).name !== 'AbortError' && 
+          !(error as Error).message?.includes('canceled') &&
+          !(error as Error).message?.includes('cancelled')) {
+        console.error('Error sharing:', error)
+        toast({
+          title: 'Download started',
+          description: 'Share the downloaded image to Instagram!',
+        })
       }
-    })
+    }
   }
 
   const handleDownload = async () => {
@@ -835,21 +873,20 @@ export const InstagramShareCard = ({
     const canvas = canvasRef.current
     if (!canvas) return
 
-    canvas.toBlob((blob) => {
-      if (!blob) return
-      const result = downloadImage(blob, petName)
-      
-      if (result === 'opened') {
-        toast({
-          title: 'Image opened!',
-          description: 'Long-press the image and tap "Add to Photos" to save.',
-        })
-      } else {
-        toast({
-          title: 'Card downloaded!',
-          description: 'Share your PetLinkID on Instagram! 🐾',
-        })
-      }
+    const blob = await canvasToBlob(canvas)
+    if (!blob) {
+      toast({
+        title: 'Error generating image',
+        description: 'Please try again.',
+        variant: 'destructive',
+      })
+      return
+    }
+    
+    downloadImage(blob, petName)
+    toast({
+      title: 'Card downloaded!',
+      description: 'Share your PetLinkID on Instagram! 🐾',
     })
   }
 
@@ -858,22 +895,29 @@ export const InstagramShareCard = ({
     const canvas = canvasRef.current
     if (!canvas) return
 
-    canvas.toBlob(async (blob) => {
-      if (!blob) return
-      const success = await copyImageToClipboard(blob)
-      if (success) {
-        toast({
-          title: 'Copied to clipboard!',
-          description: 'Paste the image into Instagram!',
-        })
-      } else {
-        toast({
-          title: 'Copy not supported',
-          description: 'Use the Save button instead.',
-          variant: 'destructive',
-        })
-      }
-    })
+    const blob = await canvasToBlob(canvas)
+    if (!blob) {
+      toast({
+        title: 'Error generating image',
+        description: 'Please try again.',
+        variant: 'destructive',
+      })
+      return
+    }
+    
+    const success = await copyImageToClipboard(blob)
+    if (success) {
+      toast({
+        title: 'Copied to clipboard!',
+        description: 'Paste the image into Instagram!',
+      })
+    } else {
+      toast({
+        title: 'Copy not supported',
+        description: 'Use the Save button instead.',
+        variant: 'destructive',
+      })
+    }
   }
 
   return (
