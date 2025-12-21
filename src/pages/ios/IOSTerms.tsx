@@ -20,7 +20,7 @@ export default function IOSTerms() {
   );
 
   return (
-    <IOSPageLayout title="Terms of Service" headerRight={headerLeft}>
+    <IOSPageLayout title="Terms of Service" headerLeft={headerLeft}>
       <div className="pb-8">
         {/* Header */}
         <div className="px-4 mb-6">

@@ -5,11 +5,12 @@ import { cn } from '@/lib/utils';
 
 interface IOSHeaderProps {
   title?: string;
+  leftContent?: ReactNode;
   rightContent?: ReactNode;
   visible?: boolean;
 }
 
-export function IOSHeader({ title, rightContent, visible = true }: IOSHeaderProps) {
+export function IOSHeader({ title, leftContent, rightContent, visible = true }: IOSHeaderProps) {
   return (
     <header 
       className={cn(
@@ -22,7 +23,11 @@ export function IOSHeader({ title, rightContent, visible = true }: IOSHeaderProp
       }}
     >
       <div className="flex items-center justify-between h-12 px-4">
-        <div className="flex-1">
+        <div className="flex items-center gap-2 min-w-[48px]">
+          {leftContent}
+        </div>
+        
+        <div className="flex-1 text-center">
           {title ? (
             <h1 className="text-lg font-semibold text-foreground">{title}</h1>
           ) : (
@@ -30,7 +35,7 @@ export function IOSHeader({ title, rightContent, visible = true }: IOSHeaderProp
           )}
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-[48px] justify-end">
           {rightContent || <NotificationsDropdown />}
         </div>
       </div>

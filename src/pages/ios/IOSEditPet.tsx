@@ -297,7 +297,7 @@ export default function IOSEditPet() {
 
   if (loading) {
     return (
-      <IOSPageLayout title="Edit Pet" headerRight={headerLeft}>
+      <IOSPageLayout title="Edit Pet" headerLeft={headerLeft}>
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </div>
@@ -306,7 +306,7 @@ export default function IOSEditPet() {
   }
 
   return (
-    <IOSPageLayout title={`Edit ${formData.name}`} headerRight={headerLeft}>
+    <IOSPageLayout title={`Edit ${formData.name}`} headerLeft={headerLeft}>
       <div className="pb-8">
         {/* Profile Photo */}
         <FormSection title="Profile Photo">

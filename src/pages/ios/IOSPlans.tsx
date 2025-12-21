@@ -120,7 +120,7 @@ export default function IOSPlans() {
   const loading = initialLoading || planLoading;
 
   return (
-    <IOSPageLayout title="Your Plan" headerRight={headerLeft}>
+    <IOSPageLayout title="Your Plan" headerLeft={headerLeft}>
       <LoadingBoundary loading={loading} skeleton={<IOSPlansSkeleton />}>
         <PageTransition>
       <div className="space-y-6 px-4 pb-6 pt-2">

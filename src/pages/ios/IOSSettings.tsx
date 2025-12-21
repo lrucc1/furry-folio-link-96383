@@ -203,14 +203,14 @@ export default function IOSSettings() {
 
   if (loading) {
     return (
-      <IOSPageLayout title="Settings" headerRight={headerLeft}>
+      <IOSPageLayout title="Settings" headerLeft={headerLeft}>
         <IOSSettingsSkeleton />
       </IOSPageLayout>
     );
   }
 
   return (
-    <IOSPageLayout title="Settings" headerRight={headerLeft}>
+    <IOSPageLayout title="Settings" headerLeft={headerLeft}>
       <PageTransition>
       <div className="space-y-6 px-4 pb-6 pt-2">
         {/* Profile Header */}

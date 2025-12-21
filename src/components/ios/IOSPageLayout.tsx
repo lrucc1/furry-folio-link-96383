@@ -13,6 +13,7 @@ interface IOSPageLayoutProps {
   title?: string;
   showHeader?: boolean;
   showTabBar?: boolean;
+  headerLeft?: ReactNode;
   headerRight?: ReactNode;
   onRefresh?: () => Promise<void>;
 }
@@ -32,6 +33,7 @@ export function IOSPageLayout({
   title,
   showHeader = true,
   showTabBar = true,
+  headerLeft,
   headerRight,
   onRefresh
 }: IOSPageLayoutProps) {
@@ -149,7 +151,7 @@ export function IOSPageLayout({
       className="fixed inset-0 flex flex-col min-h-dvh"
       style={{ backgroundColor: 'hsl(var(--background))' }}
     >
-      {showHeader && <IOSHeader title={title} rightContent={headerRight} visible={isNavVisible} />}
+      {showHeader && <IOSHeader title={title} leftContent={headerLeft} rightContent={headerRight} visible={isNavVisible} />}
       
       <main
         ref={mainRef}
