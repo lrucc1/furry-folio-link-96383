@@ -161,8 +161,8 @@ function AppContent() {
             <Route path="/settings/privacy-policy" element={<IOSPrivacyPolicy />} />
             <Route path="/settings/terms" element={<IOSTerms />} />
             <Route path="/settings/subscription-terms" element={<IOSSubscriptionTerms />} />
-            <Route path="/found/:publicId" element={<FoundPet />} />
-            <Route path="/pet/:publicId" element={<PublicPetProfile />} />
+            <Route path="/found/:publicToken" element={<FoundPet />} />
+            <Route path="/pet/:publicToken" element={<PublicPetProfile />} />
             <Route path="/help" element={<HelpCentre />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/contact" element={<Contact />} />

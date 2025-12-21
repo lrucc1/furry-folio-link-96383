@@ -46,6 +46,7 @@ interface Pet {
   photo_url: string | null
   is_lost: boolean
   public_id: string
+  public_token: string
   created_at: string
 }
 
@@ -294,7 +295,7 @@ const PetDetails = () => {
   }
 
   const shareRecoveryLink = async () => {
-    const url = `${window.location.origin}/found/${pet?.public_id}`
+    const url = `${window.location.origin}/found/${pet?.public_token}`
     
     if (navigator.share) {
       try {
@@ -348,7 +349,7 @@ const PetDetails = () => {
     )
   }
 
-  const publicUrl = `${window.location.origin}/found/${pet.public_id}`
+  const publicUrl = `${window.location.origin}/found/${pet.public_token}`
 
   // iOS Header with back and edit buttons
   const iosHeaderRight = (

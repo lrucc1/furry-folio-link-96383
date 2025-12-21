@@ -21,7 +21,7 @@ interface Pet {
 }
 
 const FoundPet = () => {
-  const { publicId } = useParams<{ publicId: string }>()
+  const { publicToken } = useParams<{ publicToken: string }>()
   const [pet, setPet] = useState<Pet | null>(null)
   const [loading, setLoading] = useState(true)
   const [messageLoading, setMessageLoading] = useState(false)
@@ -35,23 +35,29 @@ const FoundPet = () => {
   })
 
   useEffect(() => {
-    if (publicId) {
+    if (publicToken) {
       fetchPetDetails()
     }
-  }, [publicId])
+  }, [publicToken])
 
   const fetchPetDetails = async () => {
-    if (!publicId) return
+    if (!publicToken) return
 
     try {
-      const { data, error } = await (supabase as any)
-        .from('pets')
-        .select('id, name, species, breed, colour, photo_url, is_lost')
-        .eq('public_id', publicId)
-        .single()
+      const { data, error } = await supabase.functions.invoke('public-pet-contact', {
+        body: { public_token: publicToken }
+      })
 
       if (error) throw error
-      setPet(data)
+      setPet({
+        id: data?.pet?.id ?? '',
+        name: data?.pet?.name ?? '',
+        species: data?.pet?.species ?? '',
+        breed: data?.pet?.breed ?? null,
+        colour: data?.pet?.colour ?? null,
+        photo_url: data?.pet?.photo_url ?? null,
+        is_lost: data?.pet?.is_lost ?? false,
+      })
     } catch (error) {
       console.error('Error fetching pet details:', error)
     } finally {

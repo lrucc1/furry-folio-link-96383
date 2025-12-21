@@ -3,8 +3,64 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const PublicPetSchema = z.object({
-  public_id: z.string().min(1, { message: "public_id is required" }).max(50, { message: "public_id too long" })
+  public_token: z.string().uuid({ message: "public_token must be a UUID" }),
 });
+
+const MAX_LOOKUPS_PER_MINUTE = 30;
+
+const getClientIp = (req: Request): string | null => {
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) return forwarded.split(",")[0]?.trim() ?? null;
+  return (
+    req.headers.get("cf-connecting-ip") ??
+    req.headers.get("x-real-ip") ??
+    null
+  );
+};
+
+const enforceRateLimit = async (supabase: ReturnType<typeof createClient>, ip: string | null) => {
+  if (!ip) return null;
+
+  const windowStart = new Date(Math.floor(Date.now() / 60000) * 60000).toISOString();
+  const { data: existing, error } = await supabase
+    .from("public_pet_lookup_limits")
+    .select("request_count")
+    .eq("ip_address", ip)
+    .eq("window_start", windowStart)
+    .maybeSingle();
+
+  if (error) {
+    console.warn("[public-pet-contact] Rate limit lookup failed:", error.message);
+    return null;
+  }
+
+  if (existing && existing.request_count >= MAX_LOOKUPS_PER_MINUTE) {
+    return new Response(
+      JSON.stringify({ error: "Too many lookup attempts. Please try again later." }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 429 }
+    );
+  }
+
+  if (existing) {
+    await supabase
+      .from("public_pet_lookup_limits")
+      .update({
+        request_count: existing.request_count + 1,
+        last_seen_at: new Date().toISOString(),
+      })
+      .eq("ip_address", ip)
+      .eq("window_start", windowStart);
+  } else {
+    await supabase.from("public_pet_lookup_limits").insert({
+      ip_address: ip,
+      window_start: windowStart,
+      request_count: 1,
+      last_seen_at: new Date().toISOString(),
+    });
+  }
+
+  return null;
+};
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,6 +82,9 @@ serve(async (req) => {
 
     const body = await req.json();
     
+    const rateLimitResponse = await enforceRateLimit(supabase, getClientIp(req));
+    if (rateLimitResponse) return rateLimitResponse;
+
     // Validate input
     const validation = PublicPetSchema.safeParse(body);
     if (!validation.success) {
@@ -37,13 +96,13 @@ serve(async (req) => {
       );
     }
 
-    const { public_id } = validation.data;
+    const { public_token } = validation.data;
 
     // Fetch pet by public_id
     const { data: pet, error: petError } = await supabase
       .from("pets")
-      .select("id, name, species, breed, date_of_birth, photo_url, is_lost, microchip_number, user_id, emergency_contact_name, emergency_contact_phone")
-      .eq("public_id", public_id)
+      .select("id, name, species, breed, color, date_of_birth, photo_url, is_lost, microchip_number, user_id, emergency_contact_name, emergency_contact_phone")
+      .eq("public_token", public_token)
       .single();
 
     if (petError || !pet) {
@@ -77,9 +136,11 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         pet: { 
+          id: pet.id,
           name: pet.name,
           species: pet.species,
           breed: pet.breed ?? null,
+          colour: pet.color ?? null,
           date_of_birth: pet.date_of_birth ?? null,
           photo_url: pet.photo_url ?? null,
           is_lost: pet.is_lost,
