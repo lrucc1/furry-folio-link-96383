@@ -295,6 +295,18 @@ export default function IOSEditPet() {
     </Button>
   );
 
+  const headerRight = (
+    <Button 
+      variant="ghost" 
+      size="sm" 
+      onClick={handleSubmit}
+      disabled={saving}
+      className="text-primary font-semibold"
+    >
+      {saving ? 'Saving...' : 'Save'}
+    </Button>
+  );
+
   if (loading) {
     return (
       <IOSPageLayout title="Edit Pet" headerLeft={headerLeft}>
@@ -306,7 +318,7 @@ export default function IOSEditPet() {
   }
 
   return (
-    <IOSPageLayout title={`Edit ${formData.name}`} headerLeft={headerLeft}>
+    <IOSPageLayout title={`Edit ${formData.name}`} headerLeft={headerLeft} headerRight={headerRight}>
       <div className="pb-8">
         {/* Profile Photo */}
         <FormSection title="Profile Photo">
