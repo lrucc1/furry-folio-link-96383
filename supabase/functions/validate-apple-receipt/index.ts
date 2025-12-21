@@ -6,6 +6,7 @@ const PROD_ENDPOINT = 'https://buy.itunes.apple.com/verifyReceipt';
 const SANDBOX_ENDPOINT = 'https://sandbox.itunes.apple.com/verifyReceipt';
 
 const SHARED_SECRET = must('APPLE_IAP_SHARED_SECRET');
+const EXPECTED_BUNDLE_ID = must('APPLE_IAP_BUNDLE_ID');
 const ALLOWED_PRODUCT_IDS = [
   must('APPLE_PRO_MONTHLY_PRODUCT_ID'),
   must('APPLE_PRO_YEARLY_PRODUCT_ID'),
@@ -31,6 +32,7 @@ interface AppleReceiptResponse {
   environment?: string;
   latest_receipt_info?: ApplePurchase[];
   receipt?: {
+    bundle_id?: string;
     in_app?: ApplePurchase[];
   };
   pending_renewal_info?: ApplePendingRenewalInfo[];
@@ -128,9 +130,22 @@ serve(async (req: Request) => {
       return json(req, { error: message }, 400);
     }
 
+    const bundleId = validation.receipt?.bundle_id;
+    if (!bundleId || bundleId !== EXPECTED_BUNDLE_ID) {
+      return json(req, { error: 'Receipt bundle mismatch for this app' }, 400);
+    }
+
     const latestPurchase = pickLatestPurchase(validation);
     if (!latestPurchase) {
       return json(req, { error: 'No matching purchase found in receipt' }, 404);
+    }
+
+    const originalTransactionId = latestPurchase.original_transaction_id
+      ?? latestPurchase.transaction_id
+      ?? clientTransactionId;
+
+    if (!originalTransactionId) {
+      return json(req, { error: 'Missing transaction identifier in receipt' }, 400);
     }
 
     const status = computeStatus(latestPurchase, validation.pending_renewal_info);
@@ -145,6 +160,42 @@ serve(async (req: Request) => {
         : null;
 
     const serviceClient = makeServiceClient();
+    const { data: existingTransaction, error: txError } = await serviceClient
+      .from('apple_iap_transactions')
+      .select('user_id')
+      .eq('original_transaction_id', originalTransactionId)
+      .maybeSingle();
+
+    if (txError) throw txError;
+    if (existingTransaction && existingTransaction.user_id !== user.id) {
+      return json(req, { error: 'Receipt already linked to another account' }, 409);
+    }
+
+    if (existingTransaction) {
+      const { error: updateTxError } = await serviceClient
+        .from('apple_iap_transactions')
+        .update({
+          product_id: resolvedProductId ?? 'unknown',
+          environment: validation.environment ?? 'production',
+          last_seen_at: new Date().toISOString(),
+        })
+        .eq('original_transaction_id', originalTransactionId);
+
+      if (updateTxError) throw updateTxError;
+    } else {
+      const { error: insertTxError } = await serviceClient
+        .from('apple_iap_transactions')
+        .insert({
+          user_id: user.id,
+          original_transaction_id: originalTransactionId,
+          product_id: resolvedProductId ?? 'unknown',
+          environment: validation.environment ?? 'production',
+          last_seen_at: new Date().toISOString(),
+        });
+
+      if (insertTxError) throw insertTxError;
+    }
+
     const { error: updateError } = await serviceClient
       .from('profiles')
       .update({
@@ -165,7 +216,7 @@ serve(async (req: Request) => {
       product_id: resolvedProductId,
       status,
       expires_at: expiresAt,
-      transaction_id: latestPurchase.transaction_id ?? latestPurchase.original_transaction_id ?? clientTransactionId ?? null,
+      transaction_id: originalTransactionId,
     });
   } catch (error: any) {
     console.error('validate-apple-receipt error', error);

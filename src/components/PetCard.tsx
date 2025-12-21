@@ -16,6 +16,7 @@ interface Pet {
   microchipNumber?: string;
   lastVaccination?: string;
   publicId?: string;
+  publicToken?: string;
 }
 
 interface PetCardProps {
@@ -26,8 +27,8 @@ interface PetCardProps {
 
 export const PetCard = ({ pet, onViewDetails, onToggleLost }: PetCardProps) => {
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
-  const hasPublicId = !!pet.publicId;
-  const publicUrl = hasPublicId ? `${window.location.origin}/pet/${pet.publicId}` : "";
+  const hasPublicToken = !!pet.publicToken;
+  const publicUrl = hasPublicToken ? `${window.location.origin}/pet/${pet.publicToken}` : "";
 
   return (
     <Card className="bg-gradient-card border-0 shadow-medium hover:shadow-strong transition-spring overflow-hidden group touch-manipulation">
@@ -51,7 +52,7 @@ export const PetCard = ({ pet, onViewDetails, onToggleLost }: PetCardProps) => {
           </Badge>
         )}
         
-        {hasPublicId && (
+        {hasPublicToken && (
           <Dialog open={qrDialogOpen} onOpenChange={setQrDialogOpen}>
             <DialogTrigger asChild>
               <Button

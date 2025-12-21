@@ -26,23 +26,23 @@ interface Pet {
 }
 
 const PublicPetProfile = () => {
-  const { publicId } = useParams<{ publicId: string }>()
+  const { publicToken } = useParams<{ publicToken: string }>()
   const [pet, setPet] = useState<Pet | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (publicId) {
+    if (publicToken) {
       fetchPetDetails()
     }
-  }, [publicId])
+  }, [publicToken])
 
   const fetchPetDetails = async () => {
-    if (!publicId) return
+    if (!publicToken) return
 
     try {
       // Fetch all pet data via the secure edge function
       const { data, error } = await supabase.functions.invoke('public-pet-contact', {
-        body: { public_id: publicId }
+        body: { public_token: publicToken }
       });
 
       if (error || !data) {
