@@ -14,6 +14,8 @@ import { useIsNativeApp } from '@/hooks/useIsNativeApp';
 import { ArrowLeft, Plus, Scale, TrendingUp, TrendingDown, Minus, Trash2, Loader2, ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { Capacitor } from '@capacitor/core';
+import { Keyboard } from '@capacitor/keyboard';
 import {
   Sheet,
   SheetContent,
@@ -285,13 +287,21 @@ export default function PetWeightTracker() {
       {/* Add Weight Button */}
       <Sheet 
         open={sheetOpen} 
-        onOpenChange={(open) => {
+        onOpenChange={async (open) => {
           setSheetOpen(open);
           if (open) {
             // Delay focus for iOS to ensure sheet is fully open
-            setTimeout(() => {
+            setTimeout(async () => {
               weightInputRef.current?.focus();
-            }, 300);
+              // Explicitly show keyboard on native iOS/Android
+              if (Capacitor.isNativePlatform()) {
+                try {
+                  await Keyboard.show();
+                } catch (e) {
+                  // Keyboard.show() may not be supported on all platforms
+                }
+              }
+            }, 400);
           }
         }}
       >
