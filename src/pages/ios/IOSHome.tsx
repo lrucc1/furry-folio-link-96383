@@ -52,13 +52,34 @@ export default function IOSHome() {
     if (!user) return;
     
     try {
-      // Fetch pets
-      const { data: petsData } = await supabase
+      // Fetch owned pets (filtered by user_id to match Dashboard behavior)
+      const { data: ownedPets } = await supabase
         .from('pets')
         .select('id, name, species, photo_url, is_lost')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: true });
       
-      setPets(petsData || []);
+      // Fetch shared pet IDs via memberships
+      const { data: memberships } = await supabase
+        .from('pet_memberships')
+        .select('pet_id')
+        .eq('user_id', user.id);
+      
+      // Fetch shared pets if any memberships exist
+      let sharedPets: Pet[] = [];
+      if (memberships && memberships.length > 0) {
+        const petIds = memberships.map(m => m.pet_id);
+        const { data: sharedPetsData } = await supabase
+          .from('pets')
+          .select('id, name, species, photo_url, is_lost')
+          .in('id', petIds)
+          .order('created_at', { ascending: true });
+        sharedPets = sharedPetsData || [];
+      }
+      
+      // Combine owned and shared pets
+      const petsData = [...(ownedPets || []), ...sharedPets];
+      setPets(petsData);
       
       // Select first pet by default
       if (petsData && petsData.length > 0 && !selectedPetId) {
