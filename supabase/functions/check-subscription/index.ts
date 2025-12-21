@@ -32,21 +32,44 @@ serve(async (req: Request) => {
 
     const { data: profile, error } = await serviceClient
       .from('profiles')
-      .select('plan_v2, subscription_status, trial_end_at')
+      .select('plan_v2, subscription_status, trial_end_at, next_billing_at')
       .eq('id', user.id)
       .single();
-    if (error) return json(req, { error: `Profile fetch failed: ${error.message}` }, 500);
+    
+    console.log('[check-subscription] Profile for user:', user.id, profile);
+    
+    if (error) {
+      console.error('[check-subscription] Profile fetch error:', error);
+      return json(req, { error: `Profile fetch failed: ${error.message}` }, 500);
+    }
 
     const isPro = profile?.plan_v2 === 'PRO' || profile?.subscription_status === 'active';
+    
+    // Determine effective tier
+    let effectiveTier = 'free';
+    if (profile?.plan_v2 === 'PRO' || profile?.subscription_status === 'active') {
+      effectiveTier = 'pro';
+    } else if (profile?.plan_v2 === 'TRIAL' || profile?.subscription_status === 'trialing') {
+      effectiveTier = 'pro'; // Trial users get pro features
+    }
 
+    console.log('[check-subscription] Returning:', { isPro, effectiveTier, plan: profile?.plan_v2 });
+
+    // Return both old and new field names for compatibility
     return json(req, {
       ok: true,
+      // Legacy fields
       is_pro: isPro,
       plan: profile?.plan_v2 ?? 'FREE',
       trial_ends_at: profile?.trial_end_at ?? null,
+      // New fields expected by AuthContext
+      subscribed: isPro,
+      effective_tier: effectiveTier,
+      subscription_end: profile?.next_billing_at ?? profile?.trial_end_at ?? null,
+      product_id: null, // Not using Stripe products directly
     });
   } catch (e: any) {
-    console.error('check-subscription error', e);
+    console.error('[check-subscription] error', e);
     return json(req, { error: String(e?.message ?? e) }, 500);
   }
 });
