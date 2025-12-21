@@ -31,7 +31,7 @@ export function IOSHeader({ title, leftContent, rightContent, visible = true }: 
           {title ? (
             <h1 className="text-lg font-semibold text-foreground">{title}</h1>
           ) : (
-            <Logo iconClassName="w-7 h-7" textClassName="text-base font-bold" />
+            <Logo className="justify-center" iconClassName="w-7 h-7" textClassName="text-base font-bold" />
           )}
         </div>
         
