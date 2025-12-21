@@ -17,9 +17,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { ChevronLeft, MapPin, PawPrint, AlertCircle, Upload, X, Camera } from 'lucide-react';
+import { ChevronLeft, MapPin, PawPrint, AlertCircle, Upload, X, Camera as CameraIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Capacitor } from '@capacitor/core';
 
 const PetSchema = z.object({
   name: z.string().trim().min(1, 'Pet name is required').max(100, 'Name must be under 100 characters'),
@@ -108,7 +110,37 @@ export default function IOSAddPet() {
     return true;
   };
 
-  // Photo handling
+  // Check if running in native app
+  const isNative = Capacitor.isNativePlatform();
+
+  // Native photo selection using Capacitor Camera
+  const handleNativePhotoSelect = async () => {
+    try {
+      const image = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        resultType: CameraResultType.DataUrl,
+        source: CameraSource.Prompt,
+        promptLabelHeader: 'Select Photo',
+        promptLabelPhoto: 'Choose from Library',
+        promptLabelPicture: 'Take Photo',
+      });
+
+      if (image.dataUrl) {
+        setImageToCrop(image.dataUrl);
+        setCropDialogOpen(true);
+      }
+    } catch (error: any) {
+      console.error('Photo selection error:', error);
+      // User cancelled - don't show error
+      if (error?.message?.includes('cancelled') || error?.message?.includes('canceled')) {
+        return;
+      }
+      toast.error('Failed to select photo');
+    }
+  };
+
+  // Web fallback photo handling
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -281,40 +313,77 @@ export default function IOSAddPet() {
         <FormSection title="Profile Photo">
           <div className="p-4">
             <div className="flex justify-center">
-              <label className="cursor-pointer block">
-                <div className="w-32 h-32 rounded-2xl overflow-hidden bg-muted relative group border-2 border-dashed border-border hover:border-primary/50 transition-colors">
-                  {photoPreview ? (
-                    <>
-                      <img 
-                        src={photoPreview} 
-                        alt="Pet photo" 
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Camera className="w-8 h-8 text-white" />
-                      </div>
-                    </>
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground">
-                      {uploading ? (
-                        <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" />
-                      ) : (
-                        <>
-                          <Upload className="w-8 h-8 mb-2" />
-                          <span className="text-xs">Add Photo</span>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={handlePhotoSelect} 
-                  className="hidden"
+              {isNative ? (
+                // Native: Use button to trigger Capacitor Camera
+                <button
+                  type="button"
+                  onClick={handleNativePhotoSelect}
                   disabled={uploading}
-                />
-              </label>
+                  className="cursor-pointer block"
+                >
+                  <div className="w-32 h-32 rounded-2xl overflow-hidden bg-muted relative group border-2 border-dashed border-border hover:border-primary/50 transition-colors">
+                    {photoPreview ? (
+                      <>
+                        <img 
+                          src={photoPreview} 
+                          alt="Pet photo" 
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <CameraIcon className="w-8 h-8 text-white" />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground">
+                        {uploading ? (
+                          <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" />
+                        ) : (
+                          <>
+                            <CameraIcon className="w-8 h-8 mb-2" />
+                            <span className="text-xs">Add Photo</span>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </button>
+              ) : (
+                // Web fallback: Use file input
+                <label className="cursor-pointer block">
+                  <div className="w-32 h-32 rounded-2xl overflow-hidden bg-muted relative group border-2 border-dashed border-border hover:border-primary/50 transition-colors">
+                    {photoPreview ? (
+                      <>
+                        <img 
+                          src={photoPreview} 
+                          alt="Pet photo" 
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <CameraIcon className="w-8 h-8 text-white" />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground">
+                        {uploading ? (
+                          <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" />
+                        ) : (
+                          <>
+                            <Upload className="w-8 h-8 mb-2" />
+                            <span className="text-xs">Add Photo</span>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handlePhotoSelect} 
+                    className="hidden"
+                    disabled={uploading}
+                  />
+                </label>
+              )}
             </div>
             {photoPreview && (
               <div className="flex justify-center mt-3">
