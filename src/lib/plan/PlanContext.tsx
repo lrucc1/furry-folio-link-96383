@@ -141,10 +141,22 @@ export function PlanProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// Default fallback for when context is unavailable (e.g., during HMR)
+const DEFAULT_PLAN_CONTEXT: PlanContextValue = {
+  tier: 'free',
+  source: 'system',
+  profile: null,
+  loading: true,
+  refresh: async () => {},
+};
+
 export function usePlan() {
   const context = useContext(PlanContext);
   if (context === undefined) {
-    throw new Error('usePlan must be used within a PlanProvider');
+    // Return safe defaults during HMR or if used outside provider
+    // This prevents crashes during hot reload
+    console.warn('[usePlan] Context unavailable, using defaults');
+    return DEFAULT_PLAN_CONTEXT;
   }
   return context;
 }
