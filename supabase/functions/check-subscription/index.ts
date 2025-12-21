@@ -32,7 +32,7 @@ serve(async (req: Request) => {
 
     const { data: profile, error } = await serviceClient
       .from('profiles')
-      .select('plan_v2, subscription_status, trial_end_at, stripe_subscription_id')
+      .select('plan_v2, subscription_status, trial_end_at')
       .eq('id', user.id)
       .single();
     if (error) return json(req, { error: `Profile fetch failed: ${error.message}` }, 500);
@@ -44,7 +44,6 @@ serve(async (req: Request) => {
       is_pro: isPro,
       plan: profile?.plan_v2 ?? 'FREE',
       trial_ends_at: profile?.trial_end_at ?? null,
-      stripe_subscription_id: profile?.stripe_subscription_id ?? null,
     });
   } catch (e: any) {
     console.error('check-subscription error', e);
