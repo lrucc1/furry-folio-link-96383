@@ -705,18 +705,6 @@ const PetDetails = () => {
             </Button>
           </MobileCard>
 
-          <InstagramShareCard 
-            petName={pet.name}
-            petSpecies={pet.species}
-            petBreed={pet.breed}
-            petColour={pet.colour}
-            petWeight={pet.weight_kg}
-            petGender={pet.gender}
-            petPhoto={pet.photo_url}
-            publicId={pet.public_id}
-            publicUrl={publicUrl}
-            dateOfBirth={pet.date_of_birth}
-          />
         </TabsContent>
 
         {/* Sharing Tab - iOS optimized */}
@@ -1223,18 +1211,6 @@ const PetDetails = () => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-3">
-                      <InstagramShareCard
-                        petName={pet.name}
-                        petSpecies={pet.species}
-                        petBreed={pet.breed}
-                        petColour={pet.colour}
-                        petWeight={pet.weight_kg}
-                        petGender={pet.gender}
-                        petPhoto={pet.photo_url}
-                        publicId={pet.public_id}
-                        publicUrl={publicUrl}
-                        dateOfBirth={pet.date_of_birth}
-                      />
                       <Button onClick={generatePoster} className="flex-1">
                         <Download className="w-4 h-4 mr-2" />
                         Generate Poster

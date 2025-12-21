@@ -158,25 +158,7 @@ export const copyImageToClipboard = async (blob: Blob): Promise<boolean> => {
   }
 }
 
-const isIOSSafari = (): boolean => {
-  const ua = navigator.userAgent
-  const isIOS = /iPad|iPhone|iPod/.test(ua)
-  const isWebkit = /WebKit/.test(ua)
-  const isNotChrome = !/CriOS/.test(ua) && !/Chrome/.test(ua)
-  return isIOS && isWebkit && isNotChrome
-}
-
-export const openImageForSaving = (blob: Blob): void => {
-  const url = URL.createObjectURL(blob)
-  window.open(url, '_blank')
-}
-
-export const downloadImage = (blob: Blob, petName: string): 'downloaded' | 'opened' => {
-  if (isIOSSafari()) {
-    openImageForSaving(blob)
-    return 'opened'
-  }
-
+export const downloadImage = (blob: Blob, petName: string): 'downloaded' => {
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   const timestamp = new Date().toISOString().split('T')[0]
@@ -186,6 +168,9 @@ export const downloadImage = (blob: Blob, petName: string): 'downloaded' | 'open
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
-  URL.revokeObjectURL(url)
+  
+  // Delayed cleanup to ensure download starts on all browsers
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+  
   return 'downloaded'
 }
