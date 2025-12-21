@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -53,6 +53,8 @@ export default function PetWeightTracker() {
   const [newWeight, setNewWeight] = useState('');
   const [newDate, setNewDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [newNote, setNewNote] = useState('');
+  
+  const weightInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (id && user) {
@@ -281,7 +283,18 @@ export default function PetWeightTracker() {
       </MobileCard>
 
       {/* Add Weight Button */}
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+      <Sheet 
+        open={sheetOpen} 
+        onOpenChange={(open) => {
+          setSheetOpen(open);
+          if (open) {
+            // Delay focus for iOS to ensure sheet is fully open
+            setTimeout(() => {
+              weightInputRef.current?.focus();
+            }, 300);
+          }
+        }}
+      >
         <SheetTrigger asChild>
           <Button className="w-full h-12 rounded-full text-base font-semibold">
             <Plus className="w-5 h-5 mr-2" />
@@ -300,13 +313,20 @@ export default function PetWeightTracker() {
             <div className="space-y-2">
               <Label htmlFor="weight">Weight (kg)</Label>
               <Input
+                ref={weightInputRef}
                 id="weight"
-                type="number"
-                step="0.1"
-                min="0.1"
-                max="500"
+                type="text"
+                inputMode="decimal"
+                pattern="[0-9]*\.?[0-9]*"
+                autoComplete="off"
                 value={newWeight}
-                onChange={(e) => setNewWeight(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Only allow valid decimal input
+                  if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                    setNewWeight(value);
+                  }
+                }}
                 placeholder="e.g., 7.5"
                 className="h-12 text-lg"
                 required
