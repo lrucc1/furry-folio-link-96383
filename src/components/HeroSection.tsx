@@ -105,6 +105,9 @@ export const HeroSection = () => {
               alt="Three happy pets wearing ID tags - golden retriever, tabby cat, and pug with smart collar tags"
               className="relative rounded-3xl shadow-strong w-full h-auto object-cover max-w-lg mx-auto backface-hidden"
               style={{ y: imageY, imageRendering: '-webkit-optimize-contrast' }}
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
             />
             {/* PetLinkID License Card preview */}
             <div className="absolute -bottom-6 -right-6 bg-gradient-to-br from-white to-gray-50 rounded-2xl p-4 shadow-strong transform rotate-3 border border-white/50">
