@@ -81,7 +81,9 @@ export function IOSPageLayout({
 
     const pullDown = e.touches[0].clientY - touchStartY.current;
 
-    if (pullDown > 0 && mainRef.current?.scrollTop === 0) {
+    // Only prevent default if user is clearly trying to pull (not just tapping)
+    // Minimum 10px movement required before we take over the gesture
+    if (pullDown > 10 && mainRef.current?.scrollTop === 0) {
       e.preventDefault();
       const resistance = 0.5;
       const distance = Math.min(pullDown * resistance, 120);
