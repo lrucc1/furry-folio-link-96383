@@ -242,7 +242,7 @@ export default function IOSAddPet() {
   );
 
   return (
-    <IOSPageLayout title="Add Pet" headerRight={headerLeft}>
+    <IOSPageLayout title="Add Pet" headerLeft={headerLeft}>
       <div className="pb-8">
         {/* Pet Limit Indicator */}
         {!canAddPet && (

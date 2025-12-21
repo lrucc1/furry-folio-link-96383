@@ -89,7 +89,7 @@ export default function IOSSharingSettings() {
   );
 
   return (
-    <IOSPageLayout title="Sharing & Privacy" headerRight={headerLeft}>
+    <IOSPageLayout title="Sharing & Privacy" headerLeft={headerLeft}>
       <LoadingBoundary loading={loading} skeleton={<IOSSharingSettingsSkeleton />}>
         <PageTransition>
       <div className="space-y-6 px-4 pb-6 pt-2">

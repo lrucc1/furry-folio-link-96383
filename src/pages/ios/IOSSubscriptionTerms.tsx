@@ -20,7 +20,7 @@ export default function IOSSubscriptionTerms() {
   );
 
   return (
-    <IOSPageLayout title="Subscription Terms" headerRight={headerLeft}>
+    <IOSPageLayout title="Subscription Terms" headerLeft={headerLeft}>
       <div className="pb-8">
         {/* Header */}
         <div className="px-4 mb-6">

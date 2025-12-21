@@ -21,7 +21,7 @@ export default function IOSPrivacyPolicy() {
   );
 
   return (
-    <IOSPageLayout title="Privacy Policy" headerRight={headerLeft}>
+    <IOSPageLayout title="Privacy Policy" headerLeft={headerLeft}>
       <div className="pb-8">
         {/* Header */}
         <div className="px-4 mb-6">

@@ -153,7 +153,7 @@ export default function IOSEditProfile() {
   );
 
   return (
-    <IOSPageLayout title="Edit Profile" headerRight={loading ? headerLeft : headerRight}>
+    <IOSPageLayout title="Edit Profile" headerLeft={headerLeft} headerRight={loading ? undefined : headerRight}>
       <LoadingBoundary loading={loading} skeleton={<IOSEditProfileSkeleton />}>
         <PageTransition>
           <div className="pb-8">
