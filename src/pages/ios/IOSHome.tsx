@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlan } from '@/lib/plan/PlanContext';
@@ -160,33 +161,41 @@ export default function IOSHome() {
       <PageTransition>
       <div className="px-4 py-6 space-y-6 pb-8">
         {/* Welcome Card */}
-        {showWelcome && (
-          <MobileCard className="relative bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-            <button
-              onClick={handleDismissWelcome}
-              className="absolute top-2 right-2 p-1.5 rounded-full bg-muted/50 hover:bg-muted transition-colors"
-              aria-label="Dismiss welcome message"
+        <AnimatePresence>
+          {showWelcome && (
+            <motion.div
+              initial={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
             >
-              <X className="w-3.5 h-3.5 text-muted-foreground" />
-            </button>
-            <div className="flex items-center justify-between pr-6">
-              <div>
-                <h2 className="text-xl font-bold text-foreground">
-                  {userName ? `Welcome, ${userName}!` : au('Welcome back!')}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  {au('Manage your pets in one place')}
-                </p>
-              </div>
-              {tier === 'pro' && (
-                <Badge className="bg-gradient-to-r from-amber-500 to-yellow-600 text-white border-0">
-                  <Crown className="w-3 h-3 mr-1" />
-                  Pro
-                </Badge>
-              )}
-            </div>
-          </MobileCard>
-        )}
+              <MobileCard className="relative bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+                <button
+                  onClick={handleDismissWelcome}
+                  className="absolute top-2 right-2 p-1.5 rounded-full bg-muted/50 hover:bg-muted transition-colors"
+                  aria-label="Dismiss welcome message"
+                >
+                  <X className="w-3.5 h-3.5 text-muted-foreground" />
+                </button>
+                <div className="flex items-center justify-between pr-6">
+                  <div>
+                    <h2 className="text-xl font-bold text-foreground">
+                      {userName ? `Welcome, ${userName}!` : au('Welcome back!')}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      {au('Manage your pets in one place')}
+                    </p>
+                  </div>
+                  {tier === 'pro' && (
+                    <Badge className="bg-gradient-to-r from-amber-500 to-yellow-600 text-white border-0">
+                      <Crown className="w-3 h-3 mr-1" />
+                      Pro
+                    </Badge>
+                  )}
+                </div>
+              </MobileCard>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Pet Selector */}
         {pets.length > 0 && (
