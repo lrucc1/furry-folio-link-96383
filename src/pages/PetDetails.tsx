@@ -720,7 +720,28 @@ const PetDetails = () => {
         </TabsContent>
 
         {/* Sharing Tab - iOS optimized */}
-        <TabsContent value="sharing" className="mt-4">
+        <TabsContent value="sharing" className="space-y-4 mt-4">
+          {/* Instagram Share Card */}
+          <MobileCard>
+            <h3 className="font-semibold mb-3">Share {pet.name}'s Profile</h3>
+            <p className="text-sm text-muted-foreground mb-3">
+              Create a beautiful Instagram-ready card to share {pet.name}'s profile! 🚀
+            </p>
+            <InstagramShareCard 
+              petName={pet.name}
+              petSpecies={pet.species}
+              petBreed={pet.breed}
+              petColour={pet.colour}
+              petWeight={pet.weight_kg}
+              petGender={pet.gender}
+              petPhoto={pet.photo_url}
+              publicId={pet.public_id}
+              publicUrl={publicUrl}
+              dateOfBirth={pet.date_of_birth}
+            />
+          </MobileCard>
+          
+          {/* Family & Caregivers */}
           <SharingTab petId={pet.id} />
         </TabsContent>
       </Tabs>
