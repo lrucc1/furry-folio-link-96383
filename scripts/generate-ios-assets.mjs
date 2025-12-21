@@ -11,7 +11,7 @@ const sourcesBase = join(__dirname, '..', 'ios', 'assets');
 const targets = [
   {
     source: join(sourcesBase, 'AppIcon-512@2x.b64'),
-    dest: join(assetBase, 'AppIcon.appiconset', 'AppIcon-512@2x.png'),
+    dest: join(assetBase, 'AppIcon 1.appiconset', 'AppIcon-512@2x.png'),
   },
   {
     source: join(sourcesBase, 'splash-2732x2732.b64'),
