@@ -30,7 +30,6 @@ interface Pet {
   microchip_number: string | null
   created_at: string
   public_id: string
-  public_token: string
   weight_kg?: number | null
 }
 
@@ -261,7 +260,6 @@ const Dashboard = () => {
                     microchipNumber: pet.microchip_number || '',
                     lastVaccination: '2024-06-15',
                     publicId: pet.public_id,
-                    publicToken: pet.public_token
                   }}
                   onViewDetails={handleViewPetDetails}
                   onToggleLost={handleToggleLost}
@@ -293,7 +291,6 @@ const Dashboard = () => {
                         microchipNumber: pet.microchip_number || '',
                         lastVaccination: '2024-06-15',
                         publicId: pet.public_id,
-                        publicToken: pet.public_token
                       }}
                       onViewDetails={handleViewPetDetails}
                       onToggleLost={handleToggleLost}

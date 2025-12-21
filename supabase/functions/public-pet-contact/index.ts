@@ -6,62 +6,6 @@ const PublicPetSchema = z.object({
   public_token: z.string().uuid({ message: "public_token must be a UUID" }),
 });
 
-const MAX_LOOKUPS_PER_MINUTE = 30;
-
-const getClientIp = (req: Request): string | null => {
-  const forwarded = req.headers.get("x-forwarded-for");
-  if (forwarded) return forwarded.split(",")[0]?.trim() ?? null;
-  return (
-    req.headers.get("cf-connecting-ip") ??
-    req.headers.get("x-real-ip") ??
-    null
-  );
-};
-
-const enforceRateLimit = async (supabase: ReturnType<typeof createClient>, ip: string | null) => {
-  if (!ip) return null;
-
-  const windowStart = new Date(Math.floor(Date.now() / 60000) * 60000).toISOString();
-  const { data: existing, error } = await supabase
-    .from("public_pet_lookup_limits")
-    .select("request_count")
-    .eq("ip_address", ip)
-    .eq("window_start", windowStart)
-    .maybeSingle();
-
-  if (error) {
-    console.warn("[public-pet-contact] Rate limit lookup failed:", error.message);
-    return null;
-  }
-
-  if (existing && existing.request_count >= MAX_LOOKUPS_PER_MINUTE) {
-    return new Response(
-      JSON.stringify({ error: "Too many lookup attempts. Please try again later." }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 429 }
-    );
-  }
-
-  if (existing) {
-    await supabase
-      .from("public_pet_lookup_limits")
-      .update({
-        request_count: existing.request_count + 1,
-        last_seen_at: new Date().toISOString(),
-      })
-      .eq("ip_address", ip)
-      .eq("window_start", windowStart);
-  } else {
-    await supabase.from("public_pet_lookup_limits").insert({
-      ip_address: ip,
-      window_start: windowStart,
-      request_count: 1,
-      last_seen_at: new Date().toISOString(),
-    });
-  }
-
-  return null;
-};
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -81,9 +25,6 @@ serve(async (req) => {
     );
 
     const body = await req.json();
-    
-    const rateLimitResponse = await enforceRateLimit(supabase, getClientIp(req));
-    if (rateLimitResponse) return rateLimitResponse;
 
     // Validate input
     const validation = PublicPetSchema.safeParse(body);
