@@ -25,6 +25,7 @@ import {
   Plus,
   Syringe,
   Users,
+  X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -49,6 +50,22 @@ export default function IOSHome() {
   const [upcomingReminders, setUpcomingReminders] = useState(0);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState<string | null>(null);
+  const [showWelcome, setShowWelcome] = useState(true);
+
+  // Check if welcome was previously dismissed for this user
+  useEffect(() => {
+    if (user?.id) {
+      const dismissed = localStorage.getItem(`welcome_dismissed_${user.id}`);
+      setShowWelcome(dismissed !== 'true');
+    }
+  }, [user?.id]);
+
+  const handleDismissWelcome = () => {
+    setShowWelcome(false);
+    if (user?.id) {
+      localStorage.setItem(`welcome_dismissed_${user.id}`, 'true');
+    }
+  };
 
   const fetchData = async () => {
     if (!user) return;
@@ -143,24 +160,33 @@ export default function IOSHome() {
       <PageTransition>
       <div className="px-4 py-6 space-y-6 pb-8">
         {/* Welcome Card */}
-        <MobileCard className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-bold text-foreground">
-                {userName ? `Welcome, ${userName}!` : au('Welcome back!')}
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                {au('Manage your pets in one place')}
-              </p>
+        {showWelcome && (
+          <MobileCard className="relative bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+            <button
+              onClick={handleDismissWelcome}
+              className="absolute top-2 right-2 p-1.5 rounded-full bg-muted/50 hover:bg-muted transition-colors"
+              aria-label="Dismiss welcome message"
+            >
+              <X className="w-3.5 h-3.5 text-muted-foreground" />
+            </button>
+            <div className="flex items-center justify-between pr-6">
+              <div>
+                <h2 className="text-xl font-bold text-foreground">
+                  {userName ? `Welcome, ${userName}!` : au('Welcome back!')}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {au('Manage your pets in one place')}
+                </p>
+              </div>
+              {tier === 'pro' && (
+                <Badge className="bg-gradient-to-r from-amber-500 to-yellow-600 text-white border-0">
+                  <Crown className="w-3 h-3 mr-1" />
+                  Pro
+                </Badge>
+              )}
             </div>
-            {tier === 'pro' && (
-              <Badge className="bg-gradient-to-r from-amber-500 to-yellow-600 text-white border-0">
-                <Crown className="w-3 h-3 mr-1" />
-                Pro
-              </Badge>
-            )}
-          </div>
-        </MobileCard>
+          </MobileCard>
+        )}
 
         {/* Pet Selector */}
         {pets.length > 0 && (
