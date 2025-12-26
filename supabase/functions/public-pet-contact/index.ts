@@ -11,6 +11,37 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Rate limiting configuration
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+const MAX_REQUESTS_PER_WINDOW = 10;
+
+// In-memory rate limit store (resets on function cold start, but provides basic protection)
+const rateLimitStore = new Map<string, { count: number; windowStart: number }>();
+
+const checkRateLimit = (ip: string): { allowed: boolean; remaining: number } => {
+  const now = Date.now();
+  const record = rateLimitStore.get(ip);
+
+  if (!record || now - record.windowStart > RATE_LIMIT_WINDOW_MS) {
+    // New window
+    rateLimitStore.set(ip, { count: 1, windowStart: now });
+    return { allowed: true, remaining: MAX_REQUESTS_PER_WINDOW - 1 };
+  }
+
+  if (record.count >= MAX_REQUESTS_PER_WINDOW) {
+    return { allowed: false, remaining: 0 };
+  }
+
+  record.count++;
+  return { allowed: true, remaining: MAX_REQUESTS_PER_WINDOW - record.count };
+};
+
+const getClientIp = (req: Request): string => {
+  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+         req.headers.get("x-real-ip") ||
+         "unknown";
+};
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -18,6 +49,25 @@ serve(async (req) => {
   }
 
   try {
+    // Rate limiting check
+    const clientIp = getClientIp(req);
+    const rateLimitResult = checkRateLimit(clientIp);
+    
+    if (!rateLimitResult.allowed) {
+      console.warn(`[public-pet-contact] Rate limit exceeded for IP: ${clientIp}`);
+      return new Response(
+        JSON.stringify({ error: "Too many requests. Please try again later." }),
+        { 
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json",
+            "Retry-After": "3600"
+          }, 
+          status: 429 
+        }
+      );
+    }
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -38,6 +88,9 @@ serve(async (req) => {
     }
 
     const { public_token } = validation.data;
+
+    // Log lookup for audit purposes
+    console.log(`[public-pet-contact] Lookup request for token: ${public_token.substring(0, 8)}... from IP: ${clientIp}`);
 
     // Fetch pet by public_id
     const { data: pet, error: petError } = await supabase
@@ -93,7 +146,14 @@ serve(async (req) => {
           phone: isLost ? pet.emergency_contact_phone ?? null : null,
         },
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      { 
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json",
+          "X-RateLimit-Remaining": rateLimitResult.remaining.toString()
+        }, 
+        status: 200 
+      }
     );
   } catch (err) {
     console.error("[public-pet-contact] Error:", err);
