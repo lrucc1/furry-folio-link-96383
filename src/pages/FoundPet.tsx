@@ -11,6 +11,12 @@ import { Heart, MapPin, Phone, Mail } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { PetAvatarLarge } from '@/components/PetAvatar'
 
+interface Owner {
+  full_name: string | null
+  phone: string | null
+  email: string | null
+}
+
 interface Pet {
   id: string
   name: string
@@ -19,6 +25,9 @@ interface Pet {
   colour: string | null
   photo_url: string | null
   is_lost: boolean
+  owner: Owner | null
+  emergency_contact_name: string | null
+  emergency_contact_phone: string | null
 }
 
 const FoundPet = () => {
@@ -58,6 +67,9 @@ const FoundPet = () => {
         colour: data?.pet?.colour ?? null,
         photo_url: data?.pet?.photo_url ?? null,
         is_lost: data?.pet?.is_lost ?? false,
+        owner: data?.owner ?? null,
+        emergency_contact_name: data?.pet?.emergency_contact_name ?? null,
+        emergency_contact_phone: data?.pet?.emergency_contact_phone ?? null,
       })
     } catch (error) {
       console.error('Error fetching pet details:', error)
@@ -199,10 +211,62 @@ const FoundPet = () => {
               </CardContent>
             </Card>
 
-            {/* Contact Form */}
+            {/* Call Owner Section - Priority Contact */}
+            {(pet.owner?.phone || pet.emergency_contact_phone) && (
+              <Card className="bg-green-50 border-green-200 border-2 shadow-strong mb-8">
+                <CardContent className="p-6">
+                  <div className="text-center mb-4">
+                    <h3 className="text-xl font-bold text-green-800 mb-1">📞 Call the Owner Now</h3>
+                    <p className="text-green-700 text-sm">The fastest way to reunite {pet.name} with their family</p>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {pet.owner?.phone && (
+                      <a 
+                        href={`tel:${pet.owner.phone}`}
+                        className="flex items-center justify-center gap-3 bg-green-600 hover:bg-green-700 text-white rounded-lg p-4 transition-colors w-full"
+                      >
+                        <Phone className="w-6 h-6" />
+                        <div className="text-left">
+                          <div className="font-bold text-lg">{pet.owner.phone}</div>
+                          {pet.owner.full_name && (
+                            <div className="text-sm opacity-90">{pet.owner.full_name} (Owner)</div>
+                          )}
+                        </div>
+                      </a>
+                    )}
+                    
+                    {pet.emergency_contact_phone && (
+                      <a 
+                        href={`tel:${pet.emergency_contact_phone}`}
+                        className="flex items-center justify-center gap-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg p-4 transition-colors w-full"
+                      >
+                        <Phone className="w-6 h-6" />
+                        <div className="text-left">
+                          <div className="font-bold text-lg">{pet.emergency_contact_phone}</div>
+                          <div className="text-sm opacity-90">
+                            {pet.emergency_contact_name || 'Emergency Contact'}
+                          </div>
+                        </div>
+                      </a>
+                    )}
+                  </div>
+                  
+                  <p className="text-center text-green-700 text-xs mt-4">
+                    Tap to call directly from your phone
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Contact Form - Alternative */}
             <Card className="bg-white/95 backdrop-blur border-0 shadow-strong">
               <CardHeader>
-                <CardTitle className="text-center">Contact the Owner</CardTitle>
+                <CardTitle className="text-center">
+                  {pet.owner?.phone || pet.emergency_contact_phone 
+                    ? "Or Send a Message Instead" 
+                    : "Contact the Owner"}
+                </CardTitle>
                 <p className="text-center text-muted-foreground">
                   Send a message to let them know you've found {pet.name}. Your details will be shared securely.
                 </p>
