@@ -111,9 +111,21 @@ export function InviteFamilyModal({ open, onClose, petId, onSuccess }: InviteFam
         throw new Error('Some invites failed to create');
       }
 
+      // Check email sending status
+      const emailsSent = results.filter(r => r.data?.emailSent).length;
+      const invitesCreated = results.length;
+
       // Use the first invite URL for display
       setInviteUrl(results[0].data.inviteUrl);
-      toast.success(au(`${formData.selectedPetIds.length} invite${formData.selectedPetIds.length > 1 ? 's' : ''} created`));
+      
+      if (emailsSent === invitesCreated) {
+        toast.success(au(`Invite email sent to ${formData.email}`));
+      } else if (emailsSent > 0) {
+        toast.success(au(`${emailsSent}/${invitesCreated} invite emails sent. Copy the link to share.`));
+      } else {
+        toast.success(au(`Invite created. Copy the link below to share.`));
+      }
+      
       onSuccess(results[0].data.inviteUrl);
     } catch (error) {
       console.error('Error creating invite:', error);
