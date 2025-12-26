@@ -19,6 +19,8 @@ import { SharingTab } from '@/components/SharingTab'
 import { HealthReminderModal } from '@/components/HealthReminderModal'
 import { EditHealthReminderModal } from '@/components/EditHealthReminderModal'
 import { InstagramShareCard } from '@/components/InstagramShareCard'
+import { QRCodeModal } from '@/components/QRCodeModal'
+import { LostPetPosterModal } from '@/components/LostPetPosterModal'
 import { au } from '@/lib/auEnglish'
 import { IOSPageLayout } from '@/components/ios/IOSPageLayout'
 import { useIsNativeApp } from '@/hooks/useIsNativeApp'
@@ -84,6 +86,8 @@ const PetDetails = () => {
   const [healthReminderModalOpen, setHealthReminderModalOpen] = useState(false)
   const [editReminderModalOpen, setEditReminderModalOpen] = useState(false)
   const [selectedReminder, setSelectedReminder] = useState<HealthReminder | null>(null)
+  const [qrCodeModalOpen, setQrCodeModalOpen] = useState(false)
+  const [posterModalOpen, setPosterModalOpen] = useState(false)
 
   const fetchPetDetails = useCallback(async () => {
     if (!user || !id) return
@@ -289,11 +293,7 @@ const PetDetails = () => {
   }
 
   const generatePoster = () => {
-    // This would generate a PDF poster with QR code
-    toast({
-      title: "Poster Generated",
-      description: "Download will start shortly.",
-    })
+    setPosterModalOpen(true)
   }
 
   const shareRecoveryLink = async () => {
@@ -1240,7 +1240,7 @@ const PetDetails = () => {
                         <Download className="w-4 h-4 mr-2" />
                         Generate Poster
                       </Button>
-                      <Button variant="outline" className="flex-1">
+                      <Button variant="outline" className="flex-1" onClick={() => setQrCodeModalOpen(true)}>
                         <QrCode className="w-4 h-4 mr-2" />
                         Show QR Code
                       </Button>
@@ -1324,6 +1324,29 @@ const PetDetails = () => {
         reminder={selectedReminder}
         petId={id!}
         onSuccess={fetchHealthReminders}
+      />
+
+      <QRCodeModal
+        open={qrCodeModalOpen}
+        onOpenChange={setQrCodeModalOpen}
+        publicUrl={publicUrl}
+        petName={pet.name}
+      />
+
+      <LostPetPosterModal
+        open={posterModalOpen}
+        onOpenChange={setPosterModalOpen}
+        pet={{
+          name: pet.name,
+          species: pet.species,
+          breed: pet.breed,
+          colour: pet.colour,
+          weight_kg: pet.weight_kg,
+          gender: pet.gender,
+          photo_url: pet.photo_url,
+          public_id: pet.public_id
+        }}
+        publicUrl={publicUrl}
       />
     </>
   )
