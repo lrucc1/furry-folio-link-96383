@@ -325,6 +325,7 @@ export type Database = {
           notes: string | null
           photo_url: string | null
           public_id: string
+          public_token: string
           registry_link: string | null
           registry_name: string | null
           species: string
@@ -366,6 +367,7 @@ export type Database = {
           notes?: string | null
           photo_url?: string | null
           public_id?: string
+          public_token?: string
           registry_link?: string | null
           registry_name?: string | null
           species: string
@@ -407,6 +409,7 @@ export type Database = {
           notes?: string | null
           photo_url?: string | null
           public_id?: string
+          public_token?: string
           registry_link?: string | null
           registry_name?: string | null
           species?: string
