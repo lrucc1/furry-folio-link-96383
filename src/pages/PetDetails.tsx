@@ -7,11 +7,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download, Upload, Scan, ExternalLink, Bell, CheckCircle, Trash2, Plus, Eye, Edit2, Syringe, AlertCircle, Home, ChevronLeft, Scale } from 'lucide-react'
+import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download, Upload, Scan, ExternalLink, Bell, CheckCircle, Trash2, Plus, Eye, Edit2, Syringe, AlertCircle, Home, ChevronLeft, Scale, Image as ImageIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from '@/hooks/use-toast'
 import { ToastAction } from '@/components/ui/toast'
 import { PetDocuments } from '@/components/PetDocuments'
+import { PetPhotoGallery } from '@/components/PetPhotoGallery'
 import { VaccinationModal } from '@/components/VaccinationModal'
 import { EditVaccinationModal } from '@/components/EditVaccinationModal'
 import { SharingTab } from '@/components/SharingTab'
@@ -23,6 +24,7 @@ import { IOSPageLayout } from '@/components/ios/IOSPageLayout'
 import { useIsNativeApp } from '@/hooks/useIsNativeApp'
 import { MobileCard } from '@/components/ios/MobileCard'
 import { SwipeableItem } from '@/components/ios/SwipeableItem'
+import { PetAvatarLarge } from '@/components/PetAvatar'
 
 interface Pet {
   id: string
@@ -373,15 +375,12 @@ const PetDetails = () => {
       {/* Pet Header Card - Compact for iOS */}
       <MobileCard className="overflow-hidden">
         <div className="flex gap-4">
-          <div className="w-20 h-20 rounded-xl overflow-hidden bg-muted flex-shrink-0">
-            {pet.photo_url ? (
-              <img src={pet.photo_url} alt={pet.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <Heart className="w-8 h-8 text-muted-foreground" />
-              </div>
-            )}
-          </div>
+          <PetAvatarLarge 
+            photoUrl={pet.photo_url} 
+            species={pet.species} 
+            name={pet.name}
+            className="w-20 h-20 flex-shrink-0"
+          />
           
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between">
@@ -540,6 +539,15 @@ const PetDetails = () => {
               <p className="text-sm text-muted-foreground">{pet.notes}</p>
             </MobileCard>
           )}
+
+          {/* Photo Gallery Section */}
+          <MobileCard>
+            <PetPhotoGallery 
+              petId={pet.id}
+              currentProfilePhoto={pet.photo_url}
+              onProfilePhotoChange={(url) => setPet({ ...pet, photo_url: url || null })}
+            />
+          </MobileCard>
         </TabsContent>
 
         {/* Health Tab - iOS optimized */}
@@ -776,17 +784,16 @@ const PetDetails = () => {
         <Card className="mb-8">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row gap-6">
-              <div className="w-32 h-32 rounded-xl overflow-hidden bg-muted flex-shrink-0 relative group">
-                {pet.photo_url ? (
-                  <img src={pet.photo_url} alt={pet.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Heart className="w-12 h-12 text-muted-foreground" />
-                  </div>
-                )}
+              <div className="relative group">
+                <PetAvatarLarge 
+                  photoUrl={pet.photo_url} 
+                  species={pet.species} 
+                  name={pet.name}
+                  className="w-32 h-32 flex-shrink-0"
+                />
                 <Link 
                   to={`/pets/${pet.id}/edit`}
-                  className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute inset-0 rounded-xl bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <Upload className="w-8 h-8 text-white" />
                 </Link>
@@ -983,6 +990,23 @@ const PetDetails = () => {
                 </CardContent>
               </Card>
             )}
+
+            {/* Photo Gallery Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5" />
+                  Photo Gallery
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PetPhotoGallery 
+                  petId={pet.id}
+                  currentProfilePhoto={pet.photo_url}
+                  onProfilePhotoChange={(url) => setPet({ ...pet, photo_url: url || null })}
+                />
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Health & Documents Tab */}

@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Logo } from '@/components/Logo'
 import { Heart, MapPin, Phone, Mail } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
+import { PetAvatarLarge } from '@/components/PetAvatar'
 
 interface Pet {
   id: string
@@ -173,15 +174,12 @@ const FoundPet = () => {
             <Card className="bg-white/95 backdrop-blur border-0 shadow-strong mb-8">
               <CardContent className="p-6">
                 <div className="flex flex-col md:flex-row gap-6">
-                  <div className="w-32 h-32 rounded-xl overflow-hidden bg-muted flex-shrink-0 mx-auto md:mx-0">
-                    {pet.photo_url ? (
-                      <img src={pet.photo_url} alt={pet.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Heart className="w-12 h-12 text-muted-foreground" />
-                      </div>
-                    )}
-                  </div>
+                  <PetAvatarLarge
+                    photoUrl={pet.photo_url}
+                    species={pet.species}
+                    name={pet.name}
+                    className="w-32 h-32 mx-auto md:mx-0"
+                  />
                   
                   <div className="text-center md:text-left">
                     <div className="flex items-center justify-center md:justify-start gap-2 mb-2">

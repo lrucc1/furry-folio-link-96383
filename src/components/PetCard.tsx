@@ -1,9 +1,10 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MapPin, QrCode, Calendar, AlertTriangle } from "lucide-react";
+import { MapPin, QrCode, Calendar, AlertTriangle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
+import { PetAvatarLarge, getSpeciesEmoji, getSpeciesGradient } from "@/components/PetAvatar";
 
 interface Pet {
   id: string;
@@ -40,8 +41,8 @@ export const PetCard = ({ pet, onViewDetails, onToggleLost }: PetCardProps) => {
             className="w-full h-48 sm:h-56 md:h-64 object-cover object-center transition-spring"
           />
         ) : (
-          <div className="w-full h-48 sm:h-56 md:h-64 bg-muted flex items-center justify-center transition-spring">
-            <Heart className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-muted-foreground" />
+          <div className={`w-full h-48 sm:h-56 md:h-64 ${getSpeciesGradient(pet.species)} flex items-center justify-center transition-spring`}>
+            <span className="text-7xl drop-shadow-lg">{getSpeciesEmoji(pet.species)}</span>
           </div>
         )}
         
