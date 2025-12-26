@@ -132,6 +132,8 @@ See [Privacy Policy](/privacy) and [Data Handling](/data-handling) for details.
 
 ## Deployment
 
+### Web Deployment
+
 Deploy via [Lovable](https://lovable.dev/projects/8cd4ae6a-383c-4c64-9222-187a7ecfa42a):
 
 1. Click **Share → Publish**
@@ -139,6 +141,72 @@ Deploy via [Lovable](https://lovable.dev/projects/8cd4ae6a-383c-4c64-9222-187a7e
 3. Optional: Connect custom domain in Project > Settings > Domains
 
 Read more: [Custom Domain Setup](https://docs.lovable.dev/features/custom-domain)
+
+### Release to TestFlight (Manual)
+
+The iOS app is built and distributed via Xcode Cloud. Builds are triggered manually (not on every commit).
+
+#### Prerequisites
+
+- Apple Developer account with App Store Connect access
+- Xcode Cloud workflow configured for the `App` scheme
+- Valid signing certificates and provisioning profiles
+
+#### Build Process
+
+1. **Develop normally** in Lovable preview - no local build required
+2. **Commit/merge to `main`** when ready for a TestFlight build
+3. **Go to App Store Connect** → Xcode Cloud → Select the workflow
+4. **Click "Start Build"** and select the `main` branch
+5. **Wait for build** to complete (typically 10-20 minutes)
+6. **Find the build** in TestFlight → Internal Testing
+
+#### How It Works
+
+Xcode Cloud automatically runs `ci_scripts/ci_post_clone.sh` after cloning, which:
+- Installs Node.js dependencies (`npm ci`)
+- Builds the web app (`npm run build`)
+- Syncs Capacitor iOS (`npx cap sync ios`)
+- Installs CocoaPods (`pod install`)
+
+Then Xcode archives and uploads to TestFlight.
+
+#### Xcode Cloud Configuration
+
+| Setting | Value |
+|---------|-------|
+| Workspace | `ios/App/App.xcworkspace` |
+| Scheme | `App` (shared) |
+| Build trigger | Manual only |
+| Archive | Release configuration |
+
+#### Common Failures & Troubleshooting
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `Scheme not found` | Shared scheme not committed | Ensure `ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme` is in git |
+| `npm ci failed` | Missing `package-lock.json` | Commit `package-lock.json` to repo |
+| `npm run build failed` | TypeScript/build errors | Fix errors locally with `npm run build` |
+| `cap sync failed` | Capacitor config issues | Check `capacitor.config.ts` and run `npx cap sync ios` locally |
+| `pod install failed` | CocoaPods version mismatch | Update `Podfile.lock` and commit |
+| Build stuck processing | Apple processing delay | Wait 10-30 minutes, check App Store Connect status |
+
+#### Manual Script (Alternative)
+
+For debugging or local testing, you can run the build script manually:
+
+```sh
+chmod +x scripts/xcodecloud-build.sh
+./scripts/xcodecloud-build.sh
+```
+
+#### Required Files for CI
+
+Ensure these files are committed to git:
+
+- `package-lock.json` - Required for deterministic `npm ci`
+- `ios/App/Podfile.lock` - Recommended for deterministic CocoaPods
+- `ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme` - Required for Xcode Cloud
 
 ## Editing the Code
 
