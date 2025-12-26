@@ -208,6 +208,33 @@ Ensure these files are committed to git:
 - `ios/App/Podfile.lock` - Recommended for deterministic CocoaPods
 - `ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme` - Required for Xcode Cloud
 
+### Pull Request Validation
+
+A GitHub Actions workflow automatically validates iOS builds on pull requests to `main`. This catches build issues before merging.
+
+#### What It Validates
+
+- ✅ TypeScript compiles successfully
+- ✅ Vite production build succeeds
+- ✅ Capacitor iOS sync works
+- ✅ CocoaPods dependencies resolve
+- ✅ Xcode project compiles for iOS Simulator
+
+#### Trigger Conditions
+
+The workflow runs when PRs modify:
+- `src/**` - Source code changes
+- `ios/**` - iOS native code changes
+- `package*.json` - Dependency changes
+- `capacitor.config.ts` - Capacitor configuration
+- `vite.config.ts` - Build configuration
+
+#### Build Time
+
+Approximately 10-15 minutes per PR (faster with cached dependencies).
+
+See `.github/workflows/ios-validate.yml` for the full workflow configuration.
+
 ## Editing the Code
 
 ### Use Lovable (Recommended)
