@@ -52,6 +52,9 @@ interface Pet {
   public_id: string
   public_token: string
   created_at: string
+  emergency_contact_name: string | null
+  emergency_contact_phone: string | null
+  user_id: string
 }
 
 interface Vaccination {
@@ -77,6 +80,7 @@ const PetDetails = () => {
   const navigate = useNavigate()
   const isNative = useIsNativeApp()
   const [pet, setPet] = useState<Pet | null>(null)
+  const [ownerPhone, setOwnerPhone] = useState<string | null>(null)
   const [vaccinations, setVaccinations] = useState<Vaccination[]>([])
   const [healthReminders, setHealthReminders] = useState<HealthReminder[]>([])
   const [loading, setLoading] = useState(true)
@@ -101,6 +105,19 @@ const PetDetails = () => {
 
       if (error) throw error
       setPet(data)
+
+      // Fetch owner's phone number from profile
+      if (data?.user_id) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('phone')
+          .eq('id', data.user_id)
+          .maybeSingle()
+        
+        if (profileData?.phone) {
+          setOwnerPhone(profileData.phone)
+        }
+      }
     } catch (error) {
       console.error('Error fetching pet details:', error)
       navigate('/dashboard')
@@ -1344,7 +1361,10 @@ const PetDetails = () => {
           weight_kg: pet.weight_kg,
           gender: pet.gender,
           photo_url: pet.photo_url,
-          public_id: pet.public_id
+          public_id: pet.public_id,
+          ownerPhone: ownerPhone,
+          emergencyContactName: pet.emergency_contact_name,
+          emergencyContactPhone: pet.emergency_contact_phone
         }}
         publicUrl={publicUrl}
       />

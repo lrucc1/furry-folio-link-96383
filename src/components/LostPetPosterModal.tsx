@@ -19,6 +19,9 @@ interface LostPetPosterModalProps {
     gender: string | null
     photo_url: string | null
     public_id: string
+    ownerPhone?: string | null
+    emergencyContactName?: string | null
+    emergencyContactPhone?: string | null
   }
   publicUrl: string
 }
@@ -161,10 +164,36 @@ export const LostPetPosterModal = ({ open, onOpenChange, pet, publicUrl }: LostP
         currentY += 55
       }
 
+      // Contact section - prominent phone numbers
+      currentY += 30
+      ctx.fillStyle = '#dc2626'
+      ctx.fillRect(50, currentY, POSTER_WIDTH - 100, 180)
+      
+      ctx.fillStyle = '#ffffff'
+      ctx.font = 'bold 36px system-ui, -apple-system, sans-serif'
+      ctx.fillText('IF FOUND, PLEASE CALL:', POSTER_WIDTH / 2, currentY + 45)
+      
+      // Primary phone
+      if (pet.ownerPhone) {
+        ctx.font = 'bold 60px system-ui, -apple-system, sans-serif'
+        ctx.fillText(pet.ownerPhone, POSTER_WIDTH / 2, currentY + 115)
+      }
+      
+      // Emergency contact
+      if (pet.emergencyContactPhone && pet.emergencyContactName) {
+        ctx.font = '28px system-ui, -apple-system, sans-serif'
+        ctx.fillText(`or ${pet.emergencyContactName}: ${pet.emergencyContactPhone}`, POSTER_WIDTH / 2, currentY + 160)
+      } else if (pet.emergencyContactPhone) {
+        ctx.font = '28px system-ui, -apple-system, sans-serif'
+        ctx.fillText(`or Emergency: ${pet.emergencyContactPhone}`, POSTER_WIDTH / 2, currentY + 160)
+      }
+
+      currentY += 200
+
       // QR Code section
-      const qrSize = 250
+      const qrSize = 200
       const qrX = (POSTER_WIDTH - qrSize) / 2
-      const qrY = currentY + 40
+      const qrY = currentY + 20
 
       // Generate QR code
       try {
@@ -186,17 +215,17 @@ export const LostPetPosterModal = ({ open, onOpenChange, pet, publicUrl }: LostP
 
       // Scan instruction
       ctx.fillStyle = '#6b7280'
-      ctx.font = '28px system-ui, -apple-system, sans-serif'
-      ctx.fillText('Scan to contact owner', POSTER_WIDTH / 2, qrY + qrSize + 50)
+      ctx.font = '24px system-ui, -apple-system, sans-serif'
+      ctx.fillText('Scan QR for more info', POSTER_WIDTH / 2, qrY + qrSize + 35)
 
       // PetLinkID branding at bottom
       ctx.fillStyle = '#2E9B8D'
-      ctx.font = 'bold 32px system-ui, -apple-system, sans-serif'
-      ctx.fillText('PetLinkID', POSTER_WIDTH / 2, POSTER_HEIGHT - 80)
+      ctx.font = 'bold 28px system-ui, -apple-system, sans-serif'
+      ctx.fillText('PetLinkID', POSTER_WIDTH / 2, POSTER_HEIGHT - 60)
 
       ctx.fillStyle = '#9ca3af'
-      ctx.font = '24px monospace'
-      ctx.fillText(`ID: ${pet.public_id}`, POSTER_WIDTH / 2, POSTER_HEIGHT - 40)
+      ctx.font = '20px monospace'
+      ctx.fillText(`ID: ${pet.public_id}`, POSTER_WIDTH / 2, POSTER_HEIGHT - 30)
 
       setPreviewReady(true)
       return canvas
