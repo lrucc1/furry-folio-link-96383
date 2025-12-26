@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/Logo'
 import { Heart, MapPin, Shield, Calendar, Phone, Mail, User } from 'lucide-react'
 import { calculateAge } from '@/lib/age-utils'
+import { PetAvatarLarge } from '@/components/PetAvatar'
 
 interface Pet {
   name: string
@@ -122,15 +123,12 @@ const PublicPetProfile = () => {
         <Card className="bg-white/95 backdrop-blur border-0 shadow-strong">
           <CardContent className="p-6">
             <div className="flex flex-col items-center gap-6">
-              <div className="w-48 h-48 rounded-xl overflow-hidden bg-muted">
-                {pet.photo_url ? (
-                  <img src={pet.photo_url} alt={pet.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Heart className="w-16 h-16 text-muted-foreground" />
-                  </div>
-                )}
-              </div>
+              <PetAvatarLarge
+                photoUrl={pet.photo_url}
+                species={pet.species}
+                name={pet.name}
+                className="w-48 h-48"
+              />
               
               <div className="text-center w-full">
                 <div className="flex items-center justify-center gap-3 mb-2">

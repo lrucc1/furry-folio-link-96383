@@ -12,7 +12,7 @@ import { FeatureTile, FeatureTileGrid } from '@/components/ios/FeatureTile';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { PetAvatar } from '@/components/PetAvatar';
 import { 
   PawPrint, 
   Bell, 
@@ -220,12 +220,13 @@ export default function IOSHome() {
                   onPointerCancel={() => setPressedPetId(null)}
                 >
                   <CardContent className="p-3 flex flex-col items-center min-w-[80px]">
-                    <Avatar className="w-14 h-14 mb-2">
-                      <AvatarImage src={pet.photo_url || undefined} alt={pet.name} />
-                      <AvatarFallback className="bg-primary/10 text-primary">
-                        <PawPrint className="w-6 h-6" />
-                      </AvatarFallback>
-                    </Avatar>
+                    <PetAvatar
+                      photoUrl={pet.photo_url}
+                      species={pet.species}
+                      name={pet.name}
+                      size="lg"
+                      className="mb-2"
+                    />
                     <span className="text-sm font-medium truncate max-w-[70px]">{pet.name}</span>
                     {pet.isShared && (
                       <Badge variant="outline" className="text-[10px] mt-1 px-1.5 py-0 border-primary/50 text-primary">
