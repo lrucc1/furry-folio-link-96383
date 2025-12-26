@@ -16,6 +16,16 @@ interface ContactFormData {
   message: string;
 }
 
+// Escape HTML to prevent XSS attacks in email clients
+const escapeHtml = (text: string): string => {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+};
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -37,20 +47,27 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Received contact form submission");
 
+    // Sanitize all user inputs before using in HTML
+    const safeFirstName = escapeHtml(firstName);
+    const safeLastName = escapeHtml(lastName);
+    const safeEmail = escapeHtml(email);
+    const safeSubject = escapeHtml(subject);
+    const safeMessage = escapeHtml(message).replace(/\n/g, '<br>');
+
     // Send email to support inbox
     const emailResponse = await resend.emails.send({
       from: "PetLinkID Support <support@petlinkid.io>",
       to: ["support@petlinkid.io"],
       replyTo: email,
-      subject: `Contact Form: ${subject}`,
+      subject: `Contact Form: ${safeSubject}`,
       html: `
         <h2>New Contact Form Submission</h2>
-        <p><strong>From:</strong> ${firstName} ${lastName}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Subject:</strong> ${subject}</p>
+        <p><strong>From:</strong> ${safeFirstName} ${safeLastName}</p>
+        <p><strong>Email:</strong> ${safeEmail}</p>
+        <p><strong>Subject:</strong> ${safeSubject}</p>
         <hr />
         <h3>Message:</h3>
-        <p>${message.replace(/\n/g, '<br>')}</p>
+        <p>${safeMessage}</p>
       `,
     });
 
@@ -66,10 +83,10 @@ const handler = async (req: Request): Promise<Response> => {
       to: [email],
       subject: "We received your message!",
       html: `
-        <h1>Thank you for contacting us, ${firstName}!</h1>
+        <h1>Thank you for contacting us, ${safeFirstName}!</h1>
         <p>We have received your message and will get back to you as soon as possible.</p>
         <p><strong>Your message:</strong></p>
-        <p>${message.replace(/\n/g, '<br>')}</p>
+        <p>${safeMessage}</p>
         <hr />
         <p>Best regards,<br>The PetLinkID Team</p>
       `,
