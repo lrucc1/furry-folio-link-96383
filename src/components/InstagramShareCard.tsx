@@ -891,6 +891,8 @@ export const InstagramShareCard = ({
       const result = await shareToInstagram({ imageBlob: blob, petName, publicUrl })
       const toastMessage = getShareToastMessage(result)
       toast(toastMessage)
+      // Auto-close dialog after successful share
+      setTimeout(() => setIsOpen(false), 500)
     } catch (error) {
       if ((error as Error).name !== 'AbortError' && 
           !(error as Error).message?.includes('canceled') &&
@@ -901,6 +903,7 @@ export const InstagramShareCard = ({
           description: 'Share the downloaded image to Instagram!',
         })
       }
+      // Don't close on cancel - let user try again
     }
   }
 
@@ -935,6 +938,8 @@ export const InstagramShareCard = ({
           description: 'Share your PetLinkID on Instagram! 🐾',
         })
       }
+      // Auto-close dialog after successful download
+      setTimeout(() => setIsOpen(false), 500)
     } catch (error) {
       if ((error as Error).message?.includes('canceled') || (error as Error).message?.includes('cancelled')) {
         console.log('[InstagramShare] User cancelled share sheet')
@@ -970,6 +975,8 @@ export const InstagramShareCard = ({
         title: 'Copied to clipboard!',
         description: 'Paste the image into Instagram!',
       })
+      // Auto-close dialog after successful copy
+      setTimeout(() => setIsOpen(false), 500)
     } else {
       toast({
         title: 'Copy not supported',
@@ -1067,6 +1074,13 @@ export const InstagramShareCard = ({
                 Share
               </Button>
             </div>
+            <Button 
+              variant="ghost" 
+              className="w-full mt-2"
+              onClick={() => setIsOpen(false)}
+            >
+              Done
+            </Button>
           </div>
 
           {!Capacitor.isNativePlatform() && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && (
