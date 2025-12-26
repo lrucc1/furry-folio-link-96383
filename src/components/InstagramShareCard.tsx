@@ -1,19 +1,55 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Instagram, Download, Share2, Copy } from 'lucide-react'
+import { Instagram, Download, Share2, Copy, RefreshCw } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { shareToInstagram, downloadImage, copyImageToClipboard, ShareResult } from '@/lib/shareToInstagram'
 import { calculateAge } from '@/lib/age-utils'
 import { Capacitor } from '@capacitor/core'
 import { format } from 'date-fns'
+import { supabase } from '@/integrations/supabase/client'
 
-// Helper to load images with CORS handling and fetch fallback
+// Helper to load images with CORS handling - uses proxy for native platforms
 const loadImageWithCORS = async (url: string): Promise<HTMLImageElement | null> => {
   const isNative = Capacitor.isNativePlatform()
-  console.log('[InstagramShare] Loading image:', url, 'isNative:', isNative)
+  const isSupabaseUrl = url.includes('supabase.co/storage')
   
-  // On native platforms, try loading directly without CORS first
+  console.log('[InstagramShare] Loading image:', url, 'isNative:', isNative, 'isSupabase:', isSupabaseUrl)
+  
+  // On native platforms with Supabase images, use proxy to avoid canvas tainting
+  if (isNative && isSupabaseUrl) {
+    try {
+      console.log('[InstagramShare] Using proxy for native platform...')
+      const { data, error } = await supabase.functions.invoke('proxy-pet-image', {
+        body: { url }
+      })
+      
+      if (error) {
+        console.warn('[InstagramShare] Proxy error:', error)
+        throw error
+      }
+      
+      if (data?.base64) {
+        const img = new Image()
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => {
+            console.log('[InstagramShare] Proxy image load succeeded')
+            resolve()
+          }
+          img.onerror = (e) => {
+            console.warn('[InstagramShare] Proxy image render failed:', e)
+            reject(new Error('Proxy image render failed'))
+          }
+          img.src = `data:${data.contentType || 'image/jpeg'};base64,${data.base64}`
+        })
+        return img
+      }
+    } catch (err) {
+      console.warn('[InstagramShare] Proxy failed, trying direct load:', err)
+    }
+  }
+  
+  // For web or as fallback: try direct load with CORS
   const img = new Image()
   if (!isNative) {
     img.crossOrigin = 'anonymous'
@@ -49,7 +85,6 @@ const loadImageWithCORS = async (url: string): Promise<HTMLImageElement | null> 
         fallbackImg.onerror = reject
         fallbackImg.src = objectUrl
       })
-      // Note: We don't revoke objectUrl here as the image needs it for drawing
       return fallbackImg
     } catch (err) {
       console.error('[InstagramShare] All image loading attempts failed:', url, err)
