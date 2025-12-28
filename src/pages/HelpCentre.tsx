@@ -9,9 +9,8 @@ import {
   BookOpen,
   Shield,
   Heart,
-  Phone,
   Mail,
-  Clock
+  AlertTriangle
 } from "lucide-react";
 import { useIsNativeApp } from "@/hooks/useIsNativeApp";
 import { IOSPageLayout } from "@/components/ios/IOSPageLayout";
@@ -60,41 +59,30 @@ const HelpCentre = () => {
         <div className="pb-8">
           {/* Quick Actions */}
           <div className="space-y-3 mb-6">
-            <MobileCard className="bg-gradient-to-br from-primary/10 to-primary/5">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center">
-                  <Phone className="w-6 h-6 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold">Emergency Support</h3>
-                  <p className="text-sm text-muted-foreground">Pet emergency? Get immediate help.</p>
-                </div>
-              </div>
-              <Button variant="default" className="w-full mt-4 rounded-xl">
-                Call: 1800 PET SOS
-              </Button>
-            </MobileCard>
-
             <div className="grid grid-cols-2 gap-3">
-              <MobileCard>
-                <div className="text-center">
-                  <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-2">
-                    <Mail className="w-5 h-5 text-primary" />
+              <Link to="/contact">
+                <MobileCard>
+                  <div className="text-center">
+                    <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-2">
+                      <Mail className="w-5 h-5 text-primary" />
+                    </div>
+                    <h3 className="font-medium text-sm">Email Us</h3>
+                    <p className="text-xs text-muted-foreground">24hr response</p>
                   </div>
-                  <h3 className="font-medium text-sm">Email Us</h3>
-                  <p className="text-xs text-muted-foreground">24hr response</p>
-                </div>
-              </MobileCard>
+                </MobileCard>
+              </Link>
 
-              <MobileCard>
-                <div className="text-center">
-                  <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-2">
-                    <Clock className="w-5 h-5 text-primary" />
+              <Link to="/lost-pet-guide">
+                <MobileCard>
+                  <div className="text-center">
+                    <div className="w-10 h-10 rounded-2xl bg-destructive/10 flex items-center justify-center mx-auto mb-2">
+                      <AlertTriangle className="w-5 h-5 text-destructive" />
+                    </div>
+                    <h3 className="font-medium text-sm">Lost Pet?</h3>
+                    <p className="text-xs text-muted-foreground">Get help now</p>
                   </div>
-                  <h3 className="font-medium text-sm">Live Chat</h3>
-                  <p className="text-xs text-muted-foreground">Chat now</p>
-                </div>
-              </MobileCard>
+                </MobileCard>
+              </Link>
             </div>
           </div>
 
@@ -171,22 +159,7 @@ const HelpCentre = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
-          <Card className="bg-gradient-card border-0 shadow-medium rounded-3xl">
-            <CardHeader className="text-center">
-              <Phone className="w-8 h-8 text-primary mx-auto mb-2" />
-              <CardTitle>Emergency Support</CardTitle>
-            </CardHeader>
-            <CardContent className="text-center">
-              <p className="text-muted-foreground mb-4">
-                Pet emergency? Get immediate help.
-              </p>
-              <Button variant="hero" className="w-full">
-                Call Now: 1800 PET SOS
-              </Button>
-            </CardContent>
-          </Card>
-
+        <div className="grid md:grid-cols-2 gap-6 mb-12 max-w-2xl mx-auto">
           <Card className="bg-gradient-card border-0 shadow-medium rounded-3xl">
             <CardHeader className="text-center">
               <Mail className="w-8 h-8 text-primary mx-auto mb-2" />
@@ -196,7 +169,7 @@ const HelpCentre = () => {
               <p className="text-muted-foreground mb-4">
                 Get help within 24 hours.
               </p>
-              <Button variant="outline" className="w-full" asChild>
+              <Button variant="hero" className="w-full" asChild>
                 <Link to="/contact">Send Message</Link>
               </Button>
             </CardContent>
@@ -204,15 +177,15 @@ const HelpCentre = () => {
 
           <Card className="bg-gradient-card border-0 shadow-medium rounded-3xl">
             <CardHeader className="text-center">
-              <Clock className="w-8 h-8 text-primary mx-auto mb-2" />
-              <CardTitle>Live Chat</CardTitle>
+              <AlertTriangle className="w-8 h-8 text-destructive mx-auto mb-2" />
+              <CardTitle>Lost Pet?</CardTitle>
             </CardHeader>
             <CardContent className="text-center">
               <p className="text-muted-foreground mb-4">
-                Chat with us right now.
+                Immediate steps to find your pet.
               </p>
-              <Button variant="outline" className="w-full">
-                Start Chat
+              <Button variant="outline" className="w-full" asChild>
+                <Link to="/lost-pet-guide">Get Help Now</Link>
               </Button>
             </CardContent>
           </Card>

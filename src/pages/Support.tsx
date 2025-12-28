@@ -1,11 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mail, MessageCircle, Phone, FileText, ExternalLink } from 'lucide-react';
+import { Mail, MessageCircle, FileText, ExternalLink } from 'lucide-react';
 import { au } from '@/lib/auEnglish';
 
 const Support = () => {
   const supportEmail = 'support@petlinkid.com';
-  const supportPhone = '1800 PET LINK (1800 738 546)';
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-hero">
@@ -45,30 +44,6 @@ const Support = () => {
             </CardContent>
           </Card>
 
-          {/* Phone Support */}
-          <Card className="bg-white/95 backdrop-blur border-0 shadow-strong">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Phone className="w-5 h-5 text-primary" />
-                {au('Phone Support')}
-              </CardTitle>
-              <CardDescription>
-                {au('Speak to a support specialist')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                {au('Monday - Friday, 9am - 5pm AEST')}
-              </p>
-              <Button asChild variant="outline" className="w-full">
-                <a href={`tel:1800738546`}>
-                  <Phone className="w-4 h-4 mr-2" />
-                  {supportPhone}
-                </a>
-              </Button>
-            </CardContent>
-          </Card>
-
           {/* Help Centre */}
           <Card className="bg-white/95 backdrop-blur border-0 shadow-strong">
             <CardHeader>
@@ -94,7 +69,7 @@ const Support = () => {
           </Card>
 
           {/* FAQs */}
-          <Card className="bg-white/95 backdrop-blur border-0 shadow-strong">
+          <Card className="bg-white/95 backdrop-blur border-0 shadow-strong md:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-primary" />
@@ -108,7 +83,7 @@ const Support = () => {
               <p className="text-sm text-muted-foreground mb-4">
                 {au('Common questions about features, billing, and more')}
               </p>
-              <Button asChild variant="outline" className="w-full">
+              <Button asChild variant="outline" className="w-full md:w-auto">
                 <a href="/faq">
                   <ExternalLink className="w-4 h-4 mr-2" />
                   {au('View FAQs')}
@@ -203,13 +178,10 @@ const Support = () => {
               <p className="text-muted-foreground">
                 <strong>{au('Email:')}</strong> {supportEmail}
               </p>
-              <p className="text-muted-foreground">
-                <strong>{au('Phone:')}</strong> {supportPhone}
-              </p>
             </div>
             <div>
               <p className="text-muted-foreground">
-                <strong>{au('Business Hours:')}</strong> Monday - Friday, 9:00 AM - 5:00 PM AEST
+                <strong>{au('Response Time:')}</strong> Within 24 hours on business days
               </p>
             </div>
           </CardContent>
