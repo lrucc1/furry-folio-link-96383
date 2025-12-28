@@ -293,7 +293,7 @@ A comprehensive environment validation system has been added:
 - **Development:** Check logs in Lovable Cloud
 - **Backend Issues:** Lovable Cloud → Backend
 - **Apple Developer:** https://developer.apple.com
-- **Security Concerns:** security@petlinkid.com
+- **Security Concerns:** support@petlinkid.io
 
 ---
 

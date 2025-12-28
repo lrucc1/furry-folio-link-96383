@@ -126,7 +126,7 @@ log.error('Error message');              // Always logged
 - **Backups**: Automatic daily backups via Lovable Cloud
 - **Retention**: User data retained according to Australian Privacy Act
 - **Security**: Row-Level Security (RLS) enforced on all tables
-- **Breach Response**: Contact support@petlinkid.com for security concerns
+- **Breach Response**: Contact support@petlinkid.io for security concerns
 
 See [Privacy Policy](/privacy) and [Data Handling](/data-handling) for details.
 
@@ -253,8 +253,8 @@ Click pencil icon on any file to edit in browser.
 
 - **Documentation**: [docs.lovable.dev](https://docs.lovable.dev)
 - **Issues**: Use GitHub Issues
-- **Security**: security@petlinkid.com
-- **General**: support@petlinkid.com
+- **Security**: support@petlinkid.io
+- **General**: support@petlinkid.io
 
 ## License
 

@@ -150,7 +150,7 @@ Or open `ios/App/App.xcworkspace` directly.
 
 Fill in the **Test Information**:
 - **Beta App Description**: Brief description for testers
-- **Feedback Email**: support@petlinkid.com
+- **Feedback Email**: support@petlinkid.io
 - **Privacy Policy URL**: Your privacy policy URL
 - **Marketing URL** (optional)
 

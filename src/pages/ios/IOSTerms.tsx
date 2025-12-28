@@ -222,7 +222,7 @@ export default function IOSTerms() {
             </div>
             <h3 className="font-semibold mb-1">Questions?</h3>
             <p className="text-sm text-muted-foreground mb-3">
-              Contact us at legal@petlinkid.com
+              Contact us at support@petlinkid.io
             </p>
             <Button variant="outline" size="sm" onClick={() => navigate('/contact')}>
               Contact Legal Team

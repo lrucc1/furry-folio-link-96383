@@ -33,7 +33,7 @@
 
 ### Regional readiness
 - [x] Legal pages present (/terms, /subscription-terms)
-- [x] Privacy contact email present in app (privacy@petlinkid.com)
+- [x] Privacy contact email present in app (support@petlinkid.io)
 
 ## Likely App Review rejection risks & fixes
 

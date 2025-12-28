@@ -185,10 +185,10 @@ export default function IOSPrivacyPolicy() {
             </div>
             <h3 className="font-semibold mb-1">Questions?</h3>
             <p className="text-sm text-muted-foreground mb-2">
-              Contact the Privacy Officer at Betametrics Pty Ltd
+              Contact Betametrics Pty Ltd
             </p>
             <p className="text-sm text-muted-foreground mb-3">
-              privacy@petlinkid.com
+              support@petlinkid.io
             </p>
             <Button variant="outline" size="sm" onClick={() => navigate('/contact')}>
               Contact Us

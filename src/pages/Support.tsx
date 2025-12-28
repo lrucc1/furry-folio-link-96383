@@ -4,7 +4,7 @@ import { Mail, MessageCircle, FileText, ExternalLink } from 'lucide-react';
 import { au } from '@/lib/auEnglish';
 
 const Support = () => {
-  const supportEmail = 'support@petlinkid.com';
+  const supportEmail = 'support@petlinkid.io';
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-hero">

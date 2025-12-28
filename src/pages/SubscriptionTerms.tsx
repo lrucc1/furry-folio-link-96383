@@ -163,7 +163,7 @@ export default function SubscriptionTerms() {
                 Questions about subscriptions? Contact our support team.
               </p>
               <p className="text-muted-foreground">
-                Privacy Officer: <a href="mailto:privacy@petlinkid.com" className="text-primary hover:underline">privacy@petlinkid.com</a>
+                Email: <a href="mailto:support@petlinkid.io" className="text-primary hover:underline">support@petlinkid.io</a>
               </p>
               <p className="text-muted-foreground text-sm">
                 For billing issues with Apple In-App Purchase, please contact{" "}

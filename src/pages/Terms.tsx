@@ -154,9 +154,8 @@ const Terms = () => {
                 If you have any questions about these Terms of Service, please contact us:
               </p>
               <ul className="text-muted-foreground space-y-1">
-                <li>Email: legal@petpassport.com.au</li>
-                <li>Phone: 1800 PET HELP</li>
-                <li>Mail: Legal Department, Betametrics Pty Ltd, Melbourne, VIC 3000</li>
+                <li>Email: support@petlinkid.io</li>
+                <li>Mail: Betametrics Pty Ltd, Melbourne, VIC 3000</li>
               </ul>
             </CardContent>
           </Card>

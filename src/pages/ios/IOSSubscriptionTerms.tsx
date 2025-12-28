@@ -215,7 +215,7 @@ export default function IOSSubscriptionTerms() {
               Betametrics Pty Ltd
             </p>
             <p className="text-xs text-muted-foreground mb-3">
-              Privacy Officer: privacy@petlinkid.com
+              Email: support@petlinkid.io
             </p>
             <div className="space-y-2">
               <Button variant="outline" size="sm" onClick={() => navigate('/contact')} className="w-full">
