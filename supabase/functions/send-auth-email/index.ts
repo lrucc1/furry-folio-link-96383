@@ -103,7 +103,7 @@ serve(async (req: Request) => {
     }
 
     const { error } = await resend.emails.send({
-      from: 'PetLinkID <noreply@petlinkid.com>',
+      from: 'PetLinkID <noreply@petlinkid.io>',
       to: [user.email],
       subject: getSubject(email_action_type),
       html,

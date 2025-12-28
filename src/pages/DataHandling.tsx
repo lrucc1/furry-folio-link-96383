@@ -194,8 +194,8 @@ const DataHandling = () => {
                 For questions, concerns, or to exercise your data rights, contact us:
               </p>
               <ul className="text-muted-foreground space-y-1 mb-4 ml-4">
-                <li><strong>Email:</strong> <a href="mailto:privacy@petlinkid.com" className="underline">privacy@petlinkid.com</a></li>
-                <li><strong>Mail:</strong> Privacy Officer, PetLinkID, 123 Pet Street, Sydney, NSW 2000</li>
+                <li><strong>Email:</strong> <a href="mailto:support@petlinkid.io" className="underline">support@petlinkid.io</a></li>
+                <li><strong>Mail:</strong> PetLinkID, Betametrics Pty Ltd, Melbourne, VIC 3000</li>
                 <li><strong>Response time:</strong> Within 5 business days for acknowledgment; 30 days for resolution</li>
               </ul>
               <p className="text-muted-foreground mb-6">

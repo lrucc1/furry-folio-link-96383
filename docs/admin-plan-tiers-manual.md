@@ -195,9 +195,7 @@ ORDER BY created_at DESC;
 ## Support Contacts
 
 For questions about plan tier management:
-- Development team: dev@petlinkid.io
-- Product team: product@petlinkid.io
-- Billing questions: billing@petlinkid.io
+- Support: support@petlinkid.io
 
 ---
 

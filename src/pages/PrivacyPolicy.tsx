@@ -125,7 +125,7 @@ const PrivacyPolicy = () => {
 
               <h2 className="text-2xl font-bold text-foreground mb-4">Contact & complaints</h2>
               <p className="text-muted-foreground mb-4">
-                If you have questions or concerns about privacy, contact the Privacy Officer at Betametrics Pty Ltd via <a href="mailto:privacy@petlinkid.com" className="underline">privacy@petlinkid.com</a>. If you are not satisfied with our response, you may lodge a complaint with the Office of the Australian Information Commissioner (OAIC).
+                If you have questions or concerns about privacy, contact support at <a href="mailto:support@petlinkid.io" className="underline">support@petlinkid.io</a>. If you are not satisfied with our response, you may lodge a complaint with the Office of the Australian Information Commissioner (OAIC).
               </p>
 
               <h2 className="text-2xl font-bold text-foreground mb-4">3. Information Sharing</h2>
