@@ -15,7 +15,7 @@ import { IOSAppRouter } from "./components/IOSAppRouter";
 import { DevModeToggle } from "./components/DevModeToggle";
 import { AppLoadingScreen } from "./components/AppLoadingScreen";
 import { useIsNativeApp } from "./hooks/useIsNativeApp";
-import { AppleAuthError, initializeAppleAuth, logAppleAuthFailure } from "./lib/appleAuth";
+import { AppleAuthError, AppleAuthFailureReason, initializeAppleAuth, logAppleAuthFailure } from "./lib/appleAuth";
 import { RootLayout } from "./components/layout/RootLayout";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -83,7 +83,7 @@ function AppContent() {
         } catch (error) {
           if (isCancelled) return;
 
-          const reason = error instanceof AppleAuthError ? error.reason : 'initialization_failed';
+          const reason = error instanceof AppleAuthError ? error.reason : AppleAuthFailureReason.INITIALIZATION_FAILED;
           logAppleAuthFailure(reason, error, { attempt: appleAuthInitAttempt + 1 });
 
           toast.error('Apple Sign-In is unavailable right now.', {
