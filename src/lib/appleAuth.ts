@@ -169,11 +169,11 @@ export async function signInWithApple(): Promise<{ data: any; error: any }> {
 
     console.log('[AppleAuth] Apple Sign-In result:', result?.provider);
 
-    if (result?.provider === 'apple' && result.result?.identityToken) {
+    if (result?.provider === 'apple' && result.result?.idToken) {
       // Exchange Apple ID token with Supabase Auth
       const { data, error } = await supabase.auth.signInWithIdToken({
         provider: 'apple',
-        token: result.result.identityToken,
+        token: result.result.idToken,
         nonce: result.result.nonce,
       });
 
