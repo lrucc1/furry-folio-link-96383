@@ -12,11 +12,14 @@ import { toast } from 'sonner';
 let SocialLogin: any = null;
 let appleAuthConfig: { clientId: string; bundleId: string } | null = null;
 
-export type AppleAuthFailureReason =
-  | 'missing_client_id'
-  | 'module_load_failed'
-  | 'initialization_failed'
-  | 'unknown';
+export enum AppleAuthFailureReason {
+  MISSING_CLIENT_ID = 'missing_client_id',
+  MODULE_LOAD_FAILED = 'module_load_failed',
+  INITIALIZATION_FAILED = 'initialization_failed',
+  SUPABASE_AUTH_FAILED = 'supabase_auth_failed',
+  NETWORK_ERROR = 'network_error',
+  UNKNOWN = 'unknown',
+}
 
 export class AppleAuthError extends Error {
   reason: AppleAuthFailureReason;
@@ -64,12 +67,12 @@ function getAppleClientId(bundleId: string): string {
       `Set ${envKey} in your environment (.env.*).` +
       (availableKeys.length ? ` Available keys: ${availableKeys.join(', ')}` : ' No Apple client IDs found.');
 
-    const error = new AppleAuthError('missing_client_id', message, {
+    const error = new AppleAuthError(AppleAuthFailureReason.MISSING_CLIENT_ID, message, {
       bundleId,
       envKey,
       availableKeys,
     });
-    logAppleAuthFailure('missing_client_id', error, { bundleId });
+    logAppleAuthFailure(AppleAuthFailureReason.MISSING_CLIENT_ID, error, { bundleId });
     throw error;
   }
 
@@ -93,10 +96,10 @@ export async function initializeAppleAuth(): Promise<void> {
       const module = await import('@capgo/capacitor-social-login');
       SocialLogin = module.SocialLogin;
     } catch (error) {
-      const moduleError = new AppleAuthError('module_load_failed', 'Failed to load capacitor-social-login module', {
+      const moduleError = new AppleAuthError(AppleAuthFailureReason.MODULE_LOAD_FAILED, 'Failed to load capacitor-social-login module', {
         bundleId: appInfo.id,
       });
-      logAppleAuthFailure('module_load_failed', moduleError, { originalError: error });
+      logAppleAuthFailure(AppleAuthFailureReason.MODULE_LOAD_FAILED, moduleError, { originalError: error });
       throw moduleError;
     }
 
@@ -112,7 +115,7 @@ export async function initializeAppleAuth(): Promise<void> {
     console.log(`[AppleAuth] Initialized for bundle ${appInfo.id} using client ${maskedClientId}`);
     console.log('[AppleAuth] Initialized successfully');
   } catch (error) {
-    const reason = error instanceof AppleAuthError ? error.reason : 'initialization_failed';
+    const reason = error instanceof AppleAuthError ? error.reason : AppleAuthFailureReason.INITIALIZATION_FAILED;
     logAppleAuthFailure(reason, error, { stage: 'initialize' });
     throw error;
   }
@@ -170,23 +173,74 @@ export async function signInWithApple(): Promise<{ data: any; error: any }> {
     console.log('[AppleAuth] Apple Sign-In result:', result?.provider);
 
     if (result?.provider === 'apple' && result.result?.idToken) {
-      // Exchange Apple ID token with Supabase Auth
-      const { data, error } = await supabase.auth.signInWithIdToken({
-        provider: 'apple',
-        token: result.result.idToken,
-        nonce: result.result.nonce,
-      });
+      const idToken = result.result.idToken;
+      const nonce = result.result.nonce;
+      
+      console.log('[AppleAuth] Got idToken, length:', idToken?.length);
+      console.log('[AppleAuth] Got nonce:', nonce ? 'yes' : 'no');
+      
+      // Exchange Apple ID token with Supabase Auth with retry logic
+      let lastError: Error | null = null;
+      let authData: any = null;
+      
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          console.log(`[AppleAuth] Supabase auth attempt ${attempt}/3`);
+          
+          const { data, error } = await supabase.auth.signInWithIdToken({
+            provider: 'apple',
+            token: idToken,
+            nonce: nonce,
+          });
 
-      if (error) {
-        console.error('[AppleAuth] Supabase sign-in error:', error);
+          if (error) {
+            console.error(`[AppleAuth] Supabase auth error (attempt ${attempt}):`, error.message);
+            lastError = error;
+            
+            // If it's a network/connection error, wait and retry
+            const errMsg = error.message?.toLowerCase() || '';
+            if (errMsg.includes('connection') || 
+                errMsg.includes('network') ||
+                errMsg.includes('interrupted') ||
+                errMsg.includes('fetch')) {
+              console.log('[AppleAuth] Network error detected, waiting before retry...');
+              await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+              continue;
+            }
+            
+            // For other errors, don't retry
+            break;
+          }
+
+          // Success!
+          authData = data;
+          console.log('[AppleAuth] Supabase auth successful, user:', data.user?.id);
+          break;
+          
+        } catch (networkError) {
+          console.error(`[AppleAuth] Network exception (attempt ${attempt}):`, networkError);
+          lastError = networkError instanceof Error ? networkError : new Error(String(networkError));
+          
+          if (attempt < 3) {
+            console.log('[AppleAuth] Waiting before retry...');
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          }
+        }
+      }
+
+      if (!authData) {
+        console.error('[AppleAuth] All auth attempts failed:', lastError);
+        logAppleAuthFailure(AppleAuthFailureReason.SUPABASE_AUTH_FAILED, lastError);
+        
         // Provide user-friendly error messages
-        if (error.message?.includes('network') || error.message?.includes('fetch')) {
+        const errMsg = lastError?.message?.toLowerCase() || '';
+        if (errMsg.includes('network') || errMsg.includes('fetch') || errMsg.includes('connection')) {
           return { 
             data: null, 
             error: new Error('Please check your internet connection and try again.') 
           };
         }
-        if (error.message?.includes('invalid') || error.message?.includes('expired')) {
+        if (errMsg.includes('invalid') || errMsg.includes('expired')) {
           return { 
             data: null, 
             error: new Error('Apple Sign-In session expired. Please try again.') 
@@ -194,7 +248,7 @@ export async function signInWithApple(): Promise<{ data: any; error: any }> {
         }
         return { 
           data: null, 
-          error: new Error(error.message || 'Unable to verify Apple credentials. Please try again.') 
+          error: new Error(lastError?.message || 'Unable to verify Apple credentials. Please try again.') 
         };
       }
 
@@ -207,7 +261,7 @@ export async function signInWithApple(): Promise<{ data: any; error: any }> {
           .filter(Boolean)
           .join(' ');
         
-        if (fullName && data.user) {
+        if (fullName && authData.user) {
           try {
             await supabase
               .from('profiles')
@@ -215,7 +269,7 @@ export async function signInWithApple(): Promise<{ data: any; error: any }> {
                 full_name: fullName,
                 display_name: fullName 
               })
-              .eq('id', data.user.id);
+              .eq('id', authData.user.id);
           } catch (profileError) {
             // Non-critical - silently log profile update failures
             console.warn('[AppleAuth] Profile update failed (non-critical):', profileError);
@@ -223,7 +277,7 @@ export async function signInWithApple(): Promise<{ data: any; error: any }> {
         }
       }
 
-      return { data, error: null };
+      return { data: authData, error: null };
     }
 
     return { 

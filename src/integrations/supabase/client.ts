@@ -9,33 +9,77 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 const SUPABASE_STORAGE_SERVER = 'app.petlinkid.supabase';
 
+// In-memory fallback when keychain fails
+let memoryStore: Record<string, string> = {};
+let useMemoryFallback = false;
+
 const biometricStorage = {
   async getStore() {
+    // If we've already detected keychain failure, use memory
+    if (useMemoryFallback) {
+      console.log('[Storage] Using memory fallback for getStore');
+      return memoryStore;
+    }
+    
     try {
       const credentials = await NativeBiometric.getCredentials({ server: SUPABASE_STORAGE_SERVER });
-      return JSON.parse(credentials.password || '{}') as Record<string, string>;
-    } catch {
-      return {};
+      const parsed = JSON.parse(credentials.password || '{}') as Record<string, string>;
+      
+      // Check if we got valid data
+      if (credentials.password && credentials.password !== '{}') {
+        return parsed;
+      }
+      
+      console.log('[Storage] Keychain returned empty, checking memory store');
+      // Keychain might be empty but working, merge with memory
+      return { ...memoryStore, ...parsed };
+    } catch (error) {
+      console.warn('[Storage] Keychain getStore failed, using memory fallback:', error);
+      useMemoryFallback = true;
+      return memoryStore;
     }
   },
   async saveStore(store: Record<string, string>) {
-    const serialized = JSON.stringify(store);
-    await NativeBiometric.setCredentials({
-      username: 'supabase',
-      password: serialized,
-      server: SUPABASE_STORAGE_SERVER,
-    });
+    // Always save to memory as backup
+    memoryStore = { ...store };
+    
+    if (useMemoryFallback) {
+      console.log('[Storage] Using memory fallback for saveStore');
+      return;
+    }
+    
+    try {
+      const serialized = JSON.stringify(store);
+      await NativeBiometric.setCredentials({
+        username: 'supabase',
+        password: serialized,
+        server: SUPABASE_STORAGE_SERVER,
+      });
+    } catch (error) {
+      console.warn('[Storage] Keychain saveStore failed, using memory fallback:', error);
+      useMemoryFallback = true;
+    }
   },
   async getItem(key: string) {
     const store = await biometricStorage.getStore();
-    return store[key] ?? null;
+    const value = store[key] ?? null;
+    if (key.includes('auth')) {
+      console.log('[Storage] getItem:', key, value ? '(has value)' : '(null)');
+    }
+    return value;
   },
   async setItem(key: string, value: string) {
+    if (key.includes('auth')) {
+      console.log('[Storage] setItem:', key, '(setting value)');
+    }
     const store = await biometricStorage.getStore();
     store[key] = value;
     await biometricStorage.saveStore(store);
   },
   async removeItem(key: string) {
+    if (key.includes('auth')) {
+      console.log('[Storage] removeItem:', key);
+    }
     const store = await biometricStorage.getStore();
     delete store[key];
     await biometricStorage.saveStore(store);
