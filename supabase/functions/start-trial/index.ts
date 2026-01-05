@@ -2,8 +2,8 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const ALLOWED_ORIGINS = new Set([
-  'https://petlinkid.com',
-  'https://www.petlinkid.com',
+  'https://petlinkid.io',
+  'https://www.petlinkid.io',
   'https://petlinkid.lovable.app',
   'https://furry-folio-link-96383.lovable.app',
   'http://localhost:5173',

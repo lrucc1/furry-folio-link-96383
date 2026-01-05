@@ -57,7 +57,7 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
 }
 
 const shareNative = async ({ imageBlob, petName, publicUrl }: ShareOptions): Promise<void> => {
-  const caption = `Meet ${petName}! 🐾 Officially licensed on PetLinkID ✓ Get yours at PetLinkID.com #PetLinkID #PetLicense ${publicUrl}`
+  const caption = `Meet ${petName}! 🐾 Officially licensed on PetLinkID ✓ Get yours at PetLinkID.io #PetLinkID #PetLicense ${publicUrl}`
   const fileName = `${petName}-petlinkid-${Date.now()}.png`
 
   await triggerHaptic()
@@ -91,7 +91,7 @@ const shareNative = async ({ imageBlob, petName, publicUrl }: ShareOptions): Pro
 }
 
 export const shareToInstagram = async ({ imageBlob, petName, publicUrl }: ShareOptions): Promise<ShareResult> => {
-  const caption = `Meet ${petName}! 🐾 Officially licensed on PetLinkID ✓ Get yours at PetLinkID.com #PetLinkID #PetLicense ${publicUrl}`
+  const caption = `Meet ${petName}! 🐾 Officially licensed on PetLinkID ✓ Get yours at PetLinkID.io #PetLinkID #PetLicense ${publicUrl}`
 
   // Use native Capacitor Share on iOS/Android
   if (Capacitor.isNativePlatform()) {

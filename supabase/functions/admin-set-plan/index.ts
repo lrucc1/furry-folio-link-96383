@@ -12,8 +12,8 @@ const SetPlanSchema = z.object({
 });
 
 const ALLOWED_ORIGINS = new Set([
-  'https://petlinkid.com',
-  'https://www.petlinkid.com',
+  'https://petlinkid.io',
+  'https://www.petlinkid.io',
   'https://petlinkid.lovable.app',
   'http://localhost:5173',
   'http://localhost:8080'
