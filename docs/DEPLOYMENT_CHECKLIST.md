@@ -39,7 +39,7 @@
 
 ### 5. Update Allowed Redirect URLs
 **Where:** Lovable Cloud → Backend → Auth Settings  
-**Add:** https://petlinkid.com (your production domain)
+**Add:** https://petlinkid.io (your production domain)
 
 ## 🧪 PRE-LAUNCH TESTING
 

@@ -601,7 +601,7 @@ export const InstagramShareCard = ({
     // CTA
     ctx.fillStyle = '#2E9B8D'
     ctx.font = 'bold 40px system-ui, -apple-system, sans-serif'
-    ctx.fillText('Get yours at PetLinkID.com', WIDTH / 2, HEIGHT - 200)
+    ctx.fillText('Get yours at PetLinkID.io', WIDTH / 2, HEIGHT - 200)
 
     // Paw prints
     ctx.font = '50px system-ui'

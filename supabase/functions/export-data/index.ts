@@ -2,8 +2,8 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const ALLOWED_ORIGINS = new Set([
-  'https://petlinkid.com',
-  'https://www.petlinkid.com',
+  'https://petlinkid.io',
+  'https://www.petlinkid.io',
   'https://petlinkid.lovable.app',
   'http://localhost:5173',
   'http://localhost:8080'
@@ -14,7 +14,7 @@ function cors(origin: string) {
   return {
     allowed,
     headers: {
-      'Access-Control-Allow-Origin': allowed ? origin : 'https://petlinkid.com',
+      'Access-Control-Allow-Origin': allowed ? origin : 'https://petlinkid.io',
       'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
       'Access-Control-Allow-Methods': 'GET,OPTIONS'
     }

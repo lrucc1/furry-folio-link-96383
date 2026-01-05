@@ -173,7 +173,7 @@ server: {
 // Comment out server config to use bundled assets
 // OR point to production domain:
 // server: {
-//   url: 'https://petlinkid.com',
+//   url: 'https://petlinkid.io',
 //   cleartext: false
 // }
 ```

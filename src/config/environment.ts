@@ -34,7 +34,7 @@ export function detectEnvironment(): AppEnvironment {
   const hostname = window.location.hostname;
 
   // Production domains
-  if (hostname === 'petlinkid.com' || hostname === 'www.petlinkid.com' || hostname === 'petlinkid.lovable.app') {
+  if (hostname === 'petlinkid.io' || hostname === 'www.petlinkid.io' || hostname === 'petlinkid.lovable.app') {
     return 'production';
   }
   
@@ -115,7 +115,7 @@ export function getEnvironmentConfig() {
     enableSourceMaps: !productionLike,
     // App-specific config
     useInAppPurchases: true, // iOS app uses Apple IAP
-    marketingUrl: 'https://petlinkid.com',
+    marketingUrl: 'https://petlinkid.io',
   };
 }
 
