@@ -108,6 +108,32 @@ serve(async (req) => {
 
     const isLost = pet.is_lost === true;
 
+    // Generate signed URL for pet photo if it exists
+    let signedPhotoUrl: string | null = null;
+    if (pet.photo_url) {
+      try {
+        // Extract storage path from URL or use as-is if already a path
+        let storagePath = pet.photo_url;
+        if (pet.photo_url.startsWith('http')) {
+          // Extract path from full URL
+          const match = pet.photo_url.match(/\/storage\/v1\/object\/(?:public|sign)\/pet-documents\/(.+?)(?:\?|$)/);
+          if (match) {
+            storagePath = decodeURIComponent(match[1]);
+          }
+        }
+        
+        const { data: signedData, error: signedError } = await supabase.storage
+          .from('pet-documents')
+          .createSignedUrl(storagePath, 3600); // 1 hour expiry
+        
+        if (!signedError && signedData?.signedUrl) {
+          signedPhotoUrl = signedData.signedUrl;
+        }
+      } catch (signErr) {
+        console.warn('[public-pet-contact] Failed to generate signed URL:', signErr);
+      }
+    }
+
     // Fetch owner profile only for lost pets
     let owner = null as null | { full_name: string | null; email: string | null; phone: string | null };
 
@@ -136,7 +162,7 @@ serve(async (req) => {
           breed: pet.breed ?? null,
           colour: pet.color ?? null,
           date_of_birth: pet.date_of_birth ?? null,
-          photo_url: pet.photo_url ?? null,
+          photo_url: signedPhotoUrl, // Use signed URL instead of raw path
           is_lost: pet.is_lost,
           microchip_number: isLost ? pet.microchip_number ?? null : null,
         },

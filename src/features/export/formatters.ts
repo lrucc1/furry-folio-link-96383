@@ -270,8 +270,10 @@ function formatPetsSection(pets: any[]): string {
           ${pets.map(pet => `
             <tr>
               <td>
-                ${pet.photo_url 
-                  ? `<img src="${escapeHtml(pet.photo_url)}" alt="${escapeHtml(pet.name)}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">` 
+                ${pet.signed_photo_url 
+                  ? `<img src="${escapeHtml(pet.signed_photo_url)}" alt="${escapeHtml(pet.name)}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">` 
+                  : pet.photo_url
+                  ? `<div style="width: 60px; height: 60px; background: #e5e7eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #6b7280; text-align: center; padding: 4px;">Photo available<br/>(signed URL expired)</div>`
                   : '<div style="width: 60px; height: 60px; background: #e5e7eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px;">🐾</div>'
                 }
               </td>

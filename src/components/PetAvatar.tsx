@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useSignedUrl } from '@/hooks/useSignedUrl';
 
 interface PetAvatarProps {
   photoUrl?: string | null;
@@ -81,10 +82,13 @@ export function PetAvatar({
   const gradient = getSpeciesGradient(species);
   const sizeClass = sizeClasses[size];
   const iconSize = iconSizeClasses[size];
+  
+  // Use signed URL for private bucket access
+  const { url: signedUrl } = useSignedUrl(photoUrl);
 
   return (
     <Avatar className={cn(sizeClass, className)}>
-      {photoUrl && <AvatarImage src={photoUrl} alt={name} />}
+      {signedUrl && <AvatarImage src={signedUrl} alt={name} />}
       <AvatarFallback className={cn(gradient, 'text-white', iconSize)}>
         {showEmoji ? emoji : name.charAt(0).toUpperCase()}
       </AvatarFallback>
@@ -108,12 +112,21 @@ export function PetAvatarLarge({
 }: PetAvatarLargeProps) {
   const emoji = getSpeciesEmoji(species);
   const gradient = getSpeciesGradient(species);
+  
+  // Use signed URL for private bucket access
+  const { url: signedUrl, loading } = useSignedUrl(photoUrl);
 
-  if (photoUrl) {
+  if (signedUrl) {
     return (
       <div className={cn('rounded-xl overflow-hidden bg-muted', className)}>
-        <img src={photoUrl} alt={name} className="w-full h-full object-cover" />
+        <img src={signedUrl} alt={name} className="w-full h-full object-cover" />
       </div>
+    );
+  }
+
+  if (loading && photoUrl) {
+    return (
+      <div className={cn('rounded-xl bg-muted animate-pulse', className)} />
     );
   }
 

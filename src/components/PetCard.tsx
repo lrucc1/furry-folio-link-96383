@@ -5,6 +5,7 @@ import { MapPin, QrCode, Calendar, AlertTriangle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
 import { PetAvatarLarge, getSpeciesEmoji, getSpeciesGradient } from "@/components/PetAvatar";
+import { SignedImage } from "@/components/SignedImage";
 
 interface Pet {
   id: string;
@@ -35,10 +36,15 @@ export const PetCard = ({ pet, onViewDetails, onToggleLost }: PetCardProps) => {
     <Card className="bg-gradient-card border-0 shadow-medium hover:shadow-strong transition-spring overflow-hidden group touch-manipulation">
       <div className="relative overflow-hidden">
         {pet.photo ? (
-          <img 
-            src={pet.photo} 
+          <SignedImage 
+            storagePath={pet.photo}
             alt={`${pet.name} photo`}
             className="w-full h-48 sm:h-56 md:h-64 object-cover object-center transition-spring"
+            fallback={
+              <div className={`w-full h-48 sm:h-56 md:h-64 ${getSpeciesGradient(pet.species)} flex items-center justify-center transition-spring`}>
+                <span className="text-7xl drop-shadow-lg">{getSpeciesEmoji(pet.species)}</span>
+              </div>
+            }
           />
         ) : (
           <div className={`w-full h-48 sm:h-56 md:h-64 ${getSpeciesGradient(pet.species)} flex items-center justify-center transition-spring`}>

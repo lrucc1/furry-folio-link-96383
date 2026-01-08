@@ -179,12 +179,14 @@ export default function IOSEditPet() {
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
+      // Generate signed URL for preview, but store only the path
+      const { data: signedData } = await supabase.storage
         .from('pet-documents')
-        .getPublicUrl(fileName);
+        .createSignedUrl(fileName, 3600);
 
-      setPhotoPreview(publicUrl);
-      setFormData(prev => ({ ...prev, photo_url: publicUrl }));
+      setPhotoPreview(signedData?.signedUrl || null);
+      // Store only the storage path, not the full URL
+      setFormData(prev => ({ ...prev, photo_url: fileName }));
       toast.success('Photo uploaded');
     } catch {
       toast.error('Failed to upload photo');
