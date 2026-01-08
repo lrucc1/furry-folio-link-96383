@@ -1,8 +1,36 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+/**
+ * Extract storage path from URL or return as-is if already a path
+ */
+function extractStoragePath(urlOrPath: string): string {
+  if (!urlOrPath) return '';
+  
+  // If it's already a relative path, return as-is
+  if (!urlOrPath.startsWith('http://') && !urlOrPath.startsWith('https://')) {
+    return urlOrPath;
+  }
+  
+  // Extract path from full Supabase URL
+  const match = urlOrPath.match(/\/storage\/v1\/object\/(?:public|sign)\/pet-documents\/(.+?)(?:\?|$)/);
+  if (match) {
+    return decodeURIComponent(match[1]);
+  }
+  
+  // Fallback: try to extract just the filename with user-id prefix
+  const parts = urlOrPath.split('/');
+  const lastTwo = parts.slice(-2);
+  if (lastTwo.length === 2 && lastTwo[0].includes('-')) {
+    return `${lastTwo[0]}/${lastTwo[1].split('?')[0]}`;
+  }
+  
+  return parts[parts.length - 1].split('?')[0];
 }
 
 serve(async (req) => {
@@ -12,31 +40,58 @@ serve(async (req) => {
   }
 
   try {
-    const { url } = await req.json()
+    const { url, storagePath } = await req.json()
     
-    console.log('[proxy-pet-image] Received request for URL:', url)
+    // Support both legacy 'url' parameter and new 'storagePath' parameter
+    const inputPath = storagePath || url;
     
-    // Validate URL is from our Supabase storage
-    if (!url || typeof url !== 'string') {
-      console.error('[proxy-pet-image] Invalid URL: missing or not a string')
+    console.log('[proxy-pet-image] Received request for:', inputPath)
+    
+    if (!inputPath || typeof inputPath !== 'string') {
+      console.error('[proxy-pet-image] Invalid input: missing or not a string')
       return new Response(
-        JSON.stringify({ error: 'Invalid URL parameter' }), 
+        JSON.stringify({ error: 'Invalid URL or storage path parameter' }), 
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    if (!url.includes('supabase.co/storage')) {
-      console.error('[proxy-pet-image] Invalid URL: not from Supabase storage')
+    // Extract the actual storage path
+    const actualPath = extractStoragePath(inputPath);
+    
+    if (!actualPath) {
+      console.error('[proxy-pet-image] Could not extract storage path from input')
       return new Response(
-        JSON.stringify({ error: 'Only Supabase storage URLs are allowed' }), 
+        JSON.stringify({ error: 'Could not determine storage path' }), 
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log('[proxy-pet-image] Fetching image...')
+    console.log('[proxy-pet-image] Using storage path:', actualPath)
+
+    // Create Supabase client with service role for private bucket access
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+
+    // Generate signed URL for the private bucket
+    const { data: signedData, error: signedError } = await supabase.storage
+      .from('pet-documents')
+      .createSignedUrl(actualPath, 3600); // 1 hour expiry
+
+    if (signedError || !signedData?.signedUrl) {
+      console.error('[proxy-pet-image] Failed to generate signed URL:', signedError)
+      return new Response(
+        JSON.stringify({ error: 'Failed to access image' }), 
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    console.log('[proxy-pet-image] Generated signed URL, fetching image...')
     
-    // Fetch the image
-    const imageResponse = await fetch(url)
+    // Fetch the image using the signed URL
+    const imageResponse = await fetch(signedData.signedUrl)
     
     if (!imageResponse.ok) {
       console.error('[proxy-pet-image] Failed to fetch image:', imageResponse.status)

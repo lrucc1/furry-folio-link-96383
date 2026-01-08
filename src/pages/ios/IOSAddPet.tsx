@@ -176,13 +176,15 @@ export default function IOSAddPet() {
 
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage
+      // Generate signed URL for preview, but store only the path
+      const { data: signedData } = await supabase.storage
         .from('pet-documents')
-        .getPublicUrl(fileName);
+        .createSignedUrl(fileName, 3600);
 
-      const photoUrl = urlData.publicUrl;
-      setPhotoPreview(photoUrl);
-      setFormData(prev => ({ ...prev, photo_url: photoUrl }));
+      const previewUrl = signedData?.signedUrl || null;
+      setPhotoPreview(previewUrl);
+      // Store only the storage path, not the full URL
+      setFormData(prev => ({ ...prev, photo_url: fileName }));
       toast.success('Photo uploaded');
     } catch (error) {
       console.error('Upload error:', error);

@@ -8,6 +8,7 @@ import { CheckCircle, XCircle, Clock, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { au } from '@/lib/auEnglish';
+import { SignedImage } from '@/components/SignedImage';
 
 interface Invite {
   id: string;
@@ -236,10 +237,15 @@ export default function InviteStatus() {
                         <CardTitle className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             {membership.pet?.photo_url && (
-                              <img 
-                                src={membership.pet.photo_url} 
+                              <SignedImage 
+                                storagePath={membership.pet.photo_url}
                                 alt={membership.pet.name}
                                 className="w-10 h-10 rounded-full object-cover"
+                                fallback={
+                                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-lg">
+                                    🐾
+                                  </div>
+                                }
                               />
                             )}
                             <span>{membership.pet?.name || au('Unknown Pet')}</span>

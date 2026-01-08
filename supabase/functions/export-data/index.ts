@@ -55,6 +55,13 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
+    // Service role client for generating signed URLs
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
     
@@ -98,6 +105,33 @@ serve(async (req) => {
           .eq(table === 'profiles' ? 'id' : 'user_id', userId);
         
         if (!error && data) {
+          // For pets, generate signed URLs for photos
+          if (table === 'pets') {
+            for (const pet of data) {
+              if (pet.photo_url) {
+                try {
+                  // Extract storage path from URL or use as-is
+                  let storagePath = pet.photo_url;
+                  if (pet.photo_url.startsWith('http')) {
+                    const match = pet.photo_url.match(/\/storage\/v1\/object\/(?:public|sign)\/pet-documents\/(.+?)(?:\?|$)/);
+                    if (match) {
+                      storagePath = decodeURIComponent(match[1]);
+                    }
+                  }
+                  
+                  const { data: signedData } = await supabaseAdmin.storage
+                    .from('pet-documents')
+                    .createSignedUrl(storagePath, 3600);
+                  
+                  if (signedData?.signedUrl) {
+                    pet.signed_photo_url = signedData.signedUrl;
+                  }
+                } catch (signErr) {
+                  logStep(`Warning: Could not sign URL for pet ${pet.id}`, { error: signErr });
+                }
+              }
+            }
+          }
           exportData.data[table] = data;
           logStep(`Exported ${data.length} records from ${table}`);
         }
