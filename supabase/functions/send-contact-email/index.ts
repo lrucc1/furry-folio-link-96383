@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -8,13 +9,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface ContactFormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  subject: string;
-  message: string;
-}
+// Zod schema for input validation
+const ContactFormSchema = z.object({
+  firstName: z.string().min(1, "First name is required").max(50).trim(),
+  lastName: z.string().min(1, "Last name is required").max(50).trim(),
+  email: z.string().email("Invalid email format").max(255).toLowerCase(),
+  subject: z.string().min(1, "Subject is required").max(200).trim(),
+  message: z.string().min(10, "Message must be at least 10 characters").max(5000).trim(),
+});
 
 // Escape HTML to prevent XSS attacks in email clients
 const escapeHtml = (text: string): string => {
@@ -43,9 +45,24 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const { firstName, lastName, email, subject, message }: ContactFormData = await req.json();
+    // Parse and validate input
+    const body = await req.json();
+    const validation = ContactFormSchema.safeParse(body);
+    
+    if (!validation.success) {
+      console.error("Validation failed:", validation.error.errors);
+      return new Response(
+        JSON.stringify({ error: "Invalid input data", details: validation.error.errors }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
 
-    console.log("Received contact form submission");
+    const { firstName, lastName, email, subject, message } = validation.data;
+
+    console.log("Received validated contact form submission");
 
     // Sanitize all user inputs before using in HTML
     const safeFirstName = escapeHtml(firstName);
