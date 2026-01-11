@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { buildCors, isAllowedOrigin } from "../_shared/cors.ts";
 
 type PlanType = "FREE" | "PRO";
 
@@ -34,12 +35,6 @@ type EntitlementCheckResult = {
 type RequestPayload = {
   feature?: keyof PlanEntitlements | "pets_max" | "reminders_active_max" | "docs_storage_mb" | string;
   incrementBy?: number;
-};
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
 };
 
 const FREE_PETS_MAX = Number(Deno.env.get("FREE_PLAN_PETS_MAX") ?? Deno.env.get("FREE_PETS_MAX") ?? "1");
@@ -249,8 +244,19 @@ function evaluateEntitlement(
 }
 
 serve(async (req) => {
+  const corsHeaders = buildCors(req);
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders, status: 204 });
+  }
+
+  // Validate origin
+  const origin = req.headers.get('origin') ?? '';
+  if (!isAllowedOrigin(origin)) {
+    return new Response(
+      JSON.stringify({ error: "Forbidden" }),
+      { status: 403, headers: corsHeaders },
+    );
   }
 
   try {
@@ -258,7 +264,7 @@ serve(async (req) => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: "No authorization header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 401, headers: corsHeaders },
       );
     }
 
@@ -276,7 +282,7 @@ serve(async (req) => {
     if (userError || !user) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 401, headers: corsHeaders },
       );
     }
 
@@ -313,9 +319,10 @@ serve(async (req) => {
 
     return new Response(JSON.stringify(result), {
       status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: corsHeaders,
     });
   } catch (error) {
+    const corsHeaders = buildCors(req);
     console.error("[entitlement-check] Unexpected error", error);
     return new Response(
       JSON.stringify({
@@ -323,7 +330,7 @@ serve(async (req) => {
         allowed: false,
         upgrade_required: false,
       }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 500, headers: corsHeaders },
     );
   }
 });

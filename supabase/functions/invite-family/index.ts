@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { buildCors, isAllowedOrigin } from "../_shared/cors.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -12,11 +13,6 @@ const InviteSchema = z.object({
     errorMap: () => ({ message: 'Role must be "family", "caregiver", or "vet"' })
   })
 });
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
 
 const getRoleDescription = (role: string): string => {
   switch (role) {
@@ -140,9 +136,20 @@ const generateEmailHtml = (
 };
 
 serve(async (req) => {
+  const corsHeaders = buildCors(req);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders, status: 204 });
+  }
+
+  // Validate origin
+  const origin = req.headers.get('origin') ?? '';
+  if (!isAllowedOrigin(origin)) {
+    return new Response(JSON.stringify({ error: 'Forbidden' }), { 
+      headers: corsHeaders, 
+      status: 403 
+    });
   }
 
   try {
@@ -174,7 +181,7 @@ serve(async (req) => {
       console.error('[invite-family] Validation error:', errors);
       return new Response(
         JSON.stringify({ error: 'Invalid input data' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        { headers: corsHeaders, status: 400 }
       );
     }
 
@@ -225,8 +232,8 @@ serve(async (req) => {
       throw inviteError;
     }
 
-    const origin = req.headers.get('origin') || Deno.env.get('VITE_APP_URL') || 'https://petlinkid.io';
-    const inviteUrl = `${origin}/invite/accept?token=${token_value}`;
+    const requestOrigin = req.headers.get('origin') || Deno.env.get('VITE_APP_URL') || 'https://petlinkid.io';
+    const inviteUrl = `${requestOrigin}/invite/accept?token=${token_value}`;
 
     // Send invite email
     try {
@@ -247,14 +254,14 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ inviteUrl, invite, emailSent: true }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      { headers: corsHeaders, status: 200 }
     );
 
   } catch (error) {
     console.error('Error in invite-family:', error);
     return new Response(
       JSON.stringify({ error: 'Unable to process invite request' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      { headers: corsHeaders, status: 400 }
     );
   }
 });

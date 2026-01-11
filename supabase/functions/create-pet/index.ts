@@ -1,27 +1,30 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.2'
+import { buildCors, isAllowedOrigin } from '../_shared/cors.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGINS') ?? '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Vary': 'Origin',
-}
-
-function json(body: unknown, status = 200) {
+function json(req: Request, body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json', ...corsHeaders },
+    headers: buildCors(req),
   })
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = buildCors(req);
+  
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
+  // Validate origin
+  const origin = req.headers.get('origin') ?? '';
+  if (!isAllowedOrigin(origin)) {
+    console.error('[create-pet] Forbidden origin:', origin);
+    return json(req, { error: 'Forbidden' }, 403);
+  }
+
   if (req.method !== 'POST') {
-    return json({ error: 'Method not allowed' }, 405)
+    return json(req, { error: 'Method not allowed' }, 405)
   }
 
   try {
@@ -30,7 +33,7 @@ Deno.serve(async (req) => {
 
     if (!supabaseUrl || !serviceKey) {
       console.error('[create-pet] Missing Supabase environment variables')
-      return json({ error: 'Configuration error' }, 500)
+      return json(req, { error: 'Configuration error' }, 500)
     }
 
     // Use SERVICE_ROLE_KEY to bypass RLS
@@ -44,7 +47,7 @@ Deno.serve(async (req) => {
 
     if (!jwt) {
       console.error('[create-pet] No JWT provided')
-      return json({ error: 'Unauthenticated' }, 401)
+      return json(req, { error: 'Unauthenticated' }, 401)
     }
 
     const {
@@ -54,7 +57,7 @@ Deno.serve(async (req) => {
 
     if (userErr || !user) {
       console.error('[create-pet] Auth error:', userErr)
-      return json({ error: 'Unauthenticated' }, 401)
+      return json(req, { error: 'Unauthenticated' }, 401)
     }
 
     // Parse and validate body
@@ -63,7 +66,7 @@ Deno.serve(async (req) => {
       body = await req.json()
     } catch {
       console.error('[create-pet] Invalid JSON')
-      return json({ error: 'Invalid JSON' }, 400)
+      return json(req, { error: 'Invalid JSON' }, 400)
     }
 
     // Validate required fields
@@ -71,7 +74,7 @@ Deno.serve(async (req) => {
     for (const k of required) {
       if (!body[k] || typeof body[k] !== 'string' || !body[k].trim()) {
         console.error(`[create-pet] Missing required field: ${k}`)
-        return json({ error: `Missing field: ${k}` }, 400)
+        return json(req, { error: `Missing field: ${k}` }, 400)
       }
     }
 
@@ -103,18 +106,18 @@ Deno.serve(async (req) => {
 
     if (dbErr) {
       console.error('[create-pet] Database error:', dbErr)
-      return json({ error: dbErr.message || 'Failed to create pet' }, 400)
+      return json(req, { error: dbErr.message || 'Failed to create pet' }, 400)
     }
 
     if (!data?.id) {
       console.error('[create-pet] No ID returned')
-      return json({ error: 'Pet creation failed' }, 500)
+      return json(req, { error: 'Pet creation failed' }, 500)
     }
 
     console.log('[create-pet] Success - pet ID:', data.id)
-    return json({ id: data.id }, 201)
+    return json(req, { id: data.id }, 201)
   } catch (error) {
     console.error('[create-pet] Unexpected error:', error)
-    return json({ error: 'Unexpected server error' }, 500)
+    return json(req, { error: 'Unexpected server error' }, 500)
   }
 })

@@ -1,13 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { buildCors, isAllowedOrigin } from "../_shared/cors.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
 
 // Zod schema for input validation
 const ContactFormSchema = z.object({
@@ -29,8 +25,19 @@ const escapeHtml = (text: string): string => {
 };
 
 const handler = async (req: Request): Promise<Response> => {
+  const corsHeaders = buildCors(req);
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Validate origin
+  const origin = req.headers.get('origin') ?? '';
+  if (!isAllowedOrigin(origin)) {
+    return new Response(JSON.stringify({ error: "Forbidden" }), {
+      status: 403,
+      headers: corsHeaders,
+    });
   }
 
   try {
@@ -40,7 +47,7 @@ const handler = async (req: Request): Promise<Response> => {
         JSON.stringify({ error: "Unauthorized" }),
         {
           status: 401,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
+          headers: corsHeaders,
         }
       );
     }
@@ -55,7 +62,7 @@ const handler = async (req: Request): Promise<Response> => {
         JSON.stringify({ error: "Invalid input data", details: validation.error.errors }),
         {
           status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
+          headers: corsHeaders,
         }
       );
     }
@@ -111,10 +118,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
+      headers: corsHeaders,
     });
   } catch (error: any) {
     console.error("Error in send-contact-email function:", error);
@@ -122,7 +126,7 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ error: error.message }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: corsHeaders,
       }
     );
   }
