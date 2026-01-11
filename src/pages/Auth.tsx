@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
 import { Eye, EyeOff, Loader2, Mail, Fingerprint } from 'lucide-react'
 import { useIsNativeApp } from '@/hooks/useIsNativeApp'
-import { isAppleSignInAvailable, handleAppleSignIn } from '@/lib/appleAuth'
+
 import { motion } from 'framer-motion'
 import { useBiometricAuth } from '@/hooks/useBiometricAuth'
 import { BiometricSetupModal } from '@/components/BiometricSetupModal'
@@ -62,11 +62,9 @@ const AuthPage = () => {
   const navigate = useNavigate()
   const isNative = useIsNativeApp()
   const [loading, setLoading] = useState(false)
-  const [appleLoading, setAppleLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [biometricLoading, setBiometricLoading] = useState(false)
   const [showBiometricSetup, setShowBiometricSetup] = useState(false)
-  const showAppleSignIn = isAppleSignInAvailable()
   const biometric = useBiometricAuth()
   
   // Sign In form state
@@ -216,40 +214,6 @@ const AuthPage = () => {
     }
   }
 
-  const onAppleSignIn = async () => {
-    setAppleLoading(true)
-    try {
-      await handleAppleSignIn()
-    } finally {
-      setAppleLoading(false)
-    }
-  }
-
-  // Apple Sign-In Button Component
-  const AppleSignInButton = ({ className = "" }: { className?: string }) => (
-    <Button
-      type="button"
-      variant="outline"
-      className={`w-full h-12 bg-black text-white border-0 hover:bg-black/90 ${className}`}
-      onClick={onAppleSignIn}
-      disabled={appleLoading || loading}
-    >
-      {appleLoading ? (
-        <>
-          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-          Signing in...
-        </>
-      ) : (
-        <>
-          <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-          </svg>
-          Apple
-        </>
-      )}
-    </Button>
-  )
-
   // Google Sign-In Button Component
   const GoogleSignInButton = ({ className = "" }: { className?: string }) => (
     <Button
@@ -269,14 +233,9 @@ const AuthPage = () => {
     </Button>
   )
 
-  // Social Sign-In Buttons (shows Apple on iOS, Google everywhere)
+  // Social Sign-In Buttons (Google only - Apple OAuth not supported in Lovable Cloud)
   const SocialSignInButtons = ({ nativeStyle = false }: { nativeStyle?: boolean }) => (
-    <div className={showAppleSignIn ? "space-y-3" : ""}>
-      {showAppleSignIn && (
-        <AppleSignInButton className={nativeStyle ? "text-base" : ""} />
-      )}
-      <GoogleSignInButton className={nativeStyle ? "text-base bg-white border-0" : "rounded-full"} />
-    </div>
+    <GoogleSignInButton className={nativeStyle ? "text-base bg-white border-0" : "rounded-full"} />
   )
 
   // View state for iOS native auth
@@ -378,32 +337,7 @@ const AuthPage = () => {
                 </motion.div>
               )}
               
-              {/* Social sign-in buttons */}
-              {showAppleSignIn && (
-                <motion.div variants={fadeUpVariants}>
-                  <Button
-                    type="button"
-                    className="w-full h-14 text-base bg-black text-white border-0 hover:bg-black/90 rounded-xl"
-                    onClick={onAppleSignIn}
-                    disabled={appleLoading || loading}
-                  >
-                    {appleLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Signing in...
-                      </>
-                    ) : (
-                      <>
-                        <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-                        </svg>
-                        Continue with Apple
-                      </>
-                    )}
-                  </Button>
-                </motion.div>
-              )}
-              
+              {/* Google sign-in button */}
               <motion.div variants={fadeUpVariants}>
                 <Button
                   type="button"

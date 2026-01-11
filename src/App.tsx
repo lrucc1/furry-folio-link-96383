@@ -15,7 +15,6 @@ import { IOSAppRouter } from "./components/IOSAppRouter";
 import { DevModeToggle } from "./components/DevModeToggle";
 import { AppLoadingScreen } from "./components/AppLoadingScreen";
 import { useIsNativeApp } from "./hooks/useIsNativeApp";
-import { AppleAuthError, AppleAuthFailureReason, initializeAppleAuth, logAppleAuthFailure } from "./lib/appleAuth";
 import { RootLayout } from "./components/layout/RootLayout";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -70,39 +69,6 @@ const queryClient = new QueryClient();
 function AppContent() {
   const { loading } = useAuth();
   const isNative = useIsNativeApp();
-  const [appleAuthInitAttempt, setAppleAuthInitAttempt] = useState(0);
-
-  // Initialize Apple Auth on iOS native app startup
-  useEffect(() => {
-    if (isNative) {
-      let isCancelled = false;
-
-      const initialize = async () => {
-        try {
-          await initializeAppleAuth();
-        } catch (error) {
-          if (isCancelled) return;
-
-          const reason = error instanceof AppleAuthError ? error.reason : AppleAuthFailureReason.INITIALIZATION_FAILED;
-          logAppleAuthFailure(reason, error, { attempt: appleAuthInitAttempt + 1 });
-
-          toast.error('Apple Sign-In is unavailable right now.', {
-            description: error instanceof Error ? error.message : 'Retry setup to enable Apple Sign-In on this device.',
-            action: {
-              label: 'Retry',
-              onClick: () => setAppleAuthInitAttempt(attempt => attempt + 1),
-            },
-          });
-        }
-      };
-
-      initialize();
-
-      return () => {
-        isCancelled = true;
-      };
-    }
-  }, [appleAuthInitAttempt, isNative]);
 
   // Show loading screen on native while auth initializes
   if (isNative && loading) {
