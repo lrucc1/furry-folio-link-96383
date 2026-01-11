@@ -71,17 +71,18 @@ export function useSignedUrl(
     error: null,
   });
   
-  const mountedRef = useRef(true);
+  const mountedRef = useRef(false);
   const [session, setSession] = useState<Session | null>(null);
   const [sessionLoading, setSessionLoading] = useState(true);
 
-  // Get initial session and listen for auth changes
+  // Get initial session and listen for auth changes - single effect for session management
   useEffect(() => {
     mountedRef.current = true;
+    let isCancelled = false;
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
-      if (mountedRef.current) {
+      if (!isCancelled && mountedRef.current) {
         setSession(initialSession);
         setSessionLoading(false);
       }
@@ -90,7 +91,7 @@ export function useSignedUrl(
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
-        if (!mountedRef.current) return;
+        if (isCancelled || !mountedRef.current) return;
         
         setSession(newSession);
         setSessionLoading(false);
@@ -104,73 +105,11 @@ export function useSignedUrl(
     );
 
     return () => {
+      isCancelled = true;
       mountedRef.current = false;
       subscription.unsubscribe();
     };
   }, []);
-
-  const generateSignedUrl = useCallback(async (path: string, currentSession: Session | null) => {
-    if (!path) {
-      setState({ url: null, loading: false, error: null });
-      return;
-    }
-
-    // Wait for session - don't attempt without auth for private buckets
-    if (!currentSession) {
-      // Keep loading state, session may still be initializing
-      return;
-    }
-
-    // Extract the actual storage path if it's a full URL
-    const actualPath = extractStoragePath(path);
-    if (!actualPath) {
-      setState({ url: null, loading: false, error: 'Invalid storage path' });
-      return;
-    }
-
-    const cacheKey = `${bucket}:${actualPath}`;
-    const now = Date.now();
-
-    // Check cache first
-    const cached = urlCache.get(cacheKey);
-    if (cached && cached.expiresAt > now + URL_EXPIRY_BUFFER) {
-      if (mountedRef.current) {
-        setState({ url: cached.url, loading: false, error: null });
-      }
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase.storage
-        .from(bucket)
-        .createSignedUrl(actualPath, expiresIn);
-
-      if (error) throw error;
-
-      if (!data?.signedUrl) {
-        throw new Error('Failed to generate signed URL');
-      }
-
-      // Cache the URL
-      urlCache.set(cacheKey, {
-        url: data.signedUrl,
-        expiresAt: now + expiresIn * 1000,
-      });
-
-      if (mountedRef.current) {
-        setState({ url: data.signedUrl, loading: false, error: null });
-      }
-    } catch (err) {
-      console.error('[useSignedUrl] Error generating signed URL:', err);
-      if (mountedRef.current) {
-        setState({
-          url: null,
-          loading: false,
-          error: err instanceof Error ? err.message : 'Failed to load image',
-        });
-      }
-    }
-  }, [bucket, expiresIn]);
 
   // Generate signed URL when storagePath or session changes
   useEffect(() => {
@@ -191,10 +130,69 @@ export function useSignedUrl(
       return;
     }
 
-    // We have a session, generate the URL
+    let isCancelled = false;
     setState(prev => ({ ...prev, loading: true }));
-    generateSignedUrl(storagePath, session);
-  }, [storagePath, session, sessionLoading, generateSignedUrl]);
+
+    const generateUrl = async () => {
+      // Extract the actual storage path if it's a full URL
+      const actualPath = extractStoragePath(storagePath);
+      if (!actualPath) {
+        if (!isCancelled) {
+          setState({ url: null, loading: false, error: 'Invalid storage path' });
+        }
+        return;
+      }
+
+      const cacheKey = `${bucket}:${actualPath}`;
+      const now = Date.now();
+
+      // Check cache first
+      const cached = urlCache.get(cacheKey);
+      if (cached && cached.expiresAt > now + URL_EXPIRY_BUFFER) {
+        if (!isCancelled) {
+          setState({ url: cached.url, loading: false, error: null });
+        }
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase.storage
+          .from(bucket)
+          .createSignedUrl(actualPath, expiresIn);
+
+        if (isCancelled) return;
+
+        if (error) throw error;
+
+        if (!data?.signedUrl) {
+          throw new Error('Failed to generate signed URL');
+        }
+
+        // Cache the URL
+        urlCache.set(cacheKey, {
+          url: data.signedUrl,
+          expiresAt: now + expiresIn * 1000,
+        });
+
+        setState({ url: data.signedUrl, loading: false, error: null });
+      } catch (err) {
+        console.error('[useSignedUrl] Error generating signed URL:', err);
+        if (!isCancelled) {
+          setState({
+            url: null,
+            loading: false,
+            error: err instanceof Error ? err.message : 'Failed to load image',
+          });
+        }
+      }
+    };
+
+    generateUrl();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [storagePath, session, sessionLoading, bucket, expiresIn]);
 
   return state;
 }

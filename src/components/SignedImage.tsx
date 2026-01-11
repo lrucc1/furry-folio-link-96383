@@ -1,4 +1,4 @@
-import { useState, forwardRef } from 'react';
+import { useState, forwardRef, useEffect } from 'react';
 import { useSignedUrl, isFullUrl } from '@/hooks/useSignedUrl';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -33,10 +33,12 @@ export const SignedImage = forwardRef<HTMLImageElement, SignedImageProps>(
     // Use signed URL hook
     const { url, loading, error } = useSignedUrl(storagePath);
 
-    // Reset error state when storagePath changes
-    if (imgError && storagePath) {
-      setImgError(false);
-    }
+    // Reset error state when storagePath changes - must be in useEffect to avoid state update during render
+    useEffect(() => {
+      if (storagePath) {
+        setImgError(false);
+      }
+    }, [storagePath]);
 
     // No image path provided
     if (!storagePath) {
