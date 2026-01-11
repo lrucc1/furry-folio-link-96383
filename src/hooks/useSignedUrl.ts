@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Session } from '@supabase/supabase-js';
 
 interface SignedUrlState {
   url: string | null;
@@ -71,10 +72,52 @@ export function useSignedUrl(
   });
   
   const mountedRef = useRef(true);
+  const [session, setSession] = useState<Session | null>(null);
+  const [sessionLoading, setSessionLoading] = useState(true);
 
-  const generateSignedUrl = useCallback(async (path: string) => {
+  // Get initial session and listen for auth changes
+  useEffect(() => {
+    mountedRef.current = true;
+
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      if (mountedRef.current) {
+        setSession(initialSession);
+        setSessionLoading(false);
+      }
+    });
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, newSession) => {
+        if (!mountedRef.current) return;
+        
+        setSession(newSession);
+        setSessionLoading(false);
+        
+        // Clear cache on sign out to prevent stale URLs
+        if (event === 'SIGNED_OUT') {
+          urlCache.clear();
+          setState({ url: null, loading: false, error: null });
+        }
+      }
+    );
+
+    return () => {
+      mountedRef.current = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const generateSignedUrl = useCallback(async (path: string, currentSession: Session | null) => {
     if (!path) {
       setState({ url: null, loading: false, error: null });
+      return;
+    }
+
+    // Wait for session - don't attempt without auth for private buckets
+    if (!currentSession) {
+      // Keep loading state, session may still be initializing
       return;
     }
 
@@ -129,20 +172,29 @@ export function useSignedUrl(
     }
   }, [bucket, expiresIn]);
 
+  // Generate signed URL when storagePath or session changes
   useEffect(() => {
-    mountedRef.current = true;
-    
-    if (storagePath) {
-      setState(prev => ({ ...prev, loading: true }));
-      generateSignedUrl(storagePath);
-    } else {
+    if (!storagePath) {
       setState({ url: null, loading: false, error: null });
+      return;
     }
 
-    return () => {
-      mountedRef.current = false;
-    };
-  }, [storagePath, generateSignedUrl]);
+    // If session is still loading, wait
+    if (sessionLoading) {
+      setState(prev => ({ ...prev, loading: true }));
+      return;
+    }
+
+    // If no session, stay in loading state (user may be logging in)
+    if (!session) {
+      setState(prev => ({ ...prev, loading: true }));
+      return;
+    }
+
+    // We have a session, generate the URL
+    setState(prev => ({ ...prev, loading: true }));
+    generateSignedUrl(storagePath, session);
+  }, [storagePath, session, sessionLoading, generateSignedUrl]);
 
   return state;
 }
