@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Shield, Users, QrCode, Smartphone, Star, ChevronDown, Link2 } from "lucide-react";
+import { Heart, Shield, Users, QrCode, Smartphone, Star, Link2 } from "lucide-react";
 import heroImage from "@/assets/hero-pets-realistic.jpg";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
@@ -127,22 +127,6 @@ export const HeroSection = () => {
         </div>
       </div>
       
-      {/* Scroll indicator */}
-      <motion.a 
-        href="#demo"
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center text-white/60 hover:text-white transition-colors cursor-pointer"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.8 }}
-      >
-        <span className="text-xs mb-1">Explore</span>
-        <motion.div
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <ChevronDown className="w-5 h-5" />
-        </motion.div>
-      </motion.a>
       
       <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
     </section>
