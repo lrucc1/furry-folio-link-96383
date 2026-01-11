@@ -6,7 +6,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import log from '@/lib/log';
 import { 
@@ -63,17 +62,32 @@ export default function SmartRecoveryTags() {
     setIsSubmitting(true);
 
     try {
-      const { error } = await (supabase as any)
-        .from('smart_tag_interest')
-        .insert({
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      
+      const response = await fetch(`${supabaseUrl}/functions/v1/submit-smart-tag-interest`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': supabaseKey,
+        },
+        body: JSON.stringify({
           email: formData.email,
           name: formData.name || null,
           likelihood: formData.likelihood,
           features: formData.features.length > 0 ? formData.features : null,
           comments: formData.comments || null
-        });
+        }),
+      });
 
-      if (error) throw error;
+      const result = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          throw new Error('Too many submissions. Please try again in an hour.');
+        }
+        throw new Error(result.error || 'Submission failed');
+      }
 
       setSubmitted(true);
       toast({
@@ -84,7 +98,7 @@ export default function SmartRecoveryTags() {
       log.error('Error submitting interest:', error);
       toast({
         title: 'Submission failed',
-        description: 'Please try again or contact us directly.',
+        description: error instanceof Error ? error.message : 'Please try again or contact us directly.',
         variant: 'destructive'
       });
     } finally {
