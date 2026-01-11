@@ -74,6 +74,10 @@ const AuthPage = () => {
   const handleOAuthCancel = useCallback(() => {
     console.log('[Auth] OAuth cancelled, resetting loading state')
     setGoogleLoading(false)
+    toast('Sign-in cancelled', {
+      description: 'Tap Google to try again when ready.',
+      duration: 3000,
+    })
   }, [])
   
   const { setBrowserOpen } = useOAuthCallback(handleOAuthCancel)
