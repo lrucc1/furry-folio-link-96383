@@ -26,7 +26,7 @@ export default function IOSPrivacyPolicy() {
         {/* Header */}
         <div className="px-4 mb-6">
           <p className="text-sm text-muted-foreground text-center mb-4">
-            Last updated: 14 October 2025
+            Last updated: January 2026
           </p>
           <MobileCard>
             <p className="text-sm text-muted-foreground text-center py-2">

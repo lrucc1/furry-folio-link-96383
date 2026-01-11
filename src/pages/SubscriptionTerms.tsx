@@ -24,7 +24,7 @@ export default function SubscriptionTerms() {
             Terms and conditions for PetLinkID subscription services
           </p>
           <p className="text-sm text-muted-foreground mt-2">
-            Last updated: January 2025
+            Last updated: January 2026
           </p>
           <p className="text-sm text-muted-foreground mt-2">
             PetLinkID is owned and operated by Betametrics Pty Ltd, headquartered in Victoria, Australia. 
