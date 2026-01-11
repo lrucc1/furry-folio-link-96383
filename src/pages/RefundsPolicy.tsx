@@ -24,7 +24,7 @@ export default function RefundsPolicy() {
             Our refund policy and Australian Consumer Law guarantees
           </p>
           <p className="text-sm text-muted-foreground mt-2">
-            Last updated: January 2025
+            Last updated: January 2026
           </p>
         </div>
 

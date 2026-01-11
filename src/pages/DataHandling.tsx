@@ -30,7 +30,7 @@ const DataHandling = () => {
               How we handle, protect, and manage your data. PetLinkID is an Australian company committed to privacy standards that meet or exceed Australian and international requirements.
             </p>
             <p className="text-sm text-muted-foreground mt-2">
-              Last updated: 14 October 2025
+              Last updated: January 2026
             </p>
           </div>
         </div>

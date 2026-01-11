@@ -29,7 +29,7 @@ const PrivacyPolicy = () => {
               Your privacy matters to us. Learn how we collect, use, and protect your personal information.
             </p>
             <p className="text-sm text-muted-foreground mt-2">
-              Last updated: 14 October 2025
+              Last updated: January 2026
             </p>
           </div>
         </div>

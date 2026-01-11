@@ -347,7 +347,7 @@ export default function SmartRecoveryTags() {
             </p>
             <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
               <Zap className="w-4 h-4 text-primary" />
-              <span>Expected launch: 2025</span>
+              <span>Expected launch: 2026</span>
             </div>
           </div>
         </div>
