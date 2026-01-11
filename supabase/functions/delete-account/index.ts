@@ -1,11 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST,OPTIONS'
-};
+import { buildCors, isAllowedOrigin } from "../_shared/cors.ts";
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -13,8 +8,20 @@ const logStep = (step: string, details?: any) => {
 };
 
 serve(async (req) => {
+  const corsHeaders = buildCors(req);
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
+  // Validate origin
+  const origin = req.headers.get('origin') ?? '';
+  if (!isAllowedOrigin(origin)) {
+    logStep("ERROR: Forbidden origin", { origin });
+    return new Response(JSON.stringify({ error: "Forbidden" }), {
+      status: 403,
+      headers: corsHeaders,
+    });
   }
 
   try {
@@ -25,7 +32,7 @@ serve(async (req) => {
       logStep("ERROR: No authorization header");
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: corsHeaders,
       });
     }
 
@@ -42,7 +49,7 @@ serve(async (req) => {
       logStep("ERROR: User authentication failed", { error: userError });
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: corsHeaders,
       });
     }
 
@@ -76,7 +83,7 @@ serve(async (req) => {
       logStep("ERROR: Failed to mark account for deletion", { error: softDeleteError });
       return new Response(JSON.stringify({ error: "Failed to schedule account deletion" }), {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: corsHeaders,
       });
     }
 
@@ -87,7 +94,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ status: "deleted" }), {
       status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: corsHeaders,
     });
 
   } catch (error) {
@@ -95,7 +102,7 @@ serve(async (req) => {
     logStep("ERROR in delete-account", { message: errorMessage });
     return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: corsHeaders,
     });
   }
 });

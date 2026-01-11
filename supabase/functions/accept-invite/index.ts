@@ -1,20 +1,27 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { buildCors, isAllowedOrigin } from "../_shared/cors.ts";
 
 const AcceptInviteSchema = z.object({
   token: z.string().min(10, { message: "Invalid token format" }).max(100, { message: "Token too long" })
 });
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
 serve(async (req) => {
+  const corsHeaders = buildCors(req);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders, status: 204 });
+  }
+
+  // Validate origin
+  const origin = req.headers.get('origin') ?? '';
+  if (!isAllowedOrigin(origin)) {
+    return new Response(JSON.stringify({ error: 'Forbidden' }), { 
+      headers: corsHeaders, 
+      status: 403 
+    });
   }
 
   try {
@@ -46,7 +53,7 @@ serve(async (req) => {
       console.error('[accept-invite] Validation error:', errors);
       return new Response(
         JSON.stringify({ error: 'Invalid input data' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        { headers: corsHeaders, status: 400 }
       );
     }
 
@@ -112,14 +119,14 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ ok: true, pet_id: invite.pet_id }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      { headers: corsHeaders, status: 200 }
     );
 
   } catch (error) {
     console.error('Error in accept-invite:', error);
     return new Response(
       JSON.stringify({ error: 'Unable to process invite' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      { headers: corsHeaders, status: 400 }
     );
   }
 });
