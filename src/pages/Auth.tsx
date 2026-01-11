@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
 import { Eye, EyeOff, Loader2, Mail, Fingerprint } from 'lucide-react'
 import { useIsNativeApp } from '@/hooks/useIsNativeApp'
+import { useOAuthCallback } from '@/hooks/useOAuthCallback'
 import { Browser } from '@capacitor/browser'
 
 import { motion } from 'framer-motion'
@@ -68,6 +69,14 @@ const AuthPage = () => {
   const [showBiometricSetup, setShowBiometricSetup] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const biometric = useBiometricAuth()
+  
+  // Handle OAuth cancel detection - reset loading when user closes browser without auth
+  const handleOAuthCancel = useCallback(() => {
+    console.log('[Auth] OAuth cancelled, resetting loading state')
+    setGoogleLoading(false)
+  }, [])
+  
+  const { setBrowserOpen } = useOAuthCallback(handleOAuthCancel)
   
   // Sign In form state
   const [signInEmail, setSignInEmail] = useState('')
@@ -219,6 +228,9 @@ const AuthPage = () => {
         }
 
         if (data?.url) {
+          // Track that we're opening the browser for OAuth
+          setBrowserOpen(true)
+          
           // Open Google sign-in in Safari View Controller
           await Browser.open({ 
             url: data.url,
@@ -227,6 +239,7 @@ const AuthPage = () => {
           })
         }
         // Note: googleLoading stays true until OAuth callback closes the browser
+        // or user cancels (detected via browserFinished event)
       } else {
         // Web: Standard redirect flow
         const { error } = await supabase.auth.signInWithOAuth({
@@ -244,6 +257,7 @@ const AuthPage = () => {
     } catch (error) {
       toast.error('An unexpected error occurred')
       setGoogleLoading(false)
+      setBrowserOpen(false)
     }
   }
 

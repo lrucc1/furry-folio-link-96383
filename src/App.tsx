@@ -71,7 +71,7 @@ function AppContent() {
   const { loading } = useAuth();
   const isNative = useIsNativeApp();
   
-  // Handle OAuth deep link callbacks on iOS
+  // Handle OAuth deep link callbacks on iOS (no cancel handler needed at app level)
   const { isProcessing: isOAuthProcessing } = useOAuthCallback();
 
   // Show loading screen on native while auth initializes or OAuth is processing

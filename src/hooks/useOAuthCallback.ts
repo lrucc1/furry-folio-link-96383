@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { App } from '@capacitor/app';
 import { Browser } from '@capacitor/browser';
@@ -8,10 +8,21 @@ import { Capacitor } from '@capacitor/core';
 /**
  * Hook to handle OAuth callbacks when returning from Google Sign-In on iOS.
  * Listens for deep link URL opens and processes the OAuth code exchange.
+ * Also detects when Safari View Controller is dismissed without completing auth.
  */
-export function useOAuthCallback() {
+export function useOAuthCallback(onCancel?: () => void) {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
+  const browserOpenRef = useRef(false);
+  const authSuccessRef = useRef(false);
+
+  // Function to set browser open state (called from Auth.tsx when opening browser)
+  const setBrowserOpen = useCallback((open: boolean) => {
+    browserOpenRef.current = open;
+    if (open) {
+      authSuccessRef.current = false; // Reset success flag when opening
+    }
+  }, []);
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
@@ -24,6 +35,9 @@ export function useOAuthCallback() {
         return;
       }
 
+      // Mark as success before processing
+      authSuccessRef.current = true;
+      browserOpenRef.current = false;
       setIsProcessing(true);
 
       try {
@@ -82,8 +96,41 @@ export function useOAuthCallback() {
       }
     };
 
+    // Handle when Safari View Controller is dismissed (user tapped Done or closed it)
+    const handleBrowserFinished = async () => {
+      console.log('[OAuth] Browser finished/closed, browserOpen:', browserOpenRef.current, 'authSuccess:', authSuccessRef.current);
+      
+      // Only handle cancel if browser was open and auth wasn't successful
+      if (!browserOpenRef.current) return;
+      
+      browserOpenRef.current = false;
+      
+      // Give a moment for any pending deep link to arrive
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // If auth was successful via deep link, don't trigger cancel
+      if (authSuccessRef.current) {
+        console.log('[OAuth] Auth was successful, not triggering cancel');
+        return;
+      }
+      
+      // Check if we got a session (maybe the deep link arrived)
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        console.log('[OAuth] No session after browser close - user cancelled');
+        onCancel?.();
+      } else {
+        console.log('[OAuth] Session exists after browser close');
+        navigate('/ios-home', { replace: true });
+      }
+    };
+
     // Add listener for deep links
     App.addListener('appUrlOpen', handleAppUrlOpen);
+    
+    // Add listener for browser close/finish
+    Browser.addListener('browserFinished', handleBrowserFinished);
 
     // Also check for pending URL on app resume
     const checkPendingUrl = async () => {
@@ -100,8 +147,9 @@ export function useOAuthCallback() {
 
     return () => {
       App.removeAllListeners();
+      Browser.removeAllListeners();
     };
-  }, [navigate]);
+  }, [navigate, onCancel]);
 
-  return { isProcessing };
+  return { isProcessing, setBrowserOpen };
 }
