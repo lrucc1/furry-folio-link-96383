@@ -9,7 +9,7 @@ import { Capacitor } from '@capacitor/core'
 import { format } from 'date-fns'
 import { supabase } from '@/integrations/supabase/client'
 import QRCode from 'qrcode'
-
+import { useSignedUrl } from '@/hooks/useSignedUrl'
 // Constants
 const WIDTH = 1080
 const HEIGHT = 1920
@@ -251,18 +251,27 @@ export const InstagramShareCard = ({
   const [loadError, setLoadError] = useState(false)
   const [assetsLoaded, setAssetsLoaded] = useState(false)
 
+  // Get signed URL for the pet photo (handles private bucket access)
+  const { url: signedPhotoUrl, loading: signedUrlLoading } = useSignedUrl(petPhoto)
+
   const petAge = dateOfBirth ? calculateAge(dateOfBirth) : null
 
-  // Load assets once when dialog opens
+  // Load assets once when dialog opens and signed URL is ready
   const loadAssets = useCallback(async () => {
-    console.log('[InstagramShare] Loading assets...')
+    // Wait for signed URL to be ready if we have a photo
+    if (petPhoto && signedUrlLoading) {
+      console.log('[InstagramShare] Waiting for signed URL...')
+      return false
+    }
+    
+    console.log('[InstagramShare] Loading assets...', 'signedPhotoUrl:', signedPhotoUrl)
     setGenerating(true)
     setLoadError(false)
     
     try {
-      // Load pet image and QR code in parallel
+      // Load pet image and QR code in parallel - use signed URL instead of raw petPhoto
       const [petImage, qrDataUrl] = await Promise.all([
-        petPhoto ? loadImageWithCORS(petPhoto) : Promise.resolve(null),
+        signedPhotoUrl ? loadImageWithCORS(signedPhotoUrl) : Promise.resolve(null),
         generateQRDataURL(publicUrl)
       ])
       
@@ -284,7 +293,7 @@ export const InstagramShareCard = ({
     } finally {
       setGenerating(false)
     }
-  }, [petPhoto, publicUrl])
+  }, [signedPhotoUrl, signedUrlLoading, petPhoto, publicUrl])
 
   // Draw the base card (everything except shimmer) - cached
   const drawBaseCard = useCallback((ctx: CanvasRenderingContext2D) => {
@@ -802,12 +811,18 @@ export const InstagramShareCard = ({
     generatePreview()
   }, [generatePreview])
 
-  // Handle dialog open/close
+  // Handle dialog open/close and signed URL readiness
   useEffect(() => {
     if (!isOpen) {
       stopShimmerAnimation()
       setAssetsLoaded(false)
       cachedAssetsRef.current = { petImage: null, qrImage: null, baseCardImageData: null }
+      return
+    }
+    
+    // Don't load assets if we're still waiting for signed URL
+    if (petPhoto && signedUrlLoading) {
+      console.log('[InstagramShare] Dialog open, waiting for signed URL...')
       return
     }
     
@@ -827,7 +842,7 @@ export const InstagramShareCard = ({
       clearTimeout(timeoutId)
       stopShimmerAnimation()
     }
-  }, [isOpen, loadAssets, generateCard, startShimmerAnimation, stopShimmerAnimation])
+  }, [isOpen, loadAssets, generateCard, startShimmerAnimation, stopShimmerAnimation, petPhoto, signedUrlLoading])
 
   // Retry handler
   const handleRetry = async () => {
