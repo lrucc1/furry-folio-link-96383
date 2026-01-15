@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback,
 import { supabase } from '@/integrations/supabase/client';
 import { computeEffectiveTier, Tier, PlanSource, ProfilePlanData } from './effectivePlan';
 import { useAuth } from '@/contexts/AuthContext';
+import { log } from '@/lib/log';
 
 interface PlanContextValue {
   tier: Tier;
@@ -26,7 +27,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
 
   const fetchProfile = useCallback(async (force = false) => {
     if (!user?.id) {
-      console.log('[PlanContext] No user, setting defaults');
+      log.debug('[PlanContext] No user, setting defaults');
       setTier('free');
       setSource('system');
       setProfile(null);
@@ -36,11 +37,11 @@ export function PlanProvider({ children }: { children: ReactNode }) {
 
     // Check cache
     if (!force && cacheRef.current && Date.now() - cacheRef.current.timestamp < CACHE_DURATION) {
-      console.log('[PlanContext] Using cached data, tier:', cacheRef.current.data?.plan_v2);
+      log.debug('[PlanContext] Using cached plan data');
       return;
     }
 
-    console.log('[PlanContext] Fetching profile for user:', user.id);
+    log.debug('[PlanContext] Fetching profile for user');
 
     try {
       const { data, error } = await supabase
@@ -49,10 +50,8 @@ export function PlanProvider({ children }: { children: ReactNode }) {
         .eq('id', user.id)
         .maybeSingle();
 
-      console.log('[PlanContext] Profile query result:', { data, error: error?.message });
-
       if (error) {
-        console.error('[PlanContext] Error fetching profile:', error);
+        log.error('[PlanContext] Error fetching profile:', error);
         setTier('free');
         setSource('system');
         setProfile(null);
@@ -66,20 +65,20 @@ export function PlanProvider({ children }: { children: ReactNode }) {
         };
         
         const computedTier = computeEffectiveTier(profileData);
-        console.log('[PlanContext] Computed tier:', computedTier, 'from profile:', profileData);
+        log.debug('[PlanContext] Computed tier from profile');
         
         cacheRef.current = { data: profileData, timestamp: Date.now() };
         setProfile(profileData);
         setTier(computedTier);
         setSource((data.plan_source as PlanSource) || 'system');
       } else {
-        console.log('[PlanContext] No profile found, using defaults');
+        log.debug('[PlanContext] No profile found, using defaults');
         setTier('free');
         setSource('system');
         setProfile(null);
       }
     } catch (err) {
-      console.error('[PlanContext] Exception fetching profile:', err);
+      log.error('[PlanContext] Exception fetching profile:', err);
       setTier('free');
       setSource('system');
       setProfile(null);
@@ -155,7 +154,7 @@ export function usePlan() {
   if (context === undefined) {
     // Return safe defaults during HMR or if used outside provider
     // This prevents crashes during hot reload
-    console.warn('[usePlan] Context unavailable, using defaults');
+    log.warn('[usePlan] Context unavailable, using defaults');
     return DEFAULT_PLAN_CONTEXT;
   }
   return context;

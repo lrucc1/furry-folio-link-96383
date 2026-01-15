@@ -1,6 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications, Token, PushNotificationSchema, ActionPerformed } from '@capacitor/push-notifications';
 import { supabase } from '@/integrations/supabase/client';
+import { log } from '@/lib/log';
 
 export interface PushNotificationState {
   isSupported: boolean;
@@ -20,7 +21,7 @@ export const isPushSupported = (): boolean => {
  */
 export const requestPermission = async (): Promise<boolean> => {
   if (!isPushSupported()) {
-    console.log('Push notifications not supported on this platform');
+    log.debug('Push notifications not supported on this platform');
     return false;
   }
 
@@ -34,7 +35,7 @@ export const requestPermission = async (): Promise<boolean> => {
     
     return permStatus.receive === 'granted';
   } catch (error) {
-    console.error('Error requesting push permission:', error);
+    log.error('Error requesting push permission:', error);
     return false;
   }
 };
@@ -50,7 +51,7 @@ export const registerForPush = async (): Promise<string | null> => {
   try {
     const hasPermission = await requestPermission();
     if (!hasPermission) {
-      console.log('Push notification permission denied');
+      log.debug('Push notification permission denied');
       return null;
     }
 
@@ -60,17 +61,17 @@ export const registerForPush = async (): Promise<string | null> => {
     // Return a promise that resolves with the token
     return new Promise((resolve) => {
       PushNotifications.addListener('registration', (token: Token) => {
-        console.log('Push registration success');
+        log.debug('Push registration success');
         resolve(token.value);
       });
 
       PushNotifications.addListener('registrationError', (error) => {
-        console.error('Push registration error:', error);
+        log.error('Push registration error:', error);
         resolve(null);
       });
     });
   } catch (error) {
-    console.error('Error registering for push:', error);
+    log.error('Error registering for push:', error);
     return null;
   }
 };
@@ -93,13 +94,13 @@ export const saveDeviceToken = async (token: string, userId: string): Promise<bo
       });
 
     if (error) {
-      console.error('Error saving device token:', error);
+      log.error('Error saving device token:', error);
       return false;
     }
 
     return true;
   } catch (error) {
-    console.error('Error saving device token:', error);
+    log.error('Error saving device token:', error);
     return false;
   }
 };
@@ -115,13 +116,13 @@ export const removeDeviceToken = async (token: string): Promise<boolean> => {
       .eq('token', token);
 
     if (error) {
-      console.error('Error removing device token:', error);
+      log.error('Error removing device token:', error);
       return false;
     }
 
     return true;
   } catch (error) {
-    console.error('Error removing device token:', error);
+    log.error('Error removing device token:', error);
     return false;
   }
 };
@@ -141,7 +142,7 @@ export const setupPushListeners = (
   const receivedListener = PushNotifications.addListener(
     'pushNotificationReceived',
     (notification: PushNotificationSchema) => {
-      console.log('Push notification received:', notification);
+      log.debug('Push notification received');
       onNotificationReceived?.(notification);
     }
   );
@@ -150,7 +151,7 @@ export const setupPushListeners = (
   const actionListener = PushNotifications.addListener(
     'pushNotificationActionPerformed',
     (action: ActionPerformed) => {
-      console.log('Push notification action performed:', action);
+      log.debug('Push notification action performed');
       onNotificationAction?.(action);
     }
   );
@@ -177,7 +178,7 @@ export const getPermissionStatus = async (): Promise<'granted' | 'denied' | 'pro
     if (status.receive === 'denied') return 'denied';
     return 'prompt';
   } catch (error) {
-    console.error('Error checking push permission:', error);
+    log.error('Error checking push permission:', error);
     return 'denied';
   }
 };

@@ -3,17 +3,17 @@ import { readFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 
 const REQUIRED_ENV = [
-  'SUPABASE_URL',
-  'SUPABASE_ANON_KEY',
-  'TEST_USER_EMAIL',
-  'TEST_USER_PASSWORD',
-  'ALT_TEST_USER_EMAIL',
-  'ALT_TEST_USER_PASSWORD',
+  { primary: 'VITE_SUPABASE_URL', fallback: 'SUPABASE_URL' },
+  { primary: 'VITE_SUPABASE_PUBLISHABLE_KEY', fallback: 'SUPABASE_ANON_KEY' },
+  { primary: 'TEST_USER_EMAIL' },
+  { primary: 'TEST_USER_PASSWORD' },
+  { primary: 'ALT_TEST_USER_EMAIL' },
+  { primary: 'ALT_TEST_USER_PASSWORD' },
 ];
 
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY;
 const {
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY,
   TEST_USER_EMAIL,
   TEST_USER_PASSWORD,
   ALT_TEST_USER_EMAIL,
@@ -21,7 +21,7 @@ const {
   PUBLIC_PET_TOKEN,
 } = process.env;
 
-const makeClient = () => createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+const makeClient = () => createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
 });
 
@@ -64,7 +64,12 @@ const run = async () => {
   runSecurityLint();
   assertSupabaseStorageConfig();
 
-  const missing = REQUIRED_ENV.filter((key) => !process.env[key]);
+  const missing = REQUIRED_ENV.filter(({ primary, fallback }) => {
+    if (process.env[primary]) return false;
+    if (fallback && process.env[fallback]) return false;
+    return true;
+  }).map(({ primary, fallback }) => (fallback ? `${primary} (or ${fallback})` : primary));
+
   if (missing.length) {
     console.warn(`[security-regression] Missing env vars: ${missing.join(', ')}. Skipping live Supabase checks.`);
     return;

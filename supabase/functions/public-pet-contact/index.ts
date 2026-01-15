@@ -89,8 +89,7 @@ serve(async (req) => {
 
     const { public_token } = validation.data;
 
-    // Log lookup for audit purposes
-    console.log(`[public-pet-contact] Lookup request for token: ${public_token.substring(0, 8)}... from IP: ${clientIp}`);
+    console.log('[public-pet-contact] Lookup request received');
 
     // Fetch pet by public_id
     const { data: pet, error: petError } = await supabase

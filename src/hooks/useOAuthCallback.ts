@@ -4,6 +4,7 @@ import { App } from '@capacitor/app';
 import { Browser } from '@capacitor/browser';
 import { supabase } from '@/integrations/supabase/client';
 import { Capacitor } from '@capacitor/core';
+import { log } from '@/lib/log';
 
 /**
  * Hook to handle OAuth callbacks when returning from Google Sign-In on iOS.
@@ -28,7 +29,7 @@ export function useOAuthCallback(onCancel?: () => void) {
     if (!Capacitor.isNativePlatform()) return;
 
     const handleAppUrlOpen = async ({ url }: { url: string }) => {
-      console.log('[OAuth] App URL opened:', url);
+      log.debug('[OAuth] App URL opened');
       
       // Check if this is an OAuth callback
       if (!url.includes('auth/callback') && !url.includes('access_token') && !url.includes('code=')) {
@@ -62,11 +63,11 @@ export function useOAuthCallback(onCancel?: () => void) {
             });
             
             if (!error) {
-              console.log('[OAuth] Session set successfully from hash tokens');
+              log.debug('[OAuth] Session set successfully from hash tokens');
               navigate('/ios-home', { replace: true });
               return;
             }
-            console.error('[OAuth] Error setting session:', error);
+            log.error('[OAuth] Error setting session:', error);
           }
         }
 
@@ -76,21 +77,21 @@ export function useOAuthCallback(onCancel?: () => void) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           
           if (!error) {
-            console.log('[OAuth] Session established via code exchange');
+            log.debug('[OAuth] Session established via code exchange');
             navigate('/ios-home', { replace: true });
             return;
           }
-          console.error('[OAuth] Error exchanging code:', error);
+          log.error('[OAuth] Error exchanging code:', error);
         }
 
         // If we get here, check if we already have a session (callback might have set it)
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          console.log('[OAuth] Session already exists, navigating to home');
+          log.debug('[OAuth] Session already exists, navigating to home');
           navigate('/ios-home', { replace: true });
         }
       } catch (error) {
-        console.error('[OAuth] Error processing callback:', error);
+        log.error('[OAuth] Error processing callback:', error);
       } finally {
         setIsProcessing(false);
       }
@@ -98,7 +99,10 @@ export function useOAuthCallback(onCancel?: () => void) {
 
     // Handle when Safari View Controller is dismissed (user tapped Done or closed it)
     const handleBrowserFinished = async () => {
-      console.log('[OAuth] Browser finished/closed, browserOpen:', browserOpenRef.current, 'authSuccess:', authSuccessRef.current);
+      log.debug('[OAuth] Browser finished/closed', {
+        browserOpen: browserOpenRef.current,
+        authSuccess: authSuccessRef.current,
+      });
       
       // Only handle cancel if browser was open and auth wasn't successful
       if (!browserOpenRef.current) return;
@@ -110,7 +114,7 @@ export function useOAuthCallback(onCancel?: () => void) {
       
       // If auth was successful via deep link, don't trigger cancel
       if (authSuccessRef.current) {
-        console.log('[OAuth] Auth was successful, not triggering cancel');
+        log.debug('[OAuth] Auth was successful, not triggering cancel');
         return;
       }
       
@@ -118,10 +122,10 @@ export function useOAuthCallback(onCancel?: () => void) {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        console.log('[OAuth] No session after browser close - user cancelled');
+        log.debug('[OAuth] No session after browser close - user cancelled');
         onCancel?.();
       } else {
-        console.log('[OAuth] Session exists after browser close');
+        log.debug('[OAuth] Session exists after browser close');
         navigate('/ios-home', { replace: true });
       }
     };

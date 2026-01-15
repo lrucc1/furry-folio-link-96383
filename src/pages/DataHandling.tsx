@@ -17,7 +17,6 @@ const DataHandling = () => {
             </Link>
           </Button>
           
-          {/* TODO: Add GDPR compliance section for EU users, CCPA section for California users */}
           <div className="text-center mb-12">
             <Badge className="bg-primary/10 text-primary border-primary/20 mb-4">
               <Shield className="w-3 h-3 mr-1" />

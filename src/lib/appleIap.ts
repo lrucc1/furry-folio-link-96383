@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { checkForceIOS } from './platformUtils';
 import { invokeWithAuth } from './invokeWithAuth';
+import { log } from '@/lib/log';
 
 export type BillingPeriod = 'monthly' | 'yearly';
 export type PlanKey = 'PRO';
@@ -131,7 +132,7 @@ async function syncReceiptWithBackend(transaction?: any, fallbackProductId?: str
  */
 export async function initializeStore(): Promise<boolean> {
   if (!isAppleIAPAvailable()) {
-    console.warn('[AppleIAP] Not available on this platform');
+    log.warn('[AppleIAP] Not available on this platform');
     return false;
   }
 
@@ -143,7 +144,7 @@ export async function initializeStore(): Promise<boolean> {
 
   const store = getStore();
   if (!store) {
-    console.error('[AppleIAP] Store not available - cordova-plugin-purchase not loaded');
+    log.error('[AppleIAP] Store not available - cordova-plugin-purchase not loaded');
     productConfigurationError = 'In-app purchases are unavailable. Please reinstall from the App Store.';
     toast.error(productConfigurationError);
     return false;
@@ -170,24 +171,24 @@ export async function initializeStore(): Promise<boolean> {
 
     // Handle approved transactions
     store.when().approved(async (transaction: any) => {
-      console.log('[AppleIAP] Transaction approved:', transaction.id);
+      log.debug('[AppleIAP] Transaction approved');
       try {
         await syncReceiptWithBackend(transaction);
         toast.success('Purchase verified!');
       } catch (error) {
-        console.error('[AppleIAP] Failed to sync receipt:', error);
+        log.error('[AppleIAP] Failed to sync receipt:', error);
         toast.error('Could not validate your purchase. Please contact support.');
       }
       transaction.finish();
     });
 
     store.when().verified((receipt: any) => {
-      console.log('[AppleIAP] Receipt verified');
+      log.debug('[AppleIAP] Receipt verified');
       receipt.finish();
     });
 
     store.error((error: any) => {
-      console.error('[AppleIAP] Store error:', error);
+      log.error('[AppleIAP] Store error:', error);
       toast.error('Purchase error: ' + (error.message || 'Unknown error'));
     });
 
@@ -206,10 +207,10 @@ export async function initializeStore(): Promise<boolean> {
     }
 
     isInitialized = true;
-    console.log('[AppleIAP] Store initialized');
+    log.debug('[AppleIAP] Store initialized');
     return true;
   } catch (error) {
-    console.error('[AppleIAP] Failed to initialize:', error);
+    log.error('[AppleIAP] Failed to initialize:', error);
     return false;
   }
 }
@@ -316,7 +317,7 @@ export async function restorePurchases(): Promise<boolean> {
         toast.success('Subscription restored!');
         return true;
       } catch (error) {
-        console.error('[AppleIAP] Failed to sync restored receipt:', error);
+        log.error('[AppleIAP] Failed to sync restored receipt:', error);
         toast.error('Failed to validate restored purchases');
         return false;
       }
@@ -325,7 +326,7 @@ export async function restorePurchases(): Promise<boolean> {
       return false;
     }
   } catch (error: any) {
-    console.error('[AppleIAP] Restore failed:', error);
+    log.error('[AppleIAP] Restore failed:', error);
     toast.error('Failed to restore purchases');
     return false;
   }

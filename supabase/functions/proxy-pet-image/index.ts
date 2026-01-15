@@ -45,7 +45,7 @@ serve(async (req) => {
     // Support both legacy 'url' parameter and new 'storagePath' parameter
     const inputPath = storagePath || url;
     
-    console.log('[proxy-pet-image] Received request for:', inputPath)
+    console.log('[proxy-pet-image] Received proxy request')
     
     if (!inputPath || typeof inputPath !== 'string') {
       console.error('[proxy-pet-image] Invalid input: missing or not a string')
@@ -66,7 +66,7 @@ serve(async (req) => {
       )
     }
 
-    console.log('[proxy-pet-image] Using storage path:', actualPath)
+    console.log('[proxy-pet-image] Resolved storage path')
 
     // Create Supabase client with service role for private bucket access
     const supabase = createClient(
@@ -114,7 +114,7 @@ serve(async (req) => {
     }
     const base64 = btoa(binary)
     
-    console.log('[proxy-pet-image] Successfully converted image to base64, size:', base64.length)
+    console.log('[proxy-pet-image] Successfully converted image to base64')
 
     return new Response(
       JSON.stringify({ 

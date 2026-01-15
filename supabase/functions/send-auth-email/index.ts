@@ -77,7 +77,7 @@ serve(async (req: Request) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? site_url;
     const confirmationUrl = buildConfirmationUrl(supabaseUrl, token_hash, email_action_type, redirect_to);
 
-    console.log(`Processing ${email_action_type} email for ${user.email}`);
+    console.log(`Processing ${email_action_type} auth email`);
 
     let html: string;
     
@@ -114,7 +114,7 @@ serve(async (req: Request) => {
       throw error;
     }
 
-    console.log(`Successfully sent ${email_action_type} email to ${user.email}`);
+    console.log(`Successfully sent ${email_action_type} auth email`);
     
     return new Response(JSON.stringify({}), {
       status: 200,

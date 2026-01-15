@@ -52,7 +52,6 @@ export function useEffectivePlan() {
           filter: `id=eq.${user.id}`
         },
         (payload) => {
-          console.log('[useEffectivePlan] Profile updated:', payload);
           const newProfile = payload.new;
           setTier(computeEffectiveTier(newProfile));
           setSource((newProfile.plan_source as PlanSource) || 'system');

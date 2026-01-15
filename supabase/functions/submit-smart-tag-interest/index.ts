@@ -88,8 +88,7 @@ serve(async (req) => {
 
     const { email, name, likelihood, features, comments } = validation.data;
 
-    // Log submission for audit purposes (without sensitive data)
-    console.log(`[submit-smart-tag-interest] New submission from IP: ${clientIp}`);
+    console.log('[submit-smart-tag-interest] New smart tag interest submission received');
 
     // Use service role to bypass RLS for insert
     const supabase = createClient(

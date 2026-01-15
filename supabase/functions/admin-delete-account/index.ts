@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
       return json(req, { error: 'user_id is required' }, 400);
     }
 
-    console.log(`[admin-delete-account] Admin ${user.id} deleting account ${user_id} (immediate: ${immediate})`);
+    console.log(`[admin-delete-account] Admin deleting account (immediate: ${immediate})`);
 
     const adminClient = makeServiceClient();
 

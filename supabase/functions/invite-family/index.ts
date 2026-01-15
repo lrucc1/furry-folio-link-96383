@@ -246,7 +246,7 @@ serve(async (req) => {
         html: emailHtml,
       });
 
-      console.log('[invite-family] Email sent successfully:', emailResponse);
+      console.log('[invite-family] Email sent successfully');
     } catch (emailError) {
       // Log error but don't fail the invite - user can still use the link
       console.error('[invite-family] Failed to send email:', emailError);

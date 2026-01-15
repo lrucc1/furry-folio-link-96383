@@ -28,7 +28,6 @@ export default function RefundsPolicy() {
           </p>
         </div>
 
-        {/* TODO: Add section for EU (GDPR) and US (state-specific) consumer rights for international users */}
         <div className="space-y-6">
           <Card className="border-muted bg-muted/20">
             <CardContent className="py-4">

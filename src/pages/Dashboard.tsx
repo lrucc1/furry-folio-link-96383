@@ -18,6 +18,7 @@ import { au } from '@/lib/auEnglish'
 import { toast } from 'sonner'
 import { useAutoTimezone } from '@/hooks/useAutoTimezone'
 import { useIsNativeApp } from '@/hooks/useIsNativeApp'
+import { log } from '@/lib/log'
 
 interface Pet {
   id: string
@@ -80,11 +81,11 @@ const Dashboard = () => {
 
   const fetchPets = async () => {
     if (!user) {
-      console.log('[Dashboard] fetchPets: No user, skipping');
+      log.debug('[Dashboard] fetchPets: No user, skipping');
       return;
     }
 
-    console.log('[Dashboard] fetchPets: Starting fetch for user:', user.id);
+    log.debug('[Dashboard] fetchPets: Starting fetch');
 
     try {
       // Fetch pets owned by user with limit
@@ -94,12 +95,6 @@ const Dashboard = () => {
         .eq('user_id', user.id)
         .limit(100)
 
-      console.log('[Dashboard] Owned pets query result:', {
-        count: ownedPets?.length ?? 0,
-        pets: ownedPets?.map(p => ({ id: p.id, name: p.name })),
-        error: ownedError
-      });
-
       if (ownedError) throw ownedError
 
       // Fetch shared pet IDs via memberships with limit
@@ -108,12 +103,6 @@ const Dashboard = () => {
         .select('pet_id')
         .eq('user_id', user.id)
         .limit(100)
-
-      console.log('[Dashboard] Memberships query result:', {
-        count: memberships?.length ?? 0,
-        petIds: memberships?.map(m => m.pet_id),
-        error: membershipError
-      });
 
       if (membershipError) throw membershipError
 
@@ -127,12 +116,6 @@ const Dashboard = () => {
           .in('id', petIds)
           .limit(100)
 
-        console.log('[Dashboard] Shared pets query result:', {
-          count: sharedPetsData?.length ?? 0,
-          pets: sharedPetsData?.map(p => ({ id: p.id, name: p.name })),
-          error: sharedError
-        });
-
         if (sharedError) throw sharedError
         sharedPets = sharedPetsData || []
       }
@@ -141,14 +124,9 @@ const Dashboard = () => {
       const allPets = [...(ownedPets || []), ...sharedPets]
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
-      console.log('[Dashboard] Final pets array:', {
-        totalCount: allPets.length,
-        pets: allPets.map(p => ({ id: p.id, name: p.name }))
-      });
-
       setPets(allPets)
     } catch (error) {
-      console.error('[Dashboard] fetchPets error:', error);
+      log.error('[Dashboard] fetchPets error:', error);
     } finally {
       setLoading(false)
     }

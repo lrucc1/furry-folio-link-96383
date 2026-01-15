@@ -5,12 +5,26 @@ const config: CapacitorConfig = {
   appName: 'PetLinkID',
   webDir: 'dist',
   ios: {
-    contentInset: 'automatic',
+    contentInset: 'never',
     scrollEnabled: true,
+    backgroundColor: '#2E9B8D',
   },
   android: {
     allowMixedContent: false,
     captureInput: true,
+  },
+  plugins: {
+    SplashScreen: {
+      launchShowDuration: 2000,
+      launchAutoHide: true,
+      backgroundColor: '#0f172a',
+      showSpinner: false,
+      splashFullScreen: true,
+      splashImmersive: true,
+    },
+    PushNotifications: {
+      presentationOptions: ['badge', 'sound', 'alert'],
+    },
   },
 };
 

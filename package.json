@@ -10,9 +10,12 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test:security": "node scripts/security-regression.mjs",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit",
+    "validate:env": "node scripts/validate-env.mjs",
     "ios:assets": "node scripts/generate-ios-assets.mjs",
     "ios:open": "npm run build && npm run ios:assets && npx cap sync ios && npx cap open ios",
-    "cap:sync": "npm run build && npm run ios:assets && npx cap sync"
+    "cap:sync": "npm run build && npm run ios:assets && npx cap sync",
+    "release:verify": "npm run lint && npm run typecheck && npm run test:security && npm run build && npm run ios:assets && npx cap sync ios && npm run validate:env -- --env=production"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
@@ -28,7 +31,6 @@
     "@capacitor/preferences": "^7.0.2",
     "@capacitor/push-notifications": "^7.0.3",
     "@capacitor/share": "^7.0.3",
-    "@capgo/capacitor-social-login": "^7.20.0",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -61,8 +63,6 @@
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/supabase-js": "^2.58.0",
     "@tanstack/react-query": "^5.83.0",
-    "@types/google.maps": "^3.58.1",
-    "@types/qrcode": "^1.5.6",
     "capacitor-native-biometric": "^4.2.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -94,7 +94,9 @@
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@tailwindcss/typography": "^0.5.16",
+    "@types/google.maps": "^3.58.1",
     "@types/node": "^22.16.5",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react-swc": "^3.11.0",

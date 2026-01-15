@@ -75,7 +75,7 @@ serve(async (req) => {
 
     const userId = userData.user.id;
     const userEmail = userData.user.email;
-    logStep("User authenticated", { userId });
+    logStep("User authenticated");
 
     // Prepare export data
     const exportData: any = {

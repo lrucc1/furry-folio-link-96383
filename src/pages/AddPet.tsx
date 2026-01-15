@@ -20,14 +20,9 @@ import { ArrowLeft, MapPin } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { au } from '@/lib/auEnglish'
 import { z } from 'zod'
+import { log } from '@/lib/log'
 
-const AddPet = () => {
-  const isNative = useIsNativeApp();
-  
-  // Return iOS version for native apps
-  if (isNative) {
-    return <IOSAddPet />;
-  }
+const AddPetWeb = () => {
   const { user } = useAuth()
   const { plan, usage, entitlement } = usePlanV2()
   const navigate = useNavigate()
@@ -82,15 +77,11 @@ const AddPet = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user) {
-      console.error('[AddPet] No user found')
+      log.error('[AddPet] No user found')
       return
     }
 
-    console.log('[AddPet] Starting pet submission', {
-      user: user.id,
-      plan,
-      currentPets: usage.pets_count,
-    })
+    log.debug('[AddPet] Starting pet submission')
 
     // Validate inputs before any backend calls
     const validation = PetSchema.safeParse(formData)
@@ -108,15 +99,15 @@ const AddPet = () => {
     const service = EntitlementServiceV2.getInstance()
     const check = await service.checkEntitlement(user.id, 'pets_max', 1)
 
-    console.log('[AddPet] Entitlement check result:', check)
+    log.debug('[AddPet] Entitlement check completed')
 
     if (!check.allowed) {
       const maxPetsAllowed = entitlement?.pets_max
       if (maxPetsAllowed !== null && usage.pets_count < maxPetsAllowed) {
         // Allow refill when usage indicates available slots
-        console.warn('[AddPet] Entitlement denied but usage indicates available pet slot. Allowing add.');
+        log.warn('[AddPet] Entitlement denied but usage indicates available pet slot. Allowing add.');
       } else {
-        console.error('[AddPet] Pet limit reached', { check, maxPetsAllowed, currentCount: usage.pets_count })
+        log.warn('[AddPet] Pet limit reached')
         setShowPaywall(true)
         toast({
           title: au("Pet limit reached"),
@@ -151,30 +142,23 @@ const AddPet = () => {
         notes: formData.notes || null,
       }
 
-      console.log('[AddPet] Calling create-pet edge function')
+      log.debug('[AddPet] Calling create-pet edge function')
 
       const { data, error } = await supabase.functions.invoke('create-pet', {
         body: payload,
       })
 
-      console.log('[AddPet] Edge function response:', { data, error })
-
       if (error) {
         const err: any = error
-        console.error('[AddPet] Edge function error:', err)
-        if (err?.context) console.error('[AddPet] Error context:', err.context)
+        log.error('[AddPet] Edge function error:', err)
         const msg = err?.message || err?.context?.message || err?.context?.error || 'Failed to add pet'
         throw new Error(msg)
       }
 
       if (!data?.id) {
-        console.error('[AddPet] No pet ID returned from function')
+        log.error('[AddPet] No pet ID returned from function')
         throw new Error('Pet was not created - no ID returned')
       }
-
-      console.log('[AddPet] Pet created successfully with ID:', data.id)
-
-      console.log('[AddPet] Pet added successfully:', data?.id)
 
       toast({
         title: au("Pet added successfully!"),
@@ -183,7 +167,7 @@ const AddPet = () => {
 
       navigate('/dashboard')
     } catch (error) {
-      console.error('[AddPet] Error adding pet:', error)
+      log.error('[AddPet] Error adding pet:', error)
       toast({
         title: au("Error"),
         description: error instanceof Error ? error.message : au("Failed to add pet. Please try again."),
@@ -485,6 +469,12 @@ const AddPet = () => {
       </main>
     </div>
   )
+}
+
+const AddPet = () => {
+  const isNative = useIsNativeApp()
+
+  return isNative ? <IOSAddPet /> : <AddPetWeb />
 }
 
 export default AddPet

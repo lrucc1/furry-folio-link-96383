@@ -162,32 +162,32 @@ VITE_PRO_DOCS_STORAGE_MB=5000
 - [x] Feature guard on AddPet
 - [x] Remove Stripe integration
 
-### Phase 2: Feature Gating (TODO)
+### Phase 2: Feature Gating
 - [ ] Add feature guards to Health Reminders
 - [ ] Add storage checks to Document uploads
 - [ ] Add export gate to Data Export
 - [ ] Add caregiver role checks
 - [ ] Comprehensive entitlement middleware
 
-### Phase 3: Notifications & Emails (TODO)
+### Phase 3: Notifications & Emails
 - [ ] Set up Resend integration
 - [ ] Email templates (trial, payment, cancel)
 - [ ] Cron job for trial notifications
 - [ ] In-app notification system enhancements
 
-### Phase 4: Analytics (TODO)
+### Phase 4: Analytics
 - [ ] Instrument all conversion events
 - [ ] Dashboard for plan metrics
 - [ ] A/B testing framework
 - [ ] Conversion funnel tracking
 
-### Phase 5: Admin Tools (TODO)
+### Phase 5: Admin Tools
 - [ ] Admin plan override UI
 - [ ] View user plan history
 - [ ] Manual trial extensions
 - [ ] Resend notification buttons
 
-### Phase 6: Testing & QA (TODO)
+### Phase 6: Testing & QA
 - [ ] Unit tests for EntitlementServiceV2
 - [ ] E2E tests for Apple IAP flow
 - [ ] E2E tests for trial → downgrade flow

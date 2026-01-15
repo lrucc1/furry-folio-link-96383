@@ -106,7 +106,7 @@ npx cap sync ios
    - Usage: `node scripts/dead-code-report.mjs`
    - Output: `reports/dead-code-candidates.{csv,json}`
 
-2. **`validate-env.ts`**
+2. **`validate-env.mjs`**
    - Status: ✅ Active and functional
    - Purpose: Validate environment variables before deployment
    - Critical: Prevents production deployments with test Stripe keys

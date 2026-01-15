@@ -62,7 +62,7 @@ serve(async (req) => {
     if (userError) throw new Error(`Authentication error: ${userError.message}`);
     const requester = userData.user;
     if (!requester?.id) throw new Error("User not authenticated");
-    logStep("Requester authenticated", { userId: requester.id });
+    logStep("Requester authenticated");
 
     // Check if requester is admin using the secure has_role function
     const { data: isAdmin, error: roleCheckError } = await supabaseAdmin
@@ -104,7 +104,7 @@ serve(async (req) => {
 
     const { target_user_id, new_tier, expires_at, note } = validation.data;
 
-    logStep("Updating target user plan", { target_user_id, new_tier });
+    logStep("Updating target user plan", { new_tier });
 
     // Update target user's profile
     const { error: updateError } = await supabaseAdmin

@@ -27,6 +27,7 @@ import { useIsNativeApp } from '@/hooks/useIsNativeApp'
 import { MobileCard } from '@/components/ios/MobileCard'
 import { SwipeableItem } from '@/components/ios/SwipeableItem'
 import { PetAvatarLarge } from '@/components/PetAvatar'
+import { log } from '@/lib/log'
 
 interface Pet {
   id: string
@@ -119,7 +120,7 @@ const PetDetails = () => {
         }
       }
     } catch (error) {
-      console.error('Error fetching pet details:', error)
+      log.error('Error fetching pet details:', error)
       navigate('/dashboard')
     } finally {
       setLoading(false)
@@ -139,7 +140,7 @@ const PetDetails = () => {
       if (error) throw error
       setVaccinations(data || [])
     } catch (error) {
-      console.error('Error fetching vaccinations:', error)
+      log.error('Error fetching vaccinations:', error)
     }
   }, [id])
 
@@ -156,7 +157,7 @@ const PetDetails = () => {
       if (error) throw error
       setHealthReminders(data || [])
     } catch (error) {
-      console.error('Error fetching health reminders:', error)
+      log.error('Error fetching health reminders:', error)
     }
   }, [id])
 
@@ -213,7 +214,7 @@ const PetDetails = () => {
       setHealthReminders(healthReminders.map(r => 
         r.id === reminderId ? { ...r, completed: currentStatus } : r
       ));
-      console.error('Error updating reminder:', error)
+      log.error('Error updating reminder:', error)
       toast({
         title: "Error",
         description: "Failed to update reminder",
@@ -237,7 +238,7 @@ const PetDetails = () => {
         title: "Reminder deleted",
       })
     } catch (error) {
-      console.error('Error deleting reminder:', error)
+      log.error('Error deleting reminder:', error)
       toast({
         title: "Error",
         description: "Failed to delete reminder",
@@ -261,7 +262,7 @@ const PetDetails = () => {
         title: "Vaccination deleted",
       })
     } catch (error) {
-      console.error('Error deleting vaccination:', error)
+      log.error('Error deleting vaccination:', error)
       toast({
         title: "Error",
         description: "Failed to delete vaccination",
@@ -300,7 +301,7 @@ const PetDetails = () => {
           : `${pet.name} has been marked as lost. Share the recovery link to help bring them home.`,
       })
     } catch (error) {
-      console.error('Error toggling lost status:', error)
+      log.error('Error toggling lost status:', error)
       toast({
         title: "Error",
         description: "Failed to update pet status. Please try again.",
@@ -324,7 +325,7 @@ const PetDetails = () => {
           url: url,
         })
       } catch (error) {
-        console.log('Error sharing:', error)
+        log.error('Error sharing:', error)
       }
     } else {
       navigator.clipboard.writeText(url)

@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
       return json(req, { error: 'Pet creation failed' }, 500)
     }
 
-    console.log('[create-pet] Success - pet ID:', data.id)
+    console.log('[create-pet] Success')
     return json(req, { id: data.id }, 201)
   } catch (error) {
     console.error('[create-pet] Unexpected error:', error)

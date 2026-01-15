@@ -62,17 +62,10 @@ serve(async (req) => {
         });
 
       if (notifError) {
-        logStep("Error creating notification", { userId: user.id, error: notifError });
+        logStep("Error creating notification", { error: notifError });
       } else {
-        logStep("Notification created", { userId: user.id });
+        logStep("Notification created");
       }
-
-      // TODO: Send email notification via Resend
-      // For now, just log that we would send an email
-      logStep("Would send trial ending email", { 
-        userId: user.id,
-        trialEnd: user.trial_end_at 
-      });
     }
 
     // Find users whose trial has just expired (within last hour)
@@ -100,9 +93,9 @@ serve(async (req) => {
           .eq('id', user.id);
 
         if (updateError) {
-          logStep("Error downgrading user", { userId: user.id, error: updateError });
+          logStep("Error downgrading user", { error: updateError });
         } else {
-          logStep("User downgraded to FREE", { userId: user.id });
+          logStep("User downgraded to FREE");
 
           // Send downgrade notification
           await supabaseClient
@@ -114,9 +107,7 @@ serve(async (req) => {
               message: 'Your Pro trial has ended. You can still use PetLinkID with 1 pet, 2 reminders, and basic features. Upgrade anytime!',
             });
 
-          logStep("Would send trial ended email", { 
-            userId: user.id
-          });
+          logStep("Trial ended notification sent");
         }
       }
     }

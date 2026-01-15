@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useIsNativeApp } from '@/hooks/useIsNativeApp';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
+import { log } from '@/lib/log';
 
 interface SettingsRowProps {
   icon: React.ReactNode;
@@ -114,19 +115,18 @@ export default function IOSSettings() {
 
   // Debug logging for plan status
   useEffect(() => {
-    console.log('[IOSSettings] Current tier:', tier);
-    console.log('[IOSSettings] Plan profile:', planProfile);
+    log.debug('[IOSSettings] Current tier resolved');
   }, [tier, planProfile]);
 
   const handleForceRefreshPlan = async () => {
     setRefreshingPlan(true);
-    console.log('[IOSSettings] Force refreshing plan...');
+    log.debug('[IOSSettings] Force refreshing plan...');
     try {
       await Promise.all([refreshPlan(), refreshSubscription()]);
       toast.success('Plan status refreshed');
-      console.log('[IOSSettings] Plan refresh complete, new tier:', tier);
+      log.debug('[IOSSettings] Plan refresh complete');
     } catch (error) {
-      console.error('[IOSSettings] Plan refresh error:', error);
+      log.error('[IOSSettings] Plan refresh error:', error);
       toast.error('Failed to refresh plan status');
     } finally {
       setRefreshingPlan(false);
@@ -149,7 +149,7 @@ export default function IOSSettings() {
       if (error) throw error;
       setProfile(data);
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      log.error('Error fetching profile:', error);
     } finally {
       setLoading(false);
     }
@@ -172,7 +172,6 @@ export default function IOSSettings() {
       setReminderNotifications(value);
       toast.success(value ? 'Reminder notifications enabled' : 'Reminder notifications disabled');
     }
-    // TODO: Persist to database when notification preferences table is added
   };
 
   const handleEnablePushNotifications = async () => {
