@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
       return json(req, { error: 'user_id is required' }, 400);
     }
 
-    console.log(`[restore-account] Admin ${user.id} restoring account ${user_id}`);
+    console.log('[restore-account] Admin restoring account');
 
     // Check if account is scheduled for deletion
     const { data: profile, error: profileError } = await client
@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
       return json(req, { error: 'Failed to restore account' }, 500);
     }
 
-    console.log(`[restore-account] Successfully restored account ${user_id}`);
+    console.log('[restore-account] Successfully restored account');
 
     return json(req, {
       success: true,

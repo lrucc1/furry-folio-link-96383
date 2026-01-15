@@ -4,6 +4,7 @@
  */
 
 import { Capacitor } from '@capacitor/core';
+import { log } from '@/lib/log';
 
 export type AppEnvironment = 'production' | 'development' | 'preview';
 
@@ -90,7 +91,7 @@ export function validateEnvironment(): void {
   }
   
   if (missingVars.length > 0) {
-    console.warn(
+    log.warn(
       `⚠️ Missing environment variables in ${env}:\n` +
       missingVars.map(v => `  - ${v}`).join('\n')
     );
@@ -125,20 +126,20 @@ export function getEnvironmentConfig() {
  */
 export function initializeEnvironment(): void {
   const env = detectEnvironment();
-  console.log(`[ENV] Initializing PetLinkID in ${env.toUpperCase()} mode`);
+  log.info(`[ENV] Initializing PetLinkID in ${env.toUpperCase()} mode`);
 
   try {
     validateEnvironment();
     const config = getEnvironmentConfig();
-    console.log('[ENV] Sanity check:', {
+    log.info('[ENV] Sanity check:', {
       environment: config.environment,
       native: config.isNativeApp,
       protocol: typeof window !== 'undefined' ? window.location.protocol : 'unknown',
       hostname: typeof window !== 'undefined' ? window.location.hostname : 'unknown',
     });
-    console.log('[ENV] ✅ Environment validation passed');
+    log.info('[ENV] ✅ Environment validation passed');
   } catch (error) {
-    console.error('[ENV] ❌ Environment validation failed:', error);
+    log.error('[ENV] ❌ Environment validation failed:', error);
     throw error;
   }
 }

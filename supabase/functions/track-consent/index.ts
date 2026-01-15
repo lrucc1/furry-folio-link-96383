@@ -55,7 +55,7 @@ serve(async (req) => {
 
     if (insertError) throw insertError;
 
-    console.log(`[TRACK-CONSENT] Recorded ${consents.length} consents for user ${user.id}`);
+    console.log(`[TRACK-CONSENT] Recorded ${consents.length} consents`);
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

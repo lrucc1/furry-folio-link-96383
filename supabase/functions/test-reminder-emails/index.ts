@@ -36,7 +36,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log("Reminder email test completed:", data);
+    console.log("Reminder email test completed");
 
     return new Response(
       JSON.stringify({ 

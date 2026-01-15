@@ -32,14 +32,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-const EditPet = () => {
-  const isNative = useIsNativeApp();
-  
-  // Return iOS version for native apps
-  if (isNative) {
-    return <IOSEditPet />;
-  }
-
+const EditPetWeb = () => {
   const { id } = useParams<{ id: string }>()
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -753,6 +746,12 @@ const EditPet = () => {
       </main>
     </div>
   )
+}
+
+const EditPet = () => {
+  const isNative = useIsNativeApp()
+
+  return isNative ? <IOSEditPet /> : <EditPetWeb />
 }
 
 export default EditPet

@@ -57,44 +57,44 @@ serve(async (req) => {
 
     logStep("Found profiles to delete", { count: profilesToDelete.length });
 
-    const deletedCount = [];
+    let deletedCount = 0;
     const tables = ['pets', 'health_reminders', 'pet_documents', 'vaccinations', 'notifications', 'family_members', 'pet_memberships', 'pet_invites'];
 
     for (const profile of profilesToDelete) {
       const userId = profile.id;
-      logStep("Deleting user data", { userId });
+      logStep("Deleting user data");
 
       try {
         // Delete from all related tables
         for (const table of tables) {
           try {
             await adminClient.from(table).delete().eq('user_id', userId);
-            logStep(`Deleted ${table} data for user`, { userId });
+            logStep(`Deleted ${table} data for user`);
           } catch (err) {
-            logStep(`Warning: Error deleting from ${table}`, { userId, error: err });
+            logStep(`Warning: Error deleting from ${table}`, { error: err });
           }
         }
 
         // Delete profile
         await adminClient.from('profiles').delete().eq('id', userId);
-        logStep("Deleted profile", { userId });
+        logStep("Deleted profile");
 
         // Delete auth user
         const { error: authDeleteError } = await adminClient.auth.admin.deleteUser(userId);
         if (authDeleteError) {
-          logStep("ERROR: Failed to delete auth user", { userId, error: authDeleteError });
+          logStep("ERROR: Failed to delete auth user", { error: authDeleteError });
         } else {
-          logStep("Deleted auth user", { userId });
-          deletedCount.push(userId);
+          logStep("Deleted auth user");
+          deletedCount += 1;
         }
       } catch (err) {
-        logStep("ERROR: Failed to delete user", { userId, error: err });
+        logStep("ERROR: Failed to delete user", { error: err });
       }
     }
 
-    logStep("Cleanup complete", { deletedCount: deletedCount.length });
+    logStep("Cleanup complete", { deletedCount });
 
-    return new Response(JSON.stringify({ deleted: deletedCount.length, userIds: deletedCount }), {
+    return new Response(JSON.stringify({ deleted: deletedCount }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

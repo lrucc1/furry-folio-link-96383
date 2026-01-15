@@ -13,8 +13,8 @@
 
 ## How to Run
 1) Set required environment variables:
-   - `SUPABASE_URL`
-   - `SUPABASE_ANON_KEY`
+   - `VITE_SUPABASE_URL` (or `SUPABASE_URL`)
+   - `VITE_SUPABASE_PUBLISHABLE_KEY` (or `SUPABASE_ANON_KEY`)
    - `TEST_USER_EMAIL`
    - `TEST_USER_PASSWORD`
    - `ALT_TEST_USER_EMAIL`

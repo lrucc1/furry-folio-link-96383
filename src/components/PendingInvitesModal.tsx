@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { au } from '@/lib/auEnglish';
 import { Mail, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { log } from '@/lib/log';
 
 interface Invite {
   id: string;
@@ -39,7 +40,7 @@ export function PendingInvitesModal({ open, onClose }: PendingInvitesModalProps)
     if (!user) return;
 
     try {
-      console.log('[PendingInvites] Fetching invites for:', user.email);
+      log.debug('[PendingInvites] Fetching invites');
       
       const { data, error } = await supabase
         .from('pet_invites')
@@ -47,8 +48,6 @@ export function PendingInvitesModal({ open, onClose }: PendingInvitesModalProps)
         .eq('email', user.email.toLowerCase())
         .eq('status', 'pending')
         .gt('expires_at', new Date().toISOString());
-
-      console.log('[PendingInvites] Query result:', { data, error });
 
       if (error) throw error;
 
@@ -68,10 +67,9 @@ export function PendingInvitesModal({ open, onClose }: PendingInvitesModalProps)
         })
       );
 
-      console.log('[PendingInvites] Invites with pet details:', invitesWithPets);
       setInvites(invitesWithPets);
     } catch (error) {
-      console.error('[PendingInvites] Error fetching invites:', error);
+      log.error('[PendingInvites] Error fetching invites:', error);
     } finally {
       setLoading(false);
     }
@@ -111,7 +109,7 @@ export function PendingInvitesModal({ open, onClose }: PendingInvitesModalProps)
         throw new Error('Failed to accept invite');
       }
     } catch (error: any) {
-      console.error('Error accepting invite:', error);
+      log.error('Error accepting invite:', error);
       toast.error(error.message || au('Failed to accept invite'));
     } finally {
       setProcessing(null);
@@ -132,7 +130,7 @@ export function PendingInvitesModal({ open, onClose }: PendingInvitesModalProps)
       toast.success(au('Invite declined'));
       setInvites(invites.filter(inv => inv.id !== inviteId));
     } catch (error) {
-      console.error('Error declining invite:', error);
+      log.error('Error declining invite:', error);
       toast.error(au('Failed to decline invite'));
     } finally {
       setProcessing(null);

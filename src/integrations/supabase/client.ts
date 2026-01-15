@@ -2,6 +2,7 @@
 import { Capacitor } from '@capacitor/core';
 import { NativeBiometric } from 'capacitor-native-biometric';
 import { createClient } from '@supabase/supabase-js';
+import { log } from '@/lib/log';
 import type { Database } from './types';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -17,7 +18,7 @@ const biometricStorage = {
   async getStore() {
     // If we've already detected keychain failure, use memory
     if (useMemoryFallback) {
-      console.log('[Storage] Using memory fallback for getStore');
+      log.debug('[Storage] Using memory fallback for getStore');
       return memoryStore;
     }
     
@@ -30,11 +31,11 @@ const biometricStorage = {
         return parsed;
       }
       
-      console.log('[Storage] Keychain returned empty, checking memory store');
+      log.debug('[Storage] Keychain returned empty, checking memory store');
       // Keychain might be empty but working, merge with memory
       return { ...memoryStore, ...parsed };
     } catch (error) {
-      console.warn('[Storage] Keychain getStore failed, using memory fallback:', error);
+      log.warn('[Storage] Keychain getStore failed, using memory fallback:', error);
       useMemoryFallback = true;
       return memoryStore;
     }
@@ -44,7 +45,7 @@ const biometricStorage = {
     memoryStore = { ...store };
     
     if (useMemoryFallback) {
-      console.log('[Storage] Using memory fallback for saveStore');
+      log.debug('[Storage] Using memory fallback for saveStore');
       return;
     }
     
@@ -56,30 +57,21 @@ const biometricStorage = {
         server: SUPABASE_STORAGE_SERVER,
       });
     } catch (error) {
-      console.warn('[Storage] Keychain saveStore failed, using memory fallback:', error);
+      log.warn('[Storage] Keychain saveStore failed, using memory fallback:', error);
       useMemoryFallback = true;
     }
   },
   async getItem(key: string) {
     const store = await biometricStorage.getStore();
     const value = store[key] ?? null;
-    if (key.includes('auth')) {
-      console.log('[Storage] getItem:', key, value ? '(has value)' : '(null)');
-    }
     return value;
   },
   async setItem(key: string, value: string) {
-    if (key.includes('auth')) {
-      console.log('[Storage] setItem:', key, '(setting value)');
-    }
     const store = await biometricStorage.getStore();
     store[key] = value;
     await biometricStorage.saveStore(store);
   },
   async removeItem(key: string) {
-    if (key.includes('auth')) {
-      console.log('[Storage] removeItem:', key);
-    }
     const store = await biometricStorage.getStore();
     delete store[key];
     await biometricStorage.saveStore(store);
@@ -102,9 +94,8 @@ const warnIfNativeLocalStorage = () => {
   );
 
   if (suspiciousKeys.length > 0) {
-    console.warn(
+    log.warn(
       '[SupabaseAuth] Unexpected auth tokens found in localStorage on native platform.',
-      { keys: suspiciousKeys },
     );
   }
 };

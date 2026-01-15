@@ -1,4 +1,4 @@
-#!/usr/bin/env tsx
+#!/usr/bin/env node
 /**
  * Environment Validation Script
  *
@@ -6,51 +6,37 @@
  * - All required environment variables are set
  * - Apple IAP product IDs are configured (required for iOS)
  * - No test keys in production
- * 
+ *
  * Usage:
  *   npm run validate:env
  *   npm run validate:env -- --env=production
  */
-import devCapacitorConfig from '../capacitor.config';
-import prodCapacitorConfig from '../capacitor.config.production';
+import { readFileSync, existsSync } from 'node:fs';
+
+const CONFIG_FILES = [
+  'capacitor.config.ts',
+  'capacitor.config.production.ts',
+];
+
+const readAppId = (filePath) => {
+  if (!existsSync(filePath)) return null;
+  const contents = readFileSync(filePath, 'utf8');
+  const match = contents.match(/appId:\s*['"]([^'"]+)['"]/);
+  return match?.[1] ?? null;
+};
 
 const bundleIds = Array.from(
-  new Set(
-    [devCapacitorConfig.appId, prodCapacitorConfig.appId]
-      .filter((id): id is string => Boolean(id))
-  )
+  new Set(CONFIG_FILES.map(readAppId).filter(Boolean))
 );
 
-interface ValidationResult {
-  pass: boolean;
-  message: string;
-  severity: 'error' | 'warning' | 'info';
-}
-
-interface EnvironmentConfig {
-  VITE_SUPABASE_URL?: string;
-  VITE_SUPABASE_PUBLISHABLE_KEY?: string;
-  // Apple IAP (required for iOS)
-  VITE_APPLE_PRO_MONTHLY_PRODUCT_ID?: string;
-  VITE_APPLE_PRO_YEARLY_PRODUCT_ID?: string;
-  // Apple Sign-In
-  appleClientIds: Record<string, string>;
-}
-
-type Environment = 'production' | 'development' | 'preview';
-
 class EnvironmentValidator {
-  private env: Environment;
-  private config: EnvironmentConfig;
-  private results: ValidationResult[] = [];
-
-  constructor(env: Environment = 'development') {
+  constructor(env = 'development') {
     this.env = env;
     this.config = this.loadEnvironmentVariables();
+    this.results = [];
   }
 
-  private loadEnvironmentVariables(): EnvironmentConfig {
-    // In a real environment, these would come from process.env or import.meta.env
+  loadEnvironmentVariables() {
     return {
       VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL,
       VITE_SUPABASE_PUBLISHABLE_KEY: process.env.VITE_SUPABASE_PUBLISHABLE_KEY,
@@ -60,10 +46,10 @@ class EnvironmentValidator {
     };
   }
 
-  private loadAppleClientIds(): Record<string, string> {
+  loadAppleClientIds() {
     return Object.entries(process.env)
       .filter(([key]) => key.startsWith('VITE_APPLE_CLIENT_ID_'))
-      .reduce<Record<string, string>>((acc, [key, value]) => {
+      .reduce((acc, [key, value]) => {
         if (value) {
           acc[key] = value;
         }
@@ -71,24 +57,24 @@ class EnvironmentValidator {
       }, {});
   }
 
-  private addResult(result: ValidationResult): void {
+  addResult(result) {
     this.results.push(result);
   }
 
-  private bundleIdToEnvKey(bundleId: string): string {
+  bundleIdToEnvKey(bundleId) {
     return `VITE_APPLE_CLIENT_ID_${bundleId.replace(/[^A-Za-z0-9]/g, '_').toUpperCase()}`;
   }
 
-  private getAppleClientId(bundleId: string): string | undefined {
+  getAppleClientId(bundleId) {
     const envKey = this.bundleIdToEnvKey(bundleId);
     return this.config.appleClientIds[envKey];
   }
 
-  validateRequiredVariables(): void {
+  validateRequiredVariables() {
     const required = [
       'VITE_SUPABASE_URL',
       'VITE_SUPABASE_PUBLISHABLE_KEY',
-    ] as const;
+    ];
 
     for (const key of required) {
       if (!this.config[key]) {
@@ -107,7 +93,7 @@ class EnvironmentValidator {
     }
   }
 
-  validateAppleIAPConfig(): void {
+  validateAppleIAPConfig() {
     const monthlyId = this.config.VITE_APPLE_PRO_MONTHLY_PRODUCT_ID;
     const yearlyId = this.config.VITE_APPLE_PRO_YEARLY_PRODUCT_ID;
 
@@ -124,9 +110,8 @@ class EnvironmentValidator {
       return;
     }
 
-    // Validate format (Apple product IDs are typically reverse domain notation)
-    const validFormat = (id: string) => /^[a-zA-Z0-9._]+$/.test(id);
-    
+    const validFormat = (id) => /^[a-zA-Z0-9._]+$/.test(id);
+
     if (!validFormat(monthlyId) || !validFormat(yearlyId)) {
       this.addResult({
         pass: false,
@@ -143,8 +128,8 @@ class EnvironmentValidator {
     });
   }
 
-  validateAppleSignInConfig(bundleIds: string[]): void {
-    bundleIds.forEach(bundleId => {
+  validateAppleSignInConfig(bundleIdsToCheck) {
+    bundleIdsToCheck.forEach((bundleId) => {
       const clientId = this.getAppleClientId(bundleId);
       const envKey = this.bundleIdToEnvKey(bundleId);
 
@@ -174,14 +159,13 @@ class EnvironmentValidator {
     });
   }
 
-  validateSupabaseConfig(): void {
+  validateSupabaseConfig() {
     const url = this.config.VITE_SUPABASE_URL;
 
     if (!url) {
       return; // Already caught by required variables check
     }
 
-    // Check format
     if (!url.startsWith('https://')) {
       this.addResult({
         pass: false,
@@ -207,54 +191,51 @@ class EnvironmentValidator {
     });
   }
 
-  run(): boolean {
+  run() {
     console.log(`\n🔍 Validating ${this.env.toUpperCase()} environment...\n`);
 
     this.validateRequiredVariables();
     this.validateAppleIAPConfig();
-    this.validateAppleSignInConfig(bundleIds);
+    if (bundleIds.length > 0) {
+      this.validateAppleSignInConfig(bundleIds);
+    }
     this.validateSupabaseConfig();
 
     return this.printResults();
   }
 
-  private printResults(): boolean {
+  printResults() {
     let hasErrors = false;
     let hasWarnings = false;
 
-    // Group by severity
-    const errors = this.results.filter(r => r.severity === 'error');
-    const warnings = this.results.filter(r => r.severity === 'warning');
-    const info = this.results.filter(r => r.severity === 'info' && r.pass);
+    const errors = this.results.filter((r) => r.severity === 'error');
+    const warnings = this.results.filter((r) => r.severity === 'warning');
+    const info = this.results.filter((r) => r.severity === 'info' && r.pass);
 
-    // Print errors
     if (errors.length > 0) {
       console.log('❌ ERRORS:');
-      errors.forEach(r => {
+      errors.forEach((r) => {
         console.log(`  ${r.message}`);
         hasErrors = true;
       });
       console.log('');
     }
 
-    // Print warnings
     if (warnings.length > 0) {
       console.log('⚠️  WARNINGS:');
-      warnings.forEach(r => {
+      warnings.forEach((r) => {
         console.log(`  ${r.message}`);
         hasWarnings = true;
       });
       console.log('');
     }
 
-    // Print info/success
     if (info.length > 0) {
       console.log('✅ PASSED:');
-      info.forEach(r => console.log(`  ${r.message}`));
+      info.forEach((r) => console.log(`  ${r.message}`));
       console.log('');
     }
 
-    // Summary
     if (hasErrors) {
       console.log('🚨 VALIDATION FAILED - Fix all errors before deploying\n');
       return false;
@@ -270,11 +251,10 @@ class EnvironmentValidator {
   }
 }
 
-// CLI execution
-function main() {
+const main = () => {
   const args = process.argv.slice(2);
-  const envArg = args.find(arg => arg.startsWith('--env='));
-  const env = envArg?.split('=')[1] as Environment || 'development';
+  const envArg = args.find((arg) => arg.startsWith('--env='));
+  const env = envArg?.split('=')[1] || 'development';
 
   if (!['production', 'development', 'preview'].includes(env)) {
     console.error('Invalid environment. Use: production, development, or preview');
@@ -285,11 +265,8 @@ function main() {
   const success = validator.run();
 
   process.exit(success ? 0 : 1);
-}
+};
 
-// Run if executed directly
-if (require.main === module) {
-  main();
-}
+main();
 
-export { EnvironmentValidator, ValidationResult };
+export { EnvironmentValidator };

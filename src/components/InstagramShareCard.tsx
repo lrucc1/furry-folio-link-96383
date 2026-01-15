@@ -10,6 +10,7 @@ import { format } from 'date-fns'
 import { supabase } from '@/integrations/supabase/client'
 import QRCode from 'qrcode'
 import { useSignedUrl } from '@/hooks/useSignedUrl'
+import { log } from '@/lib/log'
 // Constants
 const WIDTH = 1080
 const HEIGHT = 1920
@@ -33,12 +34,12 @@ const loadImageWithCORS = async (url: string): Promise<HTMLImageElement | null> 
   const isNative = Capacitor.isNativePlatform()
   const isSupabaseUrl = url.includes('supabase.co/storage')
   
-  console.log('[InstagramShare] Loading image:', url, 'isNative:', isNative, 'isSupabase:', isSupabaseUrl)
+  log.debug('[InstagramShare] Loading image', { isNative, isSupabaseUrl })
   
   // On native platforms with Supabase images, use proxy to avoid canvas tainting
   if (isNative && isSupabaseUrl) {
     try {
-      console.log('[InstagramShare] Using proxy for native platform...')
+      log.debug('[InstagramShare] Using proxy for native platform...')
       const { data, error } = await withTimeout(
         supabase.functions.invoke('proxy-pet-image', { body: { url } }),
         IMAGE_LOAD_TIMEOUT,
@@ -46,7 +47,7 @@ const loadImageWithCORS = async (url: string): Promise<HTMLImageElement | null> 
       )
       
       if (error) {
-        console.warn('[InstagramShare] Proxy error:', error)
+        log.warn('[InstagramShare] Proxy error:', error)
         throw error
       }
       
@@ -55,11 +56,11 @@ const loadImageWithCORS = async (url: string): Promise<HTMLImageElement | null> 
         await withTimeout(
           new Promise<void>((resolve, reject) => {
             img.onload = () => {
-              console.log('[InstagramShare] Proxy image load succeeded')
+              log.debug('[InstagramShare] Proxy image load succeeded')
               resolve()
             }
             img.onerror = (e) => {
-              console.warn('[InstagramShare] Proxy image render failed:', e)
+              log.warn('[InstagramShare] Proxy image render failed:', e)
               reject(new Error('Proxy image render failed'))
             }
             img.src = `data:${data.contentType || 'image/jpeg'};base64,${data.base64}`
@@ -70,7 +71,7 @@ const loadImageWithCORS = async (url: string): Promise<HTMLImageElement | null> 
         return img
       }
     } catch (err) {
-      console.warn('[InstagramShare] Proxy failed, trying direct load:', err)
+      log.warn('[InstagramShare] Proxy failed, trying direct load:', err)
     }
   }
   
@@ -84,11 +85,11 @@ const loadImageWithCORS = async (url: string): Promise<HTMLImageElement | null> 
     await withTimeout(
       new Promise<void>((resolve, reject) => {
         img.onload = () => {
-          console.log('[InstagramShare] Direct image load succeeded')
+          log.debug('[InstagramShare] Direct image load succeeded')
           resolve()
         }
         img.onerror = (e) => {
-          console.warn('[InstagramShare] Direct image load failed:', e)
+          log.warn('[InstagramShare] Direct image load failed:', e)
           reject(new Error('Direct load failed'))
         }
         img.src = url
@@ -98,7 +99,7 @@ const loadImageWithCORS = async (url: string): Promise<HTMLImageElement | null> 
     )
     return img
   } catch {
-    console.log('[InstagramShare] Trying fetch fallback...')
+    log.debug('[InstagramShare] Trying fetch fallback...')
     // Fallback: Fetch as blob and create object URL
     try {
       const response = await withTimeout(
@@ -113,7 +114,7 @@ const loadImageWithCORS = async (url: string): Promise<HTMLImageElement | null> 
       await withTimeout(
         new Promise<void>((resolve, reject) => {
           fallbackImg.onload = () => {
-            console.log('[InstagramShare] Fetch fallback succeeded')
+            log.debug('[InstagramShare] Fetch fallback succeeded')
             resolve()
           }
           fallbackImg.onerror = reject
@@ -124,7 +125,7 @@ const loadImageWithCORS = async (url: string): Promise<HTMLImageElement | null> 
       )
       return fallbackImg
     } catch (err) {
-      console.error('[InstagramShare] All image loading attempts failed:', url, err)
+      log.error('[InstagramShare] All image loading attempts failed', err)
       return null
     }
   }
@@ -139,7 +140,7 @@ const generateQRDataURL = async (data: string): Promise<string | null> => {
       color: { dark: '#1a1a1a', light: '#ffffff' }
     })
   } catch (err) {
-    console.error('[InstagramShare] QR generation failed:', err)
+    log.error('[InstagramShare] QR generation failed:', err)
     return null
   }
 }
@@ -260,11 +261,11 @@ export const InstagramShareCard = ({
   const loadAssets = useCallback(async () => {
     // Wait for signed URL to be ready if we have a photo
     if (petPhoto && signedUrlLoading) {
-      console.log('[InstagramShare] Waiting for signed URL...')
+      log.debug('[InstagramShare] Waiting for signed URL...')
       return false
     }
     
-    console.log('[InstagramShare] Loading assets...', 'signedPhotoUrl:', signedPhotoUrl)
+    log.debug('[InstagramShare] Loading assets...')
     setGenerating(true)
     setLoadError(false)
     
@@ -283,11 +284,11 @@ export const InstagramShareCard = ({
         baseCardImageData: null // Will be set after first render
       }
       
-      console.log('[InstagramShare] Assets loaded - petImage:', !!petImage, 'qrImage:', !!qrImage)
+      log.debug('[InstagramShare] Assets loaded', { petImage: !!petImage, qrImage: !!qrImage })
       setAssetsLoaded(true)
       return true
     } catch (err) {
-      console.error('[InstagramShare] Failed to load assets:', err)
+      log.error('[InstagramShare] Failed to load assets:', err)
       setLoadError(true)
       return false
     } finally {
@@ -822,7 +823,7 @@ export const InstagramShareCard = ({
     
     // Don't load assets if we're still waiting for signed URL
     if (petPhoto && signedUrlLoading) {
-      console.log('[InstagramShare] Dialog open, waiting for signed URL...')
+      log.debug('[InstagramShare] Dialog open, waiting for signed URL...')
       return
     }
     
@@ -912,7 +913,7 @@ export const InstagramShareCard = ({
       if ((error as Error).name !== 'AbortError' && 
           !(error as Error).message?.includes('canceled') &&
           !(error as Error).message?.includes('cancelled')) {
-        console.error('Error sharing:', error)
+        log.error('Error sharing:', error)
         toast({
           title: 'Download started',
           description: 'Share the downloaded image to Instagram!',
@@ -923,7 +924,7 @@ export const InstagramShareCard = ({
   }
 
   const handleDownload = async () => {
-    console.log('[InstagramShare] handleDownload started')
+    log.debug('[InstagramShare] handleDownload started')
     generateCard(0)
     const canvas = canvasRef.current
     if (!canvas) return
@@ -940,7 +941,7 @@ export const InstagramShareCard = ({
     
     try {
       const result = await downloadImage(blob, petName)
-      console.log('[InstagramShare] Download result:', result)
+      log.debug('[InstagramShare] Download result')
       
       if (result === 'shared') {
         toast({
@@ -957,10 +958,10 @@ export const InstagramShareCard = ({
       setTimeout(() => setIsOpen(false), 500)
     } catch (error) {
       if ((error as Error).message?.includes('canceled') || (error as Error).message?.includes('cancelled')) {
-        console.log('[InstagramShare] User cancelled share sheet')
+        log.debug('[InstagramShare] User cancelled share sheet')
         return
       }
-      console.error('[InstagramShare] Download error:', error)
+      log.error('[InstagramShare] Download error:', error)
       toast({
         title: 'Error saving image',
         description: 'Please try the Share button instead.',

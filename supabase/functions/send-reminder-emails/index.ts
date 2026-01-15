@@ -249,7 +249,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         .maybeSingle();
 
       if (existingNotification) {
-        log("info", "Notification already sent", { reminder_id: reminder.id, days_before: reminder.days_before });
+        log("info", "Notification already sent");
         continue;
       }
 
@@ -277,7 +277,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         .maybeSingle();
 
       if (existingNotification) {
-        log("info", "Notification already sent", { vaccination_id: vaccination.id, days_before: vaccination.days_before });
+        log("info", "Notification already sent");
         continue;
       }
 
@@ -310,7 +310,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         const petSpecies = reminder.pet_species || 'pet';
 
         if (!userEmail) {
-          log("warn", "No email found for user", { reminder_id: reminder.id });
+          log("warn", "No email found for user");
           continue;
         }
 
@@ -335,7 +335,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
           html,
         });
 
-        log("info", "Health reminder email sent", { reminder_id: reminder.id, email: userEmail });
+        log("info", "Health reminder email sent");
         emailsSent++;
 
         // Create notification record
@@ -367,7 +367,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
           .eq('id', reminder.id);
 
       } catch (error) {
-        log("error", "Error processing health reminder", { error, reminder_id: reminder.id });
+        log("error", "Error processing health reminder", { error });
       }
     }
 
@@ -380,7 +380,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         const petSpecies = vaccination.pet_species || 'pet';
 
         if (!userEmail) {
-          log("warn", "No email found for user", { vaccination_id: vaccination.id });
+          log("warn", "No email found for user");
           continue;
         }
 
@@ -405,7 +405,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
           html,
         });
 
-        log("info", "Vaccination email sent", { vaccination_id: vaccination.id, email: userEmail });
+        log("info", "Vaccination email sent");
         emailsSent++;
 
         // Create notification record
@@ -437,7 +437,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
           .eq('id', vaccination.id);
 
       } catch (error) {
-        log("error", "Error processing vaccination", { error, vaccination_id: vaccination.id });
+        log("error", "Error processing vaccination", { error });
       }
     }
 

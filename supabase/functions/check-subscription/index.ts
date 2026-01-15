@@ -36,7 +36,7 @@ serve(async (req: Request) => {
       .eq('id', user.id)
       .single();
     
-    console.log('[check-subscription] Profile for user:', user.id, profile);
+    console.log('[check-subscription] Profile fetched');
     
     if (error) {
       console.error('[check-subscription] Profile fetch error:', error);
@@ -53,7 +53,7 @@ serve(async (req: Request) => {
       effectiveTier = 'pro'; // Trial users get pro features
     }
 
-    console.log('[check-subscription] Returning:', { isPro, effectiveTier, plan: profile?.plan_v2 });
+    console.log('[check-subscription] Returning subscription status');
 
     // Return both old and new field names for compatibility
     return json(req, {

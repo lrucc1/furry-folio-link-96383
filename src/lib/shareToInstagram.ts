@@ -10,6 +10,7 @@ import { Capacitor } from '@capacitor/core'
 import { Haptics, ImpactStyle } from '@capacitor/haptics'
 import { Share } from '@capacitor/share'
 import { Filesystem, Directory } from '@capacitor/filesystem'
+import { log } from '@/lib/log'
 
 export type ShareResult = {
   method: 'native' | 'web-share' | 'web-share-url' | 'download'
@@ -28,7 +29,7 @@ const triggerHaptic = async () => {
   try {
     await Haptics.impact({ style: ImpactStyle.Medium })
   } catch (error) {
-    console.debug('Haptics unavailable, continuing without tactile feedback', error)
+    log.debug('Haptics unavailable, continuing without tactile feedback', error)
   }
 }
 
@@ -39,7 +40,7 @@ const copyCaptionToClipboard = async (caption: string) => {
     await navigator.clipboard.writeText(caption)
     return true
   } catch (error) {
-    console.debug('Clipboard copy failed', error)
+    log.debug('Clipboard copy failed', error)
     return false
   }
 }
@@ -102,7 +103,7 @@ export const shareToInstagram = async ({ imageBlob, petName, publicUrl }: ShareO
       if ((error as Error).message?.includes('canceled') || (error as Error).message?.includes('cancelled')) {
         throw error // User cancelled, propagate
       }
-      console.debug('Native share failed, falling back to web methods', error)
+      log.debug('Native share failed, falling back to web methods', error)
     }
   }
 
@@ -133,7 +134,7 @@ export const shareToInstagram = async ({ imageBlob, petName, publicUrl }: ShareO
     if ((error as Error).name === 'AbortError') {
       throw error // User cancelled, propagate
     }
-    console.debug('Share attempt failed, falling back to clipboard + download', error)
+    log.debug('Share attempt failed, falling back to clipboard + download', error)
   }
 
   // Final fallback: copy caption to clipboard and download image
@@ -153,7 +154,7 @@ export const copyImageToClipboard = async (blob: Blob): Promise<boolean> => {
     ])
     return true
   } catch (error) {
-    console.debug('Clipboard image copy failed', error)
+    log.debug('Clipboard image copy failed', error)
     return false
   }
 }
@@ -165,7 +166,7 @@ export const downloadImage = async (blob: Blob, petName: string): Promise<'downl
   // On native platforms, save to cache and open share sheet
   if (Capacitor.isNativePlatform()) {
     try {
-      console.log('[Instagram] Starting native save flow...')
+      log.debug('[Instagram] Starting native save flow...')
       const base64Data = await blobToBase64(blob)
       
       // Save to Cache directory first
@@ -174,7 +175,7 @@ export const downloadImage = async (blob: Blob, petName: string): Promise<'downl
         data: base64Data,
         directory: Directory.Cache,
       })
-      console.log('[Instagram] File saved to cache:', savedFile.uri)
+      log.debug('[Instagram] File saved to cache')
       
       // Open native share sheet so user can save to Photos or share directly
       await Share.share({
@@ -182,7 +183,7 @@ export const downloadImage = async (blob: Blob, petName: string): Promise<'downl
         url: savedFile.uri,
         dialogTitle: 'Save or Share your PetLinkID',
       })
-      console.log('[Instagram] Share sheet opened successfully')
+      log.debug('[Instagram] Share sheet opened successfully')
       
       // Clean up cache file after sharing
       try {
@@ -196,7 +197,7 @@ export const downloadImage = async (blob: Blob, petName: string): Promise<'downl
       if ((error as Error).message?.includes('canceled') || (error as Error).message?.includes('cancelled')) {
         throw error // User cancelled, propagate
       }
-      console.error('[Instagram] Native save/share failed:', error)
+      log.error('[Instagram] Native save/share failed:', error)
       // Fall through to web download as backup
     }
   }

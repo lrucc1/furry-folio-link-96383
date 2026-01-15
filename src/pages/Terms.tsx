@@ -67,7 +67,6 @@ const Terms = () => {
           {/* Main Content */}
           <Card className="bg-gradient-card border-0 shadow-medium">
             <CardContent className="prose prose-gray max-w-none p-8">
-              {/* TODO: Add GDPR compliance section for EU users, CCPA section for California users */}
               <div className="bg-primary/5 p-4 rounded-lg mb-6">
                 <p className="text-sm text-muted-foreground">
                   <strong>About PetLinkID:</strong> PetLinkID is owned and operated by Betametrics Pty Ltd, headquartered in Victoria, Australia. We serve pet owners worldwide. These terms are governed by the laws of Victoria, Australia, though your local consumer protection laws may also apply.

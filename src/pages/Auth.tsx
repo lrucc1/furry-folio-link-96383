@@ -13,6 +13,7 @@ import { Eye, EyeOff, Loader2, Mail, Fingerprint } from 'lucide-react'
 import { useIsNativeApp } from '@/hooks/useIsNativeApp'
 import { useOAuthCallback } from '@/hooks/useOAuthCallback'
 import { Browser } from '@capacitor/browser'
+import { log } from '@/lib/log'
 
 import { motion } from 'framer-motion'
 import { useBiometricAuth } from '@/hooks/useBiometricAuth'
@@ -72,7 +73,7 @@ const AuthPage = () => {
   
   // Handle OAuth cancel detection - reset loading when user closes browser without auth
   const handleOAuthCancel = useCallback(() => {
-    console.log('[Auth] OAuth cancelled, resetting loading state')
+    log.debug('[Auth] OAuth cancelled, resetting loading state')
     setGoogleLoading(false)
     toast('Sign-in cancelled', {
       description: 'Tap Google to try again when ready.',

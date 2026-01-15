@@ -73,13 +73,11 @@ export default function IOSSharingSettings() {
         break;
     }
     toast.success('Setting updated');
-    // TODO: Persist to database when sharing preferences table is added
   };
 
   const handleQrVisibilityChange = (value: string) => {
     setQrVisibility(value as 'full' | 'limited' | 'minimal');
     toast.success('QR visibility updated');
-    // TODO: Persist to database
   };
 
   const headerLeft = (
