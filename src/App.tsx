@@ -15,7 +15,6 @@ import { IOSAppRouter } from "./components/IOSAppRouter";
 import { DevModeToggle } from "./components/DevModeToggle";
 import { AppLoadingScreen } from "./components/AppLoadingScreen";
 import { useIsNativeApp } from "./hooks/useIsNativeApp";
-import { useOAuthCallback } from "./hooks/useOAuthCallback";
 import { RootLayout } from "./components/layout/RootLayout";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -70,12 +69,9 @@ const queryClient = new QueryClient();
 function AppContent() {
   const { loading } = useAuth();
   const isNative = useIsNativeApp();
-  
-  // Handle OAuth deep link callbacks on iOS (no cancel handler needed at app level)
-  const { isProcessing: isOAuthProcessing } = useOAuthCallback();
 
-  // Show loading screen on native while auth initializes or OAuth is processing
-  if (isNative && (loading || isOAuthProcessing)) {
+  // Show loading screen on native while auth initializes
+  if (isNative && loading) {
     return <AppLoadingScreen />;
   }
 
