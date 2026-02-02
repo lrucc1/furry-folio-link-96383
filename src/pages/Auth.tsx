@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
@@ -11,9 +11,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
 import { Eye, EyeOff, Loader2, Mail, Fingerprint } from 'lucide-react'
 import { useIsNativeApp } from '@/hooks/useIsNativeApp'
-import { useOAuthCallback } from '@/hooks/useOAuthCallback'
-import { Browser } from '@capacitor/browser'
-import { log } from '@/lib/log'
 
 import { motion } from 'framer-motion'
 import { useBiometricAuth } from '@/hooks/useBiometricAuth'
@@ -68,20 +65,7 @@ const AuthPage = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [biometricLoading, setBiometricLoading] = useState(false)
   const [showBiometricSetup, setShowBiometricSetup] = useState(false)
-  const [googleLoading, setGoogleLoading] = useState(false)
   const biometric = useBiometricAuth()
-  
-  // Handle OAuth cancel detection - reset loading when user closes browser without auth
-  const handleOAuthCancel = useCallback(() => {
-    log.debug('[Auth] OAuth cancelled, resetting loading state')
-    setGoogleLoading(false)
-    toast('Sign-in cancelled', {
-      description: 'Tap Google to try again when ready.',
-      duration: 3000,
-    })
-  }, [])
-  
-  const { setBrowserOpen } = useOAuthCallback(handleOAuthCancel)
   
   // Sign In form state
   const [signInEmail, setSignInEmail] = useState('')
@@ -213,91 +197,6 @@ const AuthPage = () => {
     }
   }
 
-  const handleGoogleSignIn = async () => {
-    setGoogleLoading(true)
-    try {
-      if (isNative) {
-        // iOS: Use Capacitor Browser for in-app Safari with deep link callback
-        const { data, error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: 'com.petlinkid.app://auth/callback',
-            skipBrowserRedirect: true,
-          }
-        })
-
-        if (error) {
-          toast.error(error.message)
-          setGoogleLoading(false)
-          return
-        }
-
-        if (data?.url) {
-          // Track that we're opening the browser for OAuth
-          setBrowserOpen(true)
-          
-          // Open Google sign-in in Safari View Controller
-          await Browser.open({ 
-            url: data.url,
-            presentationStyle: 'popover',
-            windowName: '_self'
-          })
-        }
-        // Note: googleLoading stays true until OAuth callback closes the browser
-        // or user cancels (detected via browserFinished event)
-      } else {
-        // Web: Standard redirect flow
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: `${window.location.origin}/dashboard`
-          }
-        })
-
-        if (error) {
-          toast.error(error.message)
-          setGoogleLoading(false)
-        }
-      }
-    } catch (error) {
-      toast.error('An unexpected error occurred')
-      setGoogleLoading(false)
-      setBrowserOpen(false)
-    }
-  }
-
-  // Google Sign-In Button Component
-  const GoogleSignInButton = ({ className = "" }: { className?: string }) => (
-    <Button
-      type="button"
-      variant="outline"
-      className={`w-full h-12 ${className}`}
-      onClick={handleGoogleSignIn}
-      disabled={loading || googleLoading}
-    >
-      {googleLoading ? (
-        <>
-          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-          Opening Google...
-        </>
-      ) : (
-        <>
-          <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-          </svg>
-          Google
-        </>
-      )}
-    </Button>
-  )
-
-  // Social Sign-In Buttons (Google only - Apple OAuth not supported in Lovable Cloud)
-  const SocialSignInButtons = ({ nativeStyle = false }: { nativeStyle?: boolean }) => (
-    <GoogleSignInButton className={nativeStyle ? "text-base bg-white border-0" : "rounded-full"} />
-  )
 
   // View state for iOS native auth
   const [authView, setAuthView] = useState<'welcome' | 'signin' | 'signup' | 'forgot-password'>('welcome');
@@ -398,41 +297,18 @@ const AuthPage = () => {
                 </motion.div>
               )}
               
-              {/* Google sign-in button */}
+              {/* Email sign-in button */}
               <motion.div variants={fadeUpVariants}>
                 <Button
                   type="button"
                   className="w-full h-14 text-base bg-white text-foreground hover:bg-white/90 rounded-xl"
-                  onClick={handleGoogleSignIn}
-                  disabled={loading || googleLoading}
+                  onClick={() => setAuthView('signin')}
+                  disabled={loading}
                 >
-                  {googleLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Opening Google...
-                    </>
-                  ) : (
-                    <>
-                      <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
-                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                      </svg>
-                      Continue with Google
-                    </>
-                  )}
+                  <Mail className="mr-2 h-5 w-5" />
+                  Continue with Email
                 </Button>
               </motion.div>
-
-              <motion.button
-                variants={fadeUpVariants}
-                type="button"
-                onClick={() => setAuthView('signin')}
-                className="w-full py-4 text-white/90 text-base font-medium"
-              >
-                Use email instead
-              </motion.button>
 
               <motion.div variants={fadeUpVariants} className="text-center pt-2">
                 <button
@@ -902,20 +778,6 @@ const AuthPage = () => {
                 </form>
               )}
 
-              {!showWebForgotPassword && (
-                <>
-                  <div className="relative my-6">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-                    </div>
-                  </div>
-
-                  <SocialSignInButtons />
-                </>
-              )}
             </TabsContent>
 
             <TabsContent value="signup">
@@ -987,16 +849,6 @@ const AuthPage = () => {
                 </Button>
               </form>
 
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-                </div>
-              </div>
-
-              <SocialSignInButtons />
             </TabsContent>
           </Tabs>
 
