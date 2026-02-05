@@ -1,3 +1,18 @@
+# Status Update
+
+**COMPLETED** - Plan steps 1-2 are implemented:
+1. ✅ `vite.config.ts` - Conditional define (only sets values when truthy, uses SUPABASE_ANON_KEY fallback, constructs URL from project ID)
+2. ✅ `src/main.tsx` - Safety net with dynamic import and friendly error screen
+
+**CURRENT STATE**: The app shows "App Temporarily Unavailable" with diagnostic code `ENV_CONFIG_MISSING`.
+
+This is the CORRECT BEHAVIOR - the safety net is working. The environment variables aren't being compiled into the build.
+
+**NEXT STEP (Step 4)**: The platform's environment injection isn't working. The `.env` file exists with correct values (visible in Lovable Cloud config), but they're not reaching the Vite build.
+
+Suggested user action: Try a hard refresh of the preview, or check if there's a backend/Cloud reconnection needed.
+
+---
 
 Goal: Fix the blank Preview caused by `Error: supabaseUrl is required` (crash happens while importing `src/integrations/supabase/client.ts`, before React renders).
 
