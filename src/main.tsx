@@ -10,6 +10,13 @@ const root = document.getElementById('root')!;
 function validateEnvPresence(): boolean {
   const hasUrl = Boolean(import.meta.env.VITE_SUPABASE_URL);
   const hasKey = Boolean(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
+  
+  // Non-sensitive diagnostic logging (booleans only, never values)
+  if (import.meta.env.DEV || window.location.hostname.includes('lovableproject.com')) {
+    // eslint-disable-next-line no-console
+    console.log('[ENV] Configuration check:', { hasUrl, hasKey });
+  }
+  
   return hasUrl && hasKey;
 }
 
