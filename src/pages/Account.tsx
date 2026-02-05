@@ -81,6 +81,7 @@ export default function Account() {
     ? PLANS.PRO.entitlements.docs_storage_mb
     : PLANS.FREE.entitlements.docs_storage_mb;
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- Functions are defined in component, only user/navigate matter
   useEffect(() => {
     if (!user) {
       navigate('/auth');
@@ -305,6 +306,7 @@ export default function Account() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- Functions are defined in component, user is the meaningful dependency
   const handleRefresh = useCallback(async () => {
     await Promise.all([checkSubscription(), fetchProfile(), fetchPetCount(), calculateStorageUsage()]);
     toast.success('Refreshed');

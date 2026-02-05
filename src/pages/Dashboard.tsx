@@ -47,6 +47,7 @@ const Dashboard = () => {
   // Auto-detect and save timezone for new users
   useAutoTimezone(user?.id)
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- Only run on user change, functions are stable
   useEffect(() => {
     fetchPets()
     checkPendingInvites()
@@ -132,6 +133,7 @@ const Dashboard = () => {
     }
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchPets is defined inside component, user is the meaningful dependency
   const handleRefresh = useCallback(async () => {
     await fetchPets();
     toast.success('Dashboard refreshed');

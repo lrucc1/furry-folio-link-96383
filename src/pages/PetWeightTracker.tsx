@@ -58,6 +58,7 @@ export default function PetWeightTracker() {
   
   const weightInputRef = useRef<HTMLInputElement>(null);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchData is defined in component
   useEffect(() => {
     if (id && user) {
       fetchData();

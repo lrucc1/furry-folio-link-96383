@@ -124,6 +124,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [])
 
   // Check subscription when session changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentionally only depend on user ID to prevent re-renders on session object changes
   useEffect(() => {
     if (session?.user) {
       checkSubscription()
@@ -131,6 +132,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [session?.user?.id, checkSubscription])
 
   // Single realtime subscription for profile changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentionally only depend on user ID to prevent subscription churn
   useEffect(() => {
     if (!user) return
 
@@ -158,11 +160,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user?.id, checkSubscription])
 
   // Single visibility handler - only check on tab becoming visible after being hidden
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentionally only depend on user ID to prevent listener churn
   useEffect(() => {
     if (!user) return
 
     let wasHidden = false
-    
+
     const onVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         wasHidden = true

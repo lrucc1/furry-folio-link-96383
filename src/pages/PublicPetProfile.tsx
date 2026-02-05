@@ -31,6 +31,7 @@ const PublicPetProfile = () => {
   const [pet, setPet] = useState<Pet | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchPetDetails is defined in component
   useEffect(() => {
     if (publicToken) {
       fetchPetDetails()

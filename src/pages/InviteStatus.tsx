@@ -46,6 +46,7 @@ export default function InviteStatus() {
   const [memberships, setMemberships] = useState<Membership[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchInvites is defined in component
   useEffect(() => {
     if (user) {
       fetchInvites();

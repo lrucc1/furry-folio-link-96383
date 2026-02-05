@@ -35,6 +35,7 @@ export default function AcceptInvite() {
 
     // User is signed in, accept the invite
     acceptInvite();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- acceptInvite and navigate are stable, only run on user/token change
   }, [user, token]);
 
   const acceptInvite = async () => {

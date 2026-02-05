@@ -79,6 +79,7 @@ export default function Reminders() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedPetForReminder, setSelectedPetForReminder] = useState<string | null>(null);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- Functions are defined in component, only user matters
   useEffect(() => {
     if (user) {
       fetchAllReminders();
@@ -246,6 +247,7 @@ export default function Reminders() {
     setSelectedPetForReminder(null);
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchAllReminders is defined in component
   const handleRefresh = useCallback(async () => {
     await fetchAllReminders();
     toast.success('Reminders refreshed');
