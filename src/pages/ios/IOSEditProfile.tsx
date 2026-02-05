@@ -37,6 +37,7 @@ export default function IOSEditProfile() {
 
   useEffect(() => {
     fetchProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchProfile is defined in component
   }, [user]);
 
   const fetchProfile = async () => {

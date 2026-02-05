@@ -137,11 +137,13 @@ export default function IOSHome() {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchData is defined in component
   }, [user]);
 
   const handleRefresh = useCallback(async () => {
     await fetchData();
     toast.success('Refreshed');
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchData is defined in component
   }, [user]);
 
   const selectedPet = pets.find(p => p.id === selectedPetId);

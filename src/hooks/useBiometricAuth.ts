@@ -16,6 +16,7 @@ export function useBiometricAuth() {
   const [loading, setLoading] = useState(true);
 
   // Check status on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- Run once on mount only
   useEffect(() => {
     checkStatus();
   }, []);

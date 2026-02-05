@@ -267,6 +267,7 @@ export const LostPetPosterModal = ({ open, onOpenChange, pet, publicUrl }: LostP
   }
 
   // Generate preview when modal opens
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- generatePoster is defined in component, run when modal opens
   useEffect(() => {
     if (open) {
       setPreviewReady(false)

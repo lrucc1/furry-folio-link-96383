@@ -152,8 +152,10 @@ export async function initializeStore(): Promise<boolean> {
 
   try {
     const CdvPurchase = window.CdvPurchase;
-    
-    store.verbosity = store.DEBUG;
+
+    // Only enable debug logging in development
+    const isDev = import.meta.env.DEV;
+    store.verbosity = isDev ? store.DEBUG : store.QUIET;
 
     // Register products
     store.register([

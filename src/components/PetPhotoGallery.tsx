@@ -43,6 +43,7 @@ export function PetPhotoGallery({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [photoToDelete, setPhotoToDelete] = useState<Photo | null>(null);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchPhotos is defined in component
   useEffect(() => {
     fetchPhotos();
   }, [petId]);

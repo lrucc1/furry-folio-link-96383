@@ -44,6 +44,7 @@ const FoundPet = () => {
     location: '',
   })
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchPetDetails is defined in component
   useEffect(() => {
     if (publicToken) {
       fetchPetDetails()
