@@ -96,7 +96,7 @@ export const Footer = () => {
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t text-center text-sm text-muted-foreground">
           <p>© {currentYear} PetLinkID. All rights reserved.</p>
-          <p className="mt-2">Made with ❤️ for pets and their families</p>
+          <p className="mt-2">Made in Australia for pets and their families</p>
         </div>
       </div>
     </footer>

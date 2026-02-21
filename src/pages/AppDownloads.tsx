@@ -39,10 +39,10 @@ const AppDownloads = () => {
   ];
 
   const appStats = [
-    { number: "∞", label: "Unlimited Pets (Pro)" },
-    { number: "🔒", label: "Privacy Protected" },
-    { number: "👨‍👩‍👧", label: "Family Sharing" },
-    { number: "24/7", label: "Support" }
+    { icon: <Zap className="w-7 h-7 text-primary" />, label: "Unlimited Pets (Pro)" },
+    { icon: <Shield className="w-7 h-7 text-primary" />, label: "Privacy Protected" },
+    { icon: <Users className="w-7 h-7 text-primary" />, label: "Family Sharing" },
+    { icon: <Smartphone className="w-7 h-7 text-primary" />, label: "24/7 Access" }
   ];
 
   return (
@@ -163,7 +163,7 @@ const AppDownloads = () => {
             {appStats.map((stat, index) => (
               <Card key={index} className="bg-gradient-card border-0 shadow-medium text-center">
                 <CardContent className="py-8">
-                  <div className="text-3xl font-bold text-primary mb-2">{stat.number}</div>
+                  <div className="mb-2 flex justify-center">{stat.icon}</div>
                   <div className="text-muted-foreground">{stat.label}</div>
                 </CardContent>
               </Card>

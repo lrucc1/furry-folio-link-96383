@@ -2,14 +2,15 @@ import { HeroSection } from "@/components/HeroSection";
 import { FeatureGrid } from "@/components/FeatureGrid";
 import { SectionNav } from "@/components/SectionNav";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { PetCard } from "@/components/PetCard";
 import { HomePricingCards } from "@/components/PricingCards";
 import { 
-  Crown, 
   ArrowRight, 
   Heart,
   Shield,
+  PawPrint,
+  Users,
+  Smartphone,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -77,10 +78,7 @@ const Index = () => {
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.5 }}
             >
-              <Badge className="bg-primary/10 text-primary border-primary/20 mb-4">
-                <Heart className="w-3 h-3 mr-1" />
-                Live Demo
-              </Badge>
+              
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-4">
                 Your Pet Dashboard
               </h2>
@@ -121,10 +119,7 @@ const Index = () => {
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.5 }}
             >
-              <Badge className="bg-accent/10 text-accent border-accent/20 mb-4">
-                <Crown className="w-3 h-3 mr-1" />
-                Simple Pricing
-              </Badge>
+              
               <h2 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground mb-4 sm:mb-6">
                 Simple plans for every pet family
               </h2>
@@ -160,7 +155,7 @@ const Index = () => {
               Ready to Protect Your Pets?
             </h2>
             <p className="text-base sm:text-xl text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto">
-              Join thousands of pet owners worldwide who trust PetLinkID to keep their furry family members safe and healthy.
+              Start protecting your pets today with secure profiles, health tracking, and instant lost pet recovery.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -180,20 +175,20 @@ const Index = () => {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16 pt-16 border-t border-white/20">
               <div className="text-center">
-                <div className="text-3xl font-bold mb-2">∞</div>
-                <div className="text-white/80 text-sm">Unlimited Pets (Pro)</div>
+                <PawPrint className="w-8 h-8 mx-auto mb-2" />
+                <p className="text-sm text-white/80">Unlimited Pets (Pro)</p>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold mb-2">👨‍👩‍👧</div>
-                <div className="text-white/80 text-sm">Family Sharing</div>
+                <Users className="w-8 h-8 mx-auto mb-2" />
+                <p className="text-sm text-white/80">Family Sharing</p>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold mb-2">🔒</div>
-                <div className="text-white/80 text-sm">Privacy First</div>
+                <Shield className="w-8 h-8 mx-auto mb-2" />
+                <p className="text-sm text-white/80">Privacy First</p>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold mb-2">📱</div>
-                <div className="text-white/80 text-sm">iOS &amp; Web</div>
+                <Smartphone className="w-8 h-8 mx-auto mb-2" />
+                <p className="text-sm text-white/80">iOS & Web</p>
               </div>
             </div>
           </motion.div>
