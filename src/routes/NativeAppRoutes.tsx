@@ -19,9 +19,9 @@ import IOSSubscriptionTerms from "@/pages/ios/IOSSubscriptionTerms";
 
 // Shared app pages (used by iOS only now)
 import PetDetails from "@/pages/PetDetails";
-import EditPet from "@/pages/EditPet";
+import IOSEditPet from "@/pages/ios/IOSEditPet";
 import PetWeightTracker from "@/pages/PetWeightTracker";
-import AddPet from "@/pages/AddPet";
+import IOSAddPet from "@/pages/ios/IOSAddPet";
 import Reminders from "@/pages/Reminders";
 import BillingSuccess from "@/pages/BillingSuccess";
 import BillingCancel from "@/pages/BillingCancel";
@@ -80,9 +80,9 @@ export function NativeAppRoutes() {
         <Route path="/settings/subscription-terms" element={<IOSSubscriptionTerms />} />
 
         {/* Pet management */}
-        <Route path="/pets/new" element={<ProtectedRoute><AddPet /></ProtectedRoute>} />
+        <Route path="/pets/new" element={<ProtectedRoute><IOSAddPet /></ProtectedRoute>} />
         <Route path="/pets/:id" element={<ProtectedRoute><PetDetails /></ProtectedRoute>} />
-        <Route path="/pets/:id/edit" element={<ProtectedRoute><EditPet /></ProtectedRoute>} />
+        <Route path="/pets/:id/edit" element={<ProtectedRoute><IOSEditPet /></ProtectedRoute>} />
         <Route path="/pets/:id/weight" element={<ProtectedRoute><PetWeightTracker /></ProtectedRoute>} />
 
         {/* Reminders */}
