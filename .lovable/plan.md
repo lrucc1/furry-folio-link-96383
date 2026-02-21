@@ -1,53 +1,60 @@
 
 
-# Phase 6: Final Cleanup — Dead Branches, Unused Exports, and Empty Directories
+# Phase 7: Fix Stale Route References (`/dashboard` and `/account`)
 
-## What We're Doing
-This phase targets the remaining dead code left over after Phases 1-5: a dead web branch in a component that only runs in native context, unused hook exports that are never imported, and an empty directory left behind from Phase 4.
+## The Problem
 
-## Files to Change (2 files)
+Phases 1-3 deleted the `/dashboard` and `/account` routes, but many files still navigate to them. Any user hitting these paths lands on the `NotFound` page -- a broken experience.
 
-| File | What Changes |
-|------|-------------|
-| `src/components/AppLoadingScreen.tsx` | Remove the dead web branch (lines 25-37). This component is only rendered inside `if (isNative && loading)` in `App.tsx`, so the `else` return with `bg-background` styling never executes. Remove `useIsNativeApp` import and `isNative` variable — promote the native return to be the only return. ~15 lines removed. |
-| `src/hooks/useIsNativeApp.ts` | Remove the unused `useIsIOSApp()` and `useIsAndroidApp()` exports (lines 14-26). Neither is imported anywhere in the codebase. ~12 lines removed. |
+## What Changes
 
-## Directories to Delete (1 directory)
+All `/dashboard` references become `/ios-home` and all `/account` references are replaced with the correct iOS equivalent.
 
-| Path | Reason |
-|------|--------|
-| `src/features/` | Empty directory — all contents deleted in Phase 4. |
+## Files to Update (14 files)
 
-## Files NOT Changed (and why)
+### Navigation Fixes (`/dashboard` to `/ios-home`)
 
-| File | Reason |
-|------|--------|
-| `App.tsx` | Still needs `useIsNativeApp` to choose between NativeAppRoutes and MarketingWebRoutes — this is the core routing split |
-| `Header.tsx` | Shared component used by MarketingWebRoutes; `isNative` null-return is correct |
-| `HelpCentre.tsx`, `Contact.tsx`, `Pricing.tsx` | Shared between both route trees — dual layout is intentional |
-| `IOSSettings.tsx`, `IOSPlans.tsx` | `isNative` used for native feature gating (push, biometrics, restore purchases) |
-| `usePushNotifications.ts` | `isNative` used for native push notification registration gating |
-| `config/environment.ts` | Local `isNativeApp()` function for environment detection — different from the hook |
-| `lib/appleIap.ts` | `isNativeApp()` function for Apple IAP platform checks |
-| `ManageSubscriptionModal.tsx`, `UpgradeInline.tsx` | Use `isNativeApp()` from appleIap for IAP logic |
+| # | File | Line(s) | Current | Replacement |
+|---|------|---------|---------|-------------|
+| 1 | `src/components/ios/IOSTabBar.tsx` | 13, 68 | `'/dashboard'` in Pets tab path and active check | `'/ios-home'` |
+| 2 | `src/components/AdminRoute.tsx` | 26 | `Navigate to="/dashboard"` | `Navigate to="/ios-home"` |
+| 3 | `src/components/DowngradeHelper.tsx` | 129 | `navigate('/dashboard')` | `navigate('/ios-home')` |
+| 4 | `src/pages/PetDetails.tsx` | 119, 329 | `navigate('/dashboard')` and `Link to="/dashboard"` | `/ios-home` and label "Back to Home" |
+| 5 | `src/pages/PetWeightTracker.tsx` | 89 | `navigate('/dashboard')` | `navigate('/ios-home')` |
+| 6 | `src/pages/ios/IOSEditPet.tsx` | 120, 286 | `navigate('/dashboard')` (error + delete) | `navigate('/ios-home')` |
+| 7 | `src/pages/ios/IOSAddPet.tsx` | 264 | `navigate('/dashboard')` | `navigate('/ios-home')` |
+| 8 | `src/pages/invite/AcceptInvite.tsx` | 83 | `navigate('/dashboard')` in `handleGoToDashboard` | `navigate('/ios-home')` |
+| 9 | `src/pages/admin/PlanDebug.tsx` | 15 | `navigate('/dashboard')` | `navigate('/ios-home')` |
+| 10 | `src/pages/admin/LimitAudit.tsx` | 42 | `navigate('/dashboard')` | `navigate('/ios-home')` |
+| 11 | `src/pages/admin/DeletionHistory.tsx` | 119 | `Navigate to="/dashboard"` | `Navigate to="/ios-home"` |
+| 12 | `src/pages/NotFound.tsx` | 50-51 | `navigate('/dashboard')` "My Pets Dashboard" | `navigate('/ios-home')` "My Pets" |
+
+### Navigation Fixes (`/account` to correct iOS routes)
+
+| # | File | Line(s) | Current | Replacement |
+|---|------|---------|---------|-------------|
+| 13 | `src/pages/ios/IOSSettings.tsx` | 380 | `navigate('/account')` for Delete Account | Trigger delete-account flow inline (or navigate to a confirmation modal) |
+| 14 | `src/components/PricingCards.tsx` | 268 | `Link to="/account"` "Manage Subscription" | `Link to="/settings/billing"` |
+
+### Shared/Marketing Pages (context-dependent)
+
+| # | File | Line(s) | Current | Action |
+|---|------|---------|---------|--------|
+| 15 | `src/pages/LostPetGuide.tsx` | 97 | `Link to="/dashboard"` "Report Lost Pet Now" | Change to `/ios-home` |
+| 16 | `src/pages/Support.tsx` | 111 | `href="/dashboard"` "Go to Dashboard" | Change to `/ios-home` and label "Go to Home" |
+| 17 | `src/components/Header.tsx` | 97, 137 | `to="/dashboard"` and `to="/account"` | `to="/ios-home"` and `to="/ios-settings"` |
+
+## What's NOT Changed
+
+- `src/integrations/supabase/client.ts` -- `isNative` here is Capacitor platform detection, not routing
+- `src/components/InstagramShareCard.tsx` / `LostPetPosterModal.tsx` -- `isNative` is for CORS proxy logic, not routing
 
 ## Estimated Impact
-- ~27 lines of dead code removed
-- 1 empty directory cleaned up
-- 2 unused function exports removed
+- 17 files updated with correct route paths
+- Zero broken navigations remaining
 - No backend, database, or edge function changes
-- No visual change to the app
+- No visual layout changes -- only navigation targets fixed
 
-## Technical Details
+## Technical Notes
 
-**AppLoadingScreen.tsx:**
-1. Remove `import { useIsNativeApp }` 
-2. Remove `const isNative = useIsNativeApp()`
-3. Remove the `if (isNative)` wrapper — make the native gradient return the only return
-4. Delete the web return block (lines 26-37)
-
-**useIsNativeApp.ts:**
-1. Delete the `useIsIOSApp` function (lines 14-19)
-2. Delete the `useIsAndroidApp` function (lines 21-26)
-3. Keep `useIsNativeApp` — still imported by 8 files
-
+For `IOSSettings.tsx` line 380 (`navigate('/account')` for Delete Account): The `/account` page previously held the delete-account confirmation UI. Since this no longer exists, this will be updated to trigger the delete flow directly from settings or link to a future confirmation modal. For now, the safest fix is to show a confirmation dialog inline before calling the `delete-account` edge function.
