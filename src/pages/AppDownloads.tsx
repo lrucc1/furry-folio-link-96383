@@ -6,7 +6,7 @@ import {
   ArrowLeft,
   Smartphone,
   Download,
-  Star,
+  
   Users,
   Shield,
   Zap,
@@ -39,9 +39,9 @@ const AppDownloads = () => {
   ];
 
   const appStats = [
-    { number: "4.9★", label: "App Store Rating" },
-    { number: "50K+", label: "Downloads" },
-    { number: "99.9%", label: "Uptime" },
+    { number: "∞", label: "Unlimited Pets (Pro)" },
+    { number: "🔒", label: "Privacy Protected" },
+    { number: "👨‍👩‍👧", label: "Family Sharing" },
     { number: "24/7", label: "Support" }
   ];
 
@@ -156,7 +156,7 @@ const AppDownloads = () => {
         {/* App Stats */}
         <section className="mb-16">
           <h2 className="text-2xl font-bold text-foreground mb-8 text-center">
-            Trusted by Pet Owners Everywhere
+            Built for Pet Families
           </h2>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -271,48 +271,34 @@ const AppDownloads = () => {
           </Card>
         </section>
 
-        {/* Reviews Section */}
+        {/* Why PetLinkID Section */}
         <section className="mb-16">
           <Card className="bg-gradient-card border-0 shadow-medium">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl">What Pet Owners Are Saying</CardTitle>
+              <CardTitle className="text-2xl">Why Pet Owners Choose PetLinkID</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-3 gap-6">
                 <div className="text-center">
-                  <div className="flex justify-center mb-2">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 text-yellow-500 fill-current" />
-                    ))}
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    "This app saved my dog Max when he got lost. The QR tag worked perfectly!"
+                  <Shield className="w-8 h-8 text-primary mx-auto mb-3" />
+                  <h4 className="font-semibold mb-2">Australian Privacy Compliant</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Your pet's data is stored securely and handled in accordance with Australian Privacy Principles.
                   </p>
-                  <p className="text-xs text-muted-foreground">- Sarah M.</p>
                 </div>
-                
                 <div className="text-center">
-                  <div className="flex justify-center mb-2">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 text-yellow-500 fill-current" />
-                    ))}
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    "Love the vaccination reminders. Never miss my cat's checkups anymore."
+                  <Users className="w-8 h-8 text-primary mx-auto mb-3" />
+                  <h4 className="font-semibold mb-2">Share with Caregivers</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Invite family members, pet sitters, and vets to access your pet's profile securely.
                   </p>
-                  <p className="text-xs text-muted-foreground">- James T.</p>
                 </div>
-                
                 <div className="text-center">
-                  <div className="flex justify-center mb-2">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 text-yellow-500 fill-current" />
-                    ))}
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    "Simple, clean interface. Everything I need for my pets in one place."
+                  <Zap className="w-8 h-8 text-primary mx-auto mb-3" />
+                  <h4 className="font-semibold mb-2">Smart Health Reminders</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Never miss a vaccination or check-up with automated push notification reminders.
                   </p>
-                  <p className="text-xs text-muted-foreground">- Emma K.</p>
                 </div>
               </div>
             </CardContent>
