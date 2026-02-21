@@ -39,4 +39,13 @@ post_install do |installer|
     frameworks_script = File.join('Pods', 'Target Support Files', target.name, "#{target.name}-frameworks.sh")
     File.chmod(0o755, frameworks_script) if File.exist?(frameworks_script)
   end
+
+  # Silence "[CP] Embed Pods Frameworks / Copy XCFrameworks" warnings about missing outputs
+  installer.pods_project.targets.each do |target|
+    target.build_phases.each do |phase|
+      next unless phase.respond_to?(:name)
+      next unless phase.name&.start_with?('[CP]')
+      phase.always_out_of_date = '1'
+    end
+  end
 end
