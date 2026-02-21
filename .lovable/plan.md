@@ -1,48 +1,95 @@
 
 
-# Landing Page Refresh: Remove Fake Stats, Update Dates, and Honest Copy
+# Landing Page Overhaul: Clean, Professional, No-Emoji Design
 
-## The Problem
+## Problems Identified
 
-The landing page and downloads page contain **fabricated statistics and fake reviews** that are problematic under **Australian Consumer Law (misleading or deceptive conduct)**. The app hasn't launched yet, but the pages claim:
-
-- "Trusted by 10,000+ pet owners worldwide" (Hero badge)
-- "10K+ Happy Pet Owners", "25K+ Pets Protected", "500+ Pets Reunited", "4.9 App Store Rating" (Index.tsx stats grid)
-- "4.9 App Store Rating", "50K+ Downloads" (AppDownloads.tsx stats)
-- Three fake 5-star reviews with fabricated names (AppDownloads.tsx)
-- Mock pet vaccination dates from 2024 (Index.tsx demo data)
+1. **Emoji-heavy CTA section** -- The bottom CTA stats grid uses raw emojis (`👨‍👩‍👧`, `🔒`, `📱`, `∞`) which look cheap and AI-generated
+2. **AppDownloads stats** also use emojis (`🔒`, `👨‍👩‍👧`)
+3. **Footer** uses `❤️` emoji in "Made with" line
+4. **Misleading CTA copy** -- "Join thousands of pet owners worldwide" is still a false claim (app hasn't launched)
+5. **Demo section feels generic** -- Mock pet cards with stock Unsplash photos and a "Live Demo" badge looks template-y
+6. **Too many Badge pills** -- Almost every section has a small badge above the heading (`Live Demo`, `Simple Pricing`, `Complete Pet Care Solution`) which is a very AI-template pattern
+7. **Redundant brand logo in hero** -- PetLinkID logo/name appears in the hero AND in the header, creating duplication
 
 ## What Changes
 
-### 1. `src/components/HeroSection.tsx`
-- **Remove** the fake "Trusted by 10,000+ pet owners worldwide" badge
-- Replace with a launch-appropriate badge like "Now Available on iOS" or "Australian-Made Pet App"
+### 1. `src/pages/Index.tsx` (major rewrite)
 
-### 2. `src/pages/Index.tsx`
-- **Update mock pet dates** from `2024-06-15` / `2024-07-20` to `2025-12-15` / `2026-01-20` (recent but realistic)
-- **Replace the fake stats grid** (10K+, 25K+, 500+, 4.9) with value-proposition callouts that don't make false claims, e.g.:
-  - "Unlimited Pets" (Pro feature)
-  - "Family Sharing" (key differentiator)
-  - "Privacy First" (Australian data compliance)
-  - "iOS & Web" (cross-platform)
+**CTA stats grid (lines 181-198):**
+- Replace all emojis with Lucide icons (same icon set used throughout the app)
+- `∞` becomes a `PawPrint` icon, `👨‍👩‍👧` becomes `Users`, `🔒` becomes `Shield`, `📱` becomes `Smartphone`
+- Fix misleading copy: "Join thousands of pet owners worldwide" becomes "Start protecting your pets today"
 
-### 3. `src/pages/AppDownloads.tsx`
-- **Remove fake stats** ("4.9 App Store Rating", "50K+ Downloads") -- replace with honest feature highlights or remove the stats section entirely
-- **Remove fake reviews section** (lines 274-319) -- fabricated testimonials violate Australian Consumer Law. Replace with a "Why pet owners choose PetLinkID" value summary or remove entirely
+**Demo section (lines 70-112):**
+- Remove the `Live Demo` badge -- it looks template-generated
+- Change heading from "Your Pet Dashboard" to something more direct
+- Keep the PetCard grid but remove the "Live Demo" badge pill
 
-### 4. `src/components/Footer.tsx`
-- Footer is fine -- copyright year is already dynamic (`new Date().getFullYear()`)
+**Pricing section (lines 114-148):**
+- Remove the Crown badge pill above the heading
+- Keep the heading and pricing cards as-is (those are good)
 
-## Files NOT Changed
-- `FeatureGrid.tsx` -- feature descriptions are accurate, no fake claims
-- `PricingCards.tsx` -- pricing is factual, no issues
-- `SectionNav.tsx` -- just navigation dots, no content
-- `Header.tsx` -- no stale content
+### 2. `src/components/HeroSection.tsx`
+
+- Remove the duplicate PetLinkID brand logo block (lines 34-44) -- it's already in the Header
+- Clean up the "Now Available on iOS & Web" badge to just be a subtle line of text instead of a pill badge
+- Simplify: fewer nested motion wrappers for a cleaner, faster feel
+
+### 3. `src/components/FeatureGrid.tsx`
+
+- Remove the Crown badge pill above "Everything Your Pet Needs" heading
+- Keep the feature cards and their individual badges (Free/Pro/Coming Soon) -- those serve a purpose
+
+### 4. `src/pages/AppDownloads.tsx`
+
+- Replace emoji stats (`🔒`, `👨‍👩‍👧`) with Lucide icons (Shield, Users)
+
+### 5. `src/components/Footer.tsx`
+
+- Replace `❤️` emoji with "Made in Australia for pets and their families" (no emoji, brand-aligned)
+
+## Files Changed (5 files)
+
+| File | Summary |
+|------|---------|
+| `src/pages/Index.tsx` | Replace emoji stats with Lucide icons; fix false "thousands" claim; remove template badges |
+| `src/components/HeroSection.tsx` | Remove duplicate brand logo; simplify badge to text |
+| `src/components/FeatureGrid.tsx` | Remove Crown badge pill above section heading |
+| `src/pages/AppDownloads.tsx` | Replace emoji stats with Lucide icons |
+| `src/components/Footer.tsx` | Replace heart emoji with text |
+
+## What's NOT Changed
+- PricingCards.tsx -- already clean, no emojis, professional layout
+- SectionNav.tsx -- minimal dot navigation, fine as-is
+- PetCard.tsx -- component itself is well-designed
+- Header.tsx -- navigation links already fixed in Phase 7
+- Tailwind config / CSS -- design system is solid
 
 ## Estimated Impact
-- 4 files updated
-- All fabricated statistics and fake reviews removed
-- Compliant with Australian Consumer Law (no misleading conduct)
-- No backend, database, or edge function changes
-- Landing page remains visually appealing with honest, value-driven copy
+- All emojis removed from the landing page and downloads page
+- All false/misleading claims removed
+- Cleaner, more professional look that doesn't scream "AI template"
+- No backend or database changes
+- No route changes
+
+## Technical Details
+
+**Index.tsx CTA stats -- before:**
+```
+<div className="text-3xl font-bold mb-2">👨‍👩‍👧</div>
+<div className="text-white/80 text-sm">Family Sharing</div>
+```
+
+**After:**
+```
+<Users className="w-8 h-8 mx-auto mb-2" />
+<p className="text-sm text-white/80">Family Sharing</p>
+```
+
+**HeroSection.tsx -- remove duplicate brand block (lines 34-44):**
+The header already shows the PetLinkID logo. Having it again in the hero wastes vertical space and looks like a template.
+
+**Footer.tsx -- line 99:**
+`Made with ❤️ for pets and their families` becomes `Made in Australia for pets and their families`
 
