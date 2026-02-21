@@ -1,46 +1,76 @@
 
 
-# Phase 3: Strip Dual-Mode Layout Branches
+# Phase 4: Remove Dead Imports, Unused Components, and Orphaned Utilities
 
-## What We're Doing
-Removing the web layout branches from 5 pages that are now exclusively routed through `NativeAppRoutes`. These pages currently have `if (isNative) { return iOS layout } else { return web layout }` patterns -- the web branch is dead code.
+## What We Found
 
-## Files to Simplify (5 files)
+After Phases 1-3 cleaned up routing and layout branches, several files are now completely unreferenced -- they were only used by deleted pages or are legacy code that was never cleaned up.
 
-| File | What Changes |
-|------|-------------|
-| `src/pages/PetDetails.tsx` | Remove ~400 lines of web layout; keep only the `IOSPageLayout` branch. Remove `useIsNativeApp` import and `isNative` variable. |
-| `src/pages/PetWeightTracker.tsx` | Remove web layout return block (~30 lines); keep only the `IOSPageLayout` branch. Remove `useIsNativeApp`, `isNative`, web-only back button, and the `if (isNative)` conditional. |
-| `src/pages/Reminders.tsx` | Remove web layout branch (~100 lines) and web-specific sizing conditionals (`isNative ? 'text-xl' : 'text-2xl'`); simplify to iOS sizes only. Remove `useIsNativeApp` import. |
-| `src/pages/BillingSuccess.tsx` | Remove web layout branch (~40 lines); keep only the `IOSPageLayout` return. Remove `useIsNativeApp` import. |
-| `src/pages/BillingCancel.tsx` | Remove web layout branch (~40 lines); keep only the `IOSPageLayout` return. Remove `useIsNativeApp` import. |
+## Files to Delete (8 files)
 
-## Files NOT Changed (and why)
+### Orphaned Components (3 files)
 
-| File | Reason |
-|------|--------|
-| `HelpCentre.tsx` | Shared between both route trees (marketing site needs web layout) |
-| `Contact.tsx` | Shared between both route trees |
-| `Pricing.tsx` | Shared between both route trees |
-| `Header.tsx` | Used by MarketingWebRoutes; `isNative` null-return is defensive, harmless |
-| `IOSSettings.tsx` | Uses `isNative` for native feature gating (push, biometrics), not layout |
-| `IOSPlans.tsx` | Uses `isNative` for restore purchases button visibility |
-| `IOSAddPet.tsx` | Uses `Capacitor.isNativePlatform()` for camera access |
-| `ManageSubscriptionModal.tsx` | Uses `isNativeApp()` for Apple IAP logic |
-| `UpgradeInline.tsx` | Uses `isNativeApp()` for Apple IAP logic |
+| File | Why It's Dead |
+|------|--------------|
+| `src/components/PendingInvitesModal.tsx` | Only references itself; was used by the deleted Account/Dashboard pages |
+| `src/components/ReminderNotifications.tsx` | Wait -- actually used by Reminders.tsx. Keeping. |
+
+Let me correct that -- ReminderNotifications IS used. Updated list:
+
+| File | Why It's Dead |
+|------|--------------|
+| `src/components/PendingInvitesModal.tsx` | Zero imports from any other file; was used by the deleted Dashboard/Account pages |
+
+### Orphaned Hooks (1 file)
+
+| File | Why It's Dead |
+|------|--------------|
+| `src/hooks/useEntitlement.ts` | Zero imports anywhere; superseded by `useEntitlementCheck.ts` + `EntitlementServiceV2` |
+
+### Orphaned Services (1 file)
+
+| File | Why It's Dead |
+|------|--------------|
+| `src/services/EntitlementService.ts` | Zero imports anywhere; superseded by `EntitlementServiceV2.ts` |
+
+### Orphaned Feature Modules (3 files)
+
+| File | Why It's Dead |
+|------|--------------|
+| `src/features/export/download.ts` | Zero imports; was used by deleted ExportData settings page |
+| `src/features/export/exporter.ts` | Zero imports; was used by deleted ExportData settings page |
+| `src/features/export/formatters.ts` | Zero imports; was used by deleted ExportData settings page |
+
+## Total: 6 files to delete
+
+| # | File | Approx Lines |
+|---|------|-------------|
+| 1 | `src/components/PendingInvitesModal.tsx` | ~120 |
+| 2 | `src/hooks/useEntitlement.ts` | ~60 |
+| 3 | `src/services/EntitlementService.ts` | ~80 |
+| 4 | `src/features/export/download.ts` | ~50 |
+| 5 | `src/features/export/exporter.ts` | ~100 |
+| 6 | `src/features/export/formatters.ts` | ~80 |
+
+## No Code Modifications Needed
+
+All 6 files have zero references from any other file. Deleting them requires no import updates anywhere.
+
+## What Stays (Verified Still Referenced)
+
+These were investigated but confirmed still in use:
+- `DevModeToggle` -- used in App.tsx
+- `FeatureGuard` / `FeaturePreview` -- used by PetDocuments
+- `ImageCropDialog` -- used by 5 files (IOSAddPet, IOSEditPet, IOSEditProfile, PetPhotoGallery, PetDocuments)
+- `RegionAwareSelect` -- used by IOSAddPet, IOSEditPet
+- `InstagramShareCard` / `LostPetPosterModal` -- used by PetDetails
+- `PaidPlanInfoSheet` -- used by UpgradeInline
+- `PaywallModal` -- used by IOSAddPet
+- `useScrollDirection` / `useSignedUrl` / `useUserCountry` / `useAutoTimezone` -- all still referenced
+- `EntitlementServiceV2` -- used by 3 files
+- `useEntitlementCheck` -- used by HealthReminderModal, VaccinationModal
 
 ## Estimated Impact
-- ~600+ lines of dead web-portal layout code removed
-- 5 files simplified to single-path rendering
+- ~490 lines of dead code removed
+- 6 files deleted, 0 files modified
 - No backend, database, or edge function changes
-- No visual change to the iOS app
-
-## Technical Details
-
-For each file, the pattern is the same:
-1. Remove the `useIsNativeApp` import and `const isNative = useIsNativeApp()` variable
-2. Remove the web layout return block (the `else` or final return after the `if (isNative)` block)
-3. Promote the iOS layout to be the only return
-4. Remove any `isNative`-conditional class names (e.g., `isNative ? 'text-xl' : 'text-2xl'` becomes just `'text-xl'`)
-5. Remove unused web-only imports (e.g., `ArrowLeft`, `Link` if only used in web branch)
-
