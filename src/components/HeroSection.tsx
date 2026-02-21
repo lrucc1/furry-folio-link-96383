@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Shield, Users, QrCode, Smartphone, Star, Link2 } from "lucide-react";
+import { Heart, Shield, Users, QrCode, Smartphone, Link2 } from "lucide-react";
 import heroImage from "@/assets/hero-pets-realistic.jpg";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
@@ -44,8 +44,8 @@ export const HeroSection = () => {
             </motion.div>
             
             <Badge className="bg-white/20 text-white border-white/30 mb-6 backdrop-blur-sm">
-              <Star className="w-3 h-3 mr-1" />
-              Trusted by 10,000+ pet owners worldwide
+              <Smartphone className="w-3 h-3 mr-1" />
+              Now Available on iOS &amp; Web
             </Badge>
             
             <h1 className="text-4xl lg:text-6xl font-bold mb-6 leading-tight">

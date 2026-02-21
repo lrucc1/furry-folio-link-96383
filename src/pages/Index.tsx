@@ -25,7 +25,7 @@ const mockPets = [
     photo: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=300&fit=crop",
     isLost: false,
     microchipNumber: "123456789",
-    lastVaccination: "2024-06-15"
+    lastVaccination: "2025-12-15"
   },
   {
     id: "2", 
@@ -36,7 +36,7 @@ const mockPets = [
     photo: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&h=300&fit=crop",
     isLost: true,
     microchipNumber: "987654321",
-    lastVaccination: "2024-07-20"
+    lastVaccination: "2026-01-20"
   }
 ];
 
@@ -180,20 +180,20 @@ const Index = () => {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16 pt-16 border-t border-white/20">
               <div className="text-center">
-                <div className="text-3xl font-bold mb-2">10K+</div>
-                <div className="text-white/80 text-sm">Happy Pet Owners</div>
+                <div className="text-3xl font-bold mb-2">∞</div>
+                <div className="text-white/80 text-sm">Unlimited Pets (Pro)</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold mb-2">25K+</div>
-                <div className="text-white/80 text-sm">Pets Protected</div>
+                <div className="text-3xl font-bold mb-2">👨‍👩‍👧</div>
+                <div className="text-white/80 text-sm">Family Sharing</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold mb-2">500+</div>
-                <div className="text-white/80 text-sm">Pets Reunited</div>
+                <div className="text-3xl font-bold mb-2">🔒</div>
+                <div className="text-white/80 text-sm">Privacy First</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold mb-2">4.9★</div>
-                <div className="text-white/80 text-sm">App Store Rating</div>
+                <div className="text-3xl font-bold mb-2">📱</div>
+                <div className="text-white/80 text-sm">iOS &amp; Web</div>
               </div>
             </div>
           </motion.div>
