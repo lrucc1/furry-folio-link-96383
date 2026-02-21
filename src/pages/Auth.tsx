@@ -2,15 +2,12 @@ import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
-import { Card, CardContent } from '@/components/ui/card'
 import { Logo } from '@/components/Logo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
 import { Eye, EyeOff, Loader2, Mail, Fingerprint } from 'lucide-react'
-import { useIsNativeApp } from '@/hooks/useIsNativeApp'
 
 import { motion } from 'framer-motion'
 import { useBiometricAuth } from '@/hooks/useBiometricAuth'
@@ -60,7 +57,6 @@ const buttonContainerVariants = {
 const AuthPage = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const isNative = useIsNativeApp()
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [biometricLoading, setBiometricLoading] = useState(false)
@@ -78,8 +74,6 @@ const AuthPage = () => {
 
   // Ensure the native app gets a full-bleed gradient behind the webview safe areas
   useEffect(() => {
-    if (!isNative) return
-
     const root = document.getElementById('root')
 
     document.body.classList.add('native-auth-bg')
@@ -91,13 +85,13 @@ const AuthPage = () => {
       document.documentElement.classList.remove('native-auth-bg')
       root?.classList.remove('native-auth-bg')
     }
-  }, [isNative])
+  }, [])
 
   useEffect(() => {
     if (user) {
-      navigate(isNative ? '/ios-home' : '/dashboard')
+      navigate('/ios-home')
     }
-  }, [user, navigate, isNative])
+  }, [user, navigate])
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -115,7 +109,7 @@ const AuthPage = () => {
         toast.success('Signed in successfully!')
         
         // After successful sign-in, check if biometrics available but not set up
-        if (isNative && biometric.isAvailable && !biometric.hasCredentials) {
+        if (biometric.isAvailable && !biometric.hasCredentials) {
           setShowBiometricSetup(true)
         }
       }
@@ -177,7 +171,7 @@ const AuthPage = () => {
         email: signUpEmail.trim().toLowerCase(),
         password: signUpPassword,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/ios-home`,
           data: {
             full_name: signUpName.trim(),
             display_name: signUpName.trim()
@@ -197,14 +191,10 @@ const AuthPage = () => {
     }
   }
 
-
   // View state for iOS native auth
   const [authView, setAuthView] = useState<'welcome' | 'signin' | 'signup' | 'forgot-password'>('welcome');
   const [resetEmail, setResetEmail] = useState('');
   const [resetSent, setResetSent] = useState(false);
-  
-  // Web forgot password view state
-  const [showWebForgotPassword, setShowWebForgotPassword] = useState(false);
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -229,199 +219,86 @@ const AuthPage = () => {
     }
   };
 
-  // iOS Native App Layout - Clean welcome-first approach
-  if (isNative) {
-    return (
-      <>
-        <BiometricSetupModal
-          open={showBiometricSetup}
-          onOpenChange={setShowBiometricSetup}
-          onEnable={handleEnableBiometric}
-          biometryName={biometric.biometryName}
-        />
-        
-      {/* Full-bleed gradient container that extends behind safe areas */}
-      <div
-        className="fixed inset-0 flex flex-col overflow-hidden min-h-screen min-h-dvh"
-        style={{
-          background: 'linear-gradient(135deg, hsl(175 60% 45%) 0%, hsl(15 85% 65%) 100%)',
-        }}
-      >
-        {/* Welcome Screen */}
-        {authView === 'welcome' && (
-          <div 
-            className="flex-1 flex flex-col"
-            style={{ paddingTop: 'env(safe-area-inset-top)' }}
+  return (
+    <>
+      <BiometricSetupModal
+        open={showBiometricSetup}
+        onOpenChange={setShowBiometricSetup}
+        onEnable={handleEnableBiometric}
+        biometryName={biometric.biometryName}
+      />
+      
+    {/* Full-bleed gradient container that extends behind safe areas */}
+    <div
+      className="fixed inset-0 flex flex-col overflow-hidden min-h-screen min-h-dvh"
+      style={{
+        background: 'linear-gradient(135deg, hsl(175 60% 45%) 0%, hsl(15 85% 65%) 100%)',
+      }}
+    >
+      {/* Welcome Screen */}
+      {authView === 'welcome' && (
+        <div 
+          className="flex-1 flex flex-col"
+          style={{ paddingTop: 'env(safe-area-inset-top)' }}
+        >
+          {/* Main content - centered */}
+          <motion.div 
+            className="flex-1 flex flex-col items-center justify-center px-8"
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
           >
-            {/* Main content - centered */}
-            <motion.div 
-              className="flex-1 flex flex-col items-center justify-center px-8"
-              initial="hidden"
-              animate="visible"
-              variants={containerVariants}
-            >
-              <motion.div variants={logoVariants}>
-                <Logo iconClassName="w-20 h-20" textClassName="font-bold text-4xl text-white" />
-              </motion.div>
-              <motion.h1 variants={fadeUpVariants} className="text-2xl font-semibold text-white text-center mt-6">
-                Keep your pets safe
-              </motion.h1>
-              <motion.p variants={fadeUpVariants} className="text-white/80 text-center mt-2 max-w-xs">
-                Digital profiles, smart QR tags, and instant lost pet recovery.
-              </motion.p>
+            <motion.div variants={logoVariants}>
+              <Logo iconClassName="w-20 h-20" textClassName="font-bold text-4xl text-white" />
             </motion.div>
+            <motion.h1 variants={fadeUpVariants} className="text-2xl font-semibold text-white text-center mt-6">
+              Keep your pets safe
+            </motion.h1>
+            <motion.p variants={fadeUpVariants} className="text-white/80 text-center mt-2 max-w-xs">
+              Digital profiles, smart QR tags, and instant lost pet recovery.
+            </motion.p>
+          </motion.div>
 
-            {/* Action buttons - bottom */}
-            <motion.div 
-              className="px-6 space-y-3"
-              style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}
-              initial="hidden"
-              animate="visible"
-              variants={buttonContainerVariants}
-            >
-              {/* Biometric sign-in button (if available and credentials stored) */}
-              {biometric.isAvailable && biometric.hasCredentials && (
-                <motion.div variants={fadeUpVariants}>
-                  <Button
-                    className="w-full h-14 text-base bg-white/20 text-white border border-white/30 hover:bg-white/30 rounded-xl"
-                    onClick={handleBiometricSignIn}
-                    disabled={biometricLoading || loading}
-                  >
-                    {biometricLoading ? (
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    ) : (
-                      <Fingerprint className="mr-2 h-5 w-5" />
-                    )}
-                    Sign in with {biometric.biometryName}
-                  </Button>
-                </motion.div>
-              )}
-              
-              {/* Email sign-in button */}
+          {/* Action buttons - bottom */}
+          <motion.div 
+            className="px-6 space-y-3"
+            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}
+            initial="hidden"
+            animate="visible"
+            variants={buttonContainerVariants}
+          >
+            {/* Biometric sign-in button (if available and credentials stored) */}
+            {biometric.isAvailable && biometric.hasCredentials && (
               <motion.div variants={fadeUpVariants}>
                 <Button
-                  type="button"
-                  className="w-full h-14 text-base bg-white text-foreground hover:bg-white/90 rounded-xl"
-                  onClick={() => setAuthView('signin')}
-                  disabled={loading}
+                  className="w-full h-14 text-base bg-white/20 text-white border border-white/30 hover:bg-white/30 rounded-xl"
+                  onClick={handleBiometricSignIn}
+                  disabled={biometricLoading || loading}
                 >
-                  <Mail className="mr-2 h-5 w-5" />
-                  Continue with Email
+                  {biometricLoading ? (
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  ) : (
+                    <Fingerprint className="mr-2 h-5 w-5" />
+                  )}
+                  Sign in with {biometric.biometryName}
                 </Button>
               </motion.div>
-
-              <motion.div variants={fadeUpVariants} className="text-center pt-2">
-                <button
-                  type="button"
-                  onClick={() => setAuthView('signup')}
-                  className="text-white/70 text-sm"
-                >
-                  Don't have an account? <span className="text-white font-medium underline">Sign up</span>
-                </button>
-              </motion.div>
-
-              {/* Terms */}
-              <motion.p variants={fadeUpVariants} className="text-white/60 text-xs text-center pt-4">
-                By continuing, you agree to our{' '}
-                <Link to="/ios-terms" className="underline">Terms</Link> and{' '}
-                <Link to="/ios-privacy" className="underline">Privacy Policy</Link>.
-              </motion.p>
-            </motion.div>
-          </div>
-        )}
-
-        {/* Sign In Form */}
-        {authView === 'signin' && (
-          <div 
-            className="flex-1 flex flex-col px-6 py-4 overflow-y-auto"
-            style={{ 
-              paddingTop: 'calc(env(safe-area-inset-top) + 16px)',
-              paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)'
-            }}
-          >
-            {/* Back button */}
-            <button
-              type="button"
-              onClick={() => setAuthView('welcome')}
-              className="flex items-center text-white mb-6 -ml-1"
-            >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              <span className="ml-1">Back</span>
-            </button>
-
-            <h1 className="text-3xl font-bold text-white mb-2">Sign in</h1>
-            <p className="text-white/70 mb-8">Welcome back to PetLinkID</p>
-
-            <form onSubmit={handleSignIn} className="space-y-4 flex-1">
-              <div className="space-y-2">
-                <Label htmlFor="signin-email" className="text-white text-sm font-medium">Email</Label>
-                <Input
-                  id="signin-email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={signInEmail}
-                  onChange={(e) => setSignInEmail(e.target.value)}
-                  required
-                  disabled={loading}
-                  className="bg-white/95 border-0 h-14 text-base rounded-xl"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="signin-password" className="text-white text-sm font-medium">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="signin-password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    value={signInPassword}
-                    onChange={(e) => setSignInPassword(e.target.value)}
-                    required
-                    disabled={loading}
-                    className="bg-white/95 border-0 h-14 text-base rounded-xl pr-12"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-4 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                    disabled={loading}
-                  >
-                    {showPassword ? <EyeOff className="h-5 w-5 text-muted-foreground" /> : <Eye className="h-5 w-5 text-muted-foreground" />}
-                  </Button>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setResetEmail(signInEmail);
-                    setAuthView('forgot-password');
-                  }}
-                  className="text-white/70 text-sm mt-1"
-                >
-                  Forgot password?
-                </button>
-              </div>
-
+            )}
+            
+            {/* Email sign-in button */}
+            <motion.div variants={fadeUpVariants}>
               <Button
-                type="submit" 
-                className="w-full h-14 text-base bg-white text-primary hover:bg-white/90 rounded-xl font-semibold mt-4" 
+                type="button"
+                className="w-full h-14 text-base bg-white text-foreground hover:bg-white/90 rounded-xl"
+                onClick={() => setAuthView('signin')}
                 disabled={loading}
               >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Signing in...
-                  </>
-                ) : (
-                  'Sign In'
-                )}
+                <Mail className="mr-2 h-5 w-5" />
+                Continue with Email
               </Button>
-            </form>
+            </motion.div>
 
-            <div className="text-center py-6">
+            <motion.div variants={fadeUpVariants} className="text-center pt-2">
               <button
                 type="button"
                 onClick={() => setAuthView('signup')}
@@ -429,437 +306,322 @@ const AuthPage = () => {
               >
                 Don't have an account? <span className="text-white font-medium underline">Sign up</span>
               </button>
-            </div>
-          </div>
-        )}
+            </motion.div>
 
-        {/* Sign Up Form */}
-        {authView === 'signup' && (
-          <div 
-            className="flex-1 flex flex-col px-6 py-4 overflow-y-auto"
-            style={{ 
-              paddingTop: 'calc(env(safe-area-inset-top) + 16px)',
-              paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)'
-            }}
+            {/* Terms */}
+            <motion.p variants={fadeUpVariants} className="text-white/60 text-xs text-center pt-4">
+              By continuing, you agree to our{' '}
+              <Link to="/ios-terms" className="underline">Terms</Link> and{' '}
+              <Link to="/ios-privacy" className="underline">Privacy Policy</Link>.
+            </motion.p>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Sign In Form */}
+      {authView === 'signin' && (
+        <div 
+          className="flex-1 flex flex-col px-6 py-4 overflow-y-auto"
+          style={{ 
+            paddingTop: 'calc(env(safe-area-inset-top) + 16px)',
+            paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)'
+          }}
+        >
+          {/* Back button */}
+          <button
+            type="button"
+            onClick={() => setAuthView('welcome')}
+            className="flex items-center text-white mb-6 -ml-1"
           >
-            {/* Back button */}
-            <button
-              type="button"
-              onClick={() => setAuthView('welcome')}
-              className="flex items-center text-white mb-6 -ml-1"
-            >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              <span className="ml-1">Back</span>
-            </button>
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span className="ml-1">Back</span>
+          </button>
 
-            <h1 className="text-3xl font-bold text-white mb-2">Create account</h1>
-            <p className="text-white/70 mb-8">Join PetLinkID today</p>
+          <h1 className="text-3xl font-bold text-white mb-2">Sign in</h1>
+          <p className="text-white/70 mb-8">Welcome back to PetLinkID</p>
 
-            <form onSubmit={handleSignUp} className="space-y-4 flex-1">
-              <div className="space-y-2">
-                <Label htmlFor="signup-name" className="text-white text-sm font-medium">Name</Label>
-                <Input
-                  id="signup-name"
-                  type="text"
-                  placeholder="Your name"
-                  value={signUpName}
-                  onChange={(e) => setSignUpName(e.target.value)}
-                  required
-                  disabled={loading}
-                  minLength={2}
-                  maxLength={100}
-                  className="bg-white/95 border-0 h-14 text-base rounded-xl"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="signup-email" className="text-white text-sm font-medium">Email</Label>
-                <Input
-                  id="signup-email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={signUpEmail}
-                  onChange={(e) => setSignUpEmail(e.target.value)}
-                  required
-                  disabled={loading}
-                  className="bg-white/95 border-0 h-14 text-base rounded-xl"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="signup-password" className="text-white text-sm font-medium">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="signup-password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    value={signUpPassword}
-                    onChange={(e) => setSignUpPassword(e.target.value)}
-                    required
-                    disabled={loading}
-                    minLength={8}
-                    className="bg-white/95 border-0 h-14 text-base rounded-xl pr-12"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-4 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                    disabled={loading}
-                  >
-                    {showPassword ? <EyeOff className="h-5 w-5 text-muted-foreground" /> : <Eye className="h-5 w-5 text-muted-foreground" />}
-                  </Button>
-                </div>
-                <p className="text-xs text-white/60">Minimum 8 characters</p>
-              </div>
-
-              <Button 
-                type="submit" 
-                className="w-full h-14 text-base bg-white text-primary hover:bg-white/90 rounded-xl font-semibold mt-4" 
+          <form onSubmit={handleSignIn} className="space-y-4 flex-1">
+            <div className="space-y-2">
+              <Label htmlFor="signin-email" className="text-white text-sm font-medium">Email</Label>
+              <Input
+                id="signin-email"
+                type="email"
+                placeholder="you@example.com"
+                value={signInEmail}
+                onChange={(e) => setSignInEmail(e.target.value)}
+                required
                 disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Creating account...
-                  </>
-                ) : (
-                  'Create Account'
-                )}
-              </Button>
-
-              <p className="text-white/60 text-xs text-center pt-2">
-                By signing up, you agree to our{' '}
-                <Link to="/ios-terms" className="underline">Terms</Link> and{' '}
-                <Link to="/ios-privacy" className="underline">Privacy Policy</Link>.
-              </p>
-            </form>
-
-            <div className="text-center py-6">
-              <button
-                type="button"
-                onClick={() => setAuthView('signin')}
-                className="text-white/70 text-sm"
-              >
-                Already have an account? <span className="text-white font-medium underline">Sign in</span>
-              </button>
+                className="bg-white/95 border-0 h-14 text-base rounded-xl"
+              />
             </div>
-          </div>
-        )}
 
-        {/* Forgot Password Form */}
-        {authView === 'forgot-password' && (
-          <div 
-            className="flex-1 flex flex-col px-6 py-4 overflow-y-auto"
-            style={{ 
-              paddingTop: 'calc(env(safe-area-inset-top) + 16px)',
-              paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)'
-            }}
-          >
-            {/* Back button */}
-            <button
-              type="button"
-              onClick={() => {
-                setAuthView('signin');
-                setResetSent(false);
-              }}
-              className="flex items-center text-white mb-6 -ml-1"
-            >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              <span className="ml-1">Back</span>
-            </button>
-
-            {resetSent ? (
-              <div className="flex-1 flex flex-col items-center justify-center">
-                <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-6">
-                  <Mail className="w-8 h-8 text-white" />
-                </div>
-                <h1 className="text-2xl font-bold text-white mb-2 text-center">Check your email</h1>
-                <p className="text-white/70 text-center max-w-xs mb-8">
-                  We sent a password reset link to<br /><span className="text-white font-medium">{resetEmail}</span>
-                </p>
+            <div className="space-y-2">
+              <Label htmlFor="signin-password" className="text-white text-sm font-medium">Password</Label>
+              <div className="relative">
+                <Input
+                  id="signin-password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={signInPassword}
+                  onChange={(e) => setSignInPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  className="bg-white/95 border-0 h-14 text-base rounded-xl pr-12"
+                />
                 <Button
-                  onClick={() => {
-                    setAuthView('signin');
-                    setResetSent(false);
-                  }}
-                  className="w-full h-14 text-base bg-white text-primary hover:bg-white/90 rounded-xl font-semibold"
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-4 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                  disabled={loading}
                 >
-                  Back to Sign In
+                  {showPassword ? <EyeOff className="h-5 w-5 text-muted-foreground" /> : <Eye className="h-5 w-5 text-muted-foreground" />}
                 </Button>
               </div>
-            ) : (
-              <>
-                <h1 className="text-3xl font-bold text-white mb-2">Reset password</h1>
-                <p className="text-white/70 mb-8">Enter your email and we'll send you a reset link</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setResetEmail(signInEmail);
+                  setAuthView('forgot-password');
+                }}
+                className="text-white/70 text-sm mt-1"
+              >
+                Forgot password?
+              </button>
+            </div>
 
-                <form onSubmit={handlePasswordReset} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="reset-email" className="text-white text-sm font-medium">Email</Label>
-                    <Input
-                      id="reset-email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={resetEmail}
-                      onChange={(e) => setResetEmail(e.target.value)}
-                      required
-                      disabled={loading}
-                      className="bg-white/95 border-0 h-14 text-base rounded-xl"
-                    />
-                  </div>
-
-                  <Button 
-                    type="submit" 
-                    className="w-full h-14 text-base bg-white text-primary hover:bg-white/90 rounded-xl font-semibold mt-4" 
-                    disabled={loading || !resetEmail.trim()}
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Sending...
-                      </>
-                    ) : (
-                      'Send Reset Link'
-                    )}
-                  </Button>
-                </form>
-              </>
-            )}
-          </div>
-        )}
-      </div>
-      </>
-    )
-  }
-
-  // Web Layout - Card-based approach
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-accent/5 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardContent className="pt-6">
-          <div className="text-center mb-6">
-            <Logo iconClassName="w-12 h-12" textClassName="text-2xl font-bold" />
-            <p className="text-muted-foreground mt-2">Manage your pets' digital profiles</p>
-          </div>
-
-          <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="signin">
-              {showWebForgotPassword ? (
-                <div className="space-y-4">
-                  {resetSent ? (
-                    <div className="text-center py-4">
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                        <Mail className="w-6 h-6 text-primary" />
-                      </div>
-                      <h3 className="font-semibold mb-2">Check your email</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        We sent a reset link to {resetEmail}
-                      </p>
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setShowWebForgotPassword(false)
-                          setResetSent(false)
-                        }}
-                      >
-                        Back to Sign In
-                      </Button>
-                    </div>
-                  ) : (
-                    <form onSubmit={handlePasswordReset} className="space-y-4">
-                      <button
-                        type="button"
-                        onClick={() => setShowWebForgotPassword(false)}
-                        className="text-sm text-muted-foreground hover:text-foreground"
-                      >
-                        ← Back to Sign In
-                      </button>
-                      <h3 className="font-semibold">Reset your password</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Enter your email and we'll send you a reset link
-                      </p>
-                      <div className="space-y-2">
-                        <Label htmlFor="reset-email-web">Email</Label>
-                        <Input
-                          id="reset-email-web"
-                          type="email"
-                          placeholder="you@example.com"
-                          value={resetEmail}
-                          onChange={(e) => setResetEmail(e.target.value)}
-                          required
-                          disabled={loading}
-                        />
-                      </div>
-                      <Button type="submit" className="w-full" disabled={loading || !resetEmail.trim()}>
-                        {loading ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Sending...
-                          </>
-                        ) : (
-                          'Send Reset Link'
-                        )}
-                      </Button>
-                    </form>
-                  )}
-                </div>
+            <Button
+              type="submit" 
+              className="w-full h-14 text-base bg-white text-primary hover:bg-white/90 rounded-xl font-semibold mt-4" 
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Signing in...
+                </>
               ) : (
-                <form onSubmit={handleSignIn} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={signInEmail}
-                      onChange={(e) => setSignInEmail(e.target.value)}
-                      required
-                      disabled={loading}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <div className="relative">
-                      <Input
-                        id="password"
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="••••••••"
-                        value={signInPassword}
-                        onChange={(e) => setSignInPassword(e.target.value)}
-                        required
-                        disabled={loading}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
-                        disabled={loading}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                    <div className="text-right">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setResetEmail(signInEmail)
-                          setShowWebForgotPassword(true)
-                        }}
-                        className="text-sm text-muted-foreground hover:text-primary hover:underline"
-                      >
-                        Forgot password?
-                      </button>
-                    </div>
-                  </div>
-
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Signing in...
-                      </>
-                    ) : (
-                      'Sign In'
-                    )}
-                  </Button>
-                </form>
+                'Sign In'
               )}
+            </Button>
+          </form>
 
-            </TabsContent>
+          <div className="text-center py-6">
+            <button
+              type="button"
+              onClick={() => setAuthView('signup')}
+              className="text-white/70 text-sm"
+            >
+              Don't have an account? <span className="text-white font-medium underline">Sign up</span>
+            </button>
+          </div>
+        </div>
+      )}
 
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4">
+      {/* Sign Up Form */}
+      {authView === 'signup' && (
+        <div 
+          className="flex-1 flex flex-col px-6 py-4 overflow-y-auto"
+          style={{ 
+            paddingTop: 'calc(env(safe-area-inset-top) + 16px)',
+            paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)'
+          }}
+        >
+          {/* Back button */}
+          <button
+            type="button"
+            onClick={() => setAuthView('welcome')}
+            className="flex items-center text-white mb-6 -ml-1"
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span className="ml-1">Back</span>
+          </button>
+
+          <h1 className="text-3xl font-bold text-white mb-2">Create account</h1>
+          <p className="text-white/70 mb-8">Join PetLinkID today</p>
+
+          <form onSubmit={handleSignUp} className="space-y-4 flex-1">
+            <div className="space-y-2">
+              <Label htmlFor="signup-name" className="text-white text-sm font-medium">Name</Label>
+              <Input
+                id="signup-name"
+                type="text"
+                placeholder="Your name"
+                value={signUpName}
+                onChange={(e) => setSignUpName(e.target.value)}
+                required
+                disabled={loading}
+                minLength={2}
+                maxLength={100}
+                className="bg-white/95 border-0 h-14 text-base rounded-xl"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="signup-email" className="text-white text-sm font-medium">Email</Label>
+              <Input
+                id="signup-email"
+                type="email"
+                placeholder="you@example.com"
+                value={signUpEmail}
+                onChange={(e) => setSignUpEmail(e.target.value)}
+                required
+                disabled={loading}
+                className="bg-white/95 border-0 h-14 text-base rounded-xl"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="signup-password" className="text-white text-sm font-medium">Password</Label>
+              <div className="relative">
+                <Input
+                  id="signup-password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={signUpPassword}
+                  onChange={(e) => setSignUpPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  minLength={8}
+                  className="bg-white/95 border-0 h-14 text-base rounded-xl pr-12"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-4 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                  disabled={loading}
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5 text-muted-foreground" /> : <Eye className="h-5 w-5 text-muted-foreground" />}
+                </Button>
+              </div>
+              <p className="text-xs text-white/60">Minimum 8 characters</p>
+            </div>
+
+            <Button 
+              type="submit" 
+              className="w-full h-14 text-base bg-white text-primary hover:bg-white/90 rounded-xl font-semibold mt-4" 
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Creating account...
+                </>
+              ) : (
+                'Create Account'
+              )}
+            </Button>
+
+            <p className="text-white/60 text-xs text-center pt-2">
+              By signing up, you agree to our{' '}
+              <Link to="/ios-terms" className="underline">Terms</Link> and{' '}
+              <Link to="/ios-privacy" className="underline">Privacy Policy</Link>.
+            </p>
+          </form>
+
+          <div className="text-center py-6">
+            <button
+              type="button"
+              onClick={() => setAuthView('signin')}
+              className="text-white/70 text-sm"
+            >
+              Already have an account? <span className="text-white font-medium underline">Sign in</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Forgot Password Form */}
+      {authView === 'forgot-password' && (
+        <div 
+          className="flex-1 flex flex-col px-6 py-4 overflow-y-auto"
+          style={{ 
+            paddingTop: 'calc(env(safe-area-inset-top) + 16px)',
+            paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)'
+          }}
+        >
+          {/* Back button */}
+          <button
+            type="button"
+            onClick={() => {
+              setAuthView('signin');
+              setResetSent(false);
+            }}
+            className="flex items-center text-white mb-6 -ml-1"
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span className="ml-1">Back</span>
+          </button>
+
+          {resetSent ? (
+            <div className="flex-1 flex flex-col items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-6">
+                <Mail className="w-8 h-8 text-white" />
+              </div>
+              <h1 className="text-2xl font-bold text-white mb-2 text-center">Check your email</h1>
+              <p className="text-white/70 text-center max-w-xs mb-8">
+                We sent a password reset link to<br /><span className="text-white font-medium">{resetEmail}</span>
+              </p>
+              <Button
+                onClick={() => {
+                  setAuthView('signin');
+                  setResetSent(false);
+                }}
+                className="w-full h-14 text-base bg-white text-primary hover:bg-white/90 rounded-xl font-semibold"
+              >
+                Back to Sign In
+              </Button>
+            </div>
+          ) : (
+            <>
+              <h1 className="text-3xl font-bold text-white mb-2">Reset password</h1>
+              <p className="text-white/70 mb-8">Enter your email and we'll send you a reset link</p>
+
+              <form onSubmit={handlePasswordReset} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-name-web">Name</Label>
+                  <Label htmlFor="reset-email" className="text-white text-sm font-medium">Email</Label>
                   <Input
-                    id="signup-name-web"
-                    type="text"
-                    placeholder="Your name"
-                    value={signUpName}
-                    onChange={(e) => setSignUpName(e.target.value)}
-                    required
-                    disabled={loading}
-                    minLength={2}
-                    maxLength={100}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email-web">Email</Label>
-                  <Input
-                    id="signup-email-web"
+                    id="reset-email"
                     type="email"
                     placeholder="you@example.com"
-                    value={signUpEmail}
-                    onChange={(e) => setSignUpEmail(e.target.value)}
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
                     required
                     disabled={loading}
+                    className="bg-white/95 border-0 h-14 text-base rounded-xl"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password-web">Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="signup-password-web"
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="••••••••"
-                      value={signUpPassword}
-                      onChange={(e) => setSignUpPassword(e.target.value)}
-                      required
-                      disabled={loading}
-                      minLength={8}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                      onClick={() => setShowPassword(!showPassword)}
-                      disabled={loading}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground">Minimum 8 characters</p>
-                </div>
-
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button 
+                  type="submit" 
+                  className="w-full h-14 text-base bg-white text-primary hover:bg-white/90 rounded-xl font-semibold mt-4" 
+                  disabled={loading || !resetEmail.trim()}
+                >
                   {loading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating account...
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Sending...
                     </>
                   ) : (
-                    'Create Account'
+                    'Send Reset Link'
                   )}
                 </Button>
               </form>
-
-            </TabsContent>
-          </Tabs>
-
-          <p className="text-center text-xs text-muted-foreground mt-6">
-            By continuing, you agree to our{' '}
-            <Link to="/terms" className="underline hover:text-primary">Terms of Service</Link> and{' '}
-            <Link to="/privacy" className="underline hover:text-primary">Privacy Policy</Link>.
-          </p>
-        </CardContent>
-      </Card>
+            </>
+          )}
+        </div>
+      )}
     </div>
+    </>
   )
 }
 

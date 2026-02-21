@@ -2,13 +2,12 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CreditCard, Calendar, AlertCircle, ArrowLeft, Sparkles, Download, RotateCcw, Smartphone, Apple } from "lucide-react";
+import { Loader2, CreditCard, Calendar, AlertCircle, Sparkles, Download, RotateCcw, Smartphone, Apple } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlanV2 } from "@/hooks/usePlanV2";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Link } from "react-router-dom";
 import { IOSPageLayout } from "@/components/ios/IOSPageLayout";
-import { useIsNativeApp } from "@/hooks/useIsNativeApp";
 import { isNativeApp, isIOSApp, restorePurchases } from "@/lib/appleIap";
 import { toast } from "sonner";
 
@@ -16,7 +15,6 @@ export default function BillingSettings() {
   const [restoring, setRestoring] = useState(false);
   const { user } = useAuth();
   const { plan, planConfig, subscriptionStatus, trialEndAt, nextBillingAt, daysUntilTrialEnd, isTrialActive, usage, refresh } = usePlanV2();
-  const isNative = useIsNativeApp();
   
   const isPro = plan === 'PRO';
   const hasMultiplePets = usage.pets_count > 1;
@@ -316,37 +314,11 @@ export default function BillingSettings() {
     </div>
   );
 
-  // iOS Layout
-  if (isNative) {
-    return (
-      <IOSPageLayout title="Billing" onRefresh={refresh}>
-        <div className="px-4 py-6 max-w-3xl mx-auto">
-          <BillingContent />
-        </div>
-      </IOSPageLayout>
-    );
-  }
-
-  // Web Layout
   return (
-    <div className="min-h-screen bg-background">
-      
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-3xl mx-auto space-y-6">
-          <div>
-            <Button variant="ghost" asChild className="mb-4">
-              <Link to="/account">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Account
-              </Link>
-            </Button>
-            <h2 className="text-2xl font-bold">Plan & Billing</h2>
-            <p className="text-muted-foreground">Manage your subscription and payment methods</p>
-          </div>
-
-          <BillingContent />
-        </div>
-      </main>
-    </div>
+    <IOSPageLayout title="Billing" onRefresh={refresh}>
+      <div className="px-4 py-6 max-w-3xl mx-auto">
+        <BillingContent />
+      </div>
+    </IOSPageLayout>
   );
 }
