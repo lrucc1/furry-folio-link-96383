@@ -52,7 +52,7 @@ export const UserMenu = () => {
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link to="/account">
+          <Link to="/ios-settings">
             <Settings className="mr-2 h-4 w-4" />
             <span>{au('Account')}</span>
           </Link>

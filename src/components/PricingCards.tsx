@@ -265,7 +265,7 @@ export const ProPlanCard = ({
           <>
             {isCurrentPlan ? (
               <Button variant="outline" className="w-full" asChild>
-                <Link to="/account">Manage Subscription</Link>
+                <Link to="/settings/billing">Manage Subscription</Link>
               </Button>
             ) : onAction && isOnIOS && (canStartTrial || showSubscribe) ? (
               <Button 

@@ -108,8 +108,8 @@ const Support = () => {
               {au('Go to your Dashboard → Select your pet → Mark as Lost. This will display your contact details to anyone who scans your pet\'s QR tag.')}
             </p>
             <Button asChild className="w-full md:w-auto">
-              <a href="/dashboard">
-                {au('Go to Dashboard')}
+              <a href="/ios-home">
+                {au('Go to Home')}
               </a>
             </Button>
           </CardContent>

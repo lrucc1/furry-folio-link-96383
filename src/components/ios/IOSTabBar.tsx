@@ -10,7 +10,7 @@ interface TabItem {
 
 const tabs: TabItem[] = [
   { icon: Home, label: 'Home', path: '/ios-home' },
-  { icon: PawPrint, label: 'Pets', path: '/dashboard' },
+  { icon: PawPrint, label: 'Pets', path: '/ios-home' },
   { icon: Bell, label: 'Reminders', path: '/reminders' },
   { icon: Settings, label: 'Settings', path: '/ios-settings' },
 ];
@@ -65,7 +65,7 @@ export function IOSTabBar({ visible = true }: IOSTabBarProps) {
       >
         {tabs.map((tab) => {
           const isActive = location.pathname === tab.path ||
-            (tab.path === '/dashboard' && location.pathname.startsWith('/pets'));
+            (tab.path === '/ios-home' && location.pathname.startsWith('/pets'));
           
           return (
             <button

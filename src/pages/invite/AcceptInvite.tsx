@@ -80,7 +80,7 @@ export default function AcceptInvite() {
   };
 
   const handleGoToDashboard = () => {
-    navigate('/dashboard');
+    navigate('/ios-home');
   };
 
   return (

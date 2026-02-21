@@ -116,7 +116,7 @@ const PetDetails = () => {
       }
     } catch (error) {
       log.error('Error fetching pet details:', error)
-      navigate('/dashboard')
+      navigate('/ios-home')
     } finally {
       setLoading(false)
     }
@@ -326,7 +326,7 @@ const PetDetails = () => {
         <div className="container mx-auto px-4 py-8 text-center">
           <h1 className="text-2xl font-bold text-foreground mb-4">Pet not found</h1>
           <Button asChild>
-            <Link to="/dashboard">Back to Dashboard</Link>
+            <Link to="/ios-home">Back to Home</Link>
           </Button>
         </div>
       </IOSPageLayout>
