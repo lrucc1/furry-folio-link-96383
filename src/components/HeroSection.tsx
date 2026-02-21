@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Heart, Shield, Users, QrCode, Smartphone, Link2 } from "lucide-react";
 import heroImage from "@/assets/hero-pets-realistic.jpg";
 import { Link } from "react-router-dom";
@@ -30,23 +29,9 @@ export const HeroSection = () => {
             transition={{ duration: 0.6, ease: "easeOut" }}
             style={{ y: contentY, opacity }}
           >
-            {/* PetLinkID Brand Logo */}
-            <motion.div 
-              className="flex items-center gap-3 mb-6"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-            >
-              <div className="relative bg-white/10 backdrop-blur-sm rounded-xl p-2">
-                <Link2 className="w-8 h-8 text-white rotate-45" strokeWidth={2.5} />
-              </div>
-              <span className="text-2xl font-bold tracking-tight">PetLinkID</span>
-            </motion.div>
-            
-            <Badge className="bg-white/20 text-white border-white/30 mb-6 backdrop-blur-sm">
-              <Smartphone className="w-3 h-3 mr-1" />
-              Now Available on iOS &amp; Web
-            </Badge>
+            <p className="text-sm text-white/70 uppercase tracking-widest mb-6 font-medium">
+              Now available on iOS & Web
+            </p>
             
             <h1 className="text-4xl lg:text-6xl font-bold mb-6 leading-tight">
               Your Pet's

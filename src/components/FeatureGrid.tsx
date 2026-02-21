@@ -9,8 +9,7 @@ import {
   Users, 
   FileText, 
   MapPin, 
-  Smartphone,
-  Crown
+  Smartphone
 } from "lucide-react";
 
 const features = [
@@ -85,10 +84,7 @@ export const FeatureGrid = () => {
     <section id="features" className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <Badge className="bg-primary/10 text-primary border-primary/20 mb-4">
-            <Crown className="w-3 h-3 mr-1" />
-            Complete Pet Care Solution
-          </Badge>
+          
           <h2 className="text-3xl lg:text-5xl font-bold text-foreground mb-6">
             Everything Your Pet Needs
           </h2>
