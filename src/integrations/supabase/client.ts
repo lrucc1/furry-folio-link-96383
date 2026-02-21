@@ -10,6 +10,15 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 const SUPABASE_STORAGE_SERVER = 'app.petlinkid.supabase';
 
+// Simple mutex to serialize keychain writes and prevent race conditions
+let writeQueue: Promise<void> = Promise.resolve();
+
+function serialized<T>(fn: () => Promise<T>): Promise<T> {
+  const result = writeQueue.then(fn);
+  writeQueue = result.then(() => {}, () => {});
+  return result;
+}
+
 // In-memory fallback when keychain fails
 let memoryStore: Record<string, string> = {};
 let useMemoryFallback = false;
@@ -67,14 +76,18 @@ const biometricStorage = {
     return value;
   },
   async setItem(key: string, value: string) {
-    const store = await biometricStorage.getStore();
-    store[key] = value;
-    await biometricStorage.saveStore(store);
+    return serialized(async () => {
+      const store = await biometricStorage.getStore();
+      store[key] = value;
+      await biometricStorage.saveStore(store);
+    });
   },
   async removeItem(key: string) {
-    const store = await biometricStorage.getStore();
-    delete store[key];
-    await biometricStorage.saveStore(store);
+    return serialized(async () => {
+      const store = await biometricStorage.getStore();
+      delete store[key];
+      await biometricStorage.saveStore(store);
+    });
   },
 };
 
