@@ -12,7 +12,7 @@ export default function PlanDebug() {
   const navigate = useNavigate();
 
   if (!isAdmin) {
-    navigate('/dashboard');
+    navigate('/ios-home');
     return null;
   }
 

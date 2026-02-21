@@ -261,7 +261,7 @@ export default function IOSAddPet() {
       }
 
       toast.success(`${formData.name} has been added!`);
-      navigate('/dashboard');
+      navigate('/ios-home');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to add pet');
     } finally {

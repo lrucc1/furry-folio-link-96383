@@ -117,7 +117,7 @@ export default function IOSEditPet() {
       setPhotoPreview(data.photo_url);
     } catch (error) {
       toast.error('Failed to load pet details');
-      navigate('/dashboard');
+      navigate('/ios-home');
     } finally {
       setLoading(false);
     }
@@ -283,7 +283,7 @@ export default function IOSEditPet() {
       if (error) throw error;
 
       toast.success(`${formData.name} has been removed`);
-      navigate('/dashboard');
+      navigate('/ios-home');
     } catch {
       toast.error('Failed to delete pet');
     } finally {

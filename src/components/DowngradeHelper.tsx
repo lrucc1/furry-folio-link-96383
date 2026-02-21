@@ -126,7 +126,7 @@ export function DowngradeHelper() {
             <Button
               onClick={() => {
                 setOpen(false);
-                navigate('/dashboard');
+                navigate('/ios-home');
               }}
               variant="outline"
               size="lg"

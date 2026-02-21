@@ -39,7 +39,7 @@ export default function LimitAudit() {
 
   useEffect(() => {
     if (!adminLoading && !isAdmin) {
-      navigate('/dashboard');
+      navigate('/ios-home');
     }
   }, [isAdmin, adminLoading, navigate]);
 

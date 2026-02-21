@@ -94,7 +94,7 @@ export const Header = () => {
               
               <div className="flex flex-col gap-1 p-4">
                 <Link 
-                  to={user ? '/dashboard' : '/auth'} 
+                  to={user ? '/ios-home' : '/auth'} 
                   className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent active:opacity-80 transition-colors touch-manipulation"
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -134,7 +134,7 @@ export const Header = () => {
                     <Separator className="my-2" />
                     
                     <Link 
-                      to="/account" 
+                      to="/ios-settings" 
                       className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent active:opacity-80 transition-colors touch-manipulation"
                       onClick={() => setMobileMenuOpen(false)}
                     >
@@ -201,7 +201,7 @@ export const Header = () => {
                 className="text-foreground hover:text-primary"
                 asChild
               >
-                <Link to={user ? '/dashboard' : '/auth'}>My Pets</Link>
+                <Link to={user ? '/ios-home' : '/auth'}>My Pets</Link>
               </Button>
               <Button
                 variant="ghost"

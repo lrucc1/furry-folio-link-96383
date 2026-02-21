@@ -377,7 +377,7 @@ export default function IOSSettings() {
           <SettingsRow 
             icon={<Trash2 className="w-4 h-4 text-destructive" />}
             label="Delete Account"
-            onClick={() => navigate('/account')}
+            onClick={() => navigate('/settings/delete-account')}
             destructive
           />
         </SettingsGroup>

@@ -116,7 +116,7 @@ export default function DeletionHistory() {
   }
 
   if (!isAdmin) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/ios-home" replace />;
   }
 
   return (

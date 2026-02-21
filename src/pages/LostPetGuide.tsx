@@ -94,7 +94,7 @@ const LostPetGuide = () => {
                   If your pet has just gone missing, act immediately. Time is critical for a successful recovery.
                 </p>
                 <Button variant="destructive" size="sm" asChild>
-                  <Link to="/dashboard">
+                  <Link to="/ios-home">
                     Report Lost Pet Now
                   </Link>
                 </Button>

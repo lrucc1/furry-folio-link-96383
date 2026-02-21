@@ -57,7 +57,7 @@ export const NotificationsDropdown = () => {
 
   const handleNotificationClick = () => {
     setIsOpen(false);
-    navigate('/dashboard');
+    navigate('/ios-home');
   };
 
   if (!user) return null;

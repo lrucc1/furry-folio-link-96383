@@ -86,7 +86,7 @@ export default function PetWeightTracker() {
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load weight data');
-      navigate('/dashboard');
+      navigate('/ios-home');
     } finally {
       setLoading(false);
     }

@@ -47,8 +47,8 @@ const NotFound = () => {
                 Looking for something specific?
               </p>
               <div className="flex flex-col gap-2 text-sm">
-                <Button variant="link" onClick={() => navigate('/dashboard')}>
-                  My Pets Dashboard
+                <Button variant="link" onClick={() => navigate('/ios-home')}>
+                  My Pets
                 </Button>
                 <Button variant="link" onClick={() => navigate('/smart-tags')}>
                   Smart Tags
