@@ -29,7 +29,7 @@ const Terms = () => {
               Please read these terms carefully before using PetLinkID. By using our services, you agree to these terms.
             </p>
             <p className="text-sm text-muted-foreground mt-2">
-              Last updated: September 22, 2024
+              Last updated: February 2026
             </p>
           </div>
         </div>

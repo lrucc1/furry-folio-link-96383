@@ -25,7 +25,7 @@ export default function IOSSubscriptionTerms() {
         {/* Header */}
         <div className="px-4 mb-6">
           <p className="text-sm text-muted-foreground text-center">
-            Last updated: December 2024
+            Last updated: February 2026
           </p>
         </div>
 

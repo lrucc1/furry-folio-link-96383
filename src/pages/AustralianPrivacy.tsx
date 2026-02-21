@@ -57,7 +57,7 @@ const AustralianPrivacy = () => {
               PetLinkID is committed to protecting your privacy in accordance with Australian Privacy Principles (APPs) under the Privacy Act 1988.
             </p>
             <p className="text-sm text-muted-foreground mt-2">
-              Last updated: September 22, 2024
+              Last updated: February 2026
             </p>
           </div>
         </div>
