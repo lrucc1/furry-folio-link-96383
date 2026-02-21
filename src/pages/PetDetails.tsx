@@ -4,10 +4,9 @@ import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { calculateAge } from '@/lib/age-utils'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ArrowLeft, Heart, MapPin, QrCode, Calendar, Shield, Users, Edit, Download, Upload, Scan, ExternalLink, Bell, CheckCircle, Trash2, Plus, Eye, Edit2, Syringe, AlertCircle, Home, ChevronLeft, Scale, Image as ImageIcon } from 'lucide-react'
+import { Heart, MapPin, QrCode, Shield, Users, Edit, Download, Scan, Bell, CheckCircle, Plus, Eye, Edit2, Syringe, AlertCircle, Home, Scale } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from '@/hooks/use-toast'
 import { ToastAction } from '@/components/ui/toast'
@@ -21,9 +20,7 @@ import { EditHealthReminderModal } from '@/components/EditHealthReminderModal'
 import { InstagramShareCard } from '@/components/InstagramShareCard'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { LostPetPosterModal } from '@/components/LostPetPosterModal'
-import { au } from '@/lib/auEnglish'
 import { IOSPageLayout } from '@/components/ios/IOSPageLayout'
-import { useIsNativeApp } from '@/hooks/useIsNativeApp'
 import { MobileCard } from '@/components/ios/MobileCard'
 import { SwipeableItem } from '@/components/ios/SwipeableItem'
 import { PetAvatarLarge } from '@/components/PetAvatar'
@@ -79,7 +76,6 @@ const PetDetails = () => {
   const { id } = useParams<{ id: string }>()
   const { user } = useAuth()
   const navigate = useNavigate()
-  const isNative = useIsNativeApp()
   const [pet, setPet] = useState<Pet | null>(null)
   const [ownerPhone, setOwnerPhone] = useState<string | null>(null)
   const [vaccinations, setVaccinations] = useState<Vaccination[]>([])
@@ -107,7 +103,6 @@ const PetDetails = () => {
       if (error) throw error
       setPet(data)
 
-      // Fetch owner's phone number from profile
       if (data?.user_id) {
         const { data: profileData } = await supabase
           .from('profiles')
@@ -177,7 +172,6 @@ const PetDetails = () => {
     const reminder = healthReminders.find(r => r.id === reminderId);
     const newStatus = !currentStatus;
     
-    // Optimistically update UI
     setHealthReminders(healthReminders.map(r => 
       r.id === reminderId ? { ...r, completed: newStatus } : r
     ));
@@ -190,7 +184,6 @@ const PetDetails = () => {
 
       if (error) throw error
 
-      // Show undo toast when completing (not when reopening)
       if (newStatus && reminder) {
         toast({
           title: "Reminder completed",
@@ -210,7 +203,6 @@ const PetDetails = () => {
         })
       }
     } catch (error) {
-      // Revert on error
       setHealthReminders(healthReminders.map(r => 
         r.id === reminderId ? { ...r, completed: currentStatus } : r
       ));
@@ -231,19 +223,11 @@ const PetDetails = () => {
         .eq('id', reminderId)
 
       if (error) throw error
-
       setHealthReminders(healthReminders.filter(r => r.id !== reminderId))
-
-      toast({
-        title: "Reminder deleted",
-      })
+      toast({ title: "Reminder deleted" })
     } catch (error) {
       log.error('Error deleting reminder:', error)
-      toast({
-        title: "Error",
-        description: "Failed to delete reminder",
-        variant: "destructive",
-      })
+      toast({ title: "Error", description: "Failed to delete reminder", variant: "destructive" })
     }
   }
 
@@ -255,19 +239,11 @@ const PetDetails = () => {
         .eq('id', vaccinationId)
 
       if (error) throw error
-
       setVaccinations(vaccinations.filter(v => v.id !== vaccinationId))
-
-      toast({
-        title: "Vaccination deleted",
-      })
+      toast({ title: "Vaccination deleted" })
     } catch (error) {
       log.error('Error deleting vaccination:', error)
-      toast({
-        title: "Error",
-        description: "Failed to delete vaccination",
-        variant: "destructive",
-      })
+      toast({ title: "Error", description: "Failed to delete vaccination", variant: "destructive" })
     }
   }
 
@@ -345,33 +321,20 @@ const PetDetails = () => {
   }
 
   if (!pet) {
-    if (isNative) {
-      return (
-        <IOSPageLayout title="Pet Details">
-          <div className="container mx-auto px-4 py-8 text-center">
-            <h1 className="text-2xl font-bold text-foreground mb-4">Pet not found</h1>
-            <Button asChild>
-              <Link to="/dashboard">Back to Dashboard</Link>
-            </Button>
-          </div>
-        </IOSPageLayout>
-      )
-    }
     return (
-      <div className="min-h-screen bg-background">
+      <IOSPageLayout title="Pet Details">
         <div className="container mx-auto px-4 py-8 text-center">
           <h1 className="text-2xl font-bold text-foreground mb-4">Pet not found</h1>
           <Button asChild>
             <Link to="/dashboard">Back to Dashboard</Link>
           </Button>
         </div>
-      </div>
+      </IOSPageLayout>
     )
   }
 
   const publicUrl = `${window.location.origin}/found/${pet.public_token}`
 
-  // iOS Header with back and edit buttons
   const iosHeaderRight = (
     <div className="flex items-center gap-1">
       <Button variant="ghost" size="sm" asChild className="h-10 w-10 p-0 touch-manipulation">
@@ -387,10 +350,9 @@ const PetDetails = () => {
     </div>
   )
 
-  // iOS-optimized pet content
   const iosPetContent = (
     <div className="space-y-4">
-      {/* Pet Header Card - Compact for iOS */}
+      {/* Pet Header Card */}
       <MobileCard className="overflow-hidden">
         <div className="flex gap-4">
           <PetAvatarLarge 
@@ -473,7 +435,7 @@ const PetDetails = () => {
         </Button>
       </div>
 
-      {/* iOS Tabs with larger touch targets */}
+      {/* iOS Tabs */}
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList className="w-full grid grid-cols-4 h-12 p-1 rounded-xl">
           <TabsTrigger value="overview" className="rounded-lg h-10 text-xs touch-manipulation">
@@ -494,9 +456,8 @@ const PetDetails = () => {
           </TabsTrigger>
         </TabsList>
 
-        {/* Overview Tab - iOS optimized */}
+        {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-4 mt-4">
-          {/* Microchip Info */}
           <MobileCard>
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -516,7 +477,6 @@ const PetDetails = () => {
             )}
           </MobileCard>
 
-          {/* Vet Info */}
           {(pet.clinic_name || pet.clinic_address) && (
             <MobileCard>
               <div className="flex items-center gap-3">
@@ -533,7 +493,6 @@ const PetDetails = () => {
             </MobileCard>
           )}
 
-          {/* Insurance */}
           {pet.insurance_provider && (
             <MobileCard>
               <div className="flex items-center gap-3">
@@ -550,7 +509,6 @@ const PetDetails = () => {
             </MobileCard>
           )}
 
-          {/* Notes */}
           {pet.notes && (
             <MobileCard>
               <h3 className="font-semibold mb-2">Notes</h3>
@@ -558,7 +516,6 @@ const PetDetails = () => {
             </MobileCard>
           )}
 
-          {/* Photo Gallery Section */}
           <MobileCard>
             <PetPhotoGallery 
               petId={pet.id}
@@ -568,9 +525,8 @@ const PetDetails = () => {
           </MobileCard>
         </TabsContent>
 
-        {/* Health Tab - iOS optimized */}
+        {/* Health Tab */}
         <TabsContent value="health" className="space-y-4 mt-4">
-          {/* Vaccinations */}
           <MobileCard>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold flex items-center gap-2">
@@ -621,7 +577,6 @@ const PetDetails = () => {
             )}
           </MobileCard>
 
-          {/* Health Reminders */}
           <MobileCard>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold flex items-center gap-2">
@@ -669,7 +624,6 @@ const PetDetails = () => {
             )}
           </MobileCard>
 
-          {/* Documents */}
           <MobileCard>
             <h3 className="font-semibold flex items-center gap-2 mb-4">
               <Download className="w-4 h-4" />
@@ -679,7 +633,7 @@ const PetDetails = () => {
           </MobileCard>
         </TabsContent>
 
-        {/* Lost Tab - iOS optimized */}
+        {/* Lost Tab */}
         <TabsContent value="lost" className="space-y-4 mt-4">
           <MobileCard className={pet.is_lost ? 'border-destructive/50 bg-destructive/5' : ''}>
             <div className="text-center py-4">
@@ -731,12 +685,10 @@ const PetDetails = () => {
               </a>
             </Button>
           </MobileCard>
-
         </TabsContent>
 
-        {/* Sharing Tab - iOS optimized */}
+        {/* Sharing Tab */}
         <TabsContent value="sharing" className="space-y-4 mt-4">
-          {/* Instagram Share Card */}
           <MobileCard>
             <h3 className="font-semibold mb-3">Share {pet.name}'s Profile</h3>
             <p className="text-sm text-muted-foreground mb-3">
@@ -756,552 +708,12 @@ const PetDetails = () => {
             />
           </MobileCard>
           
-          {/* Family & Caregivers */}
           <SharingTab petId={pet.id} />
         </TabsContent>
       </Tabs>
     </div>
   );
 
-  // Pet content shared between iOS and Web
-  const petContent = (
-    <>
-      {/* iOS: Compact back button */}
-      {isNative && (
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => navigate('/dashboard')}
-          className="mb-4 -ml-2 h-10 touch-manipulation"
-        >
-          <ChevronLeft className="w-5 h-5 mr-1" />
-          Dashboard
-        </Button>
-      )}
-
-      {/* Web: Full navigation bar */}
-      {!isNative && (
-        <div className="flex items-center justify-between mb-8">
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/dashboard">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Link>
-          </Button>
-          
-          <Button variant="outline" asChild>
-            <Link to={`/pets/${pet.id}/edit`}>
-              <Edit className="w-4 h-4 mr-2" />
-              Edit Pet
-            </Link>
-          </Button>
-        </div>
-      )}
-
-        {/* Pet Header */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-6">
-              <div className="relative group">
-                <PetAvatarLarge 
-                  photoUrl={pet.photo_url} 
-                  species={pet.species} 
-                  name={pet.name}
-                  className="w-32 h-32 flex-shrink-0"
-                />
-                <Link 
-                  to={`/pets/${pet.id}/edit`}
-                  className="absolute inset-0 rounded-xl bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <Upload className="w-8 h-8 text-white" />
-                </Link>
-              </div>
-              
-              <div className="flex-1">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h1 className="text-3xl font-bold text-foreground mb-2">{pet.name}</h1>
-                    <p className="text-lg text-muted-foreground">
-                      {pet.breed ? `${pet.breed} ${pet.species}` : pet.species}
-                    </p>
-                  </div>
-                  
-                  <div className="flex flex-col gap-2 items-end">
-                    <Badge variant="secondary" className="font-mono text-xs px-3 py-1">
-                      <Shield className="w-3 h-3 mr-1.5" />
-                      {pet.public_id}
-                    </Badge>
-                    {pet.is_lost && (
-                      <Badge variant="destructive" className="text-sm">
-                        <MapPin className="w-3 h-3 mr-1" />
-                        Lost
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  {pet.colour && (
-                    <div>
-                      <span className="text-muted-foreground">Colour:</span>
-                      <p className="font-medium">{pet.colour}</p>
-                    </div>
-                  )}
-                  {pet.gender && (
-                    <div>
-                      <span className="text-muted-foreground">Sex:</span>
-                      <p className="font-medium">{pet.gender}</p>
-                    </div>
-                  )}
-                  <div>
-                    <span className="text-muted-foreground">Desexed:</span>
-                    <p className="font-medium">{pet.desexed ? 'Yes' : 'No'}</p>
-                  </div>
-                  {pet.date_of_birth && (
-                    <>
-                      <div>
-                        <span className="text-muted-foreground">DOB:</span>
-                        <p className="font-medium">
-                          {new Date(pet.date_of_birth).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Age:</span>
-                        <p className="font-medium">
-                          {calculateAge(pet.date_of_birth)}
-                        </p>
-                      </div>
-                    </>
-                  )}
-                  {pet.weight_kg && (
-                    <div>
-                      <span className="text-muted-foreground">Weight:</span>
-                      <p className="font-medium">{pet.weight_kg} kg</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="w-full grid grid-cols-2 gap-2 h-auto p-2 md:grid-cols-4 md:h-10 md:p-1 md:gap-0">
-            <TabsTrigger value="overview" className="flex-col h-16 md:flex-row md:h-auto group">
-              <Home className="w-4 h-4 mb-1 md:mb-0 md:mr-2 text-muted-foreground group-data-[state=active]:text-primary transition-all group-data-[state=active]:scale-110" />
-              <span>Overview</span>
-            </TabsTrigger>
-            <TabsTrigger value="health" className="flex-col h-16 md:flex-row md:h-auto group">
-              <Heart className="w-4 h-4 mb-1 md:mb-0 md:mr-2 text-muted-foreground group-data-[state=active]:text-primary transition-all group-data-[state=active]:scale-110" />
-              <span>Health & Docs</span>
-            </TabsTrigger>
-            <TabsTrigger value="lost" className="flex-col h-16 md:flex-row md:h-auto group">
-              <AlertCircle className="w-4 h-4 mb-1 md:mb-0 md:mr-2 text-muted-foreground group-data-[state=active]:text-primary transition-all group-data-[state=active]:scale-110" />
-              <span>Lost Mode</span>
-            </TabsTrigger>
-            <TabsTrigger value="sharing" className="flex-col h-16 md:flex-row md:h-auto group">
-              <Users className="w-4 h-4 mb-1 md:mb-0 md:mr-2 text-muted-foreground group-data-[state=active]:text-primary transition-all group-data-[state=active]:scale-110" />
-              <span>Sharing</span>
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Scan className="w-5 h-5" />
-                    Microchip & Registry
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {pet.microchip_number ? (
-                    <div className="p-4 bg-muted/50 rounded-lg">
-                      <div className="flex items-start gap-3">
-                        <Shield className="w-5 h-5 text-primary mt-0.5" />
-                        <div className="flex-1">
-                          <span className="text-sm font-medium text-muted-foreground">Microchip Number:</span>
-                          <p className="font-mono text-lg font-semibold mt-1">
-                            {pet.microchip_number.replace(/(.{3})/g, '$1 ')}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-4 text-muted-foreground text-sm">
-                      No microchip number registered
-                    </div>
-                  )}
-                  
-                  <div className="p-4 border rounded-lg">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <span className="text-sm text-muted-foreground">Registry:</span>
-                        <p className="font-semibold text-lg mt-1">{pet.registry_name || '—'}</p>
-                        {pet.registry_link && (
-                          <a
-                            className="inline-flex items-center text-primary hover:underline mt-2 text-sm"
-                            href={pet.registry_link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <ExternalLink className="w-4 h-4 mr-1" />
-                            Open Registry
-                          </a>
-                        )}
-                      </div>
-                      {!pet.registry_link && (
-                        <Button variant="outline" size="sm" asChild>
-                          <Link to={`/pets/${pet.id}/edit`}>Add Registry Website</Link>
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {!pet.microchip_number && !pet.registry_name && (
-                    <Button variant="outline" className="w-full" asChild>
-                      <Link to={`/pets/${pet.id}/edit`}>
-                        <Scan className="w-4 h-4 mr-2" />
-                        Add Microchip Details
-                      </Link>
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Heart className="w-5 h-5" />
-                    Care Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {pet.vet_clinic && (
-                    <div>
-                      <span className="text-sm text-muted-foreground">Vet Clinic:</span>
-                      <p className="font-medium">{pet.vet_clinic}</p>
-                    </div>
-                  )}
-                  
-                  {pet.insurance_provider && (
-                    <div>
-                      <span className="text-sm text-muted-foreground">Insurance:</span>
-                      <p className="font-medium">
-                        {pet.insurance_provider}
-                        {pet.insurance_policy && ` (${pet.insurance_policy})`}
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            {pet.notes && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Additional Notes</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">{pet.notes}</p>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Photo Gallery Section */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ImageIcon className="w-5 h-5" />
-                  Photo Gallery
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <PetPhotoGallery 
-                  petId={pet.id}
-                  currentProfilePhoto={pet.photo_url}
-                  onProfilePhotoChange={(url) => setPet({ ...pet, photo_url: url || null })}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Health & Documents Tab */}
-          <TabsContent value="health" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bell className="w-5 h-5" />
-                  Health Reminders
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {healthReminders.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {healthReminders.map((reminder) => {
-                      const dueDate = new Date(reminder.reminder_date)
-                      const today = new Date()
-                      const daysUntilDue = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-                      
-                      let dueDateColor = 'text-muted-foreground'
-                      let dueDateBg = 'bg-muted/50'
-                      let iconColor = 'text-muted-foreground'
-                      
-                      if (!reminder.completed) {
-                        if (daysUntilDue < 0 || daysUntilDue <= 7) {
-                          dueDateColor = 'text-destructive'
-                          dueDateBg = 'bg-destructive/10'
-                          iconColor = 'text-destructive'
-                        } else if (daysUntilDue <= 30) {
-                          dueDateColor = 'text-yellow-600 dark:text-yellow-500'
-                          dueDateBg = 'bg-yellow-50 dark:bg-yellow-950/30'
-                          iconColor = 'text-yellow-600 dark:text-yellow-500'
-                        }
-                      }
-                      
-                      const ReminderIcon = reminder.completed ? CheckCircle : Bell
-                      
-                      return (
-                        <div 
-                          key={reminder.id} 
-                          className={`group relative flex items-center gap-3 p-3 border rounded-lg hover:border-primary/50 hover:bg-accent/50 transition-all cursor-pointer ${
-                            reminder.completed ? 'opacity-60' : ''
-                          }`}
-                          onClick={() => handleEditReminder(reminder)}
-                        >
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              toggleReminderComplete(reminder.id, reminder.completed)
-                            }}
-                            className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${dueDateBg} hover:scale-105 transition-transform`}
-                          >
-                            <ReminderIcon className={`w-5 h-5 ${reminder.completed ? 'text-primary' : iconColor}`} />
-                          </button>
-                          <div className="flex-1 min-w-0">
-                            <h4 className={`font-medium text-sm truncate ${reminder.completed ? 'line-through' : ''}`}>
-                              {reminder.title}
-                            </h4>
-                            <p className="text-xs text-muted-foreground">
-                              {reminder.reminder_type && (
-                                <span className="capitalize">{reminder.reminder_type.replace('_', ' ')} • </span>
-                              )}
-                              {new Date(reminder.reminder_date).toLocaleDateString()}
-                            </p>
-                            {!reminder.completed && (
-                              <p className={`text-xs font-medium ${dueDateColor} mt-1`}>
-                                {daysUntilDue < 0 
-                                  ? `Overdue ${Math.abs(daysUntilDue)}d` 
-                                  : daysUntilDue === 0
-                                  ? 'Due today'
-                                  : `Due in ${daysUntilDue}d`}
-                              </p>
-                            )}
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleEditReminder(reminder)
-                            }}
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      )
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Bell className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                    <p className="text-muted-foreground mb-4">No health reminders set</p>
-                  </div>
-                )}
-                <Button onClick={() => setHealthReminderModalOpen(true)} className="w-full mt-4">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Health Reminder
-                </Button>
-              </CardContent>
-            </Card>
-            
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  {au('Vaccinations')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {vaccinations.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {vaccinations.map((vaccination) => {
-                      const dueDate = vaccination.next_due_date ? new Date(vaccination.next_due_date) : null
-                      const today = new Date()
-                      const daysUntilDue = dueDate ? Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : null
-                      
-                      let dueDateColor = 'text-muted-foreground'
-                      let dueDateBg = 'bg-muted/50'
-                      if (daysUntilDue !== null) {
-                        if (daysUntilDue < 0 || daysUntilDue <= 7) {
-                          dueDateColor = 'text-destructive'
-                          dueDateBg = 'bg-destructive/10'
-                        } else if (daysUntilDue <= 30) {
-                          dueDateColor = 'text-yellow-600 dark:text-yellow-500'
-                          dueDateBg = 'bg-yellow-50 dark:bg-yellow-950/30'
-                        }
-                      }
-                      
-                      return (
-                        <div 
-                          key={vaccination.id} 
-                          className="group relative flex items-center gap-3 p-3 border rounded-lg hover:border-primary/50 hover:bg-accent/50 transition-all cursor-pointer"
-                          onClick={() => handleEditVaccination(vaccination)}
-                        >
-                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${dueDateBg}`}>
-                            <Syringe className={`w-5 h-5 ${dueDateColor}`} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-sm truncate">{vaccination.vaccine_name}</h4>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(vaccination.vaccine_date).toLocaleDateString()}
-                            </p>
-                            {dueDate && (
-                              <p className={`text-xs font-medium ${dueDateColor} mt-1`}>
-                                {daysUntilDue < 0 
-                                  ? `Overdue ${Math.abs(daysUntilDue)}d` 
-                                  : daysUntilDue === 0
-                                  ? 'Due today'
-                                  : `Due in ${daysUntilDue}d`}
-                              </p>
-                            )}
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleEditVaccination(vaccination)
-                            }}
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      )
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                    <p className="text-muted-foreground mb-4">{au('No vaccinations recorded yet')}</p>
-                  </div>
-                )}
-                <Button onClick={() => setVaccinationModalOpen(true)} className="w-full mt-4">
-                  <Plus className="w-4 h-4 mr-2" />
-                  {au('Add vaccination')}
-                </Button>
-              </CardContent>
-            </Card>
-
-
-            <PetDocuments petId={id!} />
-          </TabsContent>
-
-          {/* Lost Mode Tab */}
-          <TabsContent value="lost" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5" />
-                  Lost Pet Recovery
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <h4 className="font-medium">Lost Status</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {pet.is_lost ? `${pet.name} is currently marked as lost` : `${pet.name} is safe at home`}
-                    </p>
-                  </div>
-                  <Button 
-                    variant={pet.is_lost ? "secondary" : "destructive"}
-                    onClick={toggleLostStatus}
-                  >
-                    {pet.is_lost ? 'Mark as Found' : 'Mark as Lost'}
-                  </Button>
-                </div>
-
-                {pet.is_lost && (
-                  <>
-                    <div className="p-4 bg-muted rounded-lg">
-                      <h4 className="font-medium mb-2">Recovery Link</h4>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        Share this link to help people who find {pet.name} contact you safely:
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <code className="flex-1 p-2 bg-background rounded text-xs font-mono">
-                          {publicUrl}
-                        </code>
-                        <Button size="sm" onClick={shareRecoveryLink}>
-                          Share
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <Button onClick={generatePoster} className="flex-1">
-                        <Download className="w-4 h-4 mr-2" />
-                        Generate Poster
-                      </Button>
-                      <Button variant="outline" className="flex-1" onClick={() => setQrCodeModalOpen(true)}>
-                        <QrCode className="w-4 h-4 mr-2" />
-                        Show QR Code
-                      </Button>
-                    </div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Sharing Tab */}
-          <TabsContent value="sharing" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Share {pet.name}&apos;s Profile</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex flex-col gap-3">
-                  <InstagramShareCard
-                    petName={pet.name}
-                    petSpecies={pet.species}
-                    petBreed={pet.breed}
-                    petColour={pet.colour}
-                    petWeight={pet.weight_kg}
-                    petGender={pet.gender}
-                    petPhoto={pet.photo_url}
-                    publicId={pet.public_id}
-                    publicUrl={publicUrl}
-                    dateOfBirth={pet.date_of_birth}
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    Create a beautiful Instagram-ready card to share {pet.name}&apos;s profile and help PetLinkID grow! 🚀
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            <SharingTab petId={id!} />
-          </TabsContent>
-        </Tabs>
-    </>
-  )
-
-  // Modals shared between iOS and Web
   const modals = (
     <>
       <VaccinationModal
@@ -1372,26 +784,13 @@ const PetDetails = () => {
     </>
   )
 
-  // iOS Layout
-  if (isNative) {
-    return (
-      <IOSPageLayout title={pet.name} headerRight={iosHeaderRight} onRefresh={handleRefresh}>
-        <div className="px-4 py-4">
-          {iosPetContent}
-        </div>
-        {modals}
-      </IOSPageLayout>
-    )
-  }
-
-  // Web Layout
   return (
-    <div className="min-h-screen bg-background">
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
-        {petContent}
-      </main>
+    <IOSPageLayout title={pet.name} headerRight={iosHeaderRight} onRefresh={handleRefresh}>
+      <div className="px-4 py-4">
+        {iosPetContent}
+      </div>
       {modals}
-    </div>
+    </IOSPageLayout>
   )
 }
 
