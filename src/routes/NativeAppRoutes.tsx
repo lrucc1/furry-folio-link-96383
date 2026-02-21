@@ -50,6 +50,7 @@ import LimitAudit from "@/pages/admin/LimitAudit";
 import AcceptInvite from "@/pages/invite/AcceptInvite";
 import InviteStatus from "@/pages/InviteStatus";
 
+import ResetPassword from "@/pages/ResetPassword";
 import NotFound from "@/pages/NotFound";
 
 /**
@@ -102,6 +103,9 @@ export function NativeAppRoutes() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/lost-pet-guide" element={<LostPetGuide />} />
         <Route path="/support" element={<Support />} />
+
+        {/* Password reset */}
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Invites */}
         <Route path="/invite/accept" element={<AcceptInvite />} />

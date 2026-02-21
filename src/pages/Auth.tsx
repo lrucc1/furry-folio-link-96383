@@ -203,7 +203,7 @@ const AuthPage = () => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(
         resetEmail.trim().toLowerCase(),
-        { redirectTo: `${window.location.origin}/auth?type=recovery` }
+        { redirectTo: 'https://petlinkid.io/reset-password' }
       );
       
       if (error) {

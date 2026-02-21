@@ -28,6 +28,7 @@ import Support from "@/pages/Support";
 import FoundPet from "@/pages/FoundPet";
 import PublicPetProfile from "@/pages/PublicPetProfile";
 
+import ResetPassword from "@/pages/ResetPassword";
 import NotFound from "@/pages/NotFound";
 
 /**
@@ -67,6 +68,9 @@ export function MarketingWebRoutes() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/lost-pet-guide" element={<LostPetGuide />} />
           <Route path="/support" element={<Support />} />
+
+          {/* Password reset */}
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* Public pet pages (QR scans land here on web) */}
           <Route path="/found/:publicToken" element={<FoundPet />} />
