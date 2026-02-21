@@ -1,17 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { IOSPageLayout } from '@/components/ios/IOSPageLayout';
 import { MobileCard } from '@/components/ios/MobileCard';
-import { useIsNativeApp } from '@/hooks/useIsNativeApp';
-import { ArrowLeft, Plus, Scale, TrendingUp, TrendingDown, Minus, Trash2, Loader2, ChevronLeft } from 'lucide-react';
+import { Plus, Scale, TrendingUp, TrendingDown, Minus, Trash2, Loader2, ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Capacitor } from '@capacitor/core';
@@ -44,7 +42,6 @@ export default function PetWeightTracker() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const isNative = useIsNativeApp();
   
   const [pet, setPet] = useState<Pet | null>(null);
   const [records, setRecords] = useState<WeightRecord[]>([]);
@@ -69,7 +66,6 @@ export default function PetWeightTracker() {
     if (!id || !user) return;
     
     try {
-      // Fetch pet details
       const { data: petData, error: petError } = await supabase
         .from('pets')
         .select('id, name, species, weight_kg')
@@ -79,7 +75,6 @@ export default function PetWeightTracker() {
       if (petError) throw petError;
       setPet(petData);
       
-      // Fetch weight records
       const { data: weightData, error: weightError } = await supabase
         .from('weight_records')
         .select('*')
@@ -121,7 +116,6 @@ export default function PetWeightTracker() {
 
       if (error) throw error;
 
-      // Update pet's current weight
       await supabase
         .from('pets')
         .update({ weight_kg: weight })
@@ -178,18 +172,16 @@ export default function PetWeightTracker() {
 
   const WeightContent = () => (
     <div className="space-y-6">
-      {/* Back Button - iOS */}
-      {isNative && (
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => navigate(`/pets/${id}`)}
-          className="-ml-2 h-10 touch-manipulation"
-        >
-          <ChevronLeft className="w-5 h-5 mr-1" />
-          Back to {pet.name}
-        </Button>
-      )}
+      {/* Back Button */}
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        onClick={() => navigate(`/pets/${id}`)}
+        className="-ml-2 h-10 touch-manipulation"
+      >
+        <ChevronLeft className="w-5 h-5 mr-1" />
+        Back to {pet.name}
+      </Button>
 
       {/* Current Weight Card */}
       <MobileCard className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
@@ -291,10 +283,8 @@ export default function PetWeightTracker() {
         onOpenChange={async (open) => {
           setSheetOpen(open);
           if (open) {
-            // Delay focus for iOS to ensure sheet is fully open
             setTimeout(async () => {
               weightInputRef.current?.focus();
-              // Explicitly show keyboard on native iOS/Android
               if (Capacitor.isNativePlatform()) {
                 try {
                   await Keyboard.show();
@@ -333,7 +323,6 @@ export default function PetWeightTracker() {
                 value={newWeight}
                 onChange={(e) => {
                   const value = e.target.value;
-                  // Only allow valid decimal input
                   if (value === '' || /^\d*\.?\d*$/.test(value)) {
                     setNewWeight(value);
                   }
@@ -387,43 +376,11 @@ export default function PetWeightTracker() {
     </div>
   );
 
-  // iOS Layout
-  if (isNative) {
-    return (
-      <IOSPageLayout title="Weight Tracker" showTabBar={false}>
-        <div className="px-4 py-6 max-w-md mx-auto pb-24">
-          <WeightContent />
-        </div>
-      </IOSPageLayout>
-    );
-  }
-
-  // Web Layout
   return (
-    <div className="min-h-screen bg-background">
-
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-6 pb-20 space-y-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          asChild
-          className="mb-2 w-full justify-start rounded-xl md:w-auto"
-        >
-          <Link to={`/pets/${id}`}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to {pet.name}
-          </Link>
-        </Button>
-
-        <div className="space-y-2 md:mb-4">
-          <h1 className="text-3xl font-bold">Weight Tracker</h1>
-          <p className="text-muted-foreground text-sm">Track {pet.name}'s weight over time</p>
-        </div>
-
-        <div className="space-y-6">
-          <WeightContent />
-        </div>
-      </main>
-    </div>
+    <IOSPageLayout title="Weight Tracker" showTabBar={false}>
+      <div className="px-4 py-6 max-w-md mx-auto pb-24">
+        <WeightContent />
+      </div>
+    </IOSPageLayout>
   );
 }

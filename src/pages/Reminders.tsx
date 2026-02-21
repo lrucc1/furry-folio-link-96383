@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format, differenceInDays, isBefore } from 'date-fns';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,7 +13,6 @@ import { EditHealthReminderModal } from '@/components/EditHealthReminderModal';
 import { ReminderNotifications } from '@/components/ReminderNotifications';
 import { HealthReminderModal } from '@/components/HealthReminderModal';
 import { IOSPageLayout } from '@/components/ios/IOSPageLayout';
-import { useIsNativeApp } from '@/hooks/useIsNativeApp';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -70,7 +69,6 @@ interface ReminderItem {
 
 export default function Reminders() {
   const { user } = useAuth();
-  const isNative = useIsNativeApp();
   const [reminders, setReminders] = useState<ReminderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingVaccination, setEditingVaccination] = useState<Vaccination | null>(null);
@@ -106,7 +104,6 @@ export default function Reminders() {
     try {
       setLoading(true);
       
-      // Fetch vaccinations
       const { data: vaccinations, error: vacError } = await supabase
         .from('vaccinations')
         .select(`
@@ -126,7 +123,6 @@ export default function Reminders() {
 
       if (vacError) throw vacError;
 
-      // Fetch health reminders
       const { data: healthReminders, error: hrError } = await supabase
         .from('health_reminders')
         .select(`
@@ -146,7 +142,6 @@ export default function Reminders() {
 
       if (hrError) throw hrError;
 
-      // Convert to unified format
       const allReminders: ReminderItem[] = [
         ...(vaccinations || []).map((vac: any) => {
           const dueDate = new Date(vac.next_due_date);
@@ -289,24 +284,14 @@ export default function Reminders() {
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className={`font-bold flex items-center gap-2 mb-1 ${isNative ? 'text-xl' : 'text-2xl sm:text-3xl'}`}>
-            <Heart className={`${isNative ? 'w-5 h-5' : 'w-6 h-6 sm:w-8 sm:h-8'}`} />
+          <h1 className="text-xl font-bold flex items-center gap-2 mb-1">
+            <Heart className="w-5 h-5" />
             Health Reminders
           </h1>
-          <p className={`text-muted-foreground ${isNative ? 'text-xs' : 'text-sm sm:text-base'}`}>
+          <p className="text-xs text-muted-foreground">
             Track vaccinations and health reminders
           </p>
         </div>
-        {!isNative && (
-          <Button 
-            onClick={handleAddReminder}
-            size="lg"
-            className="gap-2 hidden sm:flex"
-          >
-            <Plus className="w-5 h-5" />
-            Add Reminder
-          </Button>
-        )}
       </div>
 
       {loading ? (
@@ -320,13 +305,13 @@ export default function Reminders() {
       ) : (
         <Tabs defaultValue="active" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="active" className="text-xs sm:text-sm">
+            <TabsTrigger value="active" className="text-xs">
               Active ({activeReminders.length})
             </TabsTrigger>
-            <TabsTrigger value="completed" className="text-xs sm:text-sm">
+            <TabsTrigger value="completed" className="text-xs">
               Done ({completedReminders.length})
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="text-xs sm:text-sm">
+            <TabsTrigger value="notifications" className="text-xs">
               Emails
             </TabsTrigger>
           </TabsList>
@@ -344,7 +329,7 @@ export default function Reminders() {
               <>
                 {urgentReminders.length > 0 && (
                   <div className="space-y-4">
-                    <h2 className="text-lg sm:text-xl font-semibold text-red-600 flex items-center gap-2">
+                    <h2 className="text-lg font-semibold text-red-600 flex items-center gap-2">
                       <AlertTriangle className="w-5 h-5" />
                       Urgent ({urgentReminders.length})
                     </h2>
@@ -409,7 +394,7 @@ export default function Reminders() {
 
                 {upcomingReminders.length > 0 && (
                   <div className="space-y-4">
-                    <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+                    <h2 className="text-lg font-semibold flex items-center gap-2">
                       <Calendar className="w-5 h-5" />
                       Upcoming ({upcomingReminders.length})
                     </h2>
@@ -534,99 +519,11 @@ export default function Reminders() {
     </div>
   );
 
-  // iOS Native Layout
-  if (isNative) {
-    return (
-      <IOSPageLayout title="Reminders" headerRight={addButton} onRefresh={handleRefresh}>
-        <div className="px-4 py-4">
-          <RemindersContent />
-        </div>
-
-        {/* Pet selection dialog */}
-        {showAddModal && pets.length > 1 && !selectedPetForReminder && (
-          <AlertDialog open={showAddModal && !selectedPetForReminder} onOpenChange={(open) => !open && setShowAddModal(false)}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Select a Pet</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Which pet would you like to add a health reminder for?
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <div className="grid gap-2 py-4">
-                {pets.map(pet => (
-                  <Button
-                    key={pet.id}
-                    variant="outline"
-                    className="justify-start gap-3 h-auto py-3"
-                    onClick={() => {
-                      setSelectedPetForReminder(pet.id);
-                    }}
-                  >
-                    {pet.photo_url && (
-                      <img 
-                        src={pet.photo_url} 
-                        alt={pet.name}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                    )}
-                    <span className="font-medium">{pet.name}</span>
-                  </Button>
-                ))}
-              </div>
-            </AlertDialogContent>
-          </AlertDialog>
-        )}
-
-        {/* Add Health Reminder Modal */}
-        {selectedPetForReminder && (
-          <HealthReminderModal
-            open={showAddModal}
-            onClose={() => {
-              setShowAddModal(false);
-              setSelectedPetForReminder(null);
-            }}
-            petId={selectedPetForReminder}
-            onSuccess={handleReminderSuccess}
-          />
-        )}
-
-        {editingVaccination && (
-          <EditVaccinationModal
-            vaccination={editingVaccination}
-            petId={editingVaccination.pet_id}
-            open={!!editingVaccination}
-            onClose={() => setEditingVaccination(null)}
-            onSuccess={() => {
-              fetchAllReminders();
-              setEditingVaccination(null);
-            }}
-          />
-        )}
-
-        {editingHealthReminder && (
-          <EditHealthReminderModal
-            reminder={editingHealthReminder}
-            petId={editingHealthReminder.pet_id}
-            open={!!editingHealthReminder}
-            onClose={() => setEditingHealthReminder(null)}
-            onSuccess={() => {
-              fetchAllReminders();
-              setEditingHealthReminder(null);
-            }}
-          />
-        )}
-      </IOSPageLayout>
-    );
-  }
-
-  // Web Layout
   return (
-    <div className="min-h-screen flex flex-col">
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <RemindersContent />
-        </div>
-      </main>
+    <IOSPageLayout title="Reminders" headerRight={addButton} onRefresh={handleRefresh}>
+      <div className="px-4 py-4">
+        <RemindersContent />
+      </div>
 
       {/* Pet selection dialog */}
       {showAddModal && pets.length > 1 && !selectedPetForReminder && (
@@ -701,6 +598,6 @@ export default function Reminders() {
           }}
         />
       )}
-    </div>
+    </IOSPageLayout>
   );
 }
