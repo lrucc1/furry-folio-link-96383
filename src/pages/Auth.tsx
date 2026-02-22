@@ -12,6 +12,8 @@ import { Eye, EyeOff, Loader2, Mail, Fingerprint } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useBiometricAuth } from '@/hooks/useBiometricAuth'
 import { BiometricSetupModal } from '@/components/BiometricSetupModal'
+import { useIsNativeApp } from '@/hooks/useIsNativeApp'
+import { useAdmin } from '@/hooks/useAdmin'
 
 // Animation variants for welcome screen
 const containerVariants = {
@@ -57,6 +59,8 @@ const buttonContainerVariants = {
 const AuthPage = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const isNative = useIsNativeApp()
+  const { isAdmin, loading: adminLoading } = useAdmin()
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [biometricLoading, setBiometricLoading] = useState(false)
@@ -88,10 +92,16 @@ const AuthPage = () => {
   }, [])
 
   useEffect(() => {
-    if (user) {
-      navigate('/ios-home')
+    if (user && !adminLoading) {
+      if (isNative) {
+        navigate('/ios-home')
+      } else if (isAdmin) {
+        navigate('/admin')
+      } else {
+        navigate('/downloads')
+      }
     }
-  }, [user, navigate])
+  }, [user, isNative, isAdmin, adminLoading, navigate])
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()

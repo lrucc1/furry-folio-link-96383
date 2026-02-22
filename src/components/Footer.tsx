@@ -95,7 +95,7 @@ export const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t text-center text-sm text-muted-foreground">
-          <p>© {currentYear} BETAMETRICS PTY LTD. All rights reserved.</p>
+          <p>© {currentYear} <Link to="/auth" className="text-muted-foreground no-underline hover:text-muted-foreground">BETAMETRICS PTY LTD</Link>. All rights reserved.</p>
           <p className="mt-2">Made in Australia for pets and their families</p>
         </div>
       </div>

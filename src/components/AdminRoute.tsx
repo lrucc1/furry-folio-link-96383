@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsNativeApp } from '@/hooks/useIsNativeApp';
 
 interface AdminRouteProps {
   children: React.ReactNode;
@@ -9,6 +10,7 @@ interface AdminRouteProps {
 export const AdminRoute = ({ children }: AdminRouteProps) => {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
+  const isNative = useIsNativeApp();
 
   if (authLoading || adminLoading) {
     return (
@@ -23,7 +25,7 @@ export const AdminRoute = ({ children }: AdminRouteProps) => {
   }
 
   if (!isAdmin) {
-    return <Navigate to="/ios-home" replace />;
+    return <Navigate to={isNative ? '/ios-home' : '/'} replace />;
   }
 
   return <>{children}</>;
