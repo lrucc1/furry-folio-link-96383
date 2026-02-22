@@ -94,7 +94,7 @@ export const Header = () => {
               
               <div className="flex flex-col gap-1 p-4">
                 <Link 
-                  to={user ? '/ios-home' : '/auth'} 
+                  to="/downloads" 
                   className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent active:opacity-80 transition-colors touch-manipulation"
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -112,7 +112,7 @@ export const Header = () => {
                 </Link>
 
                 <Link 
-                  to={user ? '/reminders' : '/auth'} 
+                  to="/downloads" 
                   className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent active:opacity-80 transition-colors touch-manipulation"
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -133,24 +133,6 @@ export const Header = () => {
                   <>
                     <Separator className="my-2" />
                     
-                    <Link 
-                      to="/ios-settings" 
-                      className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent active:opacity-80 transition-colors touch-manipulation"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <User className="w-5 h-5 text-primary" />
-                      <span className="text-foreground font-medium">Account</span>
-                    </Link>
-
-                    <Link 
-                      to="/settings/billing" 
-                      className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent active:opacity-80 transition-colors touch-manipulation"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <CreditCard className="w-5 h-5 text-primary" />
-                      <span className="text-foreground font-medium">Billing Settings</span>
-                    </Link>
-
                     <Link 
                       to="/help" 
                       className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent active:opacity-80 transition-colors touch-manipulation"
@@ -201,7 +183,7 @@ export const Header = () => {
                 className="text-foreground hover:text-primary"
                 asChild
               >
-                <Link to={user ? '/ios-home' : '/auth'}>My Pets</Link>
+                <Link to="/downloads">My Pets</Link>
               </Button>
               <Button
                 variant="ghost"
@@ -215,7 +197,7 @@ export const Header = () => {
                 className="text-foreground hover:text-primary"
                 asChild
               >
-                <Link to={user ? '/reminders' : '/auth'}>Reminders</Link>
+                <Link to="/downloads">Reminders</Link>
               </Button>
             </nav>
 
@@ -261,7 +243,7 @@ export const Header = () => {
             <>
               <Button 
                 variant="ghost"
-                onClick={() => navigate('/auth')}
+                onClick={() => navigate('/downloads')}
               >
                 {au('Login')}
               </Button>
@@ -270,7 +252,7 @@ export const Header = () => {
                 variant="hero" 
                 size="sm"
                 className="hidden sm:flex"
-                onClick={() => navigate('/auth')}
+                onClick={() => navigate('/downloads')}
               >
                 <Plus className="w-4 h-4 mr-1" />
                 {au('Add Pet')}
