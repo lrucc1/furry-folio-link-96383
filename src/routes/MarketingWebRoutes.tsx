@@ -31,6 +31,16 @@ import PublicPetProfile from "@/pages/PublicPetProfile";
 import ResetPassword from "@/pages/ResetPassword";
 import NotFound from "@/pages/NotFound";
 
+// Hidden admin routes (unlisted — admins bookmark /auth directly)
+import AuthPage from "@/pages/Auth";
+import { AdminRoute } from "@/components/AdminRoute";
+import AdminDashboard from "@/pages/AdminDashboard";
+import PlanDebug from "@/pages/admin/PlanDebug";
+import TestEmails from "@/pages/admin/TestEmails";
+import EmailPreview from "@/pages/admin/EmailPreview";
+import LimitAudit from "@/pages/admin/LimitAudit";
+import DeletionHistory from "@/pages/admin/DeletionHistory";
+
 /**
  * Routes for the petlinkid.io marketing website.
  * Wrapped in Header/Footer layout — no app functionality.
@@ -76,6 +86,15 @@ export function MarketingWebRoutes() {
           {/* Public pet pages (QR scans land here on web) */}
           <Route path="/found/:publicToken" element={<FoundPet />} />
           <Route path="/pet/:publicToken" element={<PublicPetProfile />} />
+
+          {/* Hidden admin portal (unlisted — no visible links) */}
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          <Route path="/admin/plan-debug" element={<AdminRoute><PlanDebug /></AdminRoute>} />
+          <Route path="/admin/test-emails" element={<AdminRoute><TestEmails /></AdminRoute>} />
+          <Route path="/admin/email-preview" element={<AdminRoute><EmailPreview /></AdminRoute>} />
+          <Route path="/admin/limit-audit" element={<AdminRoute><LimitAudit /></AdminRoute>} />
+          <Route path="/admin/deletion-history" element={<AdminRoute><DeletionHistory /></AdminRoute>} />
 
           {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
