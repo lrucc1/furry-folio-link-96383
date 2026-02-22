@@ -56,6 +56,7 @@ export function MarketingWebRoutes() {
 
           {/* Legal */}
           <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/subscription-terms" element={<SubscriptionTerms />} />
           <Route path="/refunds" element={<RefundsPolicy />} />
