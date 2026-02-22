@@ -1,54 +1,39 @@
 
 
-# Fix All 5 UAT Bugs
+# Hidden Admin Login Portal for Marketing Website
 
-## Bug 1 (Critical): Add `/privacy-policy` route alias
-**File:** `src/routes/MarketingWebRoutes.tsx`
-Add a duplicate route so Apple's App Store link (`petlinkid.io/privacy-policy`) resolves correctly:
-```
-<Route path="/privacy-policy" element={<PrivacyPolicy />} />
-```
+## Problem
+The marketing website has no `/auth` route, so the super admin has no way to log in and access the admin dashboard from the web. The Login button correctly points to `/downloads` for regular users, but admins need a secret way in.
 
-## Bug 2 (Critical): Fix Login button 404
-**File:** `src/components/Header.tsx`
-The Login and "Add Pet" buttons navigate to `/auth`, which doesn't exist in `MarketingWebRoutes`. Since the web is marketing-only (the app is iOS-only), these buttons should direct users to the App Store download page instead.
-- Change `navigate('/auth')` to `navigate('/downloads')` for both the Login button (line 264) and the Add Pet button (line 273).
-- In the hamburger menu, change unauthenticated links from `/auth` to `/downloads` (lines 97, 115).
-- In the desktop nav, change unauthenticated links from `/auth` to `/downloads` (lines 204, 218).
+## Solution
+Add a hidden, unlisted `/auth` route and the admin routes to `MarketingWebRoutes.tsx`. No visible links will point to `/auth` -- the admin simply bookmarks `petlinkid.io/auth`. After login, admins are redirected to `/admin` instead of the non-existent `/ios-home`.
 
-## Bug 3 (Medium): Clean up hamburger menu dead links
-**File:** `src/components/Header.tsx`
-When a user IS logged in on web, the menu shows native-only routes (`/ios-home`, `/reminders`, `/ios-settings`, `/settings/billing`) that 404 on the marketing site. Fix:
-- "My Pets" link: change `/ios-home` to `/downloads` for logged-in web users (lines 97, 204).
-- "Reminders" link: change `/reminders` to `/downloads` (lines 115, 218).
-- "Account" link (`/ios-settings`): change to `/help` or remove entirely (line 137).
-- "Billing Settings" (`/settings/billing`): remove from web hamburger menu (lines 145-152).
+## Changes
 
-## Bug 4 (Low): Update footer copyright
-**File:** `src/components/Footer.tsx`
-Change line 98 from:
-```
-© {currentYear} PetLinkID. All rights reserved.
-```
-to:
-```
-© {currentYear} BETAMETRICS PTY LTD. All rights reserved.
-```
+### 1. Add `/auth` and admin routes to MarketingWebRoutes.tsx
+- Import `Auth`, `AdminDashboard`, `AdminRoute`, and all admin sub-pages
+- Add routes for `/auth`, `/admin`, `/admin/plan-debug`, `/admin/test-emails`, `/admin/email-preview`, `/admin/limit-audit`, `/admin/deletion-history`
+- These routes exist but are intentionally not linked from any menu or button
 
-## Bug 5 (Low): Fix deprecated meta tag
-**File:** `index.html`
-Replace the deprecated `apple-mobile-web-app-capable` (line 6) with the standard:
-```html
-<meta name="mobile-web-app-capable" content="yes" />
-```
+### 2. Fix Auth.tsx redirect for web admins
+- Currently, after login, `Auth.tsx` always redirects to `/ios-home` (line 92), which does not exist on the marketing site
+- Add logic: if user is logged in AND is on the web (not native), check if they are an admin and redirect to `/admin`. If not admin, redirect to `/downloads` (since regular users shouldn't be logging in on web)
 
-## Technical Summary
+### 3. Fix AdminRoute.tsx fallback for web
+- Currently `AdminRoute` redirects non-admins to `/ios-home` (line 23) and unauthenticated users to `/auth`
+- The `/auth` redirect is fine now (since we're adding that route), but the non-admin fallback should go to `/` on web instead of `/ios-home`
 
-| File | Changes |
-|------|---------|
-| `src/routes/MarketingWebRoutes.tsx` | Add 1 route alias (`/privacy-policy`) |
-| `src/components/Header.tsx` | Replace `/auth`, `/ios-home`, `/reminders` with `/downloads`; remove `/ios-settings` and `/settings/billing` from web menu |
-| `src/components/Footer.tsx` | Update copyright text |
-| `index.html` | Replace deprecated meta tag |
+### 4. Optional: Footer easter egg (subtle hint)
+- Make the "BETAMETRICS PTY LTD" text in the footer a clickable link to `/auth` with no visual styling (no underline, no colour change) -- only someone who knows to click it will find it
 
-All changes are cosmetic/routing only -- no database or backend changes required.
+## Technical Details
+
+| File | Change |
+|------|--------|
+| `src/routes/MarketingWebRoutes.tsx` | Add imports + routes for `/auth`, `/admin/*` |
+| `src/pages/Auth.tsx` | Redirect web users to `/admin` (if admin) or `/downloads` (if not) instead of `/ios-home` |
+| `src/components/AdminRoute.tsx` | Change non-admin fallback from `/ios-home` to `/` |
+| `src/components/Footer.tsx` | Make company name a subtle link to `/auth` |
+
+No database or backend changes required.
+
