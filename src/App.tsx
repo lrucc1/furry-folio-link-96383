@@ -23,12 +23,7 @@ function AppContent() {
   }
 
   if (isNative) {
-    return (
-      <>
-        <NativeAppRoutes />
-        <DevModeToggle />
-      </>
-    );
+    return <NativeAppRoutes />;
   }
 
   return <MarketingWebRoutes />;
