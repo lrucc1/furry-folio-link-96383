@@ -31,12 +31,7 @@ function AppContent() {
     );
   }
 
-  return (
-    <>
-      <MarketingWebRoutes />
-      <DevModeToggle />
-    </>
-  );
+  return <MarketingWebRoutes />;
 }
 
 const App = () => (
