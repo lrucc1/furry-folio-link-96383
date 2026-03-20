@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { PlanProvider } from "./lib/plan/PlanContext";
-import { DevModeToggle } from "./components/DevModeToggle";
+
 import { AppLoadingScreen } from "./components/AppLoadingScreen";
 import { useIsNativeApp } from "./hooks/useIsNativeApp";
 import { NativeAppRoutes } from "./routes/NativeAppRoutes";
