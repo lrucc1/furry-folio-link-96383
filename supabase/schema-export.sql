@@ -1068,47 +1068,18 @@ CREATE POLICY "Users can delete weight records for editable pets" ON public.weig
 -- ============================================================================
 -- 9. STORAGE BUCKETS & POLICIES
 -- ============================================================================
-
--- Create bucket
-INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-VALUES (
-  'pet-documents',
-  'pet-documents',
-  false,
-  52428800, -- 50MB
-  ARRAY['application/pdf','image/jpeg','image/jpg','image/png','image/webp','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document']
-);
-
--- Storage RLS policies
-CREATE POLICY "Users can view their pet documents" ON storage.objects FOR SELECT TO authenticated
-  USING (bucket_id = 'pet-documents' AND (storage.foldername(name))[1] = (auth.uid())::text);
-
-CREATE POLICY "Authenticated users can view documents for accessible pets" ON storage.objects FOR SELECT TO authenticated
-  USING (bucket_id = 'pet-documents' AND (storage.foldername(name))[1] IN (
-    SELECT (pd.id)::text FROM pet_documents pd JOIN pets p ON pd.pet_id = p.id WHERE has_pet_access(p.id, auth.uid())
-  ));
-
-CREATE POLICY "Users can upload to their own folder" ON storage.objects FOR INSERT TO authenticated
-  WITH CHECK (bucket_id = 'pet-documents' AND (storage.foldername(name))[1] = (auth.uid())::text);
-
-CREATE POLICY "Users can update their own files" ON storage.objects FOR UPDATE TO authenticated
-  USING (bucket_id = 'pet-documents' AND (storage.foldername(name))[1] = (auth.uid())::text);
-
-CREATE POLICY "Users can update their own pet documents" ON storage.objects FOR UPDATE TO authenticated
-  USING (bucket_id = 'pet-documents' AND (storage.foldername(name))[1] = (auth.uid())::text);
-
-CREATE POLICY "Users can update documents for editable pets" ON storage.objects FOR UPDATE TO authenticated
-  USING (bucket_id = 'pet-documents' AND (storage.foldername(name))[1] IN (
-    SELECT (pd.id)::text FROM pet_documents pd JOIN pets p ON pd.pet_id = p.id WHERE can_edit_pet(p.id, auth.uid())
-  ));
-
-CREATE POLICY "Users can delete their own files" ON storage.objects FOR DELETE TO authenticated
-  USING (bucket_id = 'pet-documents' AND (storage.foldername(name))[1] = (auth.uid())::text);
-
-CREATE POLICY "Users can delete documents for editable pets" ON storage.objects FOR DELETE TO authenticated
-  USING (bucket_id = 'pet-documents' AND (storage.foldername(name))[1] IN (
-    SELECT (pd.id)::text FROM pet_documents pd JOIN pets p ON pd.pet_id = p.id WHERE can_edit_pet(p.id, auth.uid())
-  ));
+-- REMOVED: Storage bucket creation and RLS policies have been removed from
+-- this script due to syntax issues with subquery casts in storage policies.
+-- Create the "pet-documents" bucket and its policies manually via the
+-- Supabase Dashboard instead.
+--
+-- Bucket config:
+--   Name: pet-documents
+--   Public: false
+--   File size limit: 50MB (52428800 bytes)
+--   Allowed MIME types: application/pdf, image/jpeg, image/jpg, image/png,
+--     image/webp, application/msword,
+--     application/vnd.openxmlformats-officedocument.wordprocessingml.document
 
 -- ============================================================================
 -- 10. AUTH TRIGGER (requires Supabase dashboard or elevated privileges)
