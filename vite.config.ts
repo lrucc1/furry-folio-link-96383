@@ -25,8 +25,8 @@ function readProjectIdFromConfig(): string {
  * This map acts as a last-resort fallback when .env is unavailable.
  */
 const KNOWN_ANON_KEYS: Record<string, string> = {
-  yyuvupjbvjpbouxuzdye:
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5dXZ1cGpidmpwYm91eHV6ZHllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk2NTg0MDEsImV4cCI6MjA3NTIzNDQwMX0.Q5DdI1MOkVTxMa5tMbPtE97kNCnxjKm3AEr7wep98xg",
+  pnlsootdnywbkqnxsqya:
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBubHNvb3Rkbnl3YmtxbnhzcXlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNjc1ODgsImV4cCI6MjA4OTY0MzU4OH0.fT81av-ELEW1dVDC68pxKPv4X6yuB1mzepmshuv7Jv4",
 };
 
 // https://vitejs.dev/config/

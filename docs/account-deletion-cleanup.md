@@ -55,13 +55,13 @@ The `cleanup-deleted-accounts` edge function should be run periodically (e.g., d
 **Manual Execution**:
 ```bash
 # Call the edge function to cleanup accounts
-curl -X POST https://yyuvupjbvjpbouxuzdye.supabase.co/functions/v1/cleanup-deleted-accounts
+curl -X POST https://pnlsootdnywbkqnxsqya.supabase.co/functions/v1/cleanup-deleted-accounts
 ```
 
 **Automated via Cron** (recommended):
 Set up a cron job or scheduled task to call this function daily:
 ```
-0 2 * * * curl -X POST https://yyuvupjbvjpbouxuzdye.supabase.co/functions/v1/cleanup-deleted-accounts
+0 2 * * * curl -X POST https://pnlsootdnywbkqnxsqya.supabase.co/functions/v1/cleanup-deleted-accounts
 ```
 
 ### What Gets Deleted (After 30 Days)

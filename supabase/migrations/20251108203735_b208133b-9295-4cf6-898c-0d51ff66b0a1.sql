@@ -9,7 +9,7 @@ SELECT cron.schedule(
   $$
   SELECT
     net.http_post(
-      url:='https://yyuvupjbvjpbouxuzdye.supabase.co/functions/v1/send-reminder-emails',
+      url:='https://pnlsootdnywbkqnxsqya.supabase.co/functions/v1/send-reminder-emails',
       headers:=jsonb_build_object(
         'Content-Type', 'application/json',
         'X-Cron-Secret', current_setting('app.settings.cron_secret', true)

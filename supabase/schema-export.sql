@@ -1,7 +1,7 @@
 -- ============================================================================
 -- PetLinkID Complete Database Schema Export
 -- Generated: 2026-03-21
--- Project: yyuvupjbvjpbouxuzdye
+-- Project: pnlsootdnywbkqnxsqya
 -- ============================================================================
 -- This file can recreate the entire public schema on a fresh Supabase project.
 -- Run in order: enums → sequences → tables → indexes → functions → triggers → RLS → storage
